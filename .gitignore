@@ -50,6 +50,9 @@ module_a_population_segmentation/reports/model_evaluation.md
 .vscode/
 *.swp
 *.swo
+.cursor/
+.claude/
+.obsidian/
 
 # ─── Coverage ────────────────────────────────────────────────────────────────
 .coverage
@@ -58,3 +61,13 @@ coverage.xml
 
 # ─── DVC ─────────────────────────────────────────────────────────────────────
 /tmp/
+
+# ─── Internal harness / private project context ─────────────────────────────
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+project_scope/
+docs/ai_harness/
+
+# ─── Local graph context artifacts ───────────────────────────────────────────
+graphify-out/
