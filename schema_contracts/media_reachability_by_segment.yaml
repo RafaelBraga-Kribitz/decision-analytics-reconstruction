@@ -1,0 +1,75 @@
+schema_name: media_reachability_by_segment
+schema_version: "1.0.0"
+description: >
+  Aggregated media reachability metrics by population segment.
+  One row per segment (k=6). Produced by: module_a (aggregation step).
+  Consumed by: Module B (channel caps per segment per district).
+
+fields:
+  segment_label:
+    type: string
+    nullable: false
+    unique: true
+    allowed_values:
+      - rural_committed
+      - urban_high_volatility
+      - youth_volatile
+      - structurally_dependent_bloc
+      - rural_low_propensity
+      - committed_opposition
+  segment_size:
+    type: int64
+    nullable: false
+    min: 1
+  segment_size_pct:
+    type: float32
+    nullable: false
+    min: 0.01
+    max: 1.0
+  mean_participation_propensity:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+  pct_internet_access:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+  mean_tv_penetration:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+  mean_radio_penetration:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+  mean_whatsapp_penetration:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+  pct_rural:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+  pct_jopara:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+  pct_structural_dependency:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+  dominant_department:
+    type: string
+    nullable: false
+  primary_reach_channel:
+    type: string
+    nullable: false
+    allowed_values: [tv, radio, whatsapp, direct]

@@ -1,0 +1,66 @@
+[tool.poetry]
+name = "decision-analytics-reconstruction"
+version = "0.1.0"
+description = "Retrospective Reconstruction of a National-Scale Marketing and Resource Allocation Decision System"
+authors = []
+readme = "README.md"
+packages = [
+    { include = "population_segmentation", from = "module_a_population_segmentation/src" },
+]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+pandas = ">=2.0"
+numpy = ">=1.26"
+scipy = ">=1.11"
+scikit-learn = ">=1.4"
+pyarrow = ">=14.0"
+chardet = ">=5.2"
+rapidfuzz = ">=3.6"
+shap = ">=0.44"
+streamlit = ">=1.32"
+plotly = ">=5.20"
+pydantic = ">=2.6"
+mlflow = ">=2.12"
+pyyaml = ">=6.0"
+python-dotenv = ">=1.0"
+
+[tool.poetry.group.dev.dependencies]
+pytest = ">=8.0"
+pytest-cov = ">=5.0"
+black = ">=24.0"
+ruff = ">=0.4"
+pyright = ">=1.1.350"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.black]
+line-length = 100
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "SIM"]
+ignore = []
+
+[tool.pyright]
+pythonVersion = "3.11"
+typeCheckingMode = "strict"
+include = [
+    "module_a_population_segmentation/src",
+]
+exclude = [
+    "module_a_population_segmentation/notebooks",
+    "**/__pycache__",
+]
+
+[tool.pytest.ini_options]
+testpaths = [
+    "module_a_population_segmentation/tests",
+]
+addopts = "--tb=short -v"

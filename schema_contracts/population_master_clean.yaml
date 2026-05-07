@@ -1,0 +1,186 @@
+schema_name: population_master_clean
+schema_version: "1.0.0"
+description: >
+  Cleaned, validated population dataset with derived features and model scores.
+  Produced by: module_a/data/cleaner.py + validator.py + models/propensity.py
+  Consumed by: Module B (allocation targets + reachability), Module C (strata weights)
+
+fields:
+  entity_id:
+    type: int64
+    nullable: false
+    unique: true
+    validation: monotonic_positive
+  cedula:
+    type: string
+    nullable: false
+    validation: regex_8digit
+    pattern: "^\\d{8}$"
+  cedula_invalid:
+    type: bool
+    nullable: false
+    max_rate: 0.02
+  department:
+    type: string
+    nullable: false
+    allowed_values:
+      - Asuncion
+      - Concepcion
+      - San Pedro
+      - Cordillera
+      - Guaira
+      - Caaguazu
+      - Caazapa
+      - Itapua
+      - Misiones
+      - Paraguari
+      - Alto Parana
+      - Central
+      - Neembucu
+      - Amambay
+      - Canindeyu
+      - Presidente Hayes
+      - Boqueron
+      - Alto Paraguay
+  municipality:
+    type: string
+    nullable: false
+    max_null_rate: 0.001
+  municipality_imputed:
+    type: bool
+    nullable: false
+  age_on_event_date:
+    type: int16
+    nullable: false
+    min: 18
+    max: 115
+  age_out_of_range:
+    type: bool
+    nullable: false
+  dob_ambiguous:
+    type: bool
+    nullable: false
+    max_rate: 0.01
+  gender:
+    type: string
+    nullable: false
+    allowed_values: [M, F, unknown]
+    unknown_max_rate: 0.005
+  rural_flag:
+    type: bool
+    nullable: false
+    expected_true_rate: 0.383
+    tolerance_pp: 0.003
+  rural_flag_derived:
+    type: bool
+    nullable: false
+  language_census_bucket:
+    type: string
+    nullable: false
+    allowed_values: [jopara_bilingual, guarani_only, spanish_only, other]
+  jopara_flag:
+    type: bool
+    nullable: false
+  preference_proxy:
+    type: string
+    nullable: false
+    allowed_values: [A, B, other, none]
+  preference_proxy_strength:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+  participation_propensity:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+    national_mean_target: 0.6125
+    national_mean_tolerance_pp: 0.001
+  structural_dependency_proxy:
+    type: bool
+    nullable: false
+  internet_access_flag:
+    type: bool
+    nullable: false
+  media_penetration_tv:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+  media_penetration_radio:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+  media_penetration_whatsapp:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+  nbi_stress_prior:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+    status: ESTIMATED
+  segment_label:
+    type: string
+    nullable: true
+    allowed_values:
+      - rural_committed
+      - urban_high_volatility
+      - youth_volatile
+      - structurally_dependent_bloc
+      - rural_low_propensity
+      - committed_opposition
+  ballot_blank_president:
+    type: bool
+    nullable: false
+    expected_rate: 0.0241
+    tolerance_pp: 0.002
+  ballot_blank_parlasur:
+    type: bool
+    nullable: false
+    expected_rate: 0.0848
+    tolerance_pp: 0.003
+  enc_source:
+    type: string
+    nullable: false
+    allowed_values: [windows1252, utf8, unknown]
+
+calibration_anchors:
+  national_participation_rate:
+    target: 0.6125
+    tolerance_pp: 0.001
+    field: participation_propensity
+    source: "TSJE, 2018"
+  youth_participation_rate:
+    target: 0.528
+    tolerance_pp: 0.005
+    field: participation_propensity
+    filter: "age_on_event_date between 18 and 24"
+    source: "TSJE, 2018"
+  female_participation_rate:
+    target: 0.6946
+    tolerance_pp: 0.002
+    field: participation_propensity
+    filter: "gender == 'F'"
+    source: "TSJE, 2018"
+  male_participation_rate:
+    target: 0.6772
+    tolerance_pp: 0.002
+    field: participation_propensity
+    filter: "gender == 'M'"
+    source: "TSJE, 2018"
+  rural_share:
+    target: 0.383
+    tolerance_pp: 0.003
+    field: rural_flag
+    source: "DGEEC 2018"
+  urban_share:
+    target: 0.617
+    tolerance_pp: 0.003
+    field: rural_flag
+    filter: "rural_flag == False"
+    source: "DGEEC 2018"

@@ -1,0 +1,30 @@
+---
+description: Definition of Done — when a task may be marked complete
+alwaysApply: true
+---
+
+# Definition of Done
+
+A task is **done** only when **all** of the following apply:
+
+1. **Plan alignment** — Deliverables match every item in the approved plan (sections A–J). Scope creep documented or re-planned.
+
+2. **TDD cycle** — Every new function or behavior change in `src/` was written test-first. The agent watched each test fail before implementing. No exceptions.
+
+3. **Tests pass** — Exact test command run in this session; exit 0 confirmed; full output pasted or path provided. Not a prior session. Not "should pass."
+
+4. **Evidence proof table** — Every success criterion in the plan has a corresponding row in the `/task-verify` proof table with: exact command, actual output or value, and PASS result.
+
+5. **Module quality gates** — All applicable gates from the relevant specialist agent (A1–A12 / B1–B11 / C1–C12) are PASS with numeric evidence.
+
+6. **QA gatekeeper** — For medium/high risk tasks: `qa-gatekeeper` signed verdict is attached. Verdict must be PASS or PASS WITH CAVEATS (not BLOCK or FAIL).
+
+7. **Scope integrity** — Module boundaries respected; `schema_contracts/` updated when schemas change; `reports/` artifacts produced.
+
+8. **Terminology** — No banned terms (scope §12) in deliverables confirmed by scan.
+
+9. **Todo hygiene** — Cursor todo items moved to `completed` **only** after items 1–8 above all pass.
+
+**Not done:** "looks good", partial tests, completion without evidence, QA verdict missing, prior-session verification assumed still valid.
+
+See also: `docs/ai_harness/professional-grade-rubrics.md` for module-specific professional output standards.

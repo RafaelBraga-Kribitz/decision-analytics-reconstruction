@@ -1,0 +1,20 @@
+---
+description: Task routing — which agent profile and skill stack to use
+alwaysApply: true
+---
+
+# Task routing matrix
+
+Use `docs/ai_harness/routing-matrix.md` as the canonical table. Summary:
+
+| Domain | Primary Cursor sub-agent | Core skills (invoke explicit SKILL.md where available) |
+|--------|--------------------------|--------------------------------------------------------|
+| Orchestration / intake / plans | `orchestrator` | `analysis-planning`, `writing-plans`, `verification-before-completion` |
+| Explore codebase (read-only) | Use Task explore or `explore` agent | readonly scope |
+| Module A — population, segmentation, propensity | `module-a-specialist` | `programmatic-eda`, `data-quality-audit`, `scikit-learn`, `test-driven-development` |
+| Module B — LP, FX, routing, allocation API | `module-b-specialist` | `query-validation`, `systematic-debugging`, `test-driven-development` |
+| Module C — Bayesian, scenarios, Quarto | `module-c-specialist` | `pymc`, `statistical-analysis`, `analysis-qa-checklist` |
+| QA gates / DoD | `qa-gatekeeper` | `verification-before-completion`, `analysis-qa-checklist` |
+| Cross-module / contracts / CI | `integration-impact-auditor` + `reviewer` | `code-auditor`, `verification-before-completion` |
+
+**Rule:** One primary specialist per task; add `qa-gatekeeper` for releases and cross-cutting changes.

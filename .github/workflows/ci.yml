@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  module-a:
+    name: Module A — lint / typecheck / test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        run: poetry install --no-root
+
+      - name: Black format check
+        run: poetry run black --check module_a_population_segmentation/src module_a_population_segmentation/tests
+
+      - name: Ruff lint
+        run: poetry run ruff check module_a_population_segmentation/src module_a_population_segmentation/tests
+
+      - name: Pyright type check
+        run: poetry run pyright module_a_population_segmentation/src
+
+      - name: pytest with coverage
+        run: >
+          poetry run pytest module_a_population_segmentation/tests
+          --cov=module_a_population_segmentation/src
+          --cov-report=xml
+          --cov-report=term-missing
+          --cov-fail-under=80
+          -v
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        with:
+          files: coverage.xml
+          flags: module_a

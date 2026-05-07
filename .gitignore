@@ -1,18 +1,60 @@
-# Project Scope Documents
-project_scope
-graphify-out/manifest.json
-graphify-out/cost.json
+# ─── Python ─────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+*.whl
+.pytest_cache/
+.mypy_cache/
+.pyright/
+.ruff_cache/
 
-# OS/editor local artifacts
+# ─── Environment ─────────────────────────────────────────────────────────────
+.env
+.venv/
+venv/
+ENV/
+
+# ─── Data (DVC-tracked — never commit raw data) ──────────────────────────────
+data/raw/
+data/interim/
+data/processed/
+*.parquet
+*.csv
+!schema_contracts/
+
+# ─── MLflow ──────────────────────────────────────────────────────────────────
+mlflow/mlruns/
+
+# ─── Reports (generated artifacts) ──────────────────────────────────────────
+module_a_population_segmentation/reports/qa_report_*.md
+module_a_population_segmentation/reports/shap_summary.png
+module_a_population_segmentation/reports/model_evaluation.md
+
+# ─── Notebooks (checkpoints only — sources committed) ────────────────────────
+.ipynb_checkpoints/
+
+# ─── macOS ───────────────────────────────────────────────────────────────────
 .DS_Store
-.obsidian/
+.AppleDouble
+.LSOverride
 
-# AI agent local configs and generated instructions
-.cursor/
-.claude/
-AGENTS.md
-CLAUDE.md
-GEMINI.md
+# ─── IDE ─────────────────────────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
 
-# Local graph artifacts (keep only if you explicitly want to commit them)
-graphify-out/
+# ─── Coverage ────────────────────────────────────────────────────────────────
+.coverage
+htmlcov/
+coverage.xml
+
+# ─── DVC ─────────────────────────────────────────────────────────────────────
+/tmp/

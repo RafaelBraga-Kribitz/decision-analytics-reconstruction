@@ -1,0 +1,40 @@
+schema_name: segment_labels
+schema_version: "1.0.0"
+description: >
+  K-Means segment assignments for the full population.
+  Produced by: module_a/models/segmentation.py (KMeansSegmenter)
+  Consumed by: Module B (allocation targets per segment), Module C (demographic priors)
+
+fields:
+  entity_id:
+    type: int64
+    nullable: false
+    unique: true
+    description: Foreign key to population_master_clean.entity_id
+  segment_label:
+    type: string
+    nullable: false
+    allowed_values:
+      - rural_committed
+      - urban_high_volatility
+      - youth_volatile
+      - structurally_dependent_bloc
+      - rural_low_propensity
+      - committed_opposition
+    description: K-Means segment assignment (k=6 default)
+  segment_id:
+    type: int8
+    nullable: false
+    min: 0
+    max: 7
+    description: Numeric segment index (0-based, matches centroid ordering)
+  dbscan_noise_flag:
+    type: bool
+    nullable: false
+    max_rate: 0.01
+    description: True if entity was flagged as noise by DBSCAN pre-pass
+
+quality_gates:
+  min_segment_size_pct: 0.01
+  max_noise_rate: 0.01
+  required_k: 6

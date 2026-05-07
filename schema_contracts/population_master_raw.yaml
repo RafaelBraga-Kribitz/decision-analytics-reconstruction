@@ -1,0 +1,83 @@
+schema_name: population_master_raw
+schema_version: "1.0.0"
+description: >
+  Raw synthetic population dataset with deterministically injected data quality flaws.
+  Mirrors the original data collection environment (TSJE electoral registry re-type,
+  DGEEC census extracts, encoding errors, duplicates, schema drift).
+  Produced by: module_a/data/generator.py + raw_injector.py
+  Consumed by: module_a/data/cleaner.py
+
+fields:
+  entity_id:
+    type: int64
+    nullable: false
+    unique: true
+    description: Synthetic primary key; monotonically increasing from 1
+  cedula:
+    type: string
+    nullable: true
+    description: National identity number; may have format errors (7-digit, 8-digit, mixed)
+    flaw_types: [FMT, DUP]
+  first_name:
+    type: string
+    nullable: true
+    description: Entity first name; may have encoding errors (ñ, á garbled)
+    flaw_types: [ENC]
+  last_name:
+    type: string
+    nullable: true
+    description: Entity last name; may have encoding errors
+    flaw_types: [ENC]
+  department:
+    type: string
+    nullable: true
+    description: Administrative department; may have typos and schema drift
+    flaw_types: [TYP, SCH]
+  municipality:
+    type: string
+    nullable: true
+    null_rate_expected: 0.08
+    description: Municipality; ~8% null from field workers leaving blank
+    flaw_types: [NUL]
+  dob:
+    type: string
+    nullable: true
+    description: Date of birth string; mixed DD/MM/YYYY and MM/DD/YYYY formats
+    flaw_types: [FMT]
+  gender:
+    type: string
+    nullable: true
+    description: >
+      Gender with multiple observed variants: M, F, Masculino, Femenino, 1, 2
+    flaw_types: [TYP]
+  phone:
+    type: string
+    nullable: true
+    description: >
+      Phone number in three coexisting formats: 0981XXXXXXX, +595981XXXXXXX, 981XXXXXXX
+    flaw_types: [FMT]
+  qualitative_sentiment:
+    type: float32
+    nullable: true
+    description: Field observation sentiment score; inconsistently scaled (1–5)
+    flaw_types: [TYP]
+  qualitative_district:
+    type: string
+    nullable: true
+    null_rate_expected: 0.25
+    description: District from field observation; ~25% have neighborhood name only
+    flaw_types: [NUL]
+  enc_source_raw:
+    type: string
+    nullable: false
+    description: Encoding provenance tag injected at generation time
+    allowed_values: [windows1252, utf8, unknown]
+
+flaw_types:
+  FMT: Format error (wrong regex pattern)
+  DUP: Duplicate record (same entity in multiple regional offices)
+  TYP: Type/variant inconsistency (multiple representations of same value)
+  NUL: Missing value (field left blank)
+  ENC: Encoding error (Windows-1252 read as UTF-8)
+  RNG: Out-of-range value (derived age < 18 or > 120)
+  SCH: Schema drift (column naming inconsistency across sources)

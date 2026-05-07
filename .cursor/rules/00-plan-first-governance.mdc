@@ -1,0 +1,25 @@
+---
+description: Plan-first governance — no execution without an approved task plan
+alwaysApply: true
+---
+
+# Plan-first governance
+
+## Mandatory sequence
+
+1. **Intake** — Classify task (taxonomy in `docs/ai_harness/task-taxonomy.md`). Record goal, scope, module(s), risk.
+2. **Plan** — Before code/data changes: produce a plan with **must-do**, **must-not**, **success criteria**, **test/evidence plan**, **impact map** (modules/files), and **explicit Todo items**.
+3. **Dispatch** — Orchestrator assigns primary specialist + optional reviewer per `docs/ai_harness/routing-matrix.md`.
+4. **Execute** — Only steps listed in the plan; deviations require plan amendment (human or orchestrator approval for hybrid mode).
+5. **Verify** — Evidence attached before marking work complete (see `04-testing-and-evidence-gate.mdc`).
+6. **Complete** — Todo → `completed` **only** when all acceptance criteria pass (see `docs/ai_harness/checklists.md`).
+
+## Hybrid override
+
+Manual execution is allowed **only** if the same checklist is followed and evidence is recorded in `task-verify` output.
+
+## Must-not
+
+- Skip plan for non-trivial work (anything touching `src/`, configs, schemas, CI, or cross-module contracts).
+- Mark todos complete without verification evidence.
+- Change calibration anchors, series gates (Module C), or terminology without explicit plan item.

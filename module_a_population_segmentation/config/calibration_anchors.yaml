@@ -1,0 +1,93 @@
+# Calibration anchors — Module A
+# All TSJE and DGEEC verified anchors used by validator.py to enforce QA gates.
+# Status: [VERIFIED] | [ESTIMATED] | [SYNTHETIC]
+
+# ─── National totals ──────────────────────────────────────────────────────────
+national:
+  entity_count: 4260816          # [VERIFIED — TSJE, April 22, 2018]
+  entity_count_rcp: 4241507      # [VERIFIED — TSJE, RCP snapshot]
+  participation_rate: 0.6125     # [VERIFIED — TSJE, 2018] ±0.1 pp
+  youth_count: 884927            # [VERIFIED — TSJE, 2018] ages 18-24 ±1%
+  youth_participation_rate: 0.528  # [VERIFIED — TSJE, 2018] ±0.5 pp
+  female_participation_rate: 0.6946  # [VERIFIED — TSJE, 2018] ±0.2 pp
+  male_participation_rate: 0.6772    # [VERIFIED — TSJE, 2018] ±0.2 pp
+  blank_rate_president: 0.0241   # [VERIFIED — TSJE, 2018] ±0.2 pp
+  blank_rate_parlasur: 0.0848    # [VERIFIED — TSJE, 2018] ±0.3 pp
+
+# ─── Departmental participation rates (used for post-hoc rake) ──────────────
+department_participation_rates:
+  Presidente Hayes: 0.3237       # [VERIFIED — TSJE, 2018] ±0.5 pp
+  Alto Parana: 0.3747            # [VERIFIED — TSJE, 2018] ±0.5 pp
+  Central: 0.4399                # [VERIFIED — TSJE, 2018] ±0.5 pp
+  Guaira: 0.5826                 # [VERIFIED — TSJE, 2018] ±0.5 pp
+  # Full departmental table: [VERIFIED — exemplars only] pending full TSJE table
+  # Remaining departments initialized to national mean (0.6125) until full table ingested
+  Asuncion: 0.6125
+  Concepcion: 0.6125
+  San Pedro: 0.6125
+  Cordillera: 0.6125
+  Caaguazu: 0.6125
+  Caazapa: 0.6125
+  Itapua: 0.6125
+  Misiones: 0.6125
+  Paraguari: 0.6125
+  Amambay: 0.6125
+  Canindeyu: 0.6125
+  Neembucu: 0.6125
+  Boqueron: 0.6125
+  Alto Paraguay: 0.6125
+
+# Rake multipliers (populated at training time by PropensityModel; placeholder = 1.0)
+department_rake_multipliers:
+  Presidente Hayes: 1.0
+  Alto Parana: 1.0
+  Central: 1.0
+  Guaira: 1.0
+  Asuncion: 1.0
+  Concepcion: 1.0
+  San Pedro: 1.0
+  Cordillera: 1.0
+  Caaguazu: 1.0
+  Caazapa: 1.0
+  Itapua: 1.0
+  Misiones: 1.0
+  Paraguari: 1.0
+  Amambay: 1.0
+  Canindeyu: 1.0
+  Neembucu: 1.0
+  Boqueron: 1.0
+  Alto Paraguay: 1.0
+
+# ─── Demographics ─────────────────────────────────────────────────────────────
+demographics:
+  urban_share: 0.617             # [VERIFIED — DGEEC 2018] ±0.3 pp
+  rural_share: 0.383             # [VERIFIED — DGEEC 2018] ±0.3 pp
+  male_share: 0.504              # [VERIFIED — DGEEC 2018] ±0.2 pp
+  female_share: 0.496            # [VERIFIED — DGEEC 2018] ±0.2 pp
+
+# ─── Language ─────────────────────────────────────────────────────────────────
+language:
+  jopara_bilingual: 0.46         # [VERIFIED — DGEEC bilingualism] ±1 pp
+  guarani_only: 0.34             # [VERIFIED — DGEEC bilingualism] ±1 pp
+  spanish_only: 0.15             # [VERIFIED — DGEEC bilingualism] ±1 pp
+
+# ─── ICT / internet ───────────────────────────────────────────────────────────
+ict:
+  urban_internet_penetration: 0.734   # [VERIFIED band — ICT survey ~2018] ±2 pp
+  rural_internet_penetration: 0.279   # [VERIFIED band — ICT survey ~2018] ±2 pp
+
+# ─── NBI (socioeconomic stress) ───────────────────────────────────────────────
+nbi:
+  rural_sanitary_deficit: 0.659   # [VERIFIED — DGEEC NBI, Censo 2012] ±2 pp
+  urban_sanitary_deficit: 0.252   # [VERIFIED — DGEEC NBI, Censo 2012] ±2 pp
+
+# ─── Tolerance bounds (used by validator.py) ──────────────────────────────────
+tolerances:
+  participation_rate_pp: 0.001      # national mean propensity tolerance
+  youth_rate_pp: 0.005
+  gender_rate_pp: 0.002
+  department_rate_pp: 0.005
+  rural_share_pp: 0.003
+  language_share_pp: 0.010
+  internet_share_pp: 0.020
+  youth_count_pct: 0.010

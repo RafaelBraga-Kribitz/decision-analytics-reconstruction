@@ -1,0 +1,24 @@
+---
+description: Terminology compliance — banned/replacement terms for public artifacts and code
+alwaysApply: true
+---
+
+# Terminology compliance
+
+Authoritative replacement table: **scope master §12** (`project_scope/scope_master_reconstruction_project.md`).
+
+## Rules
+
+- Use **entity**, **population dataset**, **participation rate**, **preference proxy**, **outcome event**, **survey measurement** / **measurement firm**, **program** — never banned alternatives in README, user-facing strings, comments that ship publicly, field names, or docs.
+
+## Semantic clusters (narrative prose)
+
+- Do not combine restricted concepts in the same paragraph per scope §12 semantic cluster rules.
+
+## Enforcement before merge
+
+- Grep or CI check when available; manual review for docs/dashboard copy.
+
+## Module C
+
+- **`election_date`** → **`outcome_event_date`**; calibration series **A | B** — never mix numerators/denominators across series.

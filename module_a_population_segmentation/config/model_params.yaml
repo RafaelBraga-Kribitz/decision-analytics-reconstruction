@@ -1,0 +1,78 @@
+# Model hyperparameters — Module A
+# All tunable parameters. No values hardcoded in src/.
+
+# ─── DBSCAN noise pre-pass ───────────────────────────────────────────────────
+dbscan:
+  eps: 0.5                       # Euclidean distance threshold on standardized features
+  min_samples: 26                # 2 * p where p = 13 features (rule of thumb)
+  metric: euclidean
+  n_jobs: -1
+  max_noise_rate: 0.01           # Gate A4: raise error if noise_rate > 0.03
+
+# ─── K-Means segmentation ─────────────────────────────────────────────────────
+kmeans:
+  k_range: [4, 5, 6, 7, 8]
+  default_k: 6
+  n_init: 10                     # Independent restarts; best WCSS retained
+  init: k-means++
+  max_iter: 300
+  random_state: 42               # Overridden by RANDOM_SEED env var at runtime
+  n_jobs: -1
+  silhouette_threshold: 0.35     # Gate A5
+  bootstrap_ari_threshold: 0.80  # Gate A6
+  bootstrap_n_samples: 100
+  bootstrap_subsample_frac: 0.80
+
+# ─── Propensity model ─────────────────────────────────────────────────────────
+propensity:
+  model: logistic_regression
+  penalty: l2
+  C_grid: [0.01, 0.1, 1.0, 10.0]  # Cross-validation search grid
+  cv_folds: 5
+  solver: lbfgs
+  max_iter: 1000
+  random_state: 42
+  train_frac: 0.60
+  calibration_frac: 0.20
+  test_frac: 0.20
+  stratify_by: [department, age_bin, gender]  # Partition stratification
+  brier_threshold: 0.22           # Gate A7: must beat naive baseline 0.238
+  auc_threshold: 0.70             # Gate (informational)
+  reliability_max_deviation_pp: 3.0  # Gate: max deviation per reliability decile
+  shap_sample_size: 10000         # Entities sampled for SHAP analysis
+
+# ─── Reachability index weights ───────────────────────────────────────────────
+reachability_weights:
+  digital: 0.40
+  broadcast_tv: 0.35
+  broadcast_radio: 0.25
+
+# ─── Feature matrix for segmentation ─────────────────────────────────────────
+segmentation_features:
+  - age_bin_encoded
+  - gender_encoded
+  - rural_flag
+  - preference_proxy_encoded
+  - preference_proxy_strength
+  - structural_dependency_encoded
+  - reachability_digital
+  - reachability_broadcast_tv
+  - reachability_broadcast_radio
+  - youth_flag
+  - metro_flag
+  - language_jopara_encoded
+  - nbi_stress_prior_scaled
+
+# ─── Feature matrix for propensity model ──────────────────────────────────────
+propensity_features:
+  - age_bin_encoded
+  - gender_encoded
+  - rural_flag
+  - youth_flag
+  - senior_flag
+  - metro_flag
+  - department_logit_offset
+  - structural_dependency_encoded
+  - preference_proxy_strength
+  - internet_access_flag
+  - gender_youth_interaction

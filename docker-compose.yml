@@ -1,0 +1,30 @@
+version: "3.11"
+
+services:
+  module_a:
+    build:
+      context: .
+      dockerfile: module_a_population_segmentation/docker/Dockerfile
+    image: decision-analytics-module-a:latest
+    environment:
+      - RANDOM_SEED=${RANDOM_SEED:-42}
+      - MLFLOW_TRACKING_URI=${MLFLOW_TRACKING_URI:-./mlflow/mlruns}
+    volumes:
+      - ./data:/app/data
+      - ./mlflow:/app/mlflow
+    ports:
+      - "8501:8501"
+    command: streamlit run app/streamlit_dashboard.py --server.port 8501 --server.address 0.0.0.0
+
+  mlflow:
+    image: python:3.11-slim
+    working_dir: /app
+    command: >
+      bash -c "pip install mlflow --quiet &&
+               mlflow server --host 0.0.0.0 --port 5000
+               --backend-store-uri /app/mlflow/mlruns
+               --default-artifact-root /app/mlflow/mlruns"
+    volumes:
+      - ./mlflow:/app/mlflow
+    ports:
+      - "5000:5000"

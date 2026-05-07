@@ -1,0 +1,106 @@
+# Population generation configuration
+# All values here are accessible via config/; none are hardcoded in src/
+
+# ─── Scale ────────────────────────────────────────────────────────────────────
+sample_size: 100000          # Dev default; full scale is N_full
+N_full: 4260816              # TSJE, April 22, 2018
+
+# ─── Outcome event date ───────────────────────────────────────────────────────
+outcome_event_date: "2018-04-22"
+
+# ─── Department weights (DGEEC 2018 population shares) ───────────────────────
+# All 18 departments + Asunción; shares sum to 1.0
+department_weights:
+  Asuncion: 0.0702
+  Central: 0.2997
+  Alto Parana: 0.1058
+  Itapua: 0.0795
+  Caaguazu: 0.0615
+  San Pedro: 0.0451
+  Cordillera: 0.0413
+  Paraguari: 0.0354
+  Misiones: 0.0223
+  Guaira: 0.0219
+  Amambay: 0.0203
+  Canindeyu: 0.0196
+  Caazapa: 0.0176
+  Neembucu: 0.0120
+  Concepcion: 0.0366
+  Presidente Hayes: 0.0178
+  Boqueron: 0.0081
+  Alto Paraguay: 0.0053
+
+# ─── Urban/rural mix per department (share urban; 1-x = rural) ───────────────
+# Based on DGEEC 2018 projections; national average 61.7% urban
+department_urban_share:
+  Asuncion: 1.00
+  Central: 0.98
+  Alto Parana: 0.72
+  Itapua: 0.52
+  Caaguazu: 0.42
+  San Pedro: 0.25
+  Cordillera: 0.38
+  Paraguari: 0.35
+  Misiones: 0.56
+  Guaira: 0.48
+  Amambay: 0.73
+  Canindeyu: 0.24
+  Caazapa: 0.23
+  Neembucu: 0.46
+  Concepcion: 0.48
+  Presidente Hayes: 0.37
+  Boqueron: 0.31
+  Alto Paraguay: 0.28
+
+# ─── Age distribution ─────────────────────────────────────────────────────────
+age_distribution:
+  min_age: 18
+  max_age: 99
+  # Calibrated to TSJE 2018: youth (18-24) = 884927 / 4260816 = 20.77%
+  # Bin boundaries and weights for inverse-CDF sampling
+  bins: [18, 25, 35, 50, 65, 99]
+  bin_weights: [0.208, 0.249, 0.282, 0.174, 0.087]  # sum = 1.0; youth bin 20.8%
+
+# ─── Gender split ──────────────────────────────────────────────────────────────
+gender_split:
+  M: 0.504   # DGEEC 2018
+  F: 0.496
+
+# ─── Language priors ──────────────────────────────────────────────────────────
+# National totals; conditional on rural_flag and department in cleaner
+language_priors:
+  jopara_bilingual: 0.46   # DGEEC bilingualism statistics
+  guarani_only: 0.34
+  spanish_only: 0.15
+  other: 0.05
+
+# ─── Flaw injection rates (for raw_injector.py) ───────────────────────────────
+flaw_injection:
+  cedula_format_error_rate: 0.035      # FMT: 7-digit without zero-pad
+  duplicate_rate: 0.012                # DUP: cross-office re-entry
+  department_typo_rate: 0.025          # TYP: Cordilera, Caaguazu etc.
+  municipality_null_rate: 0.080        # NUL: blank municipality
+  date_format_swap_rate: 0.018         # FMT: MM/DD/YYYY in 2 offices
+  encoding_error_rate: 0.040           # ENC: Windows-1252 garble
+  phone_format_variant_rate: 0.045     # FMT: 3 phone formats
+  gender_variant_rate: 0.030           # TYP: Masculino, Femenino, 1, 2
+  age_range_error_rate: 0.008          # RNG: transposed DOB produces <18 or >120
+  schema_drift_rate: 0.015             # SCH: column naming inconsistency
+  sentiment_scale_inconsistency: 0.20  # TYP: inconsistent 1-5 scale
+  qualitative_district_null_rate: 0.25 # NUL: neighborhood name only
+  rural_flag_missing_rate: 1.00        # NUL: always absent in raw (always derived)
+
+# ─── Media penetration lookup (national defaults; overridden by dept) ─────────
+media_penetration_defaults:
+  tv_national: 0.89
+  radio_national: 0.82
+  whatsapp_urban: 0.74
+  whatsapp_rural: 0.31
+
+# ─── Preference proxy priors (calibrated to dept × urban/rural historical share)
+preference_proxy_priors:
+  # Approximate prior for entity A vs B vs other nationally
+  A: 0.48
+  B: 0.43
+  other: 0.07
+  none: 0.02
