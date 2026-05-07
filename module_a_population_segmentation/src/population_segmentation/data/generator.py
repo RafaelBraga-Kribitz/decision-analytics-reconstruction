@@ -7,7 +7,6 @@ All random operations use an explicitly seeded numpy Generator.
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 from typing import Any
 
@@ -16,61 +15,105 @@ import pandas as pd
 import yaml
 
 from population_segmentation.utils.schema import (
-    CANONICAL_DEPARTMENTS,
-    ENTITY_ID,
-    DEPARTMENT,
-    MUNICIPALITY,
-    GENDER,
     AGE_ON_EVENT_DATE,
-    RURAL_FLAG,
-    RURAL_FLAG_DERIVED,
-    LANGUAGE_CENSUS_BUCKET,
+    BALLOT_BLANK_PARLASUR,
+    BALLOT_BLANK_PRESIDENT,
+    DEPARTMENT,
+    ENC_SOURCE,
+    ENTITY_ID,
+    GENDER,
+    INTERNET_ACCESS_FLAG,
     JOPARA_FLAG,
+    LANGUAGE_CENSUS_BUCKET,
+    MEDIA_PENETRATION_RADIO,
+    MEDIA_PENETRATION_TV,
+    MEDIA_PENETRATION_WHATSAPP,
+    MUNICIPALITY,
+    NBI_STRESS_PRIOR,
     PREFERENCE_PROXY,
     PREFERENCE_PROXY_STRENGTH,
+    RURAL_FLAG,
+    RURAL_FLAG_DERIVED,
     STRUCTURAL_DEPENDENCY_PROXY,
-    INTERNET_ACCESS_FLAG,
-    MEDIA_PENETRATION_TV,
-    MEDIA_PENETRATION_RADIO,
-    MEDIA_PENETRATION_WHATSAPP,
-    NBI_STRESS_PRIOR,
-    BALLOT_BLANK_PRESIDENT,
-    BALLOT_BLANK_PARLASUR,
-    ENC_SOURCE,
 )
 from population_segmentation.utils.seeds import make_rng
 
 # ─── Media penetration lookup ─────────────────────────────────────────────────
 # Department-level TV penetration; from DGEEC/media survey; national ~0.89
 _TV_BY_DEPT: dict[str, float] = {
-    "Asuncion": 0.98, "Central": 0.97, "Alto Parana": 0.92, "Itapua": 0.87,
-    "Caaguazu": 0.83, "San Pedro": 0.75, "Cordillera": 0.82, "Paraguari": 0.80,
-    "Misiones": 0.85, "Guaira": 0.84, "Amambay": 0.88, "Canindeyu": 0.74,
-    "Caazapa": 0.73, "Neembucu": 0.82, "Concepcion": 0.81,
-    "Presidente Hayes": 0.70, "Boqueron": 0.65, "Alto Paraguay": 0.62,
+    "Asuncion": 0.98,
+    "Central": 0.97,
+    "Alto Parana": 0.92,
+    "Itapua": 0.87,
+    "Caaguazu": 0.83,
+    "San Pedro": 0.75,
+    "Cordillera": 0.82,
+    "Paraguari": 0.80,
+    "Misiones": 0.85,
+    "Guaira": 0.84,
+    "Amambay": 0.88,
+    "Canindeyu": 0.74,
+    "Caazapa": 0.73,
+    "Neembucu": 0.82,
+    "Concepcion": 0.81,
+    "Presidente Hayes": 0.70,
+    "Boqueron": 0.65,
+    "Alto Paraguay": 0.62,
 }
 _RADIO_BY_DEPT: dict[str, float] = {
-    "Asuncion": 0.90, "Central": 0.89, "Alto Parana": 0.85, "Itapua": 0.82,
-    "Caaguazu": 0.80, "San Pedro": 0.78, "Cordillera": 0.80, "Paraguari": 0.79,
-    "Misiones": 0.82, "Guaira": 0.81, "Amambay": 0.83, "Canindeyu": 0.77,
-    "Caazapa": 0.76, "Neembucu": 0.80, "Concepcion": 0.80,
-    "Presidente Hayes": 0.74, "Boqueron": 0.70, "Alto Paraguay": 0.68,
+    "Asuncion": 0.90,
+    "Central": 0.89,
+    "Alto Parana": 0.85,
+    "Itapua": 0.82,
+    "Caaguazu": 0.80,
+    "San Pedro": 0.78,
+    "Cordillera": 0.80,
+    "Paraguari": 0.79,
+    "Misiones": 0.82,
+    "Guaira": 0.81,
+    "Amambay": 0.83,
+    "Canindeyu": 0.77,
+    "Caazapa": 0.76,
+    "Neembucu": 0.80,
+    "Concepcion": 0.80,
+    "Presidente Hayes": 0.74,
+    "Boqueron": 0.70,
+    "Alto Paraguay": 0.68,
 }
 _NBI_RURAL_BY_DEPT: dict[str, float] = {
-    "Asuncion": 0.15, "Central": 0.20, "Alto Parana": 0.55, "Itapua": 0.60,
-    "Caaguazu": 0.65, "San Pedro": 0.78, "Cordillera": 0.62, "Paraguari": 0.63,
-    "Misiones": 0.58, "Guaira": 0.61, "Amambay": 0.57, "Canindeyu": 0.80,
-    "Caazapa": 0.82, "Neembucu": 0.66, "Concepcion": 0.72,
-    "Presidente Hayes": 0.75, "Boqueron": 0.73, "Alto Paraguay": 0.76,
+    "Asuncion": 0.15,
+    "Central": 0.20,
+    "Alto Parana": 0.55,
+    "Itapua": 0.60,
+    "Caaguazu": 0.65,
+    "San Pedro": 0.78,
+    "Cordillera": 0.62,
+    "Paraguari": 0.63,
+    "Misiones": 0.58,
+    "Guaira": 0.61,
+    "Amambay": 0.57,
+    "Canindeyu": 0.80,
+    "Caazapa": 0.82,
+    "Neembucu": 0.66,
+    "Concepcion": 0.72,
+    "Presidente Hayes": 0.75,
+    "Boqueron": 0.73,
+    "Alto Paraguay": 0.76,
 }
 _NBI_URBAN_BY_DEPT: dict[str, float] = {
     d: max(0.10, v * 0.35) for d, v in _NBI_RURAL_BY_DEPT.items()
 }
 
 # Structural dependency elevated in high-NBI rural departments
-_STRUCTURAL_DEP_ELEVATED: frozenset[str] = frozenset({
-    "San Pedro", "Caazapa", "Canindeyu", "Concepcion", "Paraguari",
-})
+_STRUCTURAL_DEP_ELEVATED: frozenset[str] = frozenset(
+    {
+        "San Pedro",
+        "Caazapa",
+        "Canindeyu",
+        "Concepcion",
+        "Paraguari",
+    }
+)
 
 
 def _load_config(config_path: str | Path) -> dict[str, Any]:
@@ -91,7 +134,8 @@ def generate_population(
         output_path: Optional parquet path to write output.
 
     Returns:
-        DataFrame with one row per entity; columns match schema_contracts/population_master_raw.yaml.
+        DataFrame with one row per entity; columns match
+        schema_contracts/population_master_raw.yaml.
     """
     rng = make_rng(seed)
     n = int(config["sample_size"])
@@ -165,7 +209,6 @@ def generate_population(
     # ── internet_access_flag ───────────────────────────────────────────────────
     ict = config.get("media_penetration_defaults", {})
     urban_inet = float(ict.get("whatsapp_urban", 0.74))
-    rural_inet = float(ict.get("whatsapp_rural", 0.31))
     # Approximate internet access from ICT anchors
     inet_prob = np.where(rural_flags, 0.279, 0.734)
     internet_access_flags = rng.random(n) < inet_prob
@@ -204,28 +247,30 @@ def generate_population(
     # ── jopara_flag ────────────────────────────────────────────────────────────
     jopara_flags = language_buckets == "jopara_bilingual"
 
-    df = pd.DataFrame({
-        ENTITY_ID: entity_ids,
-        DEPARTMENT: departments,
-        MUNICIPALITY: municipalities,
-        GENDER: genders,
-        AGE_ON_EVENT_DATE: ages,
-        RURAL_FLAG: rural_flags,
-        RURAL_FLAG_DERIVED: rural_flag_derived,
-        LANGUAGE_CENSUS_BUCKET: language_buckets,
-        JOPARA_FLAG: jopara_flags,
-        PREFERENCE_PROXY: preference_proxies,
-        PREFERENCE_PROXY_STRENGTH: preference_proxy_strengths,
-        STRUCTURAL_DEPENDENCY_PROXY: structural_dependency,
-        INTERNET_ACCESS_FLAG: internet_access_flags,
-        MEDIA_PENETRATION_TV: tv_pen,
-        MEDIA_PENETRATION_RADIO: radio_pen,
-        MEDIA_PENETRATION_WHATSAPP: whatsapp_pen,
-        NBI_STRESS_PRIOR: nbi_vals,
-        BALLOT_BLANK_PRESIDENT: ballot_blank_pres,
-        BALLOT_BLANK_PARLASUR: ballot_blank_parl,
-        ENC_SOURCE: enc_sources,
-    })
+    df = pd.DataFrame(
+        {
+            ENTITY_ID: entity_ids,
+            DEPARTMENT: departments,
+            MUNICIPALITY: municipalities,
+            GENDER: genders,
+            AGE_ON_EVENT_DATE: ages,
+            RURAL_FLAG: rural_flags,
+            RURAL_FLAG_DERIVED: rural_flag_derived,
+            LANGUAGE_CENSUS_BUCKET: language_buckets,
+            JOPARA_FLAG: jopara_flags,
+            PREFERENCE_PROXY: preference_proxies,
+            PREFERENCE_PROXY_STRENGTH: preference_proxy_strengths,
+            STRUCTURAL_DEPENDENCY_PROXY: structural_dependency,
+            INTERNET_ACCESS_FLAG: internet_access_flags,
+            MEDIA_PENETRATION_TV: tv_pen,
+            MEDIA_PENETRATION_RADIO: radio_pen,
+            MEDIA_PENETRATION_WHATSAPP: whatsapp_pen,
+            NBI_STRESS_PRIOR: nbi_vals,
+            BALLOT_BLANK_PRESIDENT: ballot_blank_pres,
+            BALLOT_BLANK_PARLASUR: ballot_blank_parl,
+            ENC_SOURCE: enc_sources,
+        }
+    )
 
     if output_path is not None:
         df.to_parquet(output_path, index=False)

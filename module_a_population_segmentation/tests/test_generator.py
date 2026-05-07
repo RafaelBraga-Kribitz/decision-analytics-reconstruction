@@ -7,11 +7,12 @@ and pass when the implementation is correct.
 
 from __future__ import annotations
 
-import pytest
-import pandas as pd
-import numpy as np
-import yaml
 from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import pytest
+import yaml
 
 CONFIG_PATH = Path(__file__).parent.parent / "config" / "generation.yaml"
 ANCHORS_PATH = Path(__file__).parent.parent / "config" / "calibration_anchors.yaml"
@@ -36,6 +37,7 @@ def anchors() -> dict:  # type: ignore[type-arg]
 @pytest.fixture(scope="module")
 def raw_population(config: dict) -> pd.DataFrame:  # type: ignore[type-arg]
     from population_segmentation.data.generator import generate_population
+
     return generate_population(config, seed=42)
 
 
@@ -56,9 +58,11 @@ class TestEntityCount:
 class TestDepartmentDistribution:
     def test_all_18_departments_present(self, raw_population: pd.DataFrame) -> None:
         from population_segmentation.utils.schema import CANONICAL_DEPARTMENTS
+
         present = set(raw_population["department"].dropna().unique())
-        assert present.issubset(CANONICAL_DEPARTMENTS | {"Cordilera", "Caaguazu"}), \
-            f"Unexpected departments: {present - CANONICAL_DEPARTMENTS}"
+        assert present.issubset(
+            CANONICAL_DEPARTMENTS | {"Cordilera", "Caaguazu"}
+        ), f"Unexpected departments: {present - CANONICAL_DEPARTMENTS}"
         # At least 15 of 18 departments must be present at sample_size=50k
         clean_present = present & CANONICAL_DEPARTMENTS
         assert len(clean_present) >= 15
@@ -76,8 +80,10 @@ class TestGenderDistribution:
     ) -> None:
         male_share = (raw_population["gender"] == "M").mean()
         tolerance = 0.010  # loose at N=50k
-        assert abs(male_share - anchors["demographics"]["male_share"]) < tolerance, \
-            f"Male share {male_share:.3f} outside ±{tolerance} of {anchors['demographics']['male_share']}"
+        expected_male_share = anchors["demographics"]["male_share"]
+        assert abs(male_share - expected_male_share) < tolerance, (
+            f"Male share {male_share:.3f} outside ±{tolerance} " f"of {expected_male_share}"
+        )
 
 
 class TestUrbanRuralSplit:
@@ -105,8 +111,10 @@ class TestAgeDistribution:
         self, raw_population: pd.DataFrame, anchors: dict  # type: ignore[type-arg]
     ) -> None:
         if "age_on_event_date" in raw_population.columns:
-            youth_share = ((raw_population["age_on_event_date"] >= 18) &
-                           (raw_population["age_on_event_date"] <= 24)).mean()
+            youth_share = (
+                (raw_population["age_on_event_date"] >= 18)
+                & (raw_population["age_on_event_date"] <= 24)
+            ).mean()
             expected = anchors["national"]["youth_count"] / anchors["national"]["entity_count"]
             tolerance = 0.015
             assert abs(youth_share - expected) < tolerance
@@ -115,17 +123,20 @@ class TestAgeDistribution:
 class TestReproducibility:
     def test_same_seed_produces_same_output(self, config: dict) -> None:  # type: ignore[type-arg]
         from population_segmentation.data.generator import generate_population
+
         df1 = generate_population(config, seed=42)
         df2 = generate_population(config, seed=42)
         pd.testing.assert_frame_equal(df1, df2)
 
     def test_different_seed_produces_different_output(self, config: dict) -> None:  # type: ignore[type-arg]
         from population_segmentation.data.generator import generate_population
+
         df1 = generate_population(config, seed=42)
         df2 = generate_population(config, seed=99)
         # They should differ in content (with overwhelming probability)
-        assert not df1["entity_id"].equals(df2["entity_id"]) or \
-               not df1["department"].equals(df2["department"])
+        assert not df1["entity_id"].equals(df2["entity_id"]) or not df1["department"].equals(
+            df2["department"]
+        )
 
 
 class TestLanguageDistribution:
@@ -139,17 +150,26 @@ class TestLanguageDistribution:
         tolerance = 0.015
         for bucket, expected in anchors["language"].items():
             observed = lang_shares.get(bucket, 0.0)
-            assert abs(observed - expected) < tolerance, \
-                f"Language '{bucket}': observed {observed:.3f}, expected {expected:.3f} ±{tolerance}"
+            assert (
+                abs(observed - expected) < tolerance
+            ), f"Language '{bucket}': observed {observed:.3f}, expected {expected:.3f} ±{tolerance}"
 
 
 class TestRequiredColumns:
     REQUIRED_COLUMNS = [
-        "entity_id", "department", "municipality", "gender",
-        "rural_flag", "language_census_bucket", "preference_proxy",
-        "preference_proxy_strength", "internet_access_flag",
-        "media_penetration_tv", "media_penetration_radio",
-        "media_penetration_whatsapp", "nbi_stress_prior",
+        "entity_id",
+        "department",
+        "municipality",
+        "gender",
+        "rural_flag",
+        "language_census_bucket",
+        "preference_proxy",
+        "preference_proxy_strength",
+        "internet_access_flag",
+        "media_penetration_tv",
+        "media_penetration_radio",
+        "media_penetration_whatsapp",
+        "nbi_stress_prior",
         "structural_dependency_proxy",
     ]
 

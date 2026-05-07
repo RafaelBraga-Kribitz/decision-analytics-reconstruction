@@ -10,21 +10,17 @@ All operations are seeded for reproducibility. Flaw rates are read from config.
 from __future__ import annotations
 
 import re
-import unicodedata
 from typing import Any
 
 import numpy as np
 import pandas as pd
 
 from population_segmentation.utils.schema import (
-    CANONICAL_DEPARTMENTS,
-    ENTITY_ID,
+    AGE_ON_EVENT_DATE,
     CEDULA,
     DEPARTMENT,
-    MUNICIPALITY,
     GENDER,
-    AGE_ON_EVENT_DATE,
-    ENC_SOURCE,
+    MUNICIPALITY,
 )
 from population_segmentation.utils.seeds import make_rng
 
@@ -45,8 +41,16 @@ _DEPT_TYPOS: dict[str, list[str]] = {
 # Windows-1252 → UTF-8 garbling: replace accented chars with ? placeholder
 # (actual byte sequences omitted to avoid encoding issues in source files)
 _ENCODING_GARBLE_CHARS: list[str] = [
-    "\xe1", "\xe9", "\xed", "\xf3", "\xfa",  # á é í ó ú
-    "\xf1", "\xc1", "\xc9", "\xd3", "\xda",  # ñ Á É Ó Ú
+    "\xe1",
+    "\xe9",
+    "\xed",
+    "\xf3",
+    "\xfa",  # á é í ó ú
+    "\xf1",
+    "\xc1",
+    "\xc9",
+    "\xd3",
+    "\xda",  # ñ Á É Ó Ú
 ]
 
 # Gender variants
@@ -177,12 +181,14 @@ def inject_flaws(
     # Half of affected rows: scale 1–5; other half: scale 0–100
     half = mask.sum() // 2
     mask_idx = np.where(mask)[0]
-    df.loc[df.index[mask_idx[:half]], "qualitative_sentiment"] = \
-        rng.integers(1, 6, size=half).astype(float)
+    df.loc[df.index[mask_idx[:half]], "qualitative_sentiment"] = rng.integers(
+        1, 6, size=half
+    ).astype(float)
     if len(mask_idx) > half:
         remaining = len(mask_idx) - half
-        df.loc[df.index[mask_idx[half:]], "qualitative_sentiment"] = \
-            rng.integers(0, 101, size=remaining).astype(float)
+        df.loc[df.index[mask_idx[half:]], "qualitative_sentiment"] = rng.integers(
+            0, 101, size=remaining
+        ).astype(float)
 
     # ── NUL-2: Qualitative district nulls (~25%) ──────────────────────────────
     rate = rates["qualitative_district_null_rate"]
@@ -191,9 +197,18 @@ def inject_flaws(
 
     # Metadata
     df.attrs["flaw_types_injected"] = [
-        "FMT_cedula", "DUP", "TYP_department", "NUL_municipality",
-        "FMT_dob", "ENC", "FMT_phone", "TYP_gender",
-        "RNG_age", "SCH", "TYP_sentiment", "NUL_qualitative_district",
+        "FMT_cedula",
+        "DUP",
+        "TYP_department",
+        "NUL_municipality",
+        "FMT_dob",
+        "ENC",
+        "FMT_phone",
+        "TYP_gender",
+        "RNG_age",
+        "SCH",
+        "TYP_sentiment",
+        "NUL_qualitative_district",
         "NUL_rural_flag",  # always derived — counts as flaw type 13
     ]
 
@@ -201,6 +216,7 @@ def inject_flaws(
 
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
+
 
 def _add_raw_fields(
     df: pd.DataFrame,
@@ -215,14 +231,12 @@ def _add_raw_fields(
 
     # DOB: derive from age_on_event_date (April 22, 2018 reference)
     if "dob" not in df.columns:
-        import pandas as pd
-        ref_date = pd.Timestamp("2018-04-22")
         birth_years = 2018 - df[AGE_ON_EVENT_DATE].values
         birth_months = rng.integers(1, 13, size=n)
         birth_days = rng.integers(1, 29, size=n)
         df["dob"] = [
             f"{d:02d}/{m:02d}/{y}"
-            for d, m, y in zip(birth_days, birth_months, birth_years)
+            for d, m, y in zip(birth_days, birth_months, birth_years, strict=False)
         ]
 
     # Names: synthetic Spanish/Guaraní names
@@ -246,15 +260,48 @@ def _add_raw_fields(
 
 
 _FIRST_NAMES = [
-    "Carlos", "María", "José", "Ana", "Luis", "Rosa", "Pedro",
-    "Laura", "Miguel", "Patricia", "Jorge", "Claudia", "Ramón",
-    "Sandra", "Fernando", "Elena", "Héctor", "Sofía", "Ricardo", "Verónica",
+    "Carlos",
+    "María",
+    "José",
+    "Ana",
+    "Luis",
+    "Rosa",
+    "Pedro",
+    "Laura",
+    "Miguel",
+    "Patricia",
+    "Jorge",
+    "Claudia",
+    "Ramón",
+    "Sandra",
+    "Fernando",
+    "Elena",
+    "Héctor",
+    "Sofía",
+    "Ricardo",
+    "Verónica",
 ]
 _LAST_NAMES = [
-    "García", "Martínez", "López", "González", "Rodríguez", "Pérez",
-    "Sánchez", "Ramírez", "Torres", "Flores", "Díaz", "Morales",
-    "Jiménez", "Gutiérrez", "Ortiz", "Chávez", "Reyes", "Mendoza",
-    "Cabrera", "Riveros",
+    "García",
+    "Martínez",
+    "López",
+    "González",
+    "Rodríguez",
+    "Pérez",
+    "Sánchez",
+    "Ramírez",
+    "Torres",
+    "Flores",
+    "Díaz",
+    "Morales",
+    "Jiménez",
+    "Gutiérrez",
+    "Ortiz",
+    "Chávez",
+    "Reyes",
+    "Mendoza",
+    "Cabrera",
+    "Riveros",
 ]
 
 
@@ -272,14 +319,12 @@ def _garble_encoding(name: str) -> str:
     """Simulate Windows-1252 → UTF-8 garbling for a name string."""
     if not isinstance(name, str):
         return name
-    for char, garbled in _ENCODING_GARBLES.items():
+    for char in _ENCODING_GARBLE_CHARS:
         if char in name:
-            name = name.replace(char, garbled, 1)
+            name = name.replace(char, "?", 1)
             break
-    # If no replaceable char, inject a generic garble marker
-    else:
-        if any(ord(c) > 127 for c in name):
-            name = name + "?"
+    if any(ord(c) > 127 for c in name):
+        name = name + "?"
     return name
 
 

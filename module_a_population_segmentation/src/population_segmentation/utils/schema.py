@@ -66,29 +66,52 @@ ENC_SOURCE: Final = "enc_source"
 ENC_SOURCE_RAW: Final = "enc_source_raw"
 
 # ─── Canonical allowed values ─────────────────────────────────────────────────
-CANONICAL_DEPARTMENTS: Final = frozenset({
-    "Asuncion", "Concepcion", "San Pedro", "Cordillera", "Guaira",
-    "Caaguazu", "Caazapa", "Itapua", "Misiones", "Paraguari",
-    "Alto Parana", "Central", "Neembucu", "Amambay", "Canindeyu",
-    "Presidente Hayes", "Boqueron", "Alto Paraguay",
-})
+CANONICAL_DEPARTMENTS: Final = frozenset(
+    {
+        "Asuncion",
+        "Concepcion",
+        "San Pedro",
+        "Cordillera",
+        "Guaira",
+        "Caaguazu",
+        "Caazapa",
+        "Itapua",
+        "Misiones",
+        "Paraguari",
+        "Alto Parana",
+        "Central",
+        "Neembucu",
+        "Amambay",
+        "Canindeyu",
+        "Presidente Hayes",
+        "Boqueron",
+        "Alto Paraguay",
+    }
+)
 
 CANONICAL_GENDER: Final = frozenset({"M", "F", "unknown"})
 
-CANONICAL_LANGUAGE: Final = frozenset({
-    "jopara_bilingual", "guarani_only", "spanish_only", "other",
-})
+CANONICAL_LANGUAGE: Final = frozenset(
+    {
+        "jopara_bilingual",
+        "guarani_only",
+        "spanish_only",
+        "other",
+    }
+)
 
 CANONICAL_PREFERENCE_PROXY: Final = frozenset({"A", "B", "other", "none"})
 
-CANONICAL_SEGMENT_LABELS: Final = frozenset({
-    "rural_committed",
-    "urban_high_volatility",
-    "youth_volatile",
-    "structurally_dependent_bloc",
-    "rural_low_propensity",
-    "committed_opposition",
-})
+CANONICAL_SEGMENT_LABELS: Final = frozenset(
+    {
+        "rural_committed",
+        "urban_high_volatility",
+        "youth_volatile",
+        "structurally_dependent_bloc",
+        "rural_low_propensity",
+        "committed_opposition",
+    }
+)
 
 CANONICAL_ENC_SOURCE: Final = frozenset({"windows1252", "utf8", "unknown"})
 
