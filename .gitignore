@@ -1,0 +1,18 @@
+# Project Scope Documents
+project_scope
+graphify-out/manifest.json
+graphify-out/cost.json
+
+# OS/editor local artifacts
+.DS_Store
+.obsidian/
+
+# AI agent local configs and generated instructions
+.cursor/
+.claude/
+AGENTS.md
+CLAUDE.md
+GEMINI.md
+
+# Local graph artifacts (keep only if you explicitly want to commit them)
+graphify-out/
