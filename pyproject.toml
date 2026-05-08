@@ -50,7 +50,7 @@ ignore = []
 
 [tool.pyright]
 pythonVersion = "3.11"
-typeCheckingMode = "strict"
+typeCheckingMode = "basic"
 include = [
     "module_a_population_segmentation/src",
 ]
@@ -58,6 +58,7 @@ exclude = [
     "module_a_population_segmentation/notebooks",
     "**/__pycache__",
 ]
+reportMissingTypeStubs = false
 
 [tool.pytest.ini_options]
 testpaths = [

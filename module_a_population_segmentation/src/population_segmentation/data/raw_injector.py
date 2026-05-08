@@ -231,7 +231,7 @@ def _add_raw_fields(
 
     # DOB: derive from age_on_event_date (April 22, 2018 reference)
     if "dob" not in df.columns:
-        birth_years = 2018 - df[AGE_ON_EVENT_DATE].values
+        birth_years = 2018 - df[AGE_ON_EVENT_DATE].astype(int).to_numpy()
         birth_months = rng.integers(1, 13, size=n)
         birth_days = rng.integers(1, 29, size=n)
         df["dob"] = [

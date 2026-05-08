@@ -75,18 +75,18 @@ def clean_population(
     df["cedula_invalid"] = ~df["cedula"].str.match(r"^\d{8}$")
 
     # Step 3: gender normalization
-    df["gender"] = df["gender"].map(_GENDER_MAP).fillna("unknown")
+    df["gender"] = df["gender"].replace(_GENDER_MAP).fillna("unknown")
 
     # Step 4: department normalization
     dept = df["department"].astype(str).str.strip()
     df["department"] = dept.replace(_DEPT_NORMALIZE)
-    df.loc[~df["department"].isin(CANONICAL_DEPARTMENTS), "department"] = "Central"
+    df.loc[~df["department"].isin(list(CANONICAL_DEPARTMENTS)), "department"] = "Central"
 
     # Step 5: deduplication by entity_id + cedula
     df = df.sort_values("entity_id").drop_duplicates(subset=["entity_id", "cedula"], keep="first")
 
     # Step 6: date parsing and age derivation
-    dob_series = _normalize_dob(df["dob"].astype(str))
+    dob_series = _normalize_dob(pd.Series(df["dob"].astype(str)))
     df["dob"] = dob_series
     event_date = pd.Timestamp("2018-04-22")
     dob_parsed = pd.to_datetime(df["dob"], format="%d/%m/%Y", errors="coerce")

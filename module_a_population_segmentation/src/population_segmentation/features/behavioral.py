@@ -9,7 +9,9 @@ def build_behavioral_features(df: pd.DataFrame) -> pd.DataFrame:
     out = df.copy()
 
     pref_map = {"A": 0, "B": 1, "other": 2, "none": 3}
-    out["preference_proxy_encoded"] = out["preference_proxy"].map(pref_map).fillna(3).astype(int)
+    out["preference_proxy_encoded"] = (
+        out["preference_proxy"].replace(pref_map).fillna(3).astype(int)
+    )
 
     out["structural_dependency_encoded"] = out["structural_dependency_proxy"].astype(int)
 

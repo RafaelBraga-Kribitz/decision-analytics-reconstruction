@@ -1,0 +1,14 @@
+[
+  {
+    "id": "task-TASK-20260507-001",
+    "key": "TASK-20260507-001",
+    "content": "Task completed: TASK-20260507-001",
+    "namespace": "tasks",
+    "type": "task-outcome",
+    "metadata": {
+      "success": true,
+      "quality": 0.85
+    },
+    "createdAt": 1778172355655
+  }
+]

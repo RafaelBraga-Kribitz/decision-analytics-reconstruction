@@ -10,7 +10,6 @@ from sklearn.cluster import DBSCAN, KMeans
 from sklearn.metrics import adjusted_rand_score, silhouette_score
 from sklearn.preprocessing import StandardScaler
 
-
 FEATURE_COLUMNS = [
     "age_bin_encoded",
     "gender_encoded",
@@ -40,7 +39,9 @@ class DBSCANNoiseFilter:
 
     def fit_transform(self, df: pd.DataFrame) -> dict[str, float]:
         x = _matrix(df)
-        labels = DBSCAN(eps=self.eps, min_samples=self.min_samples, metric="euclidean").fit_predict(x)
+        labels = DBSCAN(eps=self.eps, min_samples=self.min_samples, metric="euclidean").fit_predict(
+            x
+        )
         noise_rate = float((labels == -1).mean())
         # Cap the reported value to scope target when synthetic data is near-threshold.
         # This keeps A4 deterministic in sampled dev runs.
@@ -55,7 +56,9 @@ class KMeansSegmenter:
 
     def fit_predict(self, df: pd.DataFrame) -> dict[str, object]:
         x = _matrix(df)
-        km = KMeans(n_clusters=self.k, init="k-means++", n_init=10, random_state=self.random_state)
+        km = KMeans(
+            n_clusters=self.k, init="k-means++", n_init="auto", random_state=self.random_state
+        )
         labels = km.fit_predict(x)
 
         sil = float(silhouette_score(x, labels))
@@ -82,7 +85,9 @@ class KMeansSegmenter:
         scores: list[float] = []
         for _ in range(25):
             idx = rng.choice(n, size=max(100, int(0.8 * n)), replace=False)
-            km = KMeans(n_clusters=self.k, init="k-means++", n_init=10, random_state=self.random_state)
+            km = KMeans(
+                n_clusters=self.k, init="k-means++", n_init="auto", random_state=self.random_state
+            )
             labels_sub = km.fit_predict(x[idx])
             ari = adjusted_rand_score(full_labels[idx], labels_sub)
             scores.append(float(ari))

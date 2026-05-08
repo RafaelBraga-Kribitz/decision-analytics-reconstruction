@@ -8,9 +8,9 @@ import pandas as pd
 def build_reachability_features(df: pd.DataFrame) -> pd.DataFrame:
     out = df.copy()
 
-    out["reachability_digital"] = (
-        out["internet_access_flag"].astype(float) * out["media_penetration_whatsapp"].astype(float)
-    )
+    out["reachability_digital"] = out["internet_access_flag"].astype(float) * out[
+        "media_penetration_whatsapp"
+    ].astype(float)
     out["reachability_broadcast_tv"] = out["media_penetration_tv"].astype(float)
     out["reachability_broadcast_radio"] = out["media_penetration_radio"].astype(float)
 

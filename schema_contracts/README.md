@@ -26,4 +26,3 @@ Any breaking change to field names, types, or validation rules requires:
 1. A version bump in the contract file (`schema_version` field)
 2. An entry in `reports/decision_log.md`
 3. Sign-off from `integration-impact-auditor`
-

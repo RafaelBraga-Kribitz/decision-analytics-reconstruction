@@ -20,11 +20,11 @@ def config() -> dict:  # type: ignore[type-arg]
 
 @pytest.fixture(scope="module")
 def feature_df(config: dict) -> pd.DataFrame:  # type: ignore[type-arg]
+    from population_segmentation.data.cleaner import clean_population
     from population_segmentation.data.generator import generate_population
     from population_segmentation.data.raw_injector import inject_flaws
-    from population_segmentation.data.cleaner import clean_population
-    from population_segmentation.features.demographic import build_demographic_features
     from population_segmentation.features.behavioral import build_behavioral_features
+    from population_segmentation.features.demographic import build_demographic_features
     from population_segmentation.features.reachability import build_reachability_features
 
     base = generate_population(config, seed=42)

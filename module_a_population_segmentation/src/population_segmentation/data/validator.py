@@ -42,7 +42,7 @@ def validate_schema(df: pd.DataFrame) -> None:
     if not df["cedula"].astype(str).str.match(r"^\d{8}$").all():
         raise QAGateFailure("cedula must match ^\\d{8}$ for all rows")
 
-    if df["department"].isna().any():
+    if bool(df["department"].isna().any()):
         raise QAGateFailure("department contains null values")
     bad_departments = set(df["department"].dropna().unique()) - CANONICAL_DEPARTMENTS
     if bad_departments:
@@ -58,7 +58,7 @@ def validate_schema(df: pd.DataFrame) -> None:
     if not df["age_on_event_date"].between(18, 115).all():
         raise QAGateFailure("age_on_event_date must be within [18, 115]")
 
-    if df["rural_flag"].isna().any():
+    if bool(df["rural_flag"].isna().any()):
         raise QAGateFailure("rural_flag cannot be null")
 
     if not df["phone"].astype(str).str.match(r"^\+595\d{9}$").all():
