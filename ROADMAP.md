@@ -8,7 +8,7 @@ Honest status of each module and the next concrete milestones.
 
 **Status: production-grade**
 
-- 116 tests passing, CI-gated at 80% coverage
+- 139 tests passing, CI-gated at 80% coverage
 - Full 14-step cleaning pipeline with documented flaw injection and QA gates
 - Logistic regression + Platt calibration + department rake; all acceptance criteria met
 - DBSCAN pre-pass + K-Means (k=6); silhouette > 0.35, bootstrap ARI > 0.80
@@ -91,3 +91,4 @@ Honest status of each module and the next concrete milestones.
 | End-to-end pipeline smoke test | Not yet implemented |
 | DVC artifact tracking | Config present; not yet enforced in CI |
 | Docker Compose full-stack | Partial (Module A only) |
+| `01_synthetic_data_validation.ipynb` (marginal + joint correlation audit, nbval) | **Deferred** — marginal and contract checks are covered by pandera gates, CI config integrity, and exploratory notebooks under `module_a_population_segmentation/notebooks/` (e.g. segmentation analysis). A dedicated validation notebook remains optional follow-up. |

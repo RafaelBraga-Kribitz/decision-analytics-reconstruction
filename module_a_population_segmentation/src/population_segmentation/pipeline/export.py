@@ -62,6 +62,13 @@ def run_export(
     from population_segmentation.models.propensity import PropensityModel
     from population_segmentation.models.segmentation import build_segmentation_frame
 
+    model_params_path = (
+        Path(__file__).resolve().parents[3] / "config" / "model_params.yaml"
+    )
+    with open(model_params_path, encoding="utf-8") as f:
+        model_params: dict[str, Any] = yaml.safe_load(f)
+    stratify_by = tuple(model_params["propensity"]["stratify_by"])
+
     if sample_size is not None:
         config = dict(config)
         config["sample_size"] = sample_size
@@ -93,7 +100,9 @@ def run_export(
     merged_feat["dbscan_noise_flag"] = labels_df["dbscan_noise_flag"].to_numpy()
 
     print("[export] Propensity model ...", flush=True)
-    prop_out = PropensityModel(random_state=42).fit_predict(merged_feat, anchors)
+    prop_out = PropensityModel(random_state=42, stratify_by=stratify_by).fit_predict(
+        merged_feat, anchors
+    )
 
     prop_df = pd.DataFrame(
         {

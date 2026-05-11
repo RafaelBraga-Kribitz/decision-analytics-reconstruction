@@ -10,7 +10,7 @@ All operations are seeded for reproducibility. Flaw rates are read from config.
 from __future__ import annotations
 
 import re
-from typing import Any
+from typing import Any, Final
 
 import numpy as np
 import pandas as pd
@@ -19,8 +19,15 @@ from population_segmentation.utils.schema import (
     AGE_ON_EVENT_DATE,
     CEDULA,
     DEPARTMENT,
+    DOB,
+    FIRST_NAME,
     GENDER,
+    LAST_NAME,
     MUNICIPALITY,
+    PHONE,
+    QUALITATIVE_DISTRICT,
+    QUALITATIVE_SENTIMENT,
+    SCHEMA_DRIFT_FLAG,
 )
 from population_segmentation.utils.seeds import make_rng
 
@@ -38,20 +45,25 @@ _DEPT_TYPOS: dict[str, list[str]] = {
     "Amambay": ["Amambai", "amambay", "Amambáy"],
 }
 
-# Windows-1252 → UTF-8 garbling: replace accented chars with ? placeholder
-# (actual byte sequences omitted to avoid encoding issues in source files)
-_ENCODING_GARBLE_CHARS: list[str] = [
-    "\xe1",
-    "\xe9",
-    "\xed",
-    "\xf3",
-    "\xfa",  # á é í ó ú
-    "\xf1",
-    "\xc1",
-    "\xc9",
-    "\xd3",
-    "\xda",  # ñ Á É Ó Ú
-]
+# Replace only the first matching character per name string: realistic partial
+# corruption (a field garbled once, not every accented character replaced).
+GARBLE_FIRST_MATCH_ONLY: Final[bool] = True
+
+# Windows-1252 bytes reinterpreted as Latin-1 → mojibake visible in UTF-8 output.
+_ENCODING_GARBLES: dict[str, str] = {
+    "á": "Ã¡",
+    "é": "Ã©",
+    "í": "Ã­",
+    "ó": "Ã³",
+    "ú": "Ãº",
+    "ñ": "Ã±",
+    "Á": "Ã\x81",
+    "É": "Ã‰",
+    "Ó": "Ã\u201c",
+    "Ú": "Ãš",
+    "Ü": "Ã\x9c",
+    "ü": "Ã¼",
+}
 
 # Gender variants
 _GENDER_VARIANTS: dict[str, list[str]] = {
@@ -122,7 +134,7 @@ def inject_flaws(
     rate = rates["date_format_swap_rate"]
     mask_dob = rng.random(n_total) < rate
     # Mark affected rows; actual swap simulated by transposing day/month in dob string
-    dob_col = df["dob"]
+    dob_col = df[DOB]
     swapped_dob = dob_col.copy()
     for i in df.index[mask_dob]:
         raw = str(dob_col[i])
@@ -130,22 +142,22 @@ def inject_flaws(
         if len(parts) == 3:
             # Swap day and month
             swapped_dob[i] = f"{parts[1]}/{parts[0]}/{parts[2]}"
-    df["dob"] = swapped_dob
+    df[DOB] = swapped_dob
 
     # ── ENC: Encoding errors in name fields ───────────────────────────────────
     rate = rates["encoding_error_rate"]
     mask = rng.random(n_total) < rate
-    df.loc[df.index[mask], "first_name"] = df.loc[df.index[mask], "first_name"].apply(
+    df.loc[df.index[mask], FIRST_NAME] = df.loc[df.index[mask], FIRST_NAME].apply(
         _garble_encoding
     )
-    df.loc[df.index[mask], "last_name"] = df.loc[df.index[mask], "last_name"].apply(
+    df.loc[df.index[mask], LAST_NAME] = df.loc[df.index[mask], LAST_NAME].apply(
         _garble_encoding
     )
 
     # ── FMT-3: Phone format variants ──────────────────────────────────────────
     rate = rates["phone_format_variant_rate"]
     mask = rng.random(n_total) < rate
-    df.loc[df.index[mask], "phone"] = df.loc[df.index[mask], "phone"].apply(
+    df.loc[df.index[mask], PHONE] = df.loc[df.index[mask], PHONE].apply(
         lambda p: _randomize_phone_format(p, rng)
     )
 
@@ -163,17 +175,17 @@ def inject_flaws(
     mask = rng.random(n_total) < rate
     # Inject an extra DOB swap that creates year-transposition → age < 18 or > 120
     for i in df.index[mask]:
-        raw_dob = df.at[i, "dob"]
+        raw_dob = df.at[i, DOB]
         parts = str(raw_dob).split("/")
         if len(parts) == 3:
             # Year → 2-digit confusion: swap last two digits of year with day
-            df.at[i, "dob"] = f"{parts[2]}/{parts[1]}/{parts[0]}"
+            df.at[i, DOB] = f"{parts[2]}/{parts[1]}/{parts[0]}"
 
     # ── SCH: Schema drift flag ────────────────────────────────────────────────
     rate = rates["schema_drift_rate"]
     mask = rng.random(n_total) < rate
-    df["schema_drift_flag"] = False
-    df.loc[df.index[mask], "schema_drift_flag"] = True
+    df[SCHEMA_DRIFT_FLAG] = False
+    df.loc[df.index[mask], SCHEMA_DRIFT_FLAG] = True
 
     # ── TYP-3: Qualitative sentiment inconsistent scale ───────────────────────
     rate = rates["sentiment_scale_inconsistency"]
@@ -181,19 +193,19 @@ def inject_flaws(
     # Half of affected rows: scale 1–5; other half: scale 0–100
     half = mask.sum() // 2
     mask_idx = np.where(mask)[0]
-    df.loc[df.index[mask_idx[:half]], "qualitative_sentiment"] = rng.integers(
+    df.loc[df.index[mask_idx[:half]], QUALITATIVE_SENTIMENT] = rng.integers(
         1, 6, size=half
     ).astype(float)
     if len(mask_idx) > half:
         remaining = len(mask_idx) - half
-        df.loc[df.index[mask_idx[half:]], "qualitative_sentiment"] = rng.integers(
+        df.loc[df.index[mask_idx[half:]], QUALITATIVE_SENTIMENT] = rng.integers(
             0, 101, size=remaining
         ).astype(float)
 
     # ── NUL-2: Qualitative district nulls (~25%) ──────────────────────────────
     rate = rates["qualitative_district_null_rate"]
     mask = rng.random(n_total) < rate
-    df.loc[df.index[mask], "qualitative_district"] = None
+    df.loc[df.index[mask], QUALITATIVE_DISTRICT] = None
 
     # Metadata
     df.attrs["flaw_types_injected"] = [
@@ -230,31 +242,31 @@ def _add_raw_fields(
         df[CEDULA] = cedulas
 
     # DOB: derive from age_on_event_date (April 22, 2018 reference)
-    if "dob" not in df.columns:
+    if DOB not in df.columns:
         birth_years = 2018 - df[AGE_ON_EVENT_DATE].astype(int).to_numpy()
         birth_months = rng.integers(1, 13, size=n)
         birth_days = rng.integers(1, 29, size=n)
-        df["dob"] = [
+        df[DOB] = [
             f"{d:02d}/{m:02d}/{y}"
             for d, m, y in zip(birth_days, birth_months, birth_years, strict=False)
         ]
 
     # Names: synthetic Spanish/Guaraní names
-    if "first_name" not in df.columns:
-        df["first_name"] = _generate_names(n, rng, name_type="first")
-    if "last_name" not in df.columns:
-        df["last_name"] = _generate_names(n, rng, name_type="last")
+    if FIRST_NAME not in df.columns:
+        df[FIRST_NAME] = _generate_names(n, rng, name_type="first")
+    if LAST_NAME not in df.columns:
+        df[LAST_NAME] = _generate_names(n, rng, name_type="last")
 
     # Phone: E.164 Paraguay format
-    if "phone" not in df.columns:
+    if PHONE not in df.columns:
         numbers = rng.integers(970_000_000, 999_999_999, size=n)
-        df["phone"] = [f"+595{num}" for num in numbers]
+        df[PHONE] = [f"+595{num}" for num in numbers]
 
     # Qualitative fields
-    if "qualitative_sentiment" not in df.columns:
-        df["qualitative_sentiment"] = rng.integers(1, 6, size=n).astype(float)
-    if "qualitative_district" not in df.columns:
-        df["qualitative_district"] = df[DEPARTMENT].copy()
+    if QUALITATIVE_SENTIMENT not in df.columns:
+        df[QUALITATIVE_SENTIMENT] = rng.integers(1, 6, size=n).astype(float)
+    if QUALITATIVE_DISTRICT not in df.columns:
+        df[QUALITATIVE_DISTRICT] = df[DEPARTMENT].copy()
 
     return df
 
@@ -316,15 +328,15 @@ def _generate_names(
 
 
 def _garble_encoding(name: str) -> str:
-    """Simulate Windows-1252 → UTF-8 garbling for a name string."""
+    """Replace first matching accented char with mojibake; for-else appends '?' if needed."""
     if not isinstance(name, str):
         return name
-    for char in _ENCODING_GARBLE_CHARS:
+    for char, garbled in _ENCODING_GARBLES.items():
         if char in name:
-            name = name.replace(char, "?", 1)
-            break
-    if any(ord(c) > 127 for c in name):
-        name = name + "?"
+            return name.replace(char, garbled, 1)
+    else:
+        if any(ord(c) > 127 for c in name):
+            return name + "?"
     return name
 
 
@@ -341,3 +353,28 @@ def _randomize_phone_format(phone: str, rng: np.random.Generator) -> str:
         return f"+595{digits}"
     else:
         return digits
+
+
+if __name__ == "__main__":
+    import argparse
+    import os
+    from pathlib import Path
+
+    import yaml
+
+    p = argparse.ArgumentParser(description="Inject raw-layer flaws; read/write parquet.")
+    p.add_argument("--input", type=Path, required=True)
+    p.add_argument("--output", type=Path, required=True)
+    p.add_argument("--config", type=Path, required=True)
+    p.add_argument("--seed", type=int, default=None)
+    args = p.parse_args()
+    seed = args.seed if args.seed is not None else int(os.environ.get("RANDOM_SEED", "42"))
+    with open(args.config, encoding="utf-8") as f:
+        cfg: dict[str, Any] = yaml.safe_load(f)
+    df = pd.read_parquet(args.input)
+    n_in = len(df)
+    out = inject_flaws(df, cfg, seed=seed)
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    out.to_parquet(args.output, index=False)
+    flaw_types = out.attrs.get("flaw_types_injected", [])
+    print(f"inject_flaws: {n_in:,} → {len(out):,} rows; flaw_types={flaw_types}")

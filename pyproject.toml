@@ -2,7 +2,7 @@
 name = "decision-analytics-reconstruction"
 version = "0.1.0"
 description = "Retrospective Reconstruction of a National-Scale Marketing and Resource Allocation Decision System"
-authors = []
+authors = ["Rafael Braga-Kribitz <rafaelbragakribitz@gmail.com>"]
 readme = "README.md"
 packages = [
     { include = "population_segmentation", from = "module_a_population_segmentation/src" },
@@ -76,7 +76,15 @@ include = [
 ]
 exclude = [
     "module_a_population_segmentation/notebooks",
+    "reports",
+    "**/*.ipynb",
     "**/__pycache__",
+]
+# basedpyright: exclude alone does not suppress notebook diagnostics in the IDE;
+# ignore suppresses analysis output for matched paths (see basedpyright issue #1134).
+ignore = [
+    "**/*.ipynb",
+    "reports/**",
 ]
 reportMissingTypeStubs = false
 

@@ -12,16 +12,22 @@ services:
       - ./mlflow:/app/mlflow
     ports:
       - "8501:8501"
+    networks:
+      - analytics_net
 
   mlflow:
-    image: python:3.11-slim
+    build:
+      context: .
+      dockerfile: docker/mlflow.Dockerfile
+    image: decision-analytics-mlflow:latest
     working_dir: /app
-    command: >
-      bash -c "pip install mlflow --quiet &&
-               mlflow server --host 0.0.0.0 --port 5000
-               --backend-store-uri /app/mlflow/mlruns
-               --default-artifact-root /app/mlflow/mlruns"
     volumes:
       - ./mlflow:/app/mlflow
     ports:
       - "5000:5000"
+    networks:
+      - analytics_net
+
+networks:
+  analytics_net:
+    driver: bridge

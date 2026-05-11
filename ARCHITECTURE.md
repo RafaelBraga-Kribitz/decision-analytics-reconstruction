@@ -19,7 +19,8 @@ decision-analytics-reconstruction/
 │   │   ├── data/
 │   │   │   ├── generator.py             synthetic population (→ population_raw.parquet)
 │   │   │   ├── raw_injector.py          13-flaw injection (→ population_raw_flawed.parquet)
-│   │   │   └── cleaner.py              14-step cleaning (→ population_master_clean.parquet)
+│   │   │   ├── cleaner.py              14-step cleaning (→ population_master_clean.parquet)
+│   │   │   └── validator.py            schema + calibration anchor checks (QAGateFailure)
 │   │   ├── features/
 │   │   │   ├── demographic.py           age_bin, gender, youth/senior flags
 │   │   │   ├── behavioral.py            preference_proxy, structural_dependency, interactions
@@ -28,7 +29,7 @@ decision-analytics-reconstruction/
 │   │   │   ├── segmentation.py          DBSCAN pre-pass + K-Means (k=6)
 │   │   │   └── propensity.py            LogReg + Platt calibration + department rake
 │   │   ├── evaluation/
-│   │   │   ├── validator.py             13 QA gates; QAGateFailure halts pipeline
+│   │   │   ├── schema_validator.py      Pandera clean-population contract (cleaner exit gate)
 │   │   │   ├── calibration_metrics.py
 │   │   │   └── clustering_metrics.py
 │   │   ├── visualization/
@@ -39,7 +40,7 @@ decision-analytics-reconstruction/
 │   │   └── utils/
 │   │       ├── schema.py                Final-typed column name constants (never bare strings)
 │   │       └── seeds.py                 RANDOM_SEED env var, default 20180422
-│   ├── tests/                           116 tests, TDD-compliant, CI-gated at 80% coverage
+│   ├── tests/                           140+ tests, TDD-compliant, CI-gated at 80% coverage
 │   ├── app/                             Streamlit dashboard (deployed on Render)
 │   └── reports/                         model cards, QA report, transformation log
 │
@@ -82,16 +83,14 @@ generator.py → population_raw.parquet
         ▼ (raw_injector.py — 13 flaw types)
 population_raw_flawed.parquet
         │
-        ▼ (cleaner.py — 14-step pipeline)
+        ▼ (cleaner.py — 14-step pipeline + validate_clean_population in schema_validator.py)
 population_master_clean.parquet
         │
         ├── features/ (demographic, behavioral, reachability)
         │
         ├── models/segmentation → segment_labels.parquet
         │
-        ├── models/propensity → participation_propensity.parquet
-        │
-        └── evaluation/validator → QA gates (13 checks; fail = halt)
+        └── models/propensity → participation_propensity.parquet
                 │
                 ▼
         [Module B receives]: participation_propensity, segment_labels, media_reachability
@@ -130,8 +129,9 @@ Key contracts:
   Bare string column names in `src/` are a test failure.
 - **Seeded RNG.** All random operations use `numpy.random.Generator` from `utils/seeds.py`.
   `RANDOM_SEED` env var defaults to `20180422`.
-- **QA gates.** `evaluation/validator.py` enforces 13 quantitative acceptance criteria.
-  `QAGateFailure` halts the pipeline; no downstream module runs on unvalidated data.
+- **QA / contracts.** `evaluation/schema_validator.py` runs `validate_clean_population` at the
+  cleaner exit (Pandera contract). `data/validator.py` adds `validate_schema` and
+  `validate_calibration_anchors`; both can raise `QAGateFailure` where wired into a run.
 - **TDD.** Every `src/` change requires a failing test first. CI enforces 80% coverage floor.
 - **OPTIMAL-only solver.** Module B halts on INFEASIBLE; constraint relaxation requires documented justification.
 - **MCMC diagnostics.** Module C requires R-hat < 1.01, ESS > 400, zero divergences. Any violation blocks delivery.

@@ -41,7 +41,7 @@ territories; media channels become product lines; verified margin becomes measur
 
 ## Module A is the flagship
 
-Module A is the production-quality, fully-tested, deployed artifact. It contains 138 tests (92% coverage), CI
+Module A is the production-quality, fully-tested, deployed artifact. It contains 139 tests (92% coverage), CI
 enforcement, a live Streamlit dashboard, model cards, pandera runtime schema contracts, and a complete 14-step
 cleaning pipeline. Modules B and C demonstrate LP optimization and Bayesian forecasting
 respectively; they are analytically complete but not yet packaged to the same engineering standard.
@@ -78,7 +78,7 @@ flowchart TD
     DGEEC --> A
     SIM --> A
 
-    A["Module A: Population Modeling & Segmentation\n[FLAGSHIP]\n116 tests · 80%+ coverage · live dashboard"]
+    A["Module A: Population Modeling & Segmentation\n[FLAGSHIP]\n139 tests · 80%+ coverage · live dashboard"]
 
     A --> AO["population_master_clean.parquet\nsegment_labels.parquet — 6 behavioral clusters\nparticipation_propensity.parquet\nmedia_reachability_by_segment.csv"]
 
@@ -133,7 +133,7 @@ make dashboard     # launch Streamlit dashboard
 ├── module_a_population_segmentation/  <- production implementation (fully tested)
 │   ├── config/                  <- generation.yaml, calibration_anchors.yaml, model_params.yaml
 │   ├── src/population_segmentation/   <- production code
-│   ├── tests/                   <- 138 tests, 92% coverage
+│   ├── tests/                   <- 139 tests, 92% coverage
 │   ├── app/                     <- Streamlit dashboard
 │   └── reports/                 <- model cards, QA reports
 ├── module_b_resource_allocation/  <- LP/MILP allocation + routing + API

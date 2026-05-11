@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+import argparse
+import os
 from datetime import datetime
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 import pandas as pd
+import yaml
 
 from population_segmentation.evaluation.schema_validator import validate_clean_population
 from population_segmentation.utils.schema import CANONICAL_DEPARTMENTS
@@ -205,3 +208,35 @@ def _write_qa_report(clean_df: pd.DataFrame, raw_df: pd.DataFrame, out_dir: Path
         f"- Rural flag nulls: {clean_df['rural_flag'].isna().sum()}",
     ]
     path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def _parse_cli() -> argparse.Namespace:
+    """Parse CLI for ``python -m population_segmentation.data.cleaner``."""
+    p = argparse.ArgumentParser(
+        description="Clean raw population parquet into population_master_clean schema."
+    )
+    p.add_argument("--input", type=Path, required=True, help="Input raw parquet path")
+    p.add_argument("--output", type=Path, required=True, help="Output clean parquet path")
+    p.add_argument("--config", type=Path, required=True, help="Path to generation.yaml")
+    p.add_argument("--seed", type=int, default=None, help="RNG seed (default: RANDOM_SEED or 42)")
+    p.add_argument(
+        "--qa-report-dir",
+        type=Path,
+        default=None,
+        help="If set, write qa_report_YYYYMMDD.md under this directory",
+    )
+    return p.parse_args()
+
+
+if __name__ == "__main__":
+    args = _parse_cli()
+    seed = args.seed
+    if seed is None:
+        seed = int(os.environ.get("RANDOM_SEED", "42"))
+    with open(args.config, encoding="utf-8") as f:
+        cfg: dict[str, Any] = yaml.safe_load(f)
+    raw_df = pd.read_parquet(args.input)
+    out_df = clean_population(raw_df, cfg, qa_report_dir=args.qa_report_dir, seed=seed)
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    out_df.to_parquet(args.output, index=False)
+    print(f"Cleaned {len(raw_df):,} → {len(out_df):,} rows → {args.output}")

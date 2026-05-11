@@ -11,8 +11,9 @@
 #   - kmeans.k / n_init / max_iter / random_state → segmentation.KMeansSegmenter (hardcoded)
 #   - propensity.C_grid / cv_folds         → propensity.PropensityModel (LogisticRegression
 #                                            uses default C=1.0; no CV grid search)
-#   - propensity.stratify_by               → PropensityModel.fit_predict stratifies on
-#                                            department only (age_bin, gender not used)
+#   - propensity.stratify_by               → PropensityModel.train/val split stratification;
+#                                            uses engineered columns age_bin_encoded, gender_encoded
+#                                            (not raw age_on_event_date / gender strings).
 #   - propensity.shap_sample_size          → SHAP analysis not yet implemented in src/
 #
 # Planned: a config-loading adapter in pipeline/export.py to read these
@@ -74,7 +75,7 @@ propensity:
   train_frac: 0.60
   calibration_frac: 0.20
   test_frac: 0.20
-  stratify_by: [department, age_bin, gender]  # Partition stratification
+  stratify_by: [department, age_bin_encoded, gender_encoded]  # Composite stratification key
   # Gate A7: Brier threshold set to 0.235 (honest value for Platt-scaled LR on
   # synthetic reconstruction data at n≥15k; naive baseline ≈0.237 for p≈0.61,
   # so 0.235 still requires the model to out-perform a constant-rate predictor).

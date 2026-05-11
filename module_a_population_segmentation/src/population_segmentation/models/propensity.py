@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 import numpy as np
@@ -28,6 +28,9 @@ FEATURES = [
 @dataclass
 class PropensityModel:
     random_state: int = 42
+    stratify_by: tuple[str, ...] = field(
+        default_factory=lambda: ("department", "age_bin_encoded", "gender_encoded")
+    )
 
     def fit_predict(self, df: pd.DataFrame, anchors: dict[str, Any]) -> dict[str, Any]:
         work = df.copy()
@@ -36,9 +39,25 @@ class PropensityModel:
         # Synthetic target calibrated to anchors (for reconstruction setting)
         y = self._synthetic_target(work, anchors)
 
-        x_train, x_tmp, y_train, y_tmp = train_test_split(
-            x, y, test_size=0.4, random_state=self.random_state, stratify=work["department"]
-        )
+        strat_cols = self.stratify_by
+        if not strat_cols:
+            raise ValueError("stratify_by must name at least one column")
+        missing = [c for c in strat_cols if c not in work.columns]
+        if missing:
+            raise ValueError(f"Stratification columns missing from DataFrame: {missing}")
+        if len(strat_cols) > 1:
+            strat_series = work[list(strat_cols)].astype(str).agg("_".join, axis=1)
+        elif len(strat_cols) == 1:
+            strat_series = work[strat_cols[0]]
+        try:
+            x_train, x_tmp, y_train, y_tmp = train_test_split(
+                x, y, test_size=0.4, random_state=self.random_state, stratify=strat_series
+            )
+        except ValueError:
+            # Rare strata (small n or high-cardinality composite keys) — fall back to department.
+            x_train, x_tmp, y_train, y_tmp = train_test_split(
+                x, y, test_size=0.4, random_state=self.random_state, stratify=work["department"]
+            )
         x_cal, x_test, y_cal, y_test = train_test_split(
             x_tmp, y_tmp, test_size=0.5, random_state=self.random_state
         )

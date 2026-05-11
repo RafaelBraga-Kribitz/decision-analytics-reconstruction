@@ -76,7 +76,11 @@ generate-dev:
 pipeline-dev:
 	$(PYTHON) -m population_segmentation.data.generator \
 		--config module_a_population_segmentation/config/generation.yaml \
-		--output data/interim/population_master_raw.parquet
+		--output data/interim/population_master_base.parquet
+	$(PYTHON) -m population_segmentation.data.raw_injector \
+		--input data/interim/population_master_base.parquet \
+		--output data/interim/population_master_raw.parquet \
+		--config module_a_population_segmentation/config/generation.yaml
 	$(PYTHON) -m population_segmentation.data.cleaner \
 		--input data/interim/population_master_raw.parquet \
 		--output data/processed/population_master_clean.parquet \

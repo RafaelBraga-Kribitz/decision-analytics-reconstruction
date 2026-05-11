@@ -122,7 +122,7 @@ CLEAN_POPULATION_SCHEMA = DataFrameSchema(
     description=(
         "Enforced at the exit of clean_population(). "
         "Violations raise pa.errors.SchemaError with column-level detail. "
-        "This gate supplements the custom QAGateFailure checks in validator.py."
+        "This gate supplements the custom QAGateFailure checks in data/validator.py."
     ),
 )
 

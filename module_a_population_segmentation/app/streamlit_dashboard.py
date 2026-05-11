@@ -25,20 +25,22 @@ from population_segmentation.visualization.segment_profiles import (
 )
 
 
-def _load_cfg() -> tuple[dict, dict]:
+def _load_cfg() -> tuple[dict, dict, tuple[str, ...]]:
     root = Path(__file__).resolve().parents[2]
-    with open(root / "module_a_population_segmentation" / "config" / "generation.yaml") as f:
+    mod = root / "module_a_population_segmentation" / "config"
+    with open(mod / "generation.yaml") as f:
         gen = yaml.safe_load(f)
-    with open(
-        root / "module_a_population_segmentation" / "config" / "calibration_anchors.yaml"
-    ) as f:
+    with open(mod / "calibration_anchors.yaml") as f:
         anc = yaml.safe_load(f)
-    return gen, anc
+    with open(mod / "model_params.yaml") as f:
+        mp = yaml.safe_load(f)
+    strat = tuple(mp["propensity"]["stratify_by"])
+    return gen, anc, strat
 
 
 @st.cache_data(show_spinner=False)
 def _build_sample(sample_size: int = 15000):
-    gen, anc = _load_cfg()
+    gen, anc, stratify_by = _load_cfg()
     gen["sample_size"] = sample_size
     base = generate_population(gen, seed=42)
     raw = inject_flaws(base, gen, seed=42)
@@ -58,7 +60,7 @@ def _build_sample(sample_size: int = 15000):
     feat["segment_label"] = labels_df["segment_label"].to_numpy()
     feat["segment_id"] = labels_df["segment_id"].to_numpy()
     feat["dbscan_noise_flag"] = labels_df["dbscan_noise_flag"].to_numpy()
-    prop = PropensityModel(random_state=42).fit_predict(feat, anc)
+    prop = PropensityModel(random_state=42, stratify_by=stratify_by).fit_predict(feat, anc)
     feat["participation_propensity"] = prop["predictions"].values
     return raw, feat, seg, prop, anc
 

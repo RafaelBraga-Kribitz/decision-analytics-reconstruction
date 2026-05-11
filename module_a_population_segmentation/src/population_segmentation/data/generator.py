@@ -141,6 +141,9 @@ def generate_population(
     n = int(config["sample_size"])
 
     dept_weights_raw: dict[str, float] = config["department_weights"]
+    assert abs(sum(dept_weights_raw.values()) - 1.0) < 0.001, (
+        f"department_weights must sum to 1.0, got {sum(dept_weights_raw.values()):.4f}"
+    )
     dept_names = list(dept_weights_raw.keys())
     dept_probs = np.array([dept_weights_raw[d] for d in dept_names], dtype=float)
     dept_probs /= dept_probs.sum()
@@ -436,6 +439,10 @@ def _assign_language(
 if __name__ == "__main__":
     import argparse
 
+    from dotenv import load_dotenv
+
+    load_dotenv()
+
     parser = argparse.ArgumentParser(
         description="Generate synthetic population. Outputs population_raw.parquet."
     )
@@ -457,9 +464,17 @@ if __name__ == "__main__":
         default=None,
         help="Random seed (overrides RANDOM_SEED env var)",
     )
+    parser.add_argument(
+        "--sample-size",
+        type=int,
+        default=None,
+        help="Override generation.yaml sample_size (entity count)",
+    )
     args = parser.parse_args()
 
     cfg = _load_config(args.config)
+    if args.sample_size is not None:
+        cfg["sample_size"] = int(args.sample_size)
     out = args.output or Path("data/raw/population_raw.parquet")
     out.parent.mkdir(parents=True, exist_ok=True)
 
