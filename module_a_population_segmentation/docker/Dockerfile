@@ -13,7 +13,7 @@ COPY schema_contracts /app/schema_contracts
 COPY reports /app/reports
 COPY appendix /app/appendix
 
-RUN poetry config virtualenvs.create false && poetry install --no-root --only main
+RUN poetry config virtualenvs.create false && poetry install --only main
 
 EXPOSE 8501
 
