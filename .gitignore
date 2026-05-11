@@ -90,13 +90,7 @@ docs/ai_harness/*
 !docs/ai_harness/README.md
 
 # ─── Local graph context artifacts ───────────────────────────────────────────
-# Ship canonical graph outputs; ignore cache and transient lock files (regenerate with `make graphify`)
-graphify-out/*
-!graphify-out/GRAPH_REPORT.md
-!graphify-out/graph.html
-!graphify-out/graph.json
-!graphify-out/manifest.json
-!graphify-out/.graphify_root
+graphify-out/
 
 # ─── Local agent/memory stores ───────────────────────────────────────────────
 ruvector.db

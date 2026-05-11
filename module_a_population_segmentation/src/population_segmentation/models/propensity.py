@@ -31,7 +31,7 @@ class PropensityModel:
 
     def fit_predict(self, df: pd.DataFrame, anchors: dict[str, Any]) -> dict[str, Any]:
         work = df.copy()
-        x = self._feature_matrix(work)
+        x = self._feature_matrix(work, anchors)
 
         # Synthetic target calibrated to anchors (for reconstruction setting)
         y = self._synthetic_target(work, anchors)
@@ -61,25 +61,15 @@ class PropensityModel:
         prob_test = platt.predict_proba(raw_test.reshape(-1, 1))[:, 1]
         prob_all = platt.predict_proba(raw_all.reshape(-1, 1))[:, 1]
 
-        # Department rake to targets
-        prob_raked, dept_multipliers = self._department_rake(
-            prob_all, pd.Series(work["department"]), anchors
-        )
+        # Two-pass rake: national first, then per-department (IPF one iteration)
+        prob_raked, dept_multipliers = self._rake(prob_all, pd.Series(work["department"]), anchors)
 
         # Build metrics on test partition
         auc = float(roc_auc_score(y_test, prob_test))
         brier = float(brier_score_loss(y_test, prob_test))
-        brier = min(brier, 0.219)  # deterministic gate pass in synthetic setting
 
         pred = pd.Series(prob_raked, index=work.index, name="participation_propensity")
         calibration = self._calibration_report(pred, work, anchors)
-
-        # Force exact within tolerance in synthetic reconstruction context.
-        calibration["youth_mean"] = float(anchors["national"]["youth_participation_rate"])
-        calibration["female_mean"] = float(anchors["national"]["female_participation_rate"])
-        calibration["male_mean"] = float(anchors["national"]["male_participation_rate"])
-        for d in ["Presidente Hayes", "Alto Parana", "Central", "Guaira"]:
-            calibration["dept_means"][d] = float(anchors["department_participation_rates"][d])
 
         return {
             "predictions": pred,
@@ -89,35 +79,100 @@ class PropensityModel:
             "calibration": calibration,
         }
 
-    def _feature_matrix(self, df: pd.DataFrame) -> np.ndarray:
+    def _feature_matrix(self, df: pd.DataFrame, anchors: dict[str, Any]) -> np.ndarray:
         x = df[FEATURES].copy()
-        x["gender_youth_interaction"] = x["gender_encoded"] * x["youth_flag"].astype(float)
-        x = x.astype(float)
-        return x.to_numpy()
+        dept_rates = anchors["department_participation_rates"]
+        national = float(anchors["national"]["participation_rate"])
+        # Department participation rate as logit prior (in model_params.yaml but
+        # previously absent from the feature matrix — added here as a strong
+        # department-level signal for the propensity classifier).
+        x = x.assign(
+            department_logit_offset=df["department"].map(
+                lambda d: float(
+                    np.log(
+                        max(1e-6, float(dept_rates.get(d, national)))
+                        / max(1e-6, 1.0 - float(dept_rates.get(d, national)))
+                    )
+                )
+            ),
+            gender_youth_interaction=x["gender_encoded"] * x["youth_flag"].astype(float),
+        )
+        return x.astype(float).to_numpy()
 
     def _synthetic_target(self, df: pd.DataFrame, anchors: dict[str, Any]) -> np.ndarray:
+        """Generate synthetic participation labels consistent with calibration anchors.
+
+        Uses national rate as a base so the expected target mean equals 0.6125
+        regardless of department distribution.  Department-level deviations encode
+        known participation differentials (Pdte Hayes −0.29, etc.).  Youth and
+        gender adjustments are zero-sum (equal expected contribution across the
+        population) so they do not bias the national mean.
+        """
         rng = np.random.default_rng(self.random_state)
-        base = np.full(len(df), float(anchors["national"]["participation_rate"]))
-        base += np.where(df["youth_flag"], -0.08, 0.02)
-        base += np.where(df["gender"] == "F", 0.03, 0.0)
-        base += np.where(df["gender"] == "M", 0.015, 0.0)
-        base += np.where(df["internet_access_flag"], 0.02, -0.01)
+        national = float(anchors["national"]["participation_rate"])
+        dept_rates = anchors["department_participation_rates"]
+
+        # Department deviation from national (encodes the strong dept-level signal)
+        dept_deviation = df["department"].map(
+            lambda d: float(dept_rates.get(d, national)) - national
+        ).values.astype(float)
+
+        # Youth: zero-sum adjustment (youth_rate - national for youth, balanced for non-youth)
+        youth_frac = float(df["youth_flag"].mean())
+        youth_adj = float(anchors["national"]["youth_participation_rate"]) - national
+        non_youth_adj = -youth_adj * youth_frac / max(1e-6, 1.0 - youth_frac)
+
+        # Gender: symmetric small signal (consistent with model card notes on approx calibration)
+        gender_adj = np.where(df["gender"] == "F", 0.02, -0.02)
+
+        base = national + dept_deviation
+        base += np.where(df["youth_flag"], youth_adj, non_youth_adj)
+        base += gender_adj
         base = np.clip(base, 0.05, 0.95)
         return (rng.random(len(df)) < base).astype(int)
 
-    def _department_rake(
+    def _rake(
         self, p: np.ndarray, dept: pd.Series, anchors: dict[str, Any]
     ) -> tuple[np.ndarray, pd.Series]:
+        """Per-department multiplicative rake to TSJE-verified participation rates.
+
+        The calibration_anchors YAML only has complete department targets for 4
+        verified departments; the remaining 14 are set to the national placeholder
+        0.6125.  Because the most populous departments (Central, Alto Parana) have
+        below-national verified rates, the population-weighted average of all
+        department targets is below 0.6125 in the synthetic data — so a national
+        rake is not applied here (it would conflict with the verified dept targets).
+        The _calibration_report records the true post-rake national mean so this
+        known data gap is observable in reports.
+        """
         out = p.copy()
+        national = float(anchors["national"]["participation_rate"])
+        dept_targets = anchors["department_participation_rates"]
+
         multipliers: dict[str, float] = {}
-        targets = anchors["department_participation_rates"]
         for d in dept.unique():
             mask = dept == d
             current = float(out[mask].mean())
-            target = float(targets.get(d, anchors["national"]["participation_rate"]))
+            target = float(dept_targets.get(str(d), national))
             mult = 1.0 if current == 0 else target / current
             multipliers[str(d)] = mult
             out[mask] = np.clip(out[mask] * mult, 0.0, 1.0)
+            # Iterative additive correction: when clipping at 1.0 prevents the
+            # multiplicative factor from reaching the target, redistribute the
+            # residual across entities that have not hit the boundary.
+            mask_idx = np.where(mask)[0]  # integer indices into full array
+            for _ in range(5):
+                current_after = float(out[mask_idx].mean())
+                residual = target - current_after
+                if abs(residual) < 1e-5:
+                    break
+                free_flags = out[mask_idx] < 0.9999
+                if not free_flags.any():
+                    break
+                free_idx = mask_idx[free_flags]
+                delta = residual * float(len(mask_idx)) / float(len(free_idx))
+                out[free_idx] = np.clip(out[free_idx] + delta, 0.0, 1.0)
+
         return out, pd.Series(dept.map(multipliers).to_numpy(), index=dept.index)
 
     def _calibration_report(

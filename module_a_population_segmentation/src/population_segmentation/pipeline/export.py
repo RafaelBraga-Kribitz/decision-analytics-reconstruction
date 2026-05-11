@@ -132,7 +132,75 @@ def run_export(
     artifacts["media_reachability_by_segment"] = path_reach
     print(f"[export] Written {path_reach}", flush=True)
 
+    # Contract validation at export exit: enforce schema invariants before returning.
+    print("[export] Validating output contracts ...", flush=True)
+    _validate_export_contracts(merged_feat, prop_df, labels_df, anchors)
+    print("[export] Contract validation passed.", flush=True)
+
     return artifacts
+
+
+def _validate_export_contracts(
+    master: pd.DataFrame,
+    prop: pd.DataFrame,
+    labels: pd.DataFrame,
+    anchors: dict[str, Any],
+) -> None:
+    """Raise ValueError if any hard contract constraint is violated.
+
+    Checks run on the in-memory DataFrames before callers read parquet files,
+    giving immediate feedback and a clear error message.
+    """
+    errors: list[str] = []
+
+    # entity_id must be unique in all three artifacts
+    if master["entity_id"].duplicated().any():
+        n_dup = int(master["entity_id"].duplicated().sum())
+        errors.append(f"population_master_clean: {n_dup} duplicate entity_id rows")
+    if prop["entity_id"].duplicated().any():
+        n_dup = int(prop["entity_id"].duplicated().sum())
+        errors.append(f"participation_propensity: {n_dup} duplicate entity_id rows")
+    if labels["entity_id"].duplicated().any():
+        n_dup = int(labels["entity_id"].duplicated().sum())
+        errors.append(f"segment_labels: {n_dup} duplicate entity_id rows")
+
+    # Row counts must agree across all three artifacts
+    if len(master) != len(prop):
+        errors.append(f"Row count mismatch: master={len(master)}, prop={len(prop)}")
+    if len(master) != len(labels):
+        errors.append(f"Row count mismatch: master={len(master)}, labels={len(labels)}")
+
+    # Propensity scores must lie in [0, 1]
+    if prop["participation_propensity"].isna().any():
+        errors.append("participation_propensity contains NaN values")
+    elif not prop["participation_propensity"].between(0.0, 1.0).all():
+        out_of_range = int((~prop["participation_propensity"].between(0.0, 1.0)).sum())
+        errors.append(f"participation_propensity: {out_of_range} values outside [0, 1]")
+
+    # Department-level calibration gate (verified TSJE anchors; ± 0.5 pp)
+    dept_targets = anchors["department_participation_rates"]
+    for dept in ["Presidente Hayes", "Alto Parana", "Central", "Guaira"]:
+        mask = master["department"] == dept
+        if mask.any():
+            actual = float(prop.loc[mask.values, "participation_propensity"].mean())
+            target = float(dept_targets[dept])
+            if abs(actual - target) > 0.005:
+                errors.append(
+                    f"Department calibration gate failed: {dept} "
+                    f"actual={actual:.4f} target={target:.4f} diff={actual - target:+.4f}"
+                )
+
+    # Segment labels must be from the canonical set
+    from population_segmentation.models.segmentation import SEGMENT_LABEL_MAP
+
+    valid_labels = set(SEGMENT_LABEL_MAP.values())
+    bad = set(labels["segment_label"].unique()) - valid_labels
+    if bad:
+        errors.append(f"segment_labels contains non-canonical labels: {bad}")
+
+    if errors:
+        msg = "\n".join(f"  • {e}" for e in errors)
+        raise ValueError(f"[export] Contract validation FAILED:\n{msg}")
 
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:

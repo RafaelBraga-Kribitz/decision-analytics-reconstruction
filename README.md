@@ -34,13 +34,13 @@ against a field of 4.26 million participating entities.
   Select k=6 clusters and examine the segment profile table.
    Observe the calibration curve for the propensity model.
    This shows the segmentation and behavioral modeling layer.
-2. **Read the model cards:** [`module_a_population_segmentation/reports/model_card_propensity.md`](module_a_population_segmentation/reports/model_card_propensity.md) and [`module_a_population_segmentation/reports/model_card_segmentation.md`](module_a_population_segmentation/reports/model_card_segmentation.md)
-  The problem, the data constraints, the methodology, the output, and what a practitioner does with it. See also [`ARCHITECTURE.md`](ARCHITECTURE.md) for end-to-end system diagrams.
-3. **Open this notebook:** `[module_a_population_segmentation/notebooks/03_segmentation_analysis.ipynb](module_a_population_segmentation/notebooks/03_segmentation_analysis.ipynb)`
+2. **Read the model cards:** `[module_a_population_segmentation/reports/model_card_propensity.md](module_a_population_segmentation/reports/model_card_propensity.md)` and `[module_a_population_segmentation/reports/model_card_segmentation.md](module_a_population_segmentation/reports/model_card_segmentation.md)`
+  The problem, the data constraints, the methodology, the output, and what a practitioner does with it.
+3. **Open this notebook:** `module_a_population_segmentation/notebooks/03_segmentation_analysis.ipynb`
   Analysis notebook for interpretability. Production code is in `src/`; the notebook is for exploration.
 
 For technical depth: `src/` contains the full production pipeline.
-For methodology depth: `reports/case_study_technical.pdf` and all model cards.
+For methodology depth: all model cards under `module_a_population_segmentation/reports/`.
 For data provenance: `appendix/verified_calibration_anchors_full.md`.
 
 ---
@@ -79,18 +79,18 @@ For data provenance: `appendix/verified_calibration_anchors_full.md`.
                     └──────────────────────────────────────────────┘
 ```
 
-See `[ARCHITECTURE.md](ARCHITECTURE.md)` for detailed Mermaid diagrams, mathematical descriptions, and data lineage.
+See `schema_contracts/` for the authoritative cross-module data contracts, and `reports/` for methodology notes.
 
 ---
 
 ## Modules
 
 
-| Module                           | Status                 | Artifact                                                                | Description                                      |
-| -------------------------------- | ---------------------- | ----------------------------------------------------------------------- | ------------------------------------------------ |
-| **A: Population Modeling**       | ✅ Fully implemented    | [Streamlit dashboard](https://decision-analytics-module-a.onrender.com) | Synthetic population + segmentation + propensity |
-| **B: Resource Allocation**       | 📋 Planned — not yet in repo | FastAPI (Swagger UI)                                               | LP optimizer + FX routing + counterfactuals      |
-| **C: Probabilistic Forecasting** | 🔬 Research prototype  | Quarto report (GitHub Pages)                                            | Bayesian aggregator + scenario engine            |
+| Module                           | Status                              | Artifact                                                                | Description                                      |
+| -------------------------------- | ----------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------ |
+| **A: Population Modeling**       | ✅ Complete (79 tests, 92% coverage) | [Streamlit dashboard](https://decision-analytics-module-a.onrender.com) | Synthetic population + segmentation + propensity |
+| **B: Resource Allocation**       | 📋 Planned — not yet in repo        | FastAPI (Swagger UI)                                                    | LP optimizer + FX routing + counterfactuals      |
+| **C: Probabilistic Forecasting** | 📋 Planned — not yet in repo        | Quarto report                                                           | Bayesian aggregator + scenario engine            |
 
 
 ---
@@ -106,7 +106,7 @@ make test          # run Module A tests
 make dashboard     # launch Streamlit dashboard
 ```
 
-**Requirements:** Python 3.11, Poetry. Docker optional (see [`docker-compose.yml`](docker-compose.yml)). On legacy Mac workstations (Mac Pro with unreliable Metal stacks), prefer **Colima + `docker compose`** instead of Docker Desktop.
+**Requirements:** Python 3.11, Poetry. Docker optional (see `[docker-compose.yml](docker-compose.yml)`). On legacy Mac workstations (Mac Pro with unreliable Metal stacks), prefer **Colima + `docker compose`** instead of Docker Desktop.
 
 ---
 
@@ -114,15 +114,19 @@ make dashboard     # launch Streamlit dashboard
 
 ```
 ├── README.md                    ← this file
-├── ARCHITECTURE.md              ← technical reviewer entry point
-├── IMPLEMENTATION_PLAN.md       ← engineering reviewer entry point
-├── pyproject.toml               ← Poetry dependencies
+├── pyproject.toml               ← Poetry dependencies + tool config (Ruff, Black, Pyright, Pytest)
 ├── schema_contracts/            ← cross-module data contracts (authoritative)
-├── reports/                     ← decision log, transformation log, data dictionary
-├── appendix/                    ← calibration anchor registry (70+ verified anchors)
-├── module_a_population_segmentation/
-├── module_b_resource_allocation/
-└── module_c_forecasting_scenarios/
+├── reports/                     ← decision log, data dictionary
+├── appendix/                    ← calibration anchor registry (TSJE/DGEEC verified anchors)
+├── docs/                        ← project documentation
+├── module_a_population_segmentation/  ← production implementation (fully tested)
+│   ├── config/                  ← generation.yaml, calibration_anchors.yaml, model_params.yaml
+│   ├── src/population_segmentation/   ← production code
+│   ├── tests/                   ← 79 tests, 92% coverage
+│   ├── app/                     ← Streamlit dashboard
+│   └── reports/                 ← model cards, QA reports
+├── module_b_resource_allocation/  ← planned (not yet in repo)
+└── module_c_forecasting_scenarios/ ← planned (not yet in repo)
 ```
 
 ---

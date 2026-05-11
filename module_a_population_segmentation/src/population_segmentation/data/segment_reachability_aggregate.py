@@ -5,8 +5,9 @@ Produces one row per segment matching schema_contracts/media_reachability_by_seg
 
 from __future__ import annotations
 
-import pandas as pd
 from typing import cast
+
+import pandas as pd
 
 
 def _primary_reach_channel(row: pd.Series) -> str:  # type: ignore[type-arg]

@@ -82,8 +82,13 @@ def clean_population(
     df["department"] = dept.replace(_DEPT_NORMALIZE)
     df.loc[~df["department"].isin(list(CANONICAL_DEPARTMENTS)), "department"] = "Central"
 
-    # Step 5: deduplication by entity_id + cedula
+    # Step 5: deduplication — two passes to enforce entity_id uniqueness.
+    # Pass 5a: drop rows with identical (entity_id, cedula) — handles clean re-registrations.
+    # Pass 5b: drop remaining duplicate entity_ids (different cedula means one row is a flaw
+    # injected by raw_injector; keep the first occurrence, which is the original record).
+    # This guarantees the schema contract entity_id: unique: true.
     df = df.sort_values("entity_id").drop_duplicates(subset=["entity_id", "cedula"], keep="first")
+    df = df.drop_duplicates(subset=["entity_id"], keep="first")
 
     # Step 6: date parsing and age derivation
     dob_series = _normalize_dob(pd.Series(df["dob"].astype(str)))
