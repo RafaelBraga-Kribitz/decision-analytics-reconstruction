@@ -40,7 +40,7 @@ decision-analytics-reconstruction/
 │   │   └── utils/
 │   │       ├── schema.py                Final-typed column name constants (never bare strings)
 │   │       └── seeds.py                 RANDOM_SEED env var, default 20180422
-│   ├── tests/                           140+ tests, TDD-compliant, CI-gated at 80% coverage
+│   ├── tests/                           140 tests, TDD-compliant, CI-gated at 80% coverage
 │   ├── app/                             Streamlit dashboard (deployed on Render)
 │   └── reports/                         model cards, QA report, transformation log
 │

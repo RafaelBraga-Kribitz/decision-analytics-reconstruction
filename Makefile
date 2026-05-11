@@ -90,7 +90,7 @@ dashboard:
 	poetry run streamlit run module_a_population_segmentation/app/streamlit_dashboard.py
 
 graphify:
-	poetry run graphify update .
+	poetry run python -m graphify update .
 
 module-a-export:
 	poetry run python -m population_segmentation.pipeline.export \
