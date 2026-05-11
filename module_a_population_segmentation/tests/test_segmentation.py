@@ -67,3 +67,38 @@ def test_segment_size_coverage(feature_df: pd.DataFrame) -> None:
     out = seg.fit_predict(feature_df)
     min_share = out["segment_share"].min()
     assert min_share >= 0.01
+
+
+def test_build_segmentation_frame_columns(feature_df: pd.DataFrame) -> None:
+    from population_segmentation.models.segmentation import (
+        SEGMENT_LABEL_MAP,
+        build_segmentation_frame,
+    )
+
+    labels_df, metrics = build_segmentation_frame(feature_df)
+    for col in ["entity_id", "segment_id", "segment_label", "dbscan_noise_flag"]:
+        assert col in labels_df.columns, f"Missing column: {col}"
+    assert set(labels_df["segment_label"]) <= set(SEGMENT_LABEL_MAP.values())
+    assert labels_df["dbscan_noise_flag"].dtype == bool
+
+
+def test_build_segmentation_frame_noise_rate(feature_df: pd.DataFrame) -> None:
+    from population_segmentation.models.segmentation import build_segmentation_frame
+
+    labels_df, metrics = build_segmentation_frame(feature_df)
+    assert metrics["noise_rate"] < 0.01
+
+
+def test_build_segmentation_frame_metrics_keys(feature_df: pd.DataFrame) -> None:
+    from population_segmentation.models.segmentation import build_segmentation_frame
+
+    _, metrics = build_segmentation_frame(feature_df)
+    for key in ["silhouette", "bootstrap_ari", "noise_rate", "segment_share"]:
+        assert key in metrics, f"Missing metric key: {key}"
+
+
+def test_build_segmentation_frame_row_count(feature_df: pd.DataFrame) -> None:
+    from population_segmentation.models.segmentation import build_segmentation_frame
+
+    labels_df, _ = build_segmentation_frame(feature_df)
+    assert len(labels_df) == len(feature_df)

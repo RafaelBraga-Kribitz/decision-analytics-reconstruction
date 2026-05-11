@@ -28,17 +28,17 @@ def build_demographic_features(df: pd.DataFrame) -> pd.DataFrame:
         "50_64": 3,
         "65_plus": 4,
     }
-    out["age_bin_encoded"] = out["age_bin"].replace(age_order).astype(int)
+    out["age_bin_encoded"] = out["age_bin"].map(lambda x: age_order.get(x, 0)).astype(int)
 
     gender_map = {"M": 1.0, "F": 0.0, "unknown": 0.5}
-    out["gender_encoded"] = out["gender"].replace(gender_map).fillna(0.5).astype(float)
+    out["gender_encoded"] = out["gender"].map(lambda x: gender_map.get(x, 0.5)).astype(float)
 
     out["youth_flag"] = out["age_on_event_date"].between(18, 24)
     out["senior_flag"] = out["age_on_event_date"] >= 65
 
     chaco = {"Presidente Hayes", "Boqueron", "Alto Paraguay"}
     out["chaco_flag"] = out["department"].isin(list(chaco))
-    out["department_region"] = out["chaco_flag"].replace({True: "CHACO", False: "ORIENTAL"})
+    out["department_region"] = out["chaco_flag"].map(lambda x: "CHACO" if x else "ORIENTAL")
 
     metro = {"Central", "Asuncion"}
     out["metro_flag"] = out["department"].isin(list(metro))

@@ -5,7 +5,6 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
-import pandas as pd
 import streamlit as st
 import yaml
 from population_segmentation.data.cleaner import clean_population
@@ -15,7 +14,7 @@ from population_segmentation.features.behavioral import build_behavioral_feature
 from population_segmentation.features.demographic import build_demographic_features
 from population_segmentation.features.reachability import build_reachability_features
 from population_segmentation.models.propensity import PropensityModel
-from population_segmentation.models.segmentation import KMeansSegmenter
+from population_segmentation.models.segmentation import build_segmentation_frame
 from population_segmentation.visualization.calibration_curves import (
     reliability_chart,
     reliability_frame,
@@ -51,22 +50,10 @@ def _build_sample(sample_size: int = 15000):
         / "reports",
     )
     feat = build_reachability_features(build_behavioral_features(build_demographic_features(clean)))
-    seg = KMeansSegmenter(k=6, random_state=42).fit_predict(feat)
+    labels_df, seg = build_segmentation_frame(feat, k=6, random_state=42)
     feat = feat.copy()
-    feat["segment_label"] = (
-        pd.Series(seg["labels"])
-        .map(
-            {
-                0: "rural_committed",
-                1: "urban_high_volatility",
-                2: "youth_volatile",
-                3: "structurally_dependent_bloc",
-                4: "rural_low_propensity",
-                5: "committed_opposition",
-            }
-        )
-        .fillna("urban_high_volatility")
-    )
+    feat = feat.reset_index(drop=True)
+    feat["segment_label"] = labels_df["segment_label"].to_numpy()
     prop = PropensityModel(random_state=42).fit_predict(feat, anc)
     feat["participation_propensity"] = prop["predictions"].values
     return raw, feat, seg, prop, anc

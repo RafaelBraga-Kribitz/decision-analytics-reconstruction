@@ -30,12 +30,12 @@ against a field of 4.26 million participating entities.
 
 ## How to evaluate this project in 10 minutes
 
-1. **Open the Module A dashboard:** [LINK — post-deploy]
+1. **Open the Module A dashboard:** [https://decision-analytics-module-a.onrender.com](https://decision-analytics-module-a.onrender.com)
   Select k=6 clusters and examine the segment profile table.
    Observe the calibration curve for the propensity model.
    This shows the segmentation and behavioral modeling layer.
-2. **Read the one-page case study:** `[reports/case_study_business.pdf](reports/case_study_business.pdf)`
-  The problem, the data constraints, the methodology in one diagram, the output, and what a practitioner does with it.
+2. **Read the model cards:** [`module_a_population_segmentation/reports/model_card_propensity.md`](module_a_population_segmentation/reports/model_card_propensity.md) and [`module_a_population_segmentation/reports/model_card_segmentation.md`](module_a_population_segmentation/reports/model_card_segmentation.md)
+  The problem, the data constraints, the methodology, the output, and what a practitioner does with it. See also [`ARCHITECTURE.md`](ARCHITECTURE.md) for end-to-end system diagrams.
 3. **Open this notebook:** `[module_a_population_segmentation/notebooks/03_segmentation_analysis.ipynb](module_a_population_segmentation/notebooks/03_segmentation_analysis.ipynb)`
   Analysis notebook for interpretability. Production code is in `src/`; the notebook is for exploration.
 
@@ -89,7 +89,7 @@ See `[ARCHITECTURE.md](ARCHITECTURE.md)` for detailed Mermaid diagrams, mathemat
 | Module                           | Status                 | Artifact                                                                | Description                                      |
 | -------------------------------- | ---------------------- | ----------------------------------------------------------------------- | ------------------------------------------------ |
 | **A: Population Modeling**       | ✅ Fully implemented    | [Streamlit dashboard](https://decision-analytics-module-a.onrender.com) | Synthetic population + segmentation + propensity |
-| **B: Resource Allocation**       | 🔧 LP core implemented | FastAPI (Swagger UI)                                                    | LP optimizer + FX routing + counterfactuals      |
+| **B: Resource Allocation**       | 📋 Planned — not yet in repo | FastAPI (Swagger UI)                                               | LP optimizer + FX routing + counterfactuals      |
 | **C: Probabilistic Forecasting** | 🔬 Research prototype  | Quarto report (GitHub Pages)                                            | Bayesian aggregator + scenario engine            |
 
 

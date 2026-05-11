@@ -1,18 +1,19 @@
-.PHONY: install lint format typecheck test coverage all clean
+.PHONY: install lint format typecheck test coverage all clean module-a-export
 
 PYTHON := python3.11
 MODULE_A_SRC := module_a_population_segmentation/src
 MODULE_A_TESTS := module_a_population_segmentation/tests
+MODULE_A_APP := module_a_population_segmentation/app
 
 install:
 	poetry install
 
 format:
-	black $(MODULE_A_SRC) $(MODULE_A_TESTS)
+	black $(MODULE_A_SRC) $(MODULE_A_TESTS) $(MODULE_A_APP)
 
 lint:
-	ruff check $(MODULE_A_SRC) $(MODULE_A_TESTS)
-	black --check $(MODULE_A_SRC) $(MODULE_A_TESTS)
+	ruff check $(MODULE_A_SRC) $(MODULE_A_TESTS) $(MODULE_A_APP)
+	black --check $(MODULE_A_SRC) $(MODULE_A_TESTS) $(MODULE_A_APP)
 
 typecheck:
 	pyright $(MODULE_A_SRC)
@@ -46,3 +47,10 @@ pipeline-dev:
 
 dashboard:
 	streamlit run module_a_population_segmentation/app/streamlit_dashboard.py
+
+module-a-export:
+	poetry run python -m population_segmentation.pipeline.export \
+		--config module_a_population_segmentation/config/generation.yaml \
+		--anchors module_a_population_segmentation/config/calibration_anchors.yaml \
+		--out-dir data/processed \
+		--sample-size $(or $(SAMPLE),50000)

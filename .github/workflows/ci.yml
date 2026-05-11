@@ -27,10 +27,10 @@ jobs:
         run: poetry install --no-root
 
       - name: Black format check
-        run: poetry run black --check module_a_population_segmentation/src module_a_population_segmentation/tests
+        run: poetry run black --check module_a_population_segmentation/src module_a_population_segmentation/tests module_a_population_segmentation/app
 
       - name: Ruff lint
-        run: poetry run ruff check module_a_population_segmentation/src module_a_population_segmentation/tests
+        run: poetry run ruff check module_a_population_segmentation/src module_a_population_segmentation/tests module_a_population_segmentation/app
 
       - name: Pyright type check
         run: poetry run pyright module_a_population_segmentation/src
@@ -49,3 +49,17 @@ jobs:
         with:
           files: coverage.xml
           flags: module_a
+
+  docker-smoke:
+    name: Module A — Docker image smoke
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Build Module A image
+        run: docker compose build module_a
+      - name: Import smoke
+        run: docker compose run --rm module_a python -c "import population_segmentation; print('ok')"
+      - name: Up no-start
+        run: docker compose up --build --no-start module_a
