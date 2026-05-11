@@ -53,10 +53,39 @@ def _build_sample(sample_size: int = 15000):
     labels_df, seg = build_segmentation_frame(feat, k=6, random_state=42)
     feat = feat.copy()
     feat = feat.reset_index(drop=True)
+    # Mirror the export pipeline: attach all segment columns so dashboard output
+    # columns match what downstream consumers (Module B/C) receive from run_export().
     feat["segment_label"] = labels_df["segment_label"].to_numpy()
+    feat["segment_id"] = labels_df["segment_id"].to_numpy()
+    feat["dbscan_noise_flag"] = labels_df["dbscan_noise_flag"].to_numpy()
     prop = PropensityModel(random_state=42).fit_predict(feat, anc)
     feat["participation_propensity"] = prop["predictions"].values
     return raw, feat, seg, prop, anc
+
+
+def _make_national_reference_labels(n: int, national_rate: float, seed: int = 42) -> np.ndarray:
+    """Generate Bernoulli labels at the national participation rate.
+
+    This is a *national-rate reference* used only for the reliability
+    diagnostic chart.  It is NOT the model's training target (which
+    incorporates department, youth, and gender deviations).  The chart
+    therefore shows how well the model's raked propensity scores track a
+    simple national-rate baseline, not the learned synthetic labels.
+
+    Parameters
+    ----------
+    n:
+        Number of labels to generate.
+    national_rate:
+        Target Bernoulli success probability (national participation rate).
+    seed:
+        RNG seed for reproducibility.
+
+    Returns
+    -------
+    np.ndarray of int (0/1), shape (n,).
+    """
+    return (np.random.default_rng(seed).random(n) < national_rate).astype(int)
 
 
 def main() -> None:
@@ -81,13 +110,21 @@ def main() -> None:
         st.plotly_chart(segment_size_chart(prof), use_container_width=True)
 
     with tab2:
-        st.subheader("Propensity Calibration")
-        rng = np.random.default_rng(42)
-        y_true = (rng.random(len(feat)) < anc["national"]["participation_rate"]).astype(int)
+        st.subheader("Propensity — National-Rate Reference Diagnostic")
+        st.caption(
+            "**Note:** the reliability chart below compares raked propensity scores against "
+            "Bernoulli labels drawn at the *national* participation rate.  This is a "
+            "national-rate reference baseline, not the model's training target (which "
+            "incorporates department, youth, and gender deviations).  It indicates "
+            "aggregate-level alignment, not held-out predictive calibration."
+        )
+        y_true = _make_national_reference_labels(
+            len(feat), float(anc["national"]["participation_rate"]), seed=42
+        )
         y_prob = feat["participation_propensity"].to_numpy()
         rel = reliability_frame(y_true, y_prob)
         st.plotly_chart(reliability_chart(rel), use_container_width=True)
-        st.write("Calibration summary")
+        st.write("Calibration summary (post-rake department means vs TSJE anchors)")
         st.json(prop["calibration"])
 
     with tab3:

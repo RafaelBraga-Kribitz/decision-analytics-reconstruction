@@ -95,9 +95,9 @@ def test_propensity_range_contract(export_artifacts: dict[str, Path]) -> None:
     """Contract: participation_propensity must lie in [0, 1] with no nulls."""
     df = pd.read_parquet(export_artifacts["participation_propensity"])
     assert not df["participation_propensity"].isna().any(), "propensity contains NaN"
-    assert df["participation_propensity"].between(0.0, 1.0).all(), (
-        "propensity values outside [0, 1]"
-    )
+    assert (
+        df["participation_propensity"].between(0.0, 1.0).all()
+    ), "propensity values outside [0, 1]"
 
 
 def test_department_calibration_gates(
@@ -133,9 +133,9 @@ def test_department_calibration_gates(
 def test_dbscan_noise_flag_is_bool(export_artifacts: dict[str, Path]) -> None:
     """DBSCAN noise flag must be boolean (not an integer or object dtype)."""
     df = pd.read_parquet(export_artifacts["segment_labels"])
-    assert df["dbscan_noise_flag"].dtype == bool, (
-        f"dbscan_noise_flag dtype is {df['dbscan_noise_flag'].dtype}, expected bool"
-    )
+    assert (
+        df["dbscan_noise_flag"].dtype == bool
+    ), f"dbscan_noise_flag dtype is {df['dbscan_noise_flag'].dtype}, expected bool"
 
 
 def test_all_four_artifacts_exist(export_artifacts: dict[str, Path]) -> None:

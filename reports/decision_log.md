@@ -108,6 +108,52 @@ Records every non-trivial architectural choice: decision, alternatives considere
 
 ---
 
+## 2026-05-11 — Module A audit refactor (session 2)
+
+### Segmentation: compute _matrix once per build_segmentation_frame call
+
+**Decision:** Refactor `DBSCANNoiseFilter.fit_transform` and `KMeansSegmenter.fit_predict` to accept an optional keyword argument `x: np.ndarray | None = None`. `build_segmentation_frame` now computes `_matrix(df)` once and passes the result to both. The inline DBSCAN in `build_segmentation_frame` was also replaced with `DBSCANNoiseFilter()` so DBSCAN parameters live in a single place.
+
+**Reason:** The original code computed `StandardScaler().fit_transform` + `PCA(5).fit_transform` twice on identical data — once for DBSCAN and once inside `KMeansSegmenter.fit_predict`. With N=15 k rows this is ~1 s of redundant fitting per export call; at N=50 k or production scale (4.26 M) it is material. The DRY/SOLID violation was also a maintenance risk: separate fits produce slightly different PCA projections when sklearn BLAS non-determinism is present.
+
+**Impact:** Purely internal; public API (`build_segmentation_frame`, `DBSCANNoiseFilter`, `KMeansSegmenter`) is backward-compatible. `DBSCANNoiseFilter.fit_transform` now also returns `noise_flags` (per-row bool array) in addition to `noise_rate`.
+
+**Tests added:** `test_matrix_computed_once_in_build_segmentation_frame`, `test_dbscan_noise_filter_returns_noise_flags`, `test_dbscan_noise_filter_accepts_precomputed_matrix`.
+
+### Contract validation: media_reachability_by_segment added to runtime gate
+
+**Decision:** Extend `_validate_export_contracts` (export.py) to also validate the `media_reachability_by_segment` DataFrame: row count == k=6, unique segment labels, canonical segment label values, `primary_reach_channel` in `{tv, radio, whatsapp, direct}`, proportion columns in [0, 1], `segment_size > 0`.
+
+**Reason:** The fourth artifact was written by `run_export` but never validated at the contract gate, meaning a silent bug in `aggregate_media_reachability_by_segment` would produce a non-conformant CSV that downstream Module B would reject. Contract enforcement surface now matches the documented four-artifact schema.
+
+**Tests added:** 12 tests in `test_contract_violations.py` covering all entity-level and media-aggregate violation scenarios.
+
+### Schema contract: segment_id.max corrected to 5
+
+**Decision:** Changed `segment_labels.yaml` `segment_id.max` from `7` to `5`.
+
+**Reason:** The code uses k=6 with a 0-based label map (indices 0–5). The previous value of 7 allowed a 2-unit margin above the actual maximum, which would mask out-of-range bugs. `required_k: 6` was already consistent; the max field was not.
+
+### Dashboard: segment_id and dbscan_noise_flag attached to feat frame
+
+**Decision:** `_build_sample` in `streamlit_dashboard.py` now attaches `segment_id` and `dbscan_noise_flag` to the `feat` DataFrame alongside `segment_label`, mirroring the export pipeline merge.
+
+**Reason:** The dashboard previously dropped two columns that the export pipeline attaches. Any code inspecting `_build_sample` output as a proxy for export-like data would see a different column set, creating a potential divergence point for downstream reasoning.
+
+### Dashboard reliability chart: relabelled as national-rate reference diagnostic
+
+**Decision:** Extracted `_make_national_reference_labels(n, national_rate, seed)` as a named, testable helper. Updated Tab 2 subheader and added a `st.caption` explaining that `y_true` comes from `Bernoulli(national_rate)` — not from the model's training target — so the chart is a reference baseline, not a calibration plot.
+
+**Reason:** The original inline code generated labels from `Bernoulli(national_rate_only)` while presenting the chart under a "Propensity Calibration" heading. The model trains on labels that incorporate department, youth, and gender deviations; the national-only reference labels measure something different. Relabelling prevents a reviewer from incorrectly interpreting the chart as held-out calibration evidence.
+
+### model_params.yaml: honesty annotation added
+
+**Decision:** Updated the header comment in `model_params.yaml` to explicitly list the parameters that are declared in the YAML but not yet wired to runtime loading in `src/` (PCA, DBSCAN, KMeans defaults; CV grid; stratify_by; SHAP).
+
+**Reason:** The previous header said "No values hardcoded in src/" which was incorrect. Code-level defaults exist and match the YAML, but the YAML is not actually read by model classes. The comment now reflects the true state and records the planned resolution (config-loading adapter in export.py).
+
+---
+
 ## 2026-05-11 — Graphify resolved (Poetry dev dependency)
 
 **Decision:** Add PyPI package **`graphifyy`** (`>=0.7,<0.8`) to `[tool.poetry.group.dev.dependencies]`. It provides the `graphify` console script (`poetry run graphify update .` or `make graphify`). Earlier attempts used distribution names `graphify` and `graphify-cli`, which are not published on PyPI; the maintained package is **`graphifyy`**.

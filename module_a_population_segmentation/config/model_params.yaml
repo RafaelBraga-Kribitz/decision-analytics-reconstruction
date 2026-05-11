@@ -1,5 +1,22 @@
 # Model hyperparameters — Module A
-# All tunable parameters. No values hardcoded in src/.
+#
+# Canonical reference for all tunable parameters.  Code-level defaults in
+# src/ deliberately mirror this file so the pipeline is runnable without
+# explicit config loading by model classes.  Orchestration entry points
+# (export.py, make module-a-export) are the intended consumers of this file.
+#
+# Parameters NOT yet wired to runtime loading (code defaults match):
+#   - pca.n_components / pca.random_state  → segmentation._matrix (hardcoded)
+#   - dbscan.eps / min_samples / metric    → segmentation.DBSCANNoiseFilter (hardcoded)
+#   - kmeans.k / n_init / max_iter / random_state → segmentation.KMeansSegmenter (hardcoded)
+#   - propensity.C_grid / cv_folds         → propensity.PropensityModel (LogisticRegression
+#                                            uses default C=1.0; no CV grid search)
+#   - propensity.stratify_by               → PropensityModel.fit_predict stratifies on
+#                                            department only (age_bin, gender not used)
+#   - propensity.shap_sample_size          → SHAP analysis not yet implemented in src/
+#
+# Planned: a config-loading adapter in pipeline/export.py to read these
+# values and pass them into model constructors, eliminating the duplication.
 
 # ─── PCA preprocessing (applied before DBSCAN and KMeans) ────────────────────
 # In the raw 13-D standardized feature space the median pairwise distance is

@@ -113,9 +113,11 @@ class PropensityModel:
         dept_rates = anchors["department_participation_rates"]
 
         # Department deviation from national (encodes the strong dept-level signal)
-        dept_deviation = df["department"].map(
-            lambda d: float(dept_rates.get(d, national)) - national
-        ).values.astype(float)
+        dept_deviation = (
+            df["department"]
+            .map(lambda d: float(dept_rates.get(d, national)) - national)
+            .values.astype(float)
+        )
 
         # Youth: zero-sum adjustment (youth_rate - national for youth, balanced for non-youth)
         youth_frac = float(df["youth_flag"].mean())

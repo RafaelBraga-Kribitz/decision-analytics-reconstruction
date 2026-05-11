@@ -137,3 +137,73 @@ def test_build_segmentation_frame_row_count(feature_df: pd.DataFrame) -> None:
 
     labels_df, _ = build_segmentation_frame(feature_df)
     assert len(labels_df) == len(feature_df)
+
+
+def test_matrix_computed_once_in_build_segmentation_frame(feature_df: pd.DataFrame) -> None:
+    """DRY regression: _matrix must be called exactly once per build_segmentation_frame call.
+
+    Previously, ``build_segmentation_frame`` computed ``_matrix(df)`` once and
+    then passed the raw DataFrame to ``KMeansSegmenter.fit_predict``, which
+    recomputed ``_matrix(df)`` internally — doubling the cost of
+    ``StandardScaler`` + ``PCA`` fitting on identical data.  This test guards
+    against reintroduction of that redundant second fit.
+    """
+    from unittest.mock import patch
+
+    import population_segmentation.models.segmentation as seg_module
+
+    original = seg_module._matrix
+    call_count = 0
+
+    def counting_matrix(df: pd.DataFrame, **kwargs: object) -> object:
+        nonlocal call_count
+        call_count += 1
+        return original(df, **kwargs)
+
+    with patch.object(seg_module, "_matrix", side_effect=counting_matrix):
+        seg_module.build_segmentation_frame(feature_df)
+
+    assert call_count == 1, (
+        f"_matrix was called {call_count} time(s); expected exactly 1. "
+        "Redundant StandardScaler + PCA fitting detected."
+    )
+
+
+def test_dbscan_noise_filter_returns_noise_flags(feature_df: pd.DataFrame) -> None:
+    """DBSCANNoiseFilter.fit_transform must return per-row noise_flags array."""
+    from population_segmentation.models.segmentation import DBSCANNoiseFilter
+
+    filt = DBSCANNoiseFilter(eps=2.0, min_samples=5)
+    result = filt.fit_transform(feature_df)
+    assert "noise_flags" in result, "fit_transform must include 'noise_flags' key"
+    flags = result["noise_flags"]
+    assert hasattr(flags, "__len__"), "noise_flags must be array-like"
+    assert len(flags) == len(feature_df), "noise_flags length must equal input rows"
+
+
+def test_dbscan_noise_filter_accepts_precomputed_matrix(feature_df: pd.DataFrame) -> None:
+    """Passing a precomputed matrix must produce identical results to not passing one."""
+    from unittest.mock import patch
+
+    import population_segmentation.models.segmentation as seg_module
+
+    filt = seg_module.DBSCANNoiseFilter(eps=2.0, min_samples=5)
+
+    # Reference run without precomputed x
+    ref = filt.fit_transform(feature_df)
+
+    # Run with precomputed x; _matrix must NOT be called again
+    x = seg_module._matrix(feature_df)
+    call_count = 0
+    original = seg_module._matrix
+
+    def counter(df: pd.DataFrame, **kwargs: object) -> object:
+        nonlocal call_count
+        call_count += 1
+        return original(df, **kwargs)
+
+    with patch.object(seg_module, "_matrix", side_effect=counter):
+        result = filt.fit_transform(feature_df, x=x)
+
+    assert call_count == 0, "_matrix must not be called when x is supplied"
+    assert abs(result["noise_rate"] - ref["noise_rate"]) < 1e-9

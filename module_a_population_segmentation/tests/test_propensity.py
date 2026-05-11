@@ -69,16 +69,15 @@ def test_propensity_metrics_and_calibration_gates(feature_df: pd.DataFrame, anch
     # Alto Parana=0.375) which have the lowest participation targets, so the
     # post-rake youth_mean lands well below the TSJE anchor (0.528).  The
     # meaningful invariant is that youth propensity is BELOW national mean.
-    assert out["calibration"]["youth_mean"] < out["calibration"]["national_mean"], (
-        "youth_mean should be below national_mean (directional test)"
-    )  # A8-youth (directional structural invariant)
+    assert (
+        out["calibration"]["youth_mean"] < out["calibration"]["national_mean"]
+    ), "youth_mean should be below national_mean (directional test)"  # A8-youth directional
     assert (
         abs(out["calibration"]["female_mean"] - anchors["national"]["female_participation_rate"])
         < 0.25
     )  # A9-female (informational; TSJE gender rates are inconsistent with national rate)
     assert (
-        abs(out["calibration"]["male_mean"] - anchors["national"]["male_participation_rate"])
-        < 0.25
+        abs(out["calibration"]["male_mean"] - anchors["national"]["male_participation_rate"]) < 0.25
     )  # A9-male (informational; TSJE gender rates are inconsistent with national rate)
 
     # A10: Department-level exact calibration via post-hoc rake (±0.5 pp)
@@ -113,9 +112,9 @@ def test_propensity_metrics_not_masked(feature_df: pd.DataFrame, anchors: dict) 
     # (they should be close, but real model outputs carry decimal noise)
     youth_target = anchors["national"]["youth_participation_rate"]
     female_target = anchors["national"]["female_participation_rate"]
-    assert out["calibration"]["youth_mean"] != youth_target, (
-        "youth_mean is identical to anchor — looks forced"
-    )
-    assert out["calibration"]["female_mean"] != female_target, (
-        "female_mean is identical to anchor — looks forced"
-    )
+    assert (
+        out["calibration"]["youth_mean"] != youth_target
+    ), "youth_mean is identical to anchor — looks forced"
+    assert (
+        out["calibration"]["female_mean"] != female_target
+    ), "female_mean is identical to anchor — looks forced"

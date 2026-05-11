@@ -26,8 +26,8 @@ fields:
     type: int8
     nullable: false
     min: 0
-    max: 7
-    description: Numeric segment index (0-based, matches centroid ordering)
+    max: 5
+    description: Numeric segment index (0-based, matches centroid ordering; k=6 → values 0–5)
   dbscan_noise_flag:
     type: bool
     nullable: false

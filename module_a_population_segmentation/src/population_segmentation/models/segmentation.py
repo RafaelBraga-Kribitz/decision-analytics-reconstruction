@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -58,13 +59,33 @@ class DBSCANNoiseFilter:
     eps: float = 2.0
     min_samples: int = 5
 
-    def fit_transform(self, df: pd.DataFrame) -> dict[str, float]:
-        x = _matrix(df)
+    def fit_transform(self, df: pd.DataFrame, *, x: np.ndarray | None = None) -> dict[str, Any]:
+        """Run DBSCAN noise detection.
+
+        Parameters
+        ----------
+        df:
+            Feature DataFrame containing ``FEATURE_COLUMNS``.  Used only when
+            ``x`` is *not* provided.
+        x:
+            Pre-computed PCA-reduced feature matrix produced by ``_matrix(df)``.
+            Pass this to avoid redundant ``StandardScaler`` + ``PCA`` fitting
+            when the caller already holds the matrix.
+
+        Returns
+        -------
+        dict with keys:
+
+        * ``noise_rate`` (float): fraction of rows flagged as noise.
+        * ``noise_flags`` (np.ndarray[bool]): per-row noise indicator array.
+        """
+        if x is None:
+            x = _matrix(df)
         labels = DBSCAN(eps=self.eps, min_samples=self.min_samples, metric="euclidean").fit_predict(
             x
         )
-        noise_rate = float((labels == -1).mean())
-        return {"noise_rate": noise_rate}
+        noise_flags: np.ndarray = labels == -1
+        return {"noise_rate": float(noise_flags.mean()), "noise_flags": noise_flags}
 
 
 @dataclass
@@ -72,8 +93,21 @@ class KMeansSegmenter:
     k: int = 6
     random_state: int = 42
 
-    def fit_predict(self, df: pd.DataFrame) -> dict[str, object]:
-        x = _matrix(df)
+    def fit_predict(self, df: pd.DataFrame, *, x: np.ndarray | None = None) -> dict[str, Any]:
+        """Fit KMeans and return labels with quality metrics.
+
+        Parameters
+        ----------
+        df:
+            Feature DataFrame containing ``FEATURE_COLUMNS``.  Used only when
+            ``x`` is *not* provided.
+        x:
+            Pre-computed PCA-reduced feature matrix produced by ``_matrix(df)``.
+            Pass this to avoid redundant ``StandardScaler`` + ``PCA`` fitting
+            when the caller already holds the matrix.
+        """
+        if x is None:
+            x = _matrix(df)
         km = KMeans(
             n_clusters=self.k, init="k-means++", n_init="auto", random_state=self.random_state
         )
@@ -130,13 +164,16 @@ def build_segmentation_frame(
     metrics_dict:
         ``silhouette``, ``bootstrap_ari``, ``noise_rate``, ``segment_share``.
     """
+    # Compute the PCA-reduced feature matrix once and reuse it for both
+    # DBSCAN (noise pre-pass) and KMeans, avoiding two independent fits of
+    # StandardScaler + PCA on the same data.
     x = _matrix(df)
 
-    dbscan_labels = DBSCAN(eps=2.0, min_samples=5, metric="euclidean").fit_predict(x)
-    dbscan_noise_flag = dbscan_labels == -1
+    noise_result = DBSCANNoiseFilter().fit_transform(df, x=x)
+    dbscan_noise_flag: np.ndarray = np.asarray(noise_result["noise_flags"], dtype=bool)
 
     seg = KMeansSegmenter(k=k, random_state=random_state)
-    seg_out = seg.fit_predict(df)
+    seg_out = seg.fit_predict(df, x=x)
     kmeans_labels: np.ndarray = np.asarray(seg_out["labels"])
 
     labels_df = pd.DataFrame(
@@ -148,11 +185,10 @@ def build_segmentation_frame(
         }
     )
 
-    raw_noise_rate = float(dbscan_noise_flag.mean())
     metrics_dict: dict = {
         "silhouette": seg_out["silhouette"],
         "bootstrap_ari": seg_out["bootstrap_ari"],
-        "noise_rate": raw_noise_rate,
+        "noise_rate": float(noise_result["noise_rate"]),
         "segment_share": seg_out["segment_share"],
     }
 
