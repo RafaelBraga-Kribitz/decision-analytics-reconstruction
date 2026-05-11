@@ -1,0 +1,63 @@
+# Pre-public cleanup manifest (internal)
+
+**Audience:** Repository author and AI agents only — not peer reviewers, HR, or hiring managers.
+
+**Purpose:** Track everything that must be **deleted, removed, hidden, redacted, or rewritten** so the public-facing repository looks **clean, complete, self-authored, and free of obvious AI/harness footprint** before external scrutiny.
+
+**Rules for agents (binding):**
+
+1. **Read this file** when touching harness, Cursor/Claude config, internal docs, or “operator-only” paths.
+2. **Append or edit rows** whenever you add or discover items that should not appear in the public version (new AI rules, new internal-only docs, machine-generated artifacts, workflow leaks, etc.).
+3. **Do not** link this file from the top-level [`README.md`](../README.md) or other candidate-facing copy.
+4. Before the author declares the project “public ready,” an agent or the author must run a **full-repo cleanup pass** using this manifest as the checklist (tick `done`, then remove/redact).
+
+**Last updated:** 2026-05-11
+
+---
+
+## Execution checklist (before `public` / portfolio / employer review)
+
+- [ ] Every row below is either **done** or **explicitly waived** by the author (note in the row).
+- [ ] Grep the repo for banned public phrases (e.g. “task-verify,” “orchestrator,” “subagent,” “graphify,” “Cursor rule”) after cleanup.
+- [ ] Re-read top-level README and module READMEs in a “stranger’s eyes” pass.
+
+---
+
+## Manifest (living list)
+
+| id | action | target | notes | done |
+|----|--------|--------|-------|------|
+| M1 | hide / do not publish | [`.cursor/`](../.cursor/) | IDE agent rules, commands, internal workflow — entire tree | [ ] |
+| M2 | hide / do not publish | [`.claude/`](../.claude/) | Claude Code mirror configs & skills — entire tree | [ ] |
+| M3 | hide / do not publish | [`graphify-out/`](../graphify-out/) | Machine-generated graph context (optional for portfolio) | [ ] |
+| M4 | hide / do not publish | [`docs/ai_harness/`](../docs/ai_harness/) | Plan-first orchestration docs (currently gitignored bundle with harness) | [ ] |
+| M5 | hide / do not publish | [`AGENTS.md`](../AGENTS.md), [`CLAUDE.md`](../CLAUDE.md) | Agent instruction entrypoints — remove from **public** tree | [ ] |
+| M6 | review / redact | [`reports/task_verify_TASK-*.md`](../reports/) | Internal verification IDs and command logs — shorten or relocate for portfolio | [ ] |
+| M7 | review / rewrite | Top-level & module READMEs | Remove harness language, slash-commands, “AI,” “orchestrator”; keep factual technical prose | [ ] |
+| M8 | remove / gitignore locally | Secrets & env | [`.env`](../.env), credentials, machine-specific paths | [ ] |
+| M9 | remove / exclude | Generated / heavy data | `data/processed/*`, `.parquet` outputs used only for dev; align with [.gitignore](../.gitignore) | [ ] |
+| M10 | optional delete | **`maintainer/`** (this folder) | Delete entire folder from **public** clone if you do not want any maintainer-facing files visible | [ ] |
+
+---
+
+## Add new rows (template)
+
+Copy a line into the table above:
+
+```
+| M__ | remove \| redact \| modify \| hide | path or description | why it must not appear publicly | [ ] |
+```
+
+---
+
+## Relationship to `.gitignore`
+
+This repository **ignores almost all** `.cursor/` and `.claude/` helpers but **exceptions** expose a tiny shipped set that must stay coherent with harness duty (see root `.gitignore`): the pre-public rule file, mirrored orchestrator `SKILL.md`, and [`docs/ai_harness/README.md`](../docs/ai_harness/README.md). `AGENTS.md` / `CLAUDE.md` remain local-only unless you change ignore rules.
+
+**Ignore rules do not replace this manifest:** for a **public** remote or zip, verify what is **actually included** when ignore rules change or when using `git archive`.
+
+---
+
+## After public release
+
+Archive this file or delete `maintainer/` from the public artifact; keep a private copy if you still use agents on a fork.

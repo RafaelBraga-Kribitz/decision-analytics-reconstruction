@@ -50,8 +50,25 @@ module_a_population_segmentation/reports/model_evaluation.md
 .vscode/
 *.swp
 *.swo
-.cursor/
-.claude/
+# .cursor — keep local IDE/agent state private except files we intentionally ship
+.cursor/*
+!.cursor/rules/
+.cursor/rules/*
+!.cursor/rules/07-pre-public-cleanup-manifest.mdc
+!.cursor/skills/
+.cursor/skills/*
+!.cursor/skills/project-orchestrator/
+.cursor/skills/project-orchestrator/*
+!.cursor/skills/project-orchestrator/SKILL.md
+
+# .claude — same: ship only mirrored orchestrator skill cue for Claude Code parity
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/project-orchestrator/
+.claude/skills/project-orchestrator/*
+!.claude/skills/project-orchestrator/SKILL.md
+
 .obsidian/
 
 # ─── Coverage ────────────────────────────────────────────────────────────────
@@ -67,7 +84,10 @@ AGENTS.md
 CLAUDE.md
 GEMINI.md
 project_scope/
-docs/ai_harness/
+
+# Harness docs — keep folder private except operator README pre-public section
+docs/ai_harness/*
+!docs/ai_harness/README.md
 
 # ─── Local graph context artifacts ───────────────────────────────────────────
 graphify-out/
