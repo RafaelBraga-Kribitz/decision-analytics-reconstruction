@@ -15,6 +15,8 @@ from module_c_forecasting_scenarios.models.tracking.hierarchical import (
 )
 from module_c_forecasting_scenarios.paths import module_config_dir
 
+pytestmark = pytest.mark.slow
+
 
 @pytest.fixture(autouse=True)
 def _mc_fast(monkeypatch: pytest.MonkeyPatch) -> None:

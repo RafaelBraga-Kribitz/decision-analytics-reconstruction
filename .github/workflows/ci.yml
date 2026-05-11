@@ -50,6 +50,33 @@ jobs:
           files: coverage.xml
           flags: module_a
 
+  module-c:
+    name: Module C — pytest (fast subset, MC_FAST)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        run: poetry install --no-root
+
+      - name: pytest Module C (exclude slow NUTS)
+        env:
+          MC_FAST: "1"
+        run: >
+          poetry run pytest module_c_forecasting_scenarios/tests
+          -m "not slow"
+          -v
+
   docker-smoke:
     name: Module A — Docker image smoke
     runs-on: ubuntu-latest

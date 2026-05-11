@@ -25,7 +25,7 @@ typecheck:
 	poetry run pyright $(MODULE_A_SRC) $(MODULE_B_SRC) $(MODULE_C_SRC)
 
 test:
-	poetry run pytest $(MODULE_A_TESTS) $(MODULE_B_TESTS) $(MODULE_C_TESTS) -v --tb=short
+	poetry run pytest $(MODULE_A_TESTS) $(MODULE_B_TESTS) $(MODULE_C_TESTS) -v --tb=short -m "not slow"
 
 test-module-a:
 	poetry run pytest $(MODULE_A_TESTS) -v --tb=short

@@ -10,6 +10,8 @@ from module_c_forecasting_scenarios.data.cleaning_pipeline import clean_raw_poll
 from module_c_forecasting_scenarios.data.raw_loader import load_raw_polls_csv
 from module_c_forecasting_scenarios.models.exit.exit_model import fit_exit_quickcount
 
+pytestmark = pytest.mark.slow
+
 
 @pytest.fixture(autouse=True)
 def _mc_fast(monkeypatch: pytest.MonkeyPatch) -> None:
