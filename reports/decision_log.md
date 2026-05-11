@@ -67,3 +67,15 @@ Records every non-trivial architectural choice: decision, alternatives considere
 **Reason:** These four files are the cross-module contract boundary. Defining them once, with version numbers, prevents silent breakage when Module A modeling parameters change. Breaking changes require schema_version bump + decision_log entry + integration-impact-auditor sign-off.
 
 **Source:** scope_master §6, cross-module impact gate rule
+
+---
+
+## 2026-05-11 — Local Docker: Colima instead of Docker Desktop (Mac Pro maintainer)
+
+**Decision:** Document and verify Module A `docker compose` using **Colima** + Homebrew Docker CLI; Docker Desktop is not the supported local path on Metal-degraded legacy Macs.
+
+**Alternatives considered:** Docker Desktop GUI (rejected: freezes and GPU stack issues); dropping Docker from the repo (rejected without product sign-off).
+
+**Reason:** Colima provides a headless Linux VM and matches project rule [`.cursor/rules/06-developer-machine-macpro-6-1.mdc`](.cursor/rules/06-developer-machine-macpro-6-1.mdc). `poetry install` in the image requires `README.md` in the build context when `readme` is set in `pyproject.toml`, so the Dockerfile copies it into `/app/`.
+
+**Source:** task-verify Docker rows; infra hardening session

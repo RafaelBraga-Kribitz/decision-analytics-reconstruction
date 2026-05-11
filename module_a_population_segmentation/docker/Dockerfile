@@ -7,7 +7,7 @@ WORKDIR /app
 
 RUN pip install --no-cache-dir poetry==2.4.0
 
-COPY pyproject.toml poetry.lock* /app/
+COPY pyproject.toml poetry.lock* README.md /app/
 COPY module_a_population_segmentation /app/module_a_population_segmentation
 COPY schema_contracts /app/schema_contracts
 COPY reports /app/reports

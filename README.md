@@ -106,7 +106,7 @@ make test          # run Module A tests
 make dashboard     # launch Streamlit dashboard
 ```
 
-**Requirements:** Python 3.11, Poetry. Docker optional (see `[docker-compose.yml](docker-compose.yml)`).
+**Requirements:** Python 3.11, Poetry. Docker optional (see [`docker-compose.yml`](docker-compose.yml)). On legacy Mac workstations (Mac Pro with unreliable Metal stacks), prefer **Colima + `docker compose`** instead of Docker Desktop.
 
 ---
 

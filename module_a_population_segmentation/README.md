@@ -12,6 +12,8 @@ poetry install
 streamlit run module_a_population_segmentation/app/streamlit_dashboard.py
 ```
 
+Optional container flow (see repo root [`docker-compose.yml`](../docker-compose.yml)): Colima plus `docker compose up module_a` locally; prefer Colima instead of Docker Desktop on legacy GPUs.
+
 ## Key outputs
 - `population_master_clean.parquet`
 - `segment_labels.parquet`
