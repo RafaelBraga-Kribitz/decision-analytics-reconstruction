@@ -47,7 +47,7 @@ def test_allocation_endpoint_returns_full_grid(client: TestClient) -> None:
     assert r.status_code == 200
     body = r.json()
     assert body["row_count"] == ALLOCATION_ROWS
-    assert body["solver_status"] in {"Optimal", "Feasible"}
+    assert body["solver_status"] in {"OPTIMAL", "FEASIBLE"}
     assert body["scenario_id"] == "baseline"
 
 

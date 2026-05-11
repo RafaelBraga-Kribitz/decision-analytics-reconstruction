@@ -1,0 +1,44 @@
+schema_name: polls_clean_exit_wave
+schema_version: "1.0.0"
+description: >
+  Cleaned exit / quick-count survey measurement rows (Module C exit bias stage).
+  Kept separate from tracking waves to forbid silent mixing in the tracking PyMC likelihood.
+
+unique_key:
+  - poll_wave_id
+
+fields:
+  poll_wave_id:
+    type: string
+    nullable: false
+  pollster_id:
+    type: string
+    nullable: false
+  publication_date:
+    type: date
+    nullable: false
+  field_window_start:
+    type: date
+    nullable: false
+  field_window_end:
+    type: date
+    nullable: false
+  preference_proxy_a_pct:
+    type: float64
+    nullable: false
+  preference_proxy_b_pct:
+    type: float64
+    nullable: false
+  m_poll_pp:
+    type: float64
+    nullable: false
+  oea_timing_compliant:
+    type: bool
+    nullable: true
+  eu_release_window_flag:
+    type: bool
+    nullable: true
+  calibration_series:
+    type: string
+    nullable: false
+    allowed_values: [A, B]

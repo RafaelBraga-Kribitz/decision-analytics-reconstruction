@@ -1,0 +1,55 @@
+schema_name: reallocation_counterfactuals
+schema_version: "1.0.0"
+description: >
+  Per-(department, channel, week) deltas for the broadcast_to_direct
+  counterfactual scenario. Produced by Module B after a baseline allocation
+  solve; consumed by Module C for participation / shock handshake analysis.
+
+unique_key:
+  - department
+  - channel
+  - week_index
+  - scenario_id
+
+fields:
+  department:
+    type: string
+    nullable: false
+  channel:
+    type: string
+    nullable: false
+  week_index:
+    type: int8
+    nullable: false
+    min: 1
+    max: 14
+  scenario_id:
+    type: string
+    nullable: false
+    allowed_values: [broadcast_to_direct]
+  baseline_expected_contacts:
+    type: float64
+    nullable: false
+  counterfactual_expected_contacts:
+    type: float64
+    nullable: false
+  baseline_budget_usd:
+    type: float64
+    nullable: false
+  counterfactual_budget_usd:
+    type: float64
+    nullable: false
+  delta_contacts:
+    type: int64
+    nullable: false
+    description: Rounded counterfactual minus baseline expected contacts.
+  delta_budget_usd:
+    type: float64
+    nullable: false
+  delta_expected_contacts:
+    type: float64
+    nullable: false
+    description: Same as delta_contacts before integer rounding (retained for QA).
+
+provenance:
+  source_engine: module_b_resource_allocation.models.counterfactual

@@ -1,0 +1,21 @@
+---
+title: "Module C post-mortem — raw headline vs posterior vs calibration anchor"
+format:
+  html:
+    toc: true
+---
+
+## Calibration series
+
+Configure `module_c_forecasting_scenarios/config/calibration.yaml` (`series: A` or `series: B`).
+
+- **Series A**: valid-vote anchor margin +3.70 pp.
+- **Series B**: headline anchor margin +3.88 pp.
+
+Do not blend numerators across series. Run the pipeline twice for appendix **B** comparisons.
+
+## Outputs
+
+Read `daily_posterior_forecast.parquet` and `house_effect_seed_matrix.csv` from the pipeline output directory.
+
+Survey measurement ecology vs verified outcome framing belongs in narrative prose outside this skeleton.

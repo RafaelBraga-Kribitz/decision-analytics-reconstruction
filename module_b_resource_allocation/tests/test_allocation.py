@@ -31,7 +31,7 @@ def baseline_result() -> AllocationResult:
 
 
 def test_allocator_returns_optimal_or_feasible(baseline_result: AllocationResult) -> None:
-    assert baseline_result.solver_status in {"Optimal", "Optimal Inaccurate", "Feasible"}
+    assert baseline_result.solver_status in {"OPTIMAL", "FEASIBLE"}
 
 
 def test_allocation_row_count_matches_full_grid(baseline_result: AllocationResult) -> None:

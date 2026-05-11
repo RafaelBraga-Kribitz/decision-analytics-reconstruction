@@ -1,0 +1,36 @@
+schema_name: house_effect_seed_matrix
+schema_version: "1.0.0"
+description: >
+  Prior / warm-start table for pollster house offsets (m_poll vs calibration
+  anchor margin). One row per poll wave with transparency weights.
+
+unique_key:
+  - poll_wave_id
+
+fields:
+  poll_wave_id:
+    type: string
+    nullable: false
+  pollster_id:
+    type: string
+    nullable: false
+  m_poll_pp:
+    type: float64
+    nullable: false
+    description: Preference-proxy margin in percentage points (A minus B).
+  phi_transparency:
+    type: float64
+    nullable: false
+    min: 0.0
+    max: 1.0
+  pollster_bias_family:
+    type: string
+    nullable: false
+  m_star_pp:
+    type: float64
+    nullable: false
+    description: Active calibration anchor margin (pp) from calibration.yaml series.
+  calibration_series:
+    type: string
+    nullable: false
+    allowed_values: [A, B]

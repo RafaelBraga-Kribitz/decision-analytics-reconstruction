@@ -1,0 +1,17 @@
+# Structural prior tags for pollster_bias_family (PyMC hyperparameters keyed in code).
+families:
+  capli:
+    student_nu: 12.0
+    house_sigma_pp: 4.0
+  ica:
+    student_nu: 4.0
+    house_sigma_pp: 8.0
+  grau:
+    house_loc_pp: 2.0
+    house_sigma_pp: 5.0
+  ati_snead:
+    house_sigma_pp: 6.0
+    time_varying: true
+  default:
+    student_nu: 8.0
+    house_sigma_pp: 5.0

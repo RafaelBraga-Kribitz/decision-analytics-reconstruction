@@ -7,6 +7,7 @@ readme = "README.md"
 packages = [
     { include = "population_segmentation", from = "module_a_population_segmentation/src" },
     { include = "module_b_resource_allocation", from = "module_b_resource_allocation/src" },
+    { include = "module_c_forecasting_scenarios", from = "module_c_forecasting_scenarios/src" },
 ]
 
 [tool.poetry.dependencies]
@@ -29,6 +30,8 @@ pulp = ">=2.8"
 networkx = ">=3.2"
 fastapi = ">=0.110"
 uvicorn = ">=0.30"
+pymc = ">=5.16,<6"
+arviz = ">=0.19"
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.0"
@@ -61,6 +64,7 @@ typeCheckingMode = "basic"
 include = [
     "module_a_population_segmentation/src",
     "module_b_resource_allocation/src",
+    "module_c_forecasting_scenarios/src",
 ]
 exclude = [
     "module_a_population_segmentation/notebooks",
@@ -72,5 +76,6 @@ reportMissingTypeStubs = false
 testpaths = [
     "module_a_population_segmentation/tests",
     "module_b_resource_allocation/tests",
+    "module_c_forecasting_scenarios/tests",
 ]
-addopts = "--tb=short -v"
+addopts = "--tb=short -v --import-mode=importlib"

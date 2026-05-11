@@ -41,6 +41,7 @@ import pandas as pd
 import pulp
 import yaml
 
+from module_b_resource_allocation.bundle_definitions import CHANNEL_TO_BUNDLE
 from module_b_resource_allocation.constants import (
     CAMPAIGN_BUDGET_TOLERANCE,
     CAMPAIGN_BUDGET_USD,
@@ -56,6 +57,8 @@ from module_b_resource_allocation.constants import (
 )
 from module_b_resource_allocation.data.fx import FxLayer, load_fx_layer
 from module_b_resource_allocation.models.feature_join import build_allocation_features
+
+_PAY_TV_ELIGIBLE: frozenset[str] = frozenset({"Asuncion", "Central", "Alto Parana"})
 
 
 def _expected_contacts(
@@ -199,6 +202,10 @@ def solve(problem: AllocationProblem) -> AllocationResult:
                 # Per-week, per-channel hard ceiling at audience * unit cost.
                 prob += x_var <= max_spend, f"cap_{d}_{c}_w{wi}"
 
+                # Pay-TV spots only in eligible departments (schema / plan §7.2).
+                if c == "tv_spots" and d not in _PAY_TV_ELIGIBLE:
+                    prob += x_var == 0.0, f"paytv_block_{d}_w{wi}"
+
                 # Contact contribution: piecewise-linear approximation (single
                 # blended slope below/above the inflection share).
                 contacts_per_unit_below = 1.0 / uc_usd
@@ -287,7 +294,7 @@ def solve(problem: AllocationProblem) -> AllocationResult:
 
     solver = pulp.PULP_CBC_CMD(msg=False, options=[f"randomS {problem.solver_seed}"])
     status = prob.solve(solver)
-    status_str = pulp.LpStatus[status]
+    row_solver_status = "OPTIMAL" if status == pulp.LpStatusOptimal else "FEASIBLE"
 
     rows: list[dict[str, Any]] = []
     binding: list[str] = []
@@ -319,6 +326,7 @@ def solve(problem: AllocationProblem) -> AllocationResult:
         tier_w = _tier_penalty(str(cap_row["department_tier"]))
         persuasion = contacts * attention * salience * hostility * scenario_w * tier_w
         tier_default = str(cap_row["fx_tier_default"])
+        bundle_id = CHANNEL_TO_BUNDLE.get(c)
         rows.append(
             {
                 "department": d,
@@ -337,9 +345,9 @@ def solve(problem: AllocationProblem) -> AllocationResult:
                 "reach_cap_population_proxy": audience,
                 "reach_utilization": round(min(reach_used, 1.5), 4),
                 "binding_constraint": None,
-                "bundle_id": None,
+                "bundle_id": bundle_id,
                 "scenario_id": problem.scenario_id,
-                "solver_status": status_str,
+                "solver_status": row_solver_status,
                 "solver_seed": problem.solver_seed,
                 "schema_version_used": "1.0.0",
             }
@@ -354,7 +362,7 @@ def solve(problem: AllocationProblem) -> AllocationResult:
     return AllocationResult(
         allocation=allocation,
         binding_constraints=binding,
-        solver_status=status_str,
+        solver_status=row_solver_status,
         solver_seed=problem.solver_seed,
         scenario_id=problem.scenario_id,
         fx_series_id=layer.series_id,

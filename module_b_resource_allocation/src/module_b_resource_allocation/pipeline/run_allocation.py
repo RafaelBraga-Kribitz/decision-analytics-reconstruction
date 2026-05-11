@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
@@ -26,9 +27,17 @@ from pathlib import Path
 from module_b_resource_allocation.constants import VALID_SCENARIOS
 from module_b_resource_allocation.data.fx import fx_layer_to_frame, load_fx_layer
 from module_b_resource_allocation.models.allocation import build_problem, solve
-from module_b_resource_allocation.models.counterfactual import run_broadcast_to_direct
+from module_b_resource_allocation.models.counterfactual import (
+    build_reallocation_counterfactuals_table,
+    run_broadcast_to_direct,
+)
 from module_b_resource_allocation.models.feature_join import build_allocation_features
 from module_b_resource_allocation.routing.cost_matrix import build_cost_matrix
+from module_b_resource_allocation.utils.allocation_output_gate import (
+    validate_allocation_output_df,
+)
+
+logger = logging.getLogger(__name__)
 
 
 def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -56,38 +65,53 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: list[str] | None = None) -> int:
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     args = _parse_args(argv)
     args.out_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"[run_allocation] scenario={args.scenario} seed={args.seed}", flush=True)
-    problem = build_problem(
-        scenario_id=args.scenario,
-        fx_series_id=args.fx_series,  # type: ignore[arg-type]
-        solver_seed=args.seed,
-    )
-    result = solve(problem)
-    print(
-        f"[run_allocation] solver_status={result.solver_status} "
-        f"total_usd={result.total_budget_usd:.2f}",
-        flush=True,
-    )
+    logger.info("scenario=%s seed=%s", args.scenario, args.seed)
+    try:
+        problem = build_problem(
+            scenario_id=args.scenario,
+            fx_series_id=args.fx_series,  # type: ignore[arg-type]
+            solver_seed=args.seed,
+        )
+        result = solve(problem)
+    except Exception as exc:  # pragma: no cover - defensive CLI
+        logger.exception("allocation solve failed: %s", exc)
+        return 2
+
+    logger.info("solver_status=%s total_usd=%.2f", result.solver_status, result.total_budget_usd)
+    try:
+        validate_allocation_output_df(result.allocation)
+    except ValueError as exc:
+        logger.error("allocation_output contract gate: %s", exc)
+        return 3
 
     alloc_csv = args.out_dir / f"allocation_{args.scenario}.csv"
     alloc_parquet = args.out_dir / f"allocation_{args.scenario}.parquet"
-    result.allocation.to_csv(alloc_csv, index=False)
-    result.allocation.to_parquet(alloc_parquet, index=False)
+    try:
+        result.allocation.to_csv(alloc_csv, index=False)
+        result.allocation.to_parquet(alloc_parquet, index=False)
+    except OSError as exc:
+        logger.exception("failed writing allocation artifacts: %s", exc)
+        return 4
 
-    reach_caps = build_allocation_features()
-    reach_csv = args.out_dir / f"reach_caps_{args.scenario}.csv"
-    reach_caps.to_csv(reach_csv, index=False)
+    try:
+        reach_caps = build_allocation_features()
+        reach_csv = args.out_dir / f"reach_caps_{args.scenario}.csv"
+        reach_caps.to_csv(reach_csv, index=False)
 
-    fx_df = fx_layer_to_frame(load_fx_layer(args.fx_series))  # type: ignore[arg-type]
-    fx_csv = args.out_dir / f"fx_layer_{args.fx_series}.csv"
-    fx_df.to_csv(fx_csv, index=False)
+        fx_df = fx_layer_to_frame(load_fx_layer(args.fx_series))  # type: ignore[arg-type]
+        fx_csv = args.out_dir / f"fx_layer_{args.fx_series}.csv"
+        fx_df.to_csv(fx_csv, index=False)
 
-    routing_df = build_cost_matrix(scenario=args.routing_scenario, seed=args.seed)
-    routing_csv = args.out_dir / f"routing_cost_matrix_{args.routing_scenario}.csv"
-    routing_df.to_csv(routing_csv, index=False)
+        routing_df = build_cost_matrix(scenario=args.routing_scenario, seed=args.seed)
+        routing_csv = args.out_dir / f"routing_cost_matrix_{args.routing_scenario}.csv"
+        routing_df.to_csv(routing_csv, index=False)
+    except OSError as exc:
+        logger.exception("failed writing secondary artifacts: %s", exc)
+        return 4
 
     artifacts: dict[str, str] = {
         "allocation_csv": str(alloc_csv),
@@ -101,10 +125,17 @@ def main(argv: list[str] | None = None) -> int:
         cf = run_broadcast_to_direct(result, routing_df, shift_share=args.shift_share)
         cf_csv = args.out_dir / "allocation_broadcast_to_direct.csv"
         deltas_csv = args.out_dir / "allocation_broadcast_to_direct_deltas.csv"
-        cf.counterfactual_allocation.to_csv(cf_csv, index=False)
-        cf.deltas.to_csv(deltas_csv, index=False)
+        rc_parquet = args.out_dir / "reallocation_counterfactuals.parquet"
+        try:
+            cf.counterfactual_allocation.to_csv(cf_csv, index=False)
+            cf.deltas.to_csv(deltas_csv, index=False)
+            build_reallocation_counterfactuals_table(cf).to_parquet(rc_parquet, index=False)
+        except OSError as exc:
+            logger.exception("failed writing counterfactual artifacts: %s", exc)
+            return 4
         artifacts["counterfactual_csv"] = str(cf_csv)
         artifacts["counterfactual_deltas_csv"] = str(deltas_csv)
+        artifacts["reallocation_counterfactuals_parquet"] = str(rc_parquet)
         artifacts["routing_feasible_share"] = str(round(cf.routing_feasible_share, 4))
 
     manifest = {
@@ -124,9 +155,13 @@ def main(argv: list[str] | None = None) -> int:
         "module_b_version": "0.1.0",
     }
     manifest_path = args.out_dir / f"run_manifest_{args.scenario}.json"
-    with open(manifest_path, "w") as f:
-        json.dump(manifest, f, indent=2)
-    print(f"[run_allocation] manifest written to {manifest_path}", flush=True)
+    try:
+        with open(manifest_path, "w") as f:
+            json.dump(manifest, f, indent=2)
+    except OSError as exc:
+        logger.exception("failed writing manifest: %s", exc)
+        return 4
+    logger.info("manifest written to %s", manifest_path)
     return 0
 
 

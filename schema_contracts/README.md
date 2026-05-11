@@ -27,6 +27,22 @@ A `QAGateFailure` exception is raised — never a warning — if any contract is
 | `reachability_caps_dept_channel.yaml`  | Department×channel reach caps with salience, attention, eligibility, costs    | Module B LP/MILP        |
 | `routing_cost_matrix.yaml`             | Department×department travel-time matrix per routing scenario                 | Module B TSP heuristic  |
 | `allocation_output.yaml`               | Weekly allocation rows (department × channel × week) with FX + persuasion     | **Module C**, reporting |
+| `reallocation_counterfactuals.yaml`    | Broadcast-to-direct deltas per grid cell (contacts + budget vs baseline)      | **Module C**, reporting |
+
+
+## Module C inputs and scenario artifacts
+
+
+| Contract file                              | Dataset                                           | Consumed by        |
+| ------------------------------------------ | ------------------------------------------------- | ------------------ |
+| `polls_raw_press_release.yaml`             | Dirty press-extracted survey rows                 | Module C ETL       |
+| `polls_clean_tracking_wave.yaml`           | Cleaned tracking waves + transparency fields      | Module C PyMC      |
+| `polls_clean_exit_wave.yaml`               | Exit / quick-count cleaned rows (separate stage)  | Module C exit PyMC |
+| `house_effect_seed_matrix.yaml`            | Warm-start table for pollster offsets             | Module C PyMC      |
+| `monte_carlo_shock_catalog.yaml`           | Shock scores and scenario buckets                 | Module C MC        |
+| `daily_posterior_forecast.yaml`            | Daily latent margin posterior summaries           | Module C viz       |
+| `posterior_house_effects.yaml`             | Pollster house-effect posterior summaries         | Module C reports   |
+| `battleground_department_probability.yaml` | Department win-probability map                    | Module C geo       |
 
 
 ## Version policy

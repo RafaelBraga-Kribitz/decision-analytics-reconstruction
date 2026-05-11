@@ -207,3 +207,26 @@ Records every non-trivial architectural choice: decision, alternatives considere
 
 **Source:** module-b-counterfactual + integration-and-verification closure session 2026-05-11.
 
+---
+
+## 2026-05-11 — Module B: single canonical allocator and Module C scaffold
+
+**Decision:** Treat `module_b_resource_allocation.models.allocation` (`build_problem` / `solve`) as the only MILP implementation. Keep `models.allocation_lp.run_allocation` as a thin facade for the legacy dict return shape used in tests and notebooks.
+
+**Counterfactuals:** One implementation lives in `models.counterfactual` (re-exported from `counterfactual`); CLI writes `reallocation_counterfactuals.parquet` aligned with `schema_contracts/reallocation_counterfactuals.yaml`. Post-solve rows are gated by `utils.allocation_output_gate.validate_allocation_output_df` against the allocation output contract.
+
+**Tooling:** `pyproject.toml` `addopts` includes `--import-mode=importlib` so multiple per-module `tests` packages do not collide during collection. `make test` / `make coverage` invoke `poetry run pytest` so runs use the Poetry environment (not the bare `python` on PATH).
+
+**Module C:** New package `module_c_forecasting_scenarios` with `pymc` / `arviz` in Poetry, `config/calibration.yaml` (`series: A`), and CI tests that forbid hybrid calibration keys. Schema stubs added under `schema_contracts/` for poll layers, house-effect seed matrix, and Monte Carlo shock catalog; handshake narrative in `reports/module_b_module_c_handshake.md`.
+
+**Source:** A–B audit / Module C readiness implementation pass.
+
+---
+
+## 2026-05-11 — Module C: schema contracts v1.0.0 + research stubs
+
+**Decision:** Bump Module C poll and shock contracts to `schema_version: "1.0.0"`; add `polls_clean_exit_wave`, `daily_posterior_forecast`, `posterior_house_effects`, and `battleground_department_probability` contracts. Extend raw tracking ingest with `wave_type`, transparency pillar booleans, and OEA/EU placeholder flags. Tracking clean table gains `publication_date`, `m_poll_pp`, conglomerate fields, and `series_tag` echo for QA joins.
+
+**Reason:** Enforce tracking vs exit separation, dual-series calibration without hybrid keys, and typed downstream artifacts for PyMC exports and Monte Carlo catalogues.
+
+**Source:** Module C full-scope execution plan; scope dual calibration (Series A/B).

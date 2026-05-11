@@ -37,6 +37,7 @@
 | M8 | remove / gitignore locally | Secrets & env | [`.env`](../.env), credentials, machine-specific paths | [ ] |
 | M9 | remove / exclude | Generated / heavy data | `data/processed/*`, `.parquet` outputs used only for dev; align with [.gitignore](../.gitignore) | [ ] |
 | M10 | optional delete | **`maintainer/`** (this folder) | Delete entire folder from **public** clone if you do not want any maintainer-facing files visible | [ ] |
+| M11 | review / redact | [`reports/module_b_module_c_handshake.md`](../reports/module_b_module_c_handshake.md) | Internal Module B→C column map; keep technically accurate or trim for portfolio | [ ] |
 
 ---
 

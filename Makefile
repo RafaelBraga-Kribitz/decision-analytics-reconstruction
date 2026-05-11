@@ -1,5 +1,6 @@
 .PHONY: install lint format typecheck test coverage all clean module-a-export graphify \
-	module-b-allocate module-b-routing module-b-api test-module-a test-module-b
+	module-b-allocate module-b-routing module-b-api test-module-a test-module-b test-module-c \
+	module-c-tracking module-c-exit module-c-mc module-c-all
 
 PYTHON := python3.11
 MODULE_A_SRC := module_a_population_segmentation/src
@@ -7,32 +8,57 @@ MODULE_A_TESTS := module_a_population_segmentation/tests
 MODULE_A_APP := module_a_population_segmentation/app
 MODULE_B_SRC := module_b_resource_allocation/src
 MODULE_B_TESTS := module_b_resource_allocation/tests
+MODULE_C_SRC := module_c_forecasting_scenarios/src
+MODULE_C_TESTS := module_c_forecasting_scenarios/tests
 
 install:
 	poetry install
 
 format:
-	poetry run black $(MODULE_A_SRC) $(MODULE_A_TESTS) $(MODULE_A_APP) $(MODULE_B_SRC) $(MODULE_B_TESTS)
+	poetry run black $(MODULE_A_SRC) $(MODULE_A_TESTS) $(MODULE_A_APP) $(MODULE_B_SRC) $(MODULE_B_TESTS) $(MODULE_C_SRC) $(MODULE_C_TESTS)
 
 lint:
-	ruff check $(MODULE_A_SRC) $(MODULE_A_TESTS) $(MODULE_A_APP) $(MODULE_B_SRC) $(MODULE_B_TESTS)
-	poetry run black --check $(MODULE_A_SRC) $(MODULE_A_TESTS) $(MODULE_A_APP) $(MODULE_B_SRC) $(MODULE_B_TESTS)
+	ruff check $(MODULE_A_SRC) $(MODULE_A_TESTS) $(MODULE_A_APP) $(MODULE_B_SRC) $(MODULE_B_TESTS) $(MODULE_C_SRC) $(MODULE_C_TESTS)
+	poetry run black --check $(MODULE_A_SRC) $(MODULE_A_TESTS) $(MODULE_A_APP) $(MODULE_B_SRC) $(MODULE_B_TESTS) $(MODULE_C_SRC) $(MODULE_C_TESTS)
 
 typecheck:
-	poetry run pyright $(MODULE_A_SRC) $(MODULE_B_SRC)
+	poetry run pyright $(MODULE_A_SRC) $(MODULE_B_SRC) $(MODULE_C_SRC)
 
 test:
-	pytest $(MODULE_A_TESTS) $(MODULE_B_TESTS) -v --tb=short
+	poetry run pytest $(MODULE_A_TESTS) $(MODULE_B_TESTS) $(MODULE_C_TESTS) -v --tb=short
 
 test-module-a:
-	pytest $(MODULE_A_TESTS) -v --tb=short
+	poetry run pytest $(MODULE_A_TESTS) -v --tb=short
 
 test-module-b:
-	pytest $(MODULE_B_TESTS) -v --tb=short
+	poetry run pytest $(MODULE_B_TESTS) -v --tb=short
+
+test-module-c:
+	MC_FAST=1 poetry run pytest $(MODULE_C_TESTS) -v --tb=short
+
+module-c-tracking:
+	poetry run python -m module_c_forecasting_scenarios.pipeline.run_tracking \
+		--raw-csv module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv \
+		--out-dir data/processed/module_c/tracking
+
+module-c-exit:
+	poetry run python -m module_c_forecasting_scenarios.pipeline.run_exit \
+		--raw-csv module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv \
+		--out-dir data/processed/module_c/exit
+
+module-c-mc:
+	poetry run python -m module_c_forecasting_scenarios.pipeline.run_monte_carlo \
+		--raw-csv module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv \
+		--out-dir data/processed/module_c/mc
+
+module-c-all:
+	poetry run python -m module_c_forecasting_scenarios.pipeline.run_all \
+		--raw-csv module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv \
+		--out-dir data/processed/module_c/run_all
 
 coverage:
-	pytest $(MODULE_A_TESTS) $(MODULE_B_TESTS) \
-		--cov=$(MODULE_A_SRC) --cov=$(MODULE_B_SRC) \
+	poetry run pytest $(MODULE_A_TESTS) $(MODULE_B_TESTS) $(MODULE_C_TESTS) \
+		--cov=$(MODULE_A_SRC) --cov=$(MODULE_B_SRC) --cov=$(MODULE_C_SRC) \
 		--cov-report=term-missing --cov-report=xml
 
 ci: lint typecheck coverage

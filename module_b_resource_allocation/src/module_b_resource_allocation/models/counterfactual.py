@@ -217,10 +217,23 @@ def run_broadcast_to_direct(
     )
     deltas["delta_budget_usd"] = deltas["cf_budget_usd"] - deltas["baseline_budget_usd"]
 
-    return CounterfactualResult(
+    result = CounterfactualResult(
         counterfactual_allocation=cf,
         baseline_allocation=base,
         deltas=deltas,
         shift_share=shift_share,
         routing_feasible_share=n_feasible / max(n_total, 1),
     )
+    return result
+
+
+def build_reallocation_counterfactuals_table(result: CounterfactualResult) -> pd.DataFrame:
+    """Wide table for ``reallocation_counterfactuals.parquet`` / schema contract."""
+    out = result.deltas.copy()
+    out["scenario_id"] = SCENARIO_BROADCAST_TO_DIRECT
+    out["delta_contacts"] = (
+        (out["cf_expected_contacts"] - out["baseline_expected_contacts"]).round().astype("int64")
+    )
+    out["counterfactual_expected_contacts"] = out["cf_expected_contacts"]
+    out["counterfactual_budget_usd"] = out["cf_budget_usd"]
+    return out

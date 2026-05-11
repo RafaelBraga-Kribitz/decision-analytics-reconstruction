@@ -1,0 +1,8 @@
+chains: 2
+draws: 400
+tune: 400
+target_accept: 0.9
+random_seed: 42
+# CI / fast path: set env MC_FAST=1 to use draws_fast / tune_fast
+draws_fast: 80
+tune_fast: 80

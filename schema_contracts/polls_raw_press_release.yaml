@@ -1,0 +1,63 @@
+schema_name: polls_raw_press_release
+schema_version: "1.0.0"
+description: >
+  Dirty-layer survey measurement rows extracted from press PDFs / HTML
+  (Module C ingest). Field names use scope terminology; candidate labels
+  are normalized upstream to Candidate A / Candidate B in cleaning.
+
+unique_key:
+  - poll_raw_id
+
+fields:
+  poll_raw_id:
+    type: string
+    nullable: false
+  publication_date:
+    type: date
+    nullable: false
+  pollster_display_name:
+    type: string
+    nullable: false
+  outlet_display_name:
+    type: string
+    nullable: true
+  preference_proxy_a_pct:
+    type: float64
+    nullable: true
+  preference_proxy_b_pct:
+    type: float64
+    nullable: true
+  undecided_pct:
+    type: float64
+    nullable: true
+  sample_size:
+    type: int64
+    nullable: true
+  has_ficha:
+    type: bool
+    nullable: false
+  conglomerate_carrier:
+    type: string
+    nullable: true
+  wave_type:
+    type: string
+    nullable: false
+    allowed_values: [tracking, exit]
+  field_window_candidate_text:
+    type: string
+    nullable: true
+  sample_size_known:
+    type: bool
+    nullable: false
+  field_window_known:
+    type: bool
+    nullable: false
+  mode_known:
+    type: bool
+    nullable: false
+  oea_timing_compliant:
+    type: bool
+    nullable: true
+  eu_release_window_flag:
+    type: bool
+    nullable: true

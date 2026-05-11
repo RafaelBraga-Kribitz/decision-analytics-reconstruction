@@ -1,0 +1,74 @@
+schema_name: polls_clean_tracking_wave
+schema_version: "1.0.0"
+description: >
+  Cleaned tracking survey waves after alias harmonization, undecided handling,
+  and field-window imputation (Module C feature table). Excludes exit waves;
+  use polls_clean_exit_wave for exit / quick-count rows.
+
+unique_key:
+  - poll_wave_id
+
+fields:
+  poll_wave_id:
+    type: string
+    nullable: false
+  pollster_id:
+    type: string
+    nullable: false
+  publication_date:
+    type: date
+    nullable: false
+  field_window_start:
+    type: date
+    nullable: false
+  field_window_end:
+    type: date
+    nullable: false
+  preference_proxy_a_pct:
+    type: float64
+    nullable: false
+  preference_proxy_b_pct:
+    type: float64
+    nullable: false
+  m_poll_pp:
+    type: float64
+    nullable: false
+    description: Preference-proxy margin in percentage points (A minus B).
+  redistribution_rule:
+    type: string
+    nullable: false
+    allowed_values: [exclude, proportional_AB, redistribute_third_party]
+  phi_transparency:
+    type: float64
+    nullable: false
+    min: 0.0
+    max: 1.0
+  tau_eff:
+    type: float64
+    nullable: false
+    min: 0.0
+  calibration_series:
+    type: string
+    nullable: false
+    allowed_values: [A, B]
+  series_tag:
+    type: string
+    nullable: false
+    allowed_values: [A, B]
+  conglomerate_id:
+    type: string
+    nullable: true
+  media_holding:
+    type: string
+    nullable: true
+  sample_size_known:
+    type: bool
+    nullable: false
+  firm_wave_month:
+    type: string
+    nullable: true
+    description: YYYY-MM for nested month effects (optional).
+  scenario_bucket:
+    type: string
+    nullable: true
+    allowed_values: [baseline, extreme_tracker, compounded_herd]

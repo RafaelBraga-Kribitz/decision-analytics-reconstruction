@@ -89,8 +89,8 @@ See `schema_contracts/` for the authoritative cross-module data contracts, and `
 | Module                           | Status                              | Artifact                                                                | Description                                      |
 | -------------------------------- | ----------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------ |
 | **A: Population Modeling**       | ✅ Complete (79 tests, 92% coverage) | [Streamlit dashboard](https://decision-analytics-module-a.onrender.com) | Synthetic population + segmentation + propensity |
-| **B: Resource Allocation**       | 📋 Planned — not yet in repo        | FastAPI (Swagger UI)                                                    | LP optimizer + FX routing + counterfactuals      |
-| **C: Probabilistic Forecasting** | 📋 Planned — not yet in repo        | Quarto report                                                           | Bayesian aggregator + scenario engine            |
+| **B: Resource Allocation**       | In repo — LP/MILP + routing + counterfactuals | `make module-b-allocate` / FastAPI (`make module-b-api`)               | Constrained weekly allocation + FX + broadcast_to_direct |
+| **C: Probabilistic Forecasting** | In repo — PyMC tracking + exit + MC        | `make test-module-c` / `make module-c-all` (fixture CSV)               | Calibration series gate, shock catalog, scenario HTML    |
 
 
 ---
@@ -125,8 +125,8 @@ make dashboard     # launch Streamlit dashboard
 │   ├── tests/                   ← 79 tests, 92% coverage
 │   ├── app/                     ← Streamlit dashboard
 │   └── reports/                 ← model cards, QA reports
-├── module_b_resource_allocation/  ← planned (not yet in repo)
-└── module_c_forecasting_scenarios/ ← planned (not yet in repo)
+├── module_b_resource_allocation/  ← LP/MILP allocation + routing + API
+└── module_c_forecasting_scenarios/ ← forecasting, scenarios, contracts
 ```
 
 ---
