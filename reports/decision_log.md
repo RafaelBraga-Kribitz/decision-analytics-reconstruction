@@ -78,7 +78,7 @@ Records every non-trivial architectural choice: decision, alternatives considere
 
 **Reason:** Colima provides a headless Linux VM and matches project rule [`.cursor/rules/06-developer-machine-macpro-6-1.mdc`](.cursor/rules/06-developer-machine-macpro-6-1.mdc). `poetry install` in the image requires `README.md` in the build context when `readme` is set in `pyproject.toml`, so the Dockerfile copies it into `/app/`.
 
-**Source:** task-verify Docker rows; infra hardening session
+**Source:** CI infra hardening session
 
 ---
 
@@ -104,22 +104,17 @@ Records every non-trivial architectural choice: decision, alternatives considere
 
 **Reason:** Validates that the Docker image is buildable and importable in a clean Linux CI environment, decoupled from the developer's Colima-based local setup. Catches packaging regressions (missing files, pyproject changes) before they reach production or the Render deploy.
 
-**Source:** plan module_a_100pct_closure; cross-module impact gate; task-verify row Docker smoke on ubuntu-latest
+**Source:** cross-module impact gate; CI Docker smoke validation
 
 ---
 
-## 2026-05-11 — Graphify CLI resolution path
+## 2026-05-11 — Graphify resolved (Poetry dev dependency)
 
-**Decision:** Attempt `pip install graphify` then `pip install graphify-cli` in the current Poetry environment. If both fail, apply policy waiver (see graphify-resolve todo). If install succeeds, run `graphify update .` and record PASS.
+**Decision:** Add PyPI package **`graphifyy`** (`>=0.7,<0.8`) to `[tool.poetry.group.dev.dependencies]`. It provides the `graphify` console script (`poetry run graphify update .` or `make graphify`). Earlier attempts used distribution names `graphify` and `graphify-cli`, which are not published on PyPI; the maintained package is **`graphifyy`**.
 
-**Reason:** The `graphify` CLI is not in the project's pyproject.toml dependencies; it is a dev-environment tool installed separately. The graph file `graphify-out/GRAPH_REPORT.md` is committed and refreshed via the post-commit git hook when Cursor commits. The waiver path is accepted per project policy for environments where the CLI cannot be installed.
+**Reason:** After `poetry install`, any developer can refresh `graphify-out/` without a one-off global install. AST-only updates require no API keys; optional semantic features follow upstream documentation.
 
-**Source:** .cursor/rules/graphify.mdc; CLAUDE.md graphify section
+**Evidence:** `poetry run graphify update .` → exit 0; rebuild logged 697 nodes, 751 edges, 59 communities (session 2026-05-11).
 
----
+**Source:** graphify-resolve closure; `docs/ai_harness/README.md` graph section
 
-## 2026-05-11 — Graphify CLI waiver
-
-`graphify update .` not verifiable: `graphify` pip package not installable in current Python environment (`pip install graphify` → no matching distribution; `pip install graphify-cli` → no matching distribution).
-
-Graph was last built at commit `5e046279` from a separate environment. **Accepted as PASS-by-policy**: the graph file `graphify-out/GRAPH_REPORT.md` exists, is committed, and is refreshed via the git hook when Cursor commits. No architectural change was made that would break the graph structure. This waiver is reviewed at next cross-module sprint boundary.

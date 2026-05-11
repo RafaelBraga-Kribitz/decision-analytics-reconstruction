@@ -1,4 +1,4 @@
-.PHONY: install lint format typecheck test coverage all clean module-a-export
+.PHONY: install lint format typecheck test coverage all clean module-a-export graphify
 
 PYTHON := python3.11
 MODULE_A_SRC := module_a_population_segmentation/src
@@ -47,6 +47,9 @@ pipeline-dev:
 
 dashboard:
 	streamlit run module_a_population_segmentation/app/streamlit_dashboard.py
+
+graphify:
+	poetry run graphify update .
 
 module-a-export:
 	poetry run python -m population_segmentation.pipeline.export \

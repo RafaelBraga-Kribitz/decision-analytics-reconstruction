@@ -16,8 +16,8 @@
     "hash": "95dba2b22ccb256e5e53c78abcb1aa8d"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/module_a_population_segmentation/tests/test_segmentation.py": {
-    "mtime": 1778498378.994638,
-    "hash": "1c1164e7bdc8e2a92487fef7a1ce5918"
+    "mtime": 1778503275.2131343,
+    "hash": "15e4d590ff61d48861c23530d9b98ab6"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/module_a_population_segmentation/tests/test_generator.py": {
     "mtime": 1778166167.7369785,
@@ -44,16 +44,16 @@
     "hash": "f47a2c24203704a871df373cce135ebd"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/module_a_population_segmentation/tests/test_export_artifacts.py": {
-    "mtime": 1778499080.7775862,
-    "hash": "5c81168144beef7c371e595d873dcce0"
+    "mtime": 1778503019.1303217,
+    "hash": "dc6eb6976f9e22f7528556cf6e99880f"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/module_a_population_segmentation/tests/test_evaluation.py": {
     "mtime": 1778173091.3525622,
     "hash": "f3ca555c0e2e7c3a20dc325c65f78419"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/module_a_population_segmentation/tests/test_propensity.py": {
-    "mtime": 1778171573.8235738,
-    "hash": "21cb4ac7ed52f4ae8b1827eeb2a592f4"
+    "mtime": 1778503281.9185688,
+    "hash": "52952f3991720109c356061f832b3113"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/module_a_population_segmentation/tests/test_raw_injector.py": {
     "mtime": 1778166025.2144244,
@@ -92,8 +92,8 @@
     "hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/module_a_population_segmentation/src/population_segmentation/pipeline/export.py": {
-    "mtime": 1778499080.9128695,
-    "hash": "0383fee6eafa08c47409722938b4d6f9"
+    "mtime": 1778502945.7630918,
+    "hash": "2b50469cfcbadcc26f5a104e6319a6bf"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/module_a_population_segmentation/src/population_segmentation/features/__init__.py": {
     "mtime": 1778171573.8230383,
@@ -124,16 +124,16 @@
     "hash": "f5508b2b75790ce4018ed97c6ec33aa7"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/module_a_population_segmentation/src/population_segmentation/models/propensity.py": {
-    "mtime": 1778171772.2559893,
-    "hash": "22ff296c04e9e1f27f9dc8eccb15f850"
+    "mtime": 1778503109.129947,
+    "hash": "7a9cae8313d52f9e334a6cd9a7ad60b4"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/module_a_population_segmentation/src/population_segmentation/models/__init__.py": {
     "mtime": 1778171573.8229344,
     "hash": "31b37aef0b76cb7c72e15001163f73c1"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/module_a_population_segmentation/src/population_segmentation/models/segmentation.py": {
-    "mtime": 1778499155.487558,
-    "hash": "75052f37f8d6cb639681fec443190e30"
+    "mtime": 1778501876.8484695,
+    "hash": "80ddac2c8efc892f1d563341d1deb4f5"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/module_a_population_segmentation/src/population_segmentation/evaluation/__init__.py": {
     "mtime": 1778171439.1794841,
@@ -152,8 +152,8 @@
     "hash": "11d4e2a81c95453e69da1c7a2dafbc42"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/module_a_population_segmentation/src/population_segmentation/data/segment_reachability_aggregate.py": {
-    "mtime": 1778499226.9157348,
-    "hash": "5f145f90def48d7ad1d10f765ec8f7f5"
+    "mtime": 1778503403.0204225,
+    "hash": "8b76122bcc98cfb2108243b0f5724625"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/module_a_population_segmentation/src/population_segmentation/data/raw_injector.py": {
     "mtime": 1778171735.8250146,
@@ -164,28 +164,28 @@
     "hash": "d41d8cd98f00b204e9800998ecf8427e"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/module_a_population_segmentation/src/population_segmentation/data/cleaner.py": {
-    "mtime": 1778171730.5080426,
-    "hash": "b354172baca0ebc10b8a4bba242547bf"
+    "mtime": 1778502925.8163702,
+    "hash": "709cf9d1e4720097111c2cd401fdea35"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/module_a_population_segmentation/src/population_segmentation/data/generator.py": {
     "mtime": 1778166167.764277,
     "hash": "8a3915407d96717d51e4d151e485abfd"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/README.md": {
-    "mtime": 1778498506.9431288,
-    "hash": "308ae1ff4cdddd84724125941d0f563e"
+    "mtime": 1778503942.3693125,
+    "hash": "a9aa9e4276ff616d683720fcaf66b1e4"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/docker-compose.yml": {
     "mtime": 1778494188.6048543,
     "hash": "fe481ac67129d8d9eaa6f10ce19bb5e0"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/AGENTS.md": {
-    "mtime": 1778495583.437422,
-    "hash": "54ac975e05fc91acec61d46499434271"
+    "mtime": 1778501760.0893245,
+    "hash": "16309557121d9b3439c25fd0b77a3dc5"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/CLAUDE.md": {
-    "mtime": 1778163304.4270287,
-    "hash": "cb288d0c2b3c7a32ecd1468d1f8840ce"
+    "mtime": 1778501760.0502954,
+    "hash": "6f2df55a3596604956ac50879359979b"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/appendix/verified_calibration_anchors_full.md": {
     "mtime": 1778162424.9574475,
@@ -212,8 +212,12 @@
     "hash": "0789bccb87af10a7ee8df394297e8787"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/schema_contracts/participation_propensity.yaml": {
-    "mtime": 1778161752.16191,
-    "hash": "c853d595f41953f7686e33cf130e43df"
+    "mtime": 1778502980.5855417,
+    "hash": "bde58948ead65044d1132fc6fbb3add2"
+  },
+  "/Users/rbk/Desktop/PARAGUAY_ELLECTION/maintainer/pre_public_cleanup_manifest.md": {
+    "mtime": 1778502362.0373168,
+    "hash": "23f0fbeb3125e80aa1c99e37ece6ba15"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/docs/ai_harness/simulation-tests.md": {
     "mtime": 1778159168.2774284,
@@ -228,8 +232,8 @@
     "hash": "09528e67363f6f688a3793ef528ccc28"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/docs/ai_harness/README.md": {
-    "mtime": 1778159117.9803495,
-    "hash": "728a4d40e65e06eb7d17d9272cc8108d"
+    "mtime": 1778501760.050102,
+    "hash": "0268239d076104a5e39652e6a800f64c"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/docs/ai_harness/task-taxonomy.md": {
     "mtime": 1778157852.507497,
@@ -252,28 +256,32 @@
     "hash": "379f8f8330ea3cf47c58cfd07a8bacb4"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/module_a_population_segmentation/config/model_params.yaml": {
-    "mtime": 1778161752.16076,
-    "hash": "ac1dd0acdfee7b1cc0b7892b993a2c93"
+    "mtime": 1778502220.3321385,
+    "hash": "05c94a800d3f0aaf92815a2616581d04"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/module_a_population_segmentation/reports/qa_report_template.md": {
     "mtime": 1778171521.2197173,
     "hash": "dc3b5ec195c96a91128c47e923eca176"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/module_a_population_segmentation/reports/model_card_propensity.md": {
-    "mtime": 1778171521.2194757,
-    "hash": "680d3b6a90f3cb70bacebaffb6fec031"
+    "mtime": 1778503641.750134,
+    "hash": "33c77e9807ab14327f06f814097d54ae"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/module_a_population_segmentation/reports/qa_report_20260511.md": {
-    "mtime": 1778498943.9677427,
-    "hash": "e6d1aef21f929bdb2af25d76344c74c3"
+    "mtime": 1778503668.4435215,
+    "hash": "f99a97a212c4440a3a265beb7596943a"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/module_a_population_segmentation/reports/qa_report_20260507.md": {
     "mtime": 1778173423.622136,
     "hash": "e6d1aef21f929bdb2af25d76344c74c3"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/module_a_population_segmentation/reports/model_card_segmentation.md": {
-    "mtime": 1778171520.999666,
-    "hash": "4ae53086b308e3d53f293a9eb1e1cffe"
+    "mtime": 1778503620.058367,
+    "hash": "8f6223f89a0c35700266601920e62eb6"
+  },
+  "/Users/rbk/Desktop/PARAGUAY_ELLECTION/data/processed/qa_report_20260511.md": {
+    "mtime": 1778499271.2892036,
+    "hash": "a4761607667fe9314cfa0d0dc5f8e741"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/reports/data_dictionary.md": {
     "mtime": 1778162429.1787739,
@@ -288,8 +296,8 @@
     "hash": "ac6a29321a75de5773044ae4a0da974c"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/reports/task_verify_TASK-20260507-001.md": {
-    "mtime": 1778498921.3878193,
-    "hash": "00f82fad6ca9bd62326a7790260f4adf"
+    "mtime": 1778503817.6348047,
+    "hash": "6951324188154e7785f33c53d40d1433"
   },
   "/Users/rbk/Desktop/PARAGUAY_ELLECTION/project_scope/scope_module_C_forecasting_and_scenario_engine.md": {
     "mtime": 1778156023.4282148,

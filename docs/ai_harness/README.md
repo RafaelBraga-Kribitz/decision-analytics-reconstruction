@@ -39,9 +39,10 @@ Claude Code loads the same skill content from `.claude/skills/project-*/SKILL.md
 ## Graph context layer
 
 - Graphify outputs live in `graphify-out/` (`GRAPH_REPORT.md`, `graph.json`, `graph.html`).
+- Install the CLI via Poetry: dev dependency **`graphifyy`** on PyPI supplies the `graphify` command (`poetry install`, then `poetry run graphify update .` or `make graphify`). AST-only refresh needs no API keys; semantic modes may use optional LLM keys (see upstream docs).
 - Cursor includes graph context every session via `.cursor/rules/graphify.mdc` (`alwaysApply: true`).
 - Claude includes graph context via `CLAUDE.md` and `.claude/settings.json` PreToolUse hook.
-- Keep the graph fresh with `graphify update .`; git hooks also trigger auto-refresh on commit/checkout.
+- Keep the graph fresh with `graphify update .` after code changes; git hooks may also trigger refresh when installed.
 
 ## Pre-public cleanup (portfolio / HR-facing)
 
