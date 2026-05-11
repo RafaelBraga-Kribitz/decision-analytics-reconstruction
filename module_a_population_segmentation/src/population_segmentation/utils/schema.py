@@ -116,3 +116,34 @@ CANONICAL_SEGMENT_LABELS: Final = frozenset(
 CANONICAL_ENC_SOURCE: Final = frozenset({"windows1252", "utf8", "unknown"})
 
 CANONICAL_REACH_CHANNELS: Final = frozenset({"tv", "radio", "whatsapp", "direct"})
+
+# ─── Engineered feature constants ─────────────────────────────────────────────
+# Derived columns produced by features/ and used in model_params.yaml.
+# Kept separate from raw constants so schema.py never references
+# implementation-specific logic; all names must match model_params.yaml exactly.
+AGE_BIN: Final = "age_bin"
+AGE_BIN_ENCODED: Final = "age_bin_encoded"
+GENDER_ENCODED: Final = "gender_encoded"
+YOUTH_FLAG: Final = "youth_flag"
+SENIOR_FLAG: Final = "senior_flag"
+METRO_FLAG: Final = "metro_flag"
+CHACO_FLAG: Final = "chaco_flag"
+DEPARTMENT_REGION: Final = "department_region"
+PREFERENCE_PROXY_ENCODED: Final = "preference_proxy_encoded"
+STRUCTURAL_DEPENDENCY_ENCODED: Final = "structural_dependency_encoded"
+LANGUAGE_JOPARA_ENCODED: Final = "language_jopara_encoded"
+LANGUAGE_GUARANI_FLAG: Final = "language_guarani_flag"
+NBI_STRESS_PRIOR_SCALED: Final = "nbi_stress_prior_scaled"
+REACHABILITY_DIGITAL: Final = "reachability_digital"
+REACHABILITY_BROADCAST_TV: Final = "reachability_broadcast_tv"
+REACHABILITY_BROADCAST_RADIO: Final = "reachability_broadcast_radio"
+REACHABILITY_INDEX: Final = "reachability_index"
+REACHABILITY_TIER: Final = "reachability_tier"
+URBAN_DIGITAL_COMPOUND: Final = "urban_digital_compound"
+RURAL_OFFLINE_COMPOUND: Final = "rural_offline_compound"
+GENDER_YOUTH_INTERACTION: Final = "gender_youth_interaction"
+DEPARTMENT_LOGIT_OFFSET: Final = "department_logit_offset"
+
+SCHEMA_DRIFT_FLAG: Final = "schema_drift_flag"
+QUALITATIVE_SENTIMENT: Final = "qualitative_sentiment"
+QUALITATIVE_DISTRICT: Final = "qualitative_district"

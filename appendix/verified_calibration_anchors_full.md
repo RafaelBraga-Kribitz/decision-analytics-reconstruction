@@ -101,7 +101,7 @@ Legend:
 
 | Anchor                                       | Value                | Source            | Status                              |
 | -------------------------------------------- | -------------------- | ----------------- | ----------------------------------- |
-| BCP PYG/USD daily TC_Ref band (Jan–Apr 2018) | ~5,800–6,000 PYG/USD | BCP, 2018         | [VERIFIED band — exact CSV pending] |
+| BCP PYG/USD daily TC_Ref band (Jan–Apr 2018) | ~5,500–5,700 PYG/USD | BCP, 2018         | [VERIFIED band — exact CSV pending; Q1 2018 strengthening period; peak 2017 was ~5,827; corrected from prior entry of 5,800–6,000 which reflected late-2017 not Q1-2018] |
 | Casa de cambio retail spread                 | ~+50 PYG/USD         | Estimated         | [PARTIAL]                           |
 | Budget scale                                 | ~$2M total           | Internal estimate | [ESTIMATED]                         |
 

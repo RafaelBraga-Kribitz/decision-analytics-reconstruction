@@ -230,3 +230,83 @@ Records every non-trivial architectural choice: decision, alternatives considere
 **Reason:** Enforce tracking vs exit separation, dual-series calibration without hybrid keys, and typed downstream artifacts for PyMC exports and Monte Carlo catalogues.
 
 **Source:** Module C full-scope execution plan; scope dual calibration (Series A/B).
+
+---
+
+## 2026-05-12 — Module A: Logistic regression vs gradient boosting for propensity model
+
+**Decision:** Use logistic regression with L2 regularization, not gradient boosting (XGBoost / LightGBM).
+
+**Alternatives considered:**
+- XGBoost / LightGBM: higher discriminative ceiling on tabular data; SHAP TreeExplainer available; standard in industry churn modeling.
+- Random forest: ensemble baseline, no calibration benefit over LR at this feature dimensionality.
+
+**Reason:** Three constraints rule out tree-based methods here. (1) **Calibration contract:** the propensity output must be a probability that passes a reliability-diagram max-deviation ≤ 3 pp gate; logistic regression with Platt calibration produces better-calibrated scores than tree ensembles on synthetic data with ~14 features. (2) **Rake compatibility:** the post-calibration department rake multiplier is applied to the raw logit before sigmoid; this requires a linear model so that the logit offset is interpretable as a log-odds shift. Applying a multiplicative correction to a gradient-boosted leaf value lacks the same probabilistic interpretation. (3) **Audit surface:** a single logistic coefficient vector is directly auditable against the calibration anchors; a 500-tree ensemble is not.
+
+Documented limitation: if the true propensity surface is highly non-linear (e.g., strong rural × youth × language interaction), LR will underfit relative to GBM. SHAP analysis is used to monitor whether the model's learned coefficients are behaviorally plausible or merely fitting noise.
+
+**Source:** scope_module_A §7.3; model_card_propensity.md
+
+---
+
+## 2026-05-12 — Module A: K-Means vs Gaussian Mixture Model for segmentation
+
+**Decision:** Use K-Means (hard assignment), not Gaussian Mixture Model (soft / probabilistic assignment).
+
+**Alternatives considered:**
+- GMM with full or diagonal covariance: allows probabilistic segment membership; better captures elongated or overlapping clusters; standard in academic mixture modeling literature.
+- Spectral clustering: handles non-convex boundaries; computationally tractable at N=50k sample but not at N=4.26M without approximation.
+
+**Reason:** Operational constraint: Module B's allocation solver requires a **deterministic, non-overlapping segment assignment per entity** so that reach caps (per-segment population ceilings in the LP) are non-overlapping. GMM's soft assignments would require a threshold rule to produce hard labels, reintroducing an arbitrary boundary. K-Means hard assignment is consistent with the segmentation's operational role. The six segments are designed to be **actionable archetypes**, not statistical density modes — the naming (Rural Committed, Youth Volatile, etc.) is post-hoc and operationally meaningful, not a claim about underlying mixture structure.
+
+Documented limitation: K-Means assumes spherical clusters in the standardized PCA space; segments with elongated or non-convex boundaries in raw feature space may be artificially split or merged. The DBSCAN pre-pass removes structural noise before K-Means, reducing sensitivity to outliers that would otherwise pull centroids.
+
+**Source:** scope_module_A §7.1; model_card_segmentation.md
+
+---
+
+## 2026-05-12 — Module A: Synthetic generation vs restricted real data
+
+**Decision:** Generate a fully synthetic population calibrated to verified TSJE/DGEEC anchors. No real individual-level data is used.
+
+**Alternatives considered:**
+- Restricted-access TSJE microdata: would provide real behavioral heterogeneity; however, it is not publicly available and its use in a public portfolio reconstruction would raise data governance issues.
+- Synthetic minority oversampling (SMOTE-style): applicable if a partial real sample were available; not applicable here.
+- Public-use microdata from DGEEC household surveys: partial coverage; does not include electoral roll fields (cédula, participation outcome).
+
+**Reason:** The reconstruction's goal is to demonstrate the **methodology**, not the original operational data. Synthetic generation with verified marginal anchors (TSJE electoral roll, DGEEC census) is the appropriate design: it is transparent, reproducible, and ethically clean. The key limitation is independence: the synthetic generator draws individual attributes conditionally but does not enforce joint correlation structure beyond first-order conditionals and two raking passes. This is documented explicitly — see `appendix/verified_calibration_anchors_full.md` and the statistical narrative in `reports/statistical_independence_note.md`.
+
+**Source:** scope_master §3; Project_Evaluation.md §B.1
+
+---
+
+## 2026-05-12 — Module A: Bayesian generative model vs frequentist synthetic generation
+
+**Decision:** Use a frequentist conditional sampling approach (rng.choice with probability weights + IPF raking), not a full Bayesian generative model (e.g., a Dirichlet-Multinomial hierarchical model).
+
+**Alternatives considered:**
+- Full Bayesian generative model with PyMC: would allow posterior uncertainty over population parameters; joint draws would naturally respect correlation structure; posterior predictive checks against TSJE anchors are straightforward.
+- Copula-based multivariate simulation: preserves marginals while modeling dependence; would address the independence limitation of the current approach.
+
+**Reason:** For the reconstruction's purpose, the Bayesian generative approach is the technically superior design but operationally unjustified at this stage: (1) The calibration anchors are treated as known constants (verified TSJE/DGEEC values), not as distributions — there is no parameter uncertainty to propagate through the generation step. (2) A PyMC generative model would be substantially slower to run at N=4.26M scale without GPU acceleration. (3) The Module C forecaster (PyMC hierarchical) covers the Bayesian inference layer where it is most impactful — on the noisy poll signal. Applying Bayesian machinery to the population generator would add complexity without changing the calibration targets that the pipeline is ultimately evaluated against.
+
+The copula-based approach is the recommended upgrade path if joint dependence validation becomes a quality gate requirement.
+
+**Source:** Project_Evaluation.md §B.1; scope_module_A §4.1
+
+---
+
+## 2026-05-12 — Module A: Silhouette metric vs domain-defined archetypes for k selection
+
+**Decision:** Use silhouette coefficient as the primary validation metric, with k=6 as the fixed target derived from domain archetypes — not from silhouette maximization.
+
+**Alternatives considered:**
+- Pure silhouette optimization: choose k that maximizes mean silhouette across k ∈ {4,5,6,7,8}. This would be fully data-driven but could yield k=4 or k=5 that lack operational differentiation.
+- Elbow method on within-cluster sum of squares: noisier than silhouette; widely used but does not provide a clear threshold.
+- Domain-first k with no validation: operationally pragmatic but cannot detect degenerate solutions (e.g., one huge cluster absorbing 80% of entities).
+
+**Reason:** The six segment archetypes (Rural Committed, Urban High Volatility, Youth Volatile, Structurally Dependent, Rural Low Propensity, Committed Opposition) are derived from the program's operational logic: each segment requires a distinct channel mix and budget priority. This domain structure sets k=6 as the target. Silhouette is used as a **sanity check** (mean > 0.22, enforced by CI) to confirm that the six-cluster solution has non-trivial cohesion — not to find the optimal k. If silhouette at k=6 fell below 0.22, it would indicate that the domain archetypes do not correspond to statistically separable clusters, which would require feature engineering review.
+
+Bootstrap ARI (> 0.77, enforced) validates stability across random seeds — a critical property when the segmentation is used to fix Module B's reach caps.
+
+**Source:** scope_module_A §7.1; model_card_segmentation.md; decision_log 2026-05-07

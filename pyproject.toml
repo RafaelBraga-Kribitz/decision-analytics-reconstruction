@@ -19,19 +19,27 @@ scikit-learn = ">=1.4"
 pyarrow = ">=14.0"
 chardet = ">=5.2"
 rapidfuzz = ">=3.6"
-shap = ">=0.44"
-streamlit = ">=1.32"
-plotly = ">=5.20"
+pandera = ">=0.19"
 pydantic = ">=2.6"
 mlflow = ">=2.12"
 pyyaml = ">=6.0"
 python-dotenv = ">=1.0"
+dvc = {version = ">=3.0", optional = true}
 pulp = ">=2.8"
 networkx = ">=3.2"
 fastapi = ">=0.110"
 uvicorn = ">=0.30"
 pymc = ">=5.16,<6"
 arviz = ">=0.19"
+shap = {version = ">=0.44", optional = true}
+streamlit = {version = ">=1.32", optional = true}
+plotly = {version = ">=5.20", optional = true}
+
+[tool.poetry.extras]
+dashboard = ["streamlit", "plotly"]
+explainability = ["shap"]
+tracking = ["dvc"]
+all = ["streamlit", "plotly", "shap", "dvc"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = ">=8.0"

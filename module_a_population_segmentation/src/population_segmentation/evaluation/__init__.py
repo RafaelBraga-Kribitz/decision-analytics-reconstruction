@@ -7,6 +7,10 @@ from population_segmentation.evaluation.clustering_metrics import (
     compute_bootstrap_ari,
     compute_silhouette,
 )
+from population_segmentation.evaluation.schema_validator import (
+    validate_clean_population,
+    validate_feature_frame,
+)
 
 __all__ = [
     "compute_auc",
@@ -14,4 +18,6 @@ __all__ = [
     "reliability_deviation",
     "compute_bootstrap_ari",
     "compute_silhouette",
+    "validate_clean_population",
+    "validate_feature_frame",
 ]

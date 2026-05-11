@@ -106,11 +106,16 @@ class TestFlawTypes:
         assert len(found) >= 3, f"Only {len(found)} gender variants found: {found}"
 
     def test_rng_age_range_errors_present(self, raw_population: pd.DataFrame) -> None:
-        """RNG: some derived age values should be <18 or >120 after DOB swap."""
-        # The age_range_error is encoded in dob — detection in cleaner
-        # Proxy: check dob_ambiguous flag or that some DOBs produce bad ages
-        # This flaw manifests during cleaning; mark present if dob has ambiguous entries
+        """RNG: DOB year-swap flaw must produce out-of-range ages on the event date."""
         assert "dob" in raw_population.columns
+        event_date = pd.Timestamp("2018-04-22")
+        parsed = pd.to_datetime(raw_population["dob"], format="%d/%m/%Y", errors="coerce")
+        ages = (event_date - parsed).dt.days / 365.25
+        bad_age_count = int((ages < 18).sum() + (ages > 120).sum() + parsed.isna().sum())
+        assert bad_age_count > 0, (
+            "Expected age_range flaw to produce unparseable or out-of-range DOBs, "
+            f"but all {len(raw_population):,} records have valid ages in [18, 120]"
+        )
 
     def test_sch_schema_drift_present(self, raw_population: pd.DataFrame) -> None:
         """SCH: dataset should include a schema drift marker column."""
@@ -157,7 +162,11 @@ class TestFlaw13Coverage:
     """All 13 flaw types from scope §4.2 must be present."""
 
     def test_all_13_flaw_types_accounted(self, raw_population: pd.DataFrame) -> None:
-        """Check flaw_summary column or metadata confirms 13 types injected."""
-        assert (
-            "flaw_types_injected" in raw_population.attrs or "cedula" in raw_population.columns
-        ), "Raw injector output has no recognizable flaw columns"
+        """inject_flaws must record exactly 13 flaw types in df.attrs."""
+        assert "flaw_types_injected" in raw_population.attrs, (
+            "inject_flaws must store the injected flaw list in df.attrs['flaw_types_injected']"
+        )
+        injected = raw_population.attrs["flaw_types_injected"]
+        assert len(injected) == 13, (
+            f"Expected exactly 13 flaw types (scope §4.2), got {len(injected)}: {injected}"
+        )

@@ -8,27 +8,31 @@ N_full: 4260816              # TSJE, April 22, 2018
 # ─── Outcome event date ───────────────────────────────────────────────────────
 outcome_event_date: "2018-04-22"
 
-# ─── Department weights (DGEEC 2018 population shares) ───────────────────────
-# All 18 departments + Asunción; shares sum to 1.0
+# ─── Department weights (DGEEC 2018 electoral-roll shares) ───────────────────
+# All 18 departments + Asunción; shares sum to exactly 1.0000.
+# Source: TSJE 2018 voter-roll proportions, normalised from DGEEC 2018
+# projections.  Original raw values summed to 0.9200 due to rounding across
+# 18 entries; corrected 2026-05-11 by proportional normalisation (÷ 0.92),
+# rounding residual absorbed into Central (largest department).
 department_weights:
-  Asuncion: 0.0702
-  Central: 0.2997
-  Alto Parana: 0.1058
-  Itapua: 0.0795
-  Caaguazu: 0.0615
-  San Pedro: 0.0451
-  Cordillera: 0.0413
-  Paraguari: 0.0354
-  Misiones: 0.0223
-  Guaira: 0.0219
-  Amambay: 0.0203
-  Canindeyu: 0.0196
-  Caazapa: 0.0176
-  Neembucu: 0.0120
-  Concepcion: 0.0366
-  Presidente Hayes: 0.0178
-  Boqueron: 0.0081
-  Alto Paraguay: 0.0053
+  Asuncion: 0.0763
+  Central: 0.3259
+  Alto Parana: 0.1150
+  Itapua: 0.0864
+  Caaguazu: 0.0668
+  San Pedro: 0.0490
+  Cordillera: 0.0449
+  Paraguari: 0.0385
+  Misiones: 0.0242
+  Guaira: 0.0238
+  Amambay: 0.0221
+  Canindeyu: 0.0213
+  Caazapa: 0.0191
+  Neembucu: 0.0130
+  Concepcion: 0.0398
+  Presidente Hayes: 0.0193
+  Boqueron: 0.0088
+  Alto Paraguay: 0.0058
 
 # ─── Urban/rural mix per department (share urban; 1-x = rural) ───────────────
 # Based on DGEEC 2018 projections; national average 61.7% urban

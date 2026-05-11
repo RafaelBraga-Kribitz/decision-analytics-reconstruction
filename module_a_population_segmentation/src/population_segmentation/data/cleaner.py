@@ -9,6 +9,7 @@ from typing import Any
 import numpy as np
 import pandas as pd
 
+from population_segmentation.evaluation.schema_validator import validate_clean_population
 from population_segmentation.utils.schema import CANONICAL_DEPARTMENTS
 from population_segmentation.utils.seeds import make_rng
 
@@ -154,7 +155,9 @@ def clean_population(
     if qa_report_dir is not None:
         _write_qa_report(df, raw_df, Path(qa_report_dir))
 
-    return df.reset_index(drop=True)
+    out = df.reset_index(drop=True)
+    validate_clean_population(out)
+    return out
 
 
 def _normalize_dob(dob: pd.Series) -> pd.Series:

@@ -19,7 +19,7 @@ from population_segmentation.utils.schema import (
     BALLOT_BLANK_PARLASUR,
     BALLOT_BLANK_PRESIDENT,
     DEPARTMENT,
-    ENC_SOURCE,
+    ENC_SOURCE_RAW,
     ENTITY_ID,
     GENDER,
     INTERNET_ACCESS_FLAG,
@@ -237,7 +237,8 @@ def generate_population(
     ballot_blank_pres = rng.random(n) < 0.0241
     ballot_blank_parl = rng.random(n) < 0.0848
 
-    # ── enc_source ─────────────────────────────────────────────────────────────
+    # ── enc_source_raw ─────────────────────────────────────────────────────────
+    # Raw layer uses enc_source_raw; cleaner renames to enc_source in step 2.
     enc_sources = rng.choice(
         ["windows1252", "utf8", "unknown"],
         size=n,
@@ -268,7 +269,7 @@ def generate_population(
             NBI_STRESS_PRIOR: nbi_vals,
             BALLOT_BLANK_PRESIDENT: ballot_blank_pres,
             BALLOT_BLANK_PARLASUR: ballot_blank_parl,
-            ENC_SOURCE: enc_sources,
+            ENC_SOURCE_RAW: enc_sources,
         }
     )
 
@@ -430,3 +431,38 @@ def _assign_language(
         ]
 
     return result
+
+
+if __name__ == "__main__":
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description="Generate synthetic population. Outputs population_raw.parquet."
+    )
+    parser.add_argument(
+        "--config",
+        required=True,
+        type=Path,
+        help="Path to generation.yaml",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help="Output parquet path (default: data/raw/population_raw.parquet)",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="Random seed (overrides RANDOM_SEED env var)",
+    )
+    args = parser.parse_args()
+
+    cfg = _load_config(args.config)
+    out = args.output or Path("data/raw/population_raw.parquet")
+    out.parent.mkdir(parents=True, exist_ok=True)
+
+    df = generate_population(cfg, seed=args.seed, output_path=out)
+    print(f"Generated {len(df):,} entities → {out}")
+    print(f"Columns: {list(df.columns)}")
