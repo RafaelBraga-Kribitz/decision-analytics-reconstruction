@@ -83,7 +83,7 @@ pipeline-dev:
 		--config module_a_population_segmentation/config/generation.yaml
 
 dashboard:
-	streamlit run module_a_population_segmentation/app/streamlit_dashboard.py
+	poetry run streamlit run module_a_population_segmentation/app/streamlit_dashboard.py
 
 graphify:
 	poetry run graphify update .
