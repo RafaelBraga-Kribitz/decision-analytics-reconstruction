@@ -54,6 +54,7 @@ def run_export(
     from population_segmentation.data.raw_injector import inject_flaws
     from population_segmentation.data.segment_reachability_aggregate import (
         aggregate_media_reachability_by_segment,
+        aggregate_media_reachability_by_segment_department,
     )
     from population_segmentation.features.behavioral import build_behavioral_features
     from population_segmentation.features.demographic import build_demographic_features
@@ -105,8 +106,11 @@ def run_export(
 
     merged_feat["participation_propensity"] = prop_df["participation_propensity"].to_numpy()
 
-    print("[export] Aggregating media reachability ...", flush=True)
+    print("[export] Aggregating media reachability (segment) ...", flush=True)
     reach_df = aggregate_media_reachability_by_segment(merged_feat)
+
+    print("[export] Aggregating media reachability (segment x department) ...", flush=True)
+    reach_dept_df = aggregate_media_reachability_by_segment_department(merged_feat)
 
     artifacts: dict[str, Path] = {}
 
@@ -132,9 +136,21 @@ def run_export(
     artifacts["media_reachability_by_segment"] = path_reach
     print(f"[export] Written {path_reach}", flush=True)
 
+    path_reach_dept = out_dir / "media_reachability_by_segment_department.csv"
+    reach_dept_df.to_csv(path_reach_dept, index=False)
+    artifacts["media_reachability_by_segment_department"] = path_reach_dept
+    print(f"[export] Written {path_reach_dept}", flush=True)
+
     # Contract validation at export exit: enforce schema invariants before returning.
     print("[export] Validating output contracts ...", flush=True)
-    _validate_export_contracts(merged_feat, prop_df, labels_df, anchors, reach=reach_df)
+    _validate_export_contracts(
+        merged_feat,
+        prop_df,
+        labels_df,
+        anchors,
+        reach=reach_df,
+        reach_dept=reach_dept_df,
+    )
     print("[export] Contract validation passed.", flush=True)
 
     return artifacts
@@ -158,6 +174,26 @@ _MEDIA_REQUIRED_COLUMNS: tuple[str, ...] = (
     "primary_reach_channel",
 )
 
+_MEDIA_DEPT_REQUIRED_COLUMNS: tuple[str, ...] = (
+    "segment_label",
+    "department",
+    "region",
+    "segment_size",
+    "segment_size_pct_of_department",
+    "segment_size_pct_of_segment",
+    "mean_participation_propensity",
+    "pct_internet_access",
+    "mean_tv_penetration",
+    "mean_radio_penetration",
+    "mean_whatsapp_penetration",
+    "pct_rural",
+    "pct_jopara",
+    "pct_structural_dependency",
+    "primary_reach_channel",
+)
+
+_VALID_REGIONS: frozenset[str] = frozenset({"ORIENTAL", "CHACO"})
+
 
 def _validate_export_contracts(
     master: pd.DataFrame,
@@ -165,6 +201,7 @@ def _validate_export_contracts(
     labels: pd.DataFrame,
     anchors: dict[str, Any],
     reach: pd.DataFrame | None = None,
+    reach_dept: pd.DataFrame | None = None,
 ) -> None:
     """Raise ValueError if any hard contract constraint is violated.
 
@@ -298,6 +335,107 @@ def _validate_export_contracts(
             # segment_size must be positive
             if "segment_size" in reach.columns and (reach["segment_size"] <= 0).any():
                 errors.append("media_reachability_by_segment: segment_size must be > 0")
+
+    # --- media_reachability_by_segment_department contract ---
+    if reach_dept is not None:
+        from population_segmentation.data.segment_reachability_aggregate import (
+            DEPARTMENTS as _DEPARTMENTS,
+        )
+        from population_segmentation.data.segment_reachability_aggregate import (
+            SEGMENT_LABELS as _SEGMENT_LABELS,
+        )
+
+        missing_cols = [c for c in _MEDIA_DEPT_REQUIRED_COLUMNS if c not in reach_dept.columns]
+        if missing_cols:
+            errors.append(
+                "media_reachability_by_segment_department missing columns: " f"{missing_cols}"
+            )
+        else:
+            expected_rows = len(_SEGMENT_LABELS) * len(_DEPARTMENTS)
+            if len(reach_dept) != expected_rows:
+                errors.append(
+                    "media_reachability_by_segment_department: expected "
+                    f"{expected_rows} rows ((segment, department) cartesian), "
+                    f"got {len(reach_dept)}"
+                )
+
+            if reach_dept.duplicated(["segment_label", "department"]).any():
+                n_dup = int(reach_dept.duplicated(["segment_label", "department"]).sum())
+                errors.append(
+                    "media_reachability_by_segment_department: "
+                    f"{n_dup} duplicate (segment_label, department) rows"
+                )
+
+            bad_seg = set(reach_dept["segment_label"].unique()) - set(_SEGMENT_LABELS)
+            if bad_seg:
+                errors.append(
+                    "media_reachability_by_segment_department: "
+                    f"non-canonical segment_label values: {bad_seg}"
+                )
+
+            bad_dept = set(reach_dept["department"].unique()) - set(_DEPARTMENTS)
+            if bad_dept:
+                errors.append(
+                    "media_reachability_by_segment_department: "
+                    f"non-canonical department values: {bad_dept}"
+                )
+
+            bad_region = set(reach_dept["region"].unique()) - _VALID_REGIONS
+            if bad_region:
+                errors.append(
+                    "media_reachability_by_segment_department: "
+                    f"invalid region values: {bad_region}"
+                )
+
+            if (reach_dept["segment_size"] < 0).any():
+                errors.append(
+                    "media_reachability_by_segment_department: " "segment_size must be >= 0"
+                )
+
+            pct_cols = (
+                "segment_size_pct_of_department",
+                "segment_size_pct_of_segment",
+            )
+            for col in pct_cols:
+                if col in reach_dept.columns:
+                    if bool(reach_dept[col].isna().any()):
+                        errors.append(
+                            f"media_reachability_by_segment_department: {col} contains NaN"
+                        )
+                    elif not bool(reach_dept[col].between(0.0, 1.0).all()):
+                        n_bad = int((~reach_dept[col].between(0.0, 1.0)).sum())
+                        errors.append(
+                            f"media_reachability_by_segment_department: {col} has "
+                            f"{n_bad} values outside [0, 1]"
+                        )
+
+            mean_cols = (
+                "mean_participation_propensity",
+                "pct_internet_access",
+                "mean_tv_penetration",
+                "mean_radio_penetration",
+                "mean_whatsapp_penetration",
+                "pct_rural",
+                "pct_jopara",
+            )
+            for col in mean_cols:
+                if col in reach_dept.columns:
+                    valid = reach_dept[col].dropna()
+                    if not bool(valid.between(0.0, 1.0).all()):
+                        n_bad = int((~valid.between(0.0, 1.0)).sum())
+                        errors.append(
+                            f"media_reachability_by_segment_department: {col} has "
+                            f"{n_bad} non-null values outside [0, 1]"
+                        )
+
+            if "primary_reach_channel" in reach_dept.columns:
+                non_null = reach_dept["primary_reach_channel"].dropna()
+                bad_channel = set(non_null.unique()) - _VALID_REACH_CHANNELS
+                if bad_channel:
+                    errors.append(
+                        "media_reachability_by_segment_department: "
+                        f"invalid primary_reach_channel values: {bad_channel}"
+                    )
 
     if errors:
         msg = "\n".join(f"  • {e}" for e in errors)

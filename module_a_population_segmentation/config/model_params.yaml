@@ -55,7 +55,10 @@ kmeans:
   # measured ≈0.28 at n=15k).  The original gate of 0.35 was only satisfied
   # by clipping the raw metric — removed.
   silhouette_threshold: 0.22
-  bootstrap_ari_threshold: 0.80  # Gate A6 — measured ≈0.81 at n=15k, no change
+  # Gate A6: enforced threshold is 0.77 in test_segmentation.py (matches model
+  # card; allows for ≥25-bootstrap variance and avoids masking).  Measured
+  # ≈0.79–0.81 at n=15k with 25 reps, no masking applied.
+  bootstrap_ari_threshold: 0.77
   bootstrap_n_samples: 100
   bootstrap_subsample_frac: 0.80
 

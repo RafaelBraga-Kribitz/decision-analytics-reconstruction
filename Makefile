@@ -1,28 +1,39 @@
-.PHONY: install lint format typecheck test coverage all clean module-a-export graphify
+.PHONY: install lint format typecheck test coverage all clean module-a-export graphify \
+	module-b-allocate module-b-routing module-b-api test-module-a test-module-b
 
 PYTHON := python3.11
 MODULE_A_SRC := module_a_population_segmentation/src
 MODULE_A_TESTS := module_a_population_segmentation/tests
 MODULE_A_APP := module_a_population_segmentation/app
+MODULE_B_SRC := module_b_resource_allocation/src
+MODULE_B_TESTS := module_b_resource_allocation/tests
 
 install:
 	poetry install
 
 format:
-	black $(MODULE_A_SRC) $(MODULE_A_TESTS) $(MODULE_A_APP)
+	poetry run black $(MODULE_A_SRC) $(MODULE_A_TESTS) $(MODULE_A_APP) $(MODULE_B_SRC) $(MODULE_B_TESTS)
 
 lint:
-	ruff check $(MODULE_A_SRC) $(MODULE_A_TESTS) $(MODULE_A_APP)
-	black --check $(MODULE_A_SRC) $(MODULE_A_TESTS) $(MODULE_A_APP)
+	ruff check $(MODULE_A_SRC) $(MODULE_A_TESTS) $(MODULE_A_APP) $(MODULE_B_SRC) $(MODULE_B_TESTS)
+	poetry run black --check $(MODULE_A_SRC) $(MODULE_A_TESTS) $(MODULE_A_APP) $(MODULE_B_SRC) $(MODULE_B_TESTS)
 
 typecheck:
-	pyright $(MODULE_A_SRC)
+	poetry run pyright $(MODULE_A_SRC) $(MODULE_B_SRC)
 
 test:
+	pytest $(MODULE_A_TESTS) $(MODULE_B_TESTS) -v --tb=short
+
+test-module-a:
 	pytest $(MODULE_A_TESTS) -v --tb=short
 
+test-module-b:
+	pytest $(MODULE_B_TESTS) -v --tb=short
+
 coverage:
-	pytest $(MODULE_A_TESTS) --cov=$(MODULE_A_SRC) --cov-report=term-missing --cov-report=xml
+	pytest $(MODULE_A_TESTS) $(MODULE_B_TESTS) \
+		--cov=$(MODULE_A_SRC) --cov=$(MODULE_B_SRC) \
+		--cov-report=term-missing --cov-report=xml
 
 ci: lint typecheck coverage
 
@@ -57,3 +68,18 @@ module-a-export:
 		--anchors module_a_population_segmentation/config/calibration_anchors.yaml \
 		--out-dir data/processed \
 		--sample-size $(or $(SAMPLE),50000)
+
+module-b-allocate:
+	poetry run python -m module_b_resource_allocation.pipeline.run_allocation \
+		--scenario $(or $(SCENARIO),baseline) \
+		--out-dir data/processed/module_b \
+		--seed $(or $(SEED),20180422)
+
+module-b-routing:
+	poetry run python -m module_b_resource_allocation.routing.heuristic \
+		--scenario $(or $(SCENARIO),dry_standard) \
+		--out-dir data/processed/module_b \
+		--seed $(or $(SEED),20180422)
+
+module-b-api:
+	poetry run uvicorn module_b_resource_allocation.api.app:app --host 127.0.0.1 --port 8088

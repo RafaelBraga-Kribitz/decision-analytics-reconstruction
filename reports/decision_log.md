@@ -154,6 +154,30 @@ Records every non-trivial architectural choice: decision, alternatives considere
 
 ---
 
+## 2026-05-11 — Cross-module debt closure (Module B foundation)
+
+**Decision:** Close four confirmed debts in one cycle, before Module B implementation lands:
+
+1. **Reachability grain:** `media_reachability_by_segment` stays segment-only (k=6) as the diagnostic rollup; add new contract `media_reachability_by_segment_department.yaml` (1 row per (segment, department), 108 rows) as the authoritative grain consumed by Module B LP/MILP. Module B MUST NOT reinterpret the segment-only artifact as department-level caps.
+2. **Calibration transparency:** Keep existing four TSJE-verified department gates as the only blocking calibration gates on `participation_propensity`. National, gender, and youth anchors remain informational and labelled in `schema_contracts/participation_propensity.yaml` with explicit source-inconsistency notes; placeholder departments stay tagged in `calibration_anchors.yaml`.
+3. **Harness vs enforcement reconciliation:** Update `docs/ai_harness/professional-grade-rubrics.md` to state enforced thresholds (silhouette 0.22, ARI 0.77, Brier 0.237) and mark the older aspirational gates as targets, not pass/fail. Align `module_a_population_segmentation/config/model_params.yaml` ARI threshold to 0.77 (it was 0.80, inconsistent with `test_segmentation.py` which enforces 0.77).
+4. **Module B integration scaffolding:** Add `schema_contracts/allocation_output.yaml`, `reachability_caps_dept_channel.yaml`, `routing_cost_matrix.yaml` so the Module B implementation lands against contracts rather than producing them ad hoc.
+
+**Locked implementation choices for Module B:**
+
+- Canonical optimization dimension: **11 channels** (matches the solver-facing channel taxonomy).
+- Solver stack: **PuLP/CBC** for LP/MILP + seeded **nearest-insertion + 2-opt** heuristic for TSP routing.
+- Data discipline: priors/placeholders are allowed initially with explicit `provenance` tags ∈ {VERIFIED, PRIOR, ESTIMATED}; verified-source ingestion is a follow-up.
+- Window: Jan–Apr 2018, 14 weeks; 18 departments × 11 channels × 14 weeks = 2,772 allocation rows.
+
+**Reason:** B's optimizer is sensitive to weights and caps; reading segment-level reach as district-level would silently produce wrong caps, and harness/test drift could confuse Module B and Module C onboarding. Closing these debts as a contract-first set lets B and C land against stable schemas with no silent reinterpretation.
+
+**Cross-module impact:** Module A export pipeline must emit the new segment-by-department reach artifact; downstream `test_input_schema.py` tests in Module B will validate against the new contracts. Module C calibration metadata inherits the same provenance discipline.
+
+**Source:** integration-impact-auditor closure session 2026-05-11; `docs/ai_harness/professional-grade-rubrics.md`; `module_a_population_segmentation/reports/audit_report_module_a_2026-05-11.md`.
+
+---
+
 ## 2026-05-11 — Graphify resolved (Poetry dev dependency)
 
 **Decision:** Add PyPI package **`graphifyy`** (`>=0.7,<0.8`) to `[tool.poetry.group.dev.dependencies]`. It provides the `graphify` console script (`poetry run graphify update .` or `make graphify`). Earlier attempts used distribution names `graphify` and `graphify-cli`, which are not published on PyPI; the maintained package is **`graphifyy`**.
@@ -163,4 +187,23 @@ Records every non-trivial architectural choice: decision, alternatives considere
 **Evidence:** `poetry run graphify update .` → exit 0; rebuild logged 697 nodes, 751 edges, 59 communities (session 2026-05-11).
 
 **Source:** graphify-resolve closure; `docs/ai_harness/README.md` graph section
+
+---
+
+## 2026-05-11 — Module B Phase 9–10 completion: counterfactual engine + integration validation
+
+**Decision:** Complete Module B implementation through broadcast-to-direct counterfactual engine and full test suite with API/weekly-replay entrypoints.
+
+**Scope closed:**
+- Phase 9: `counterfactual/broadcast_to_direct.py` — reallocates broadcast budget (tv_spots, radio_spots, newspaper_inserts) to direct channels (canvassing, rallies_events, sound_cars, sms_blasts); applies 15% bundle-release penalty when `conglomerate_x` flips 0; emits `delta_contacts` (int64, signed), `bundle_flipped_to_zero`, and `scenario_id = "broadcast_to_direct"`.
+- Phase 10: Verified all 13 integration tests pass (FastAPI TestClient), 131 Module B tests pass end-to-end, 116 Module A tests pass (no regressions).
+- Terminology: fixed two comment violations — `pre-election ramp` → `pre-outcome-event ramp` and `general election context` → `outcome event context`.
+
+**Alternatives considered:** Separate MILP re-solve for the counterfactual scenario (avoided due to runtime cost; Dirichlet-weighted analytic reallocation is sufficient for scenario reporting per plan §7.2).
+
+**Bundle penalty rate:** 15% of bundle minimum commitment (ESTIMATED); represents sunk logistics overhead when a media bundle contract is partially unwound.
+
+**Evidence:** `poetry run pytest module_b_resource_allocation/tests/ -v` → 131 passed; `poetry run pytest module_a_population_segmentation/tests/` → 116 passed.
+
+**Source:** module-b-counterfactual + integration-and-verification closure session 2026-05-11.
 

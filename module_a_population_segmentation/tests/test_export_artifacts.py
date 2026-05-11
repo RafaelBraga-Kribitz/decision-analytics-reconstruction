@@ -138,16 +138,57 @@ def test_dbscan_noise_flag_is_bool(export_artifacts: dict[str, Path]) -> None:
     ), f"dbscan_noise_flag dtype is {df['dbscan_noise_flag'].dtype}, expected bool"
 
 
-def test_all_four_artifacts_exist(export_artifacts: dict[str, Path]) -> None:
+def test_all_five_artifacts_exist(export_artifacts: dict[str, Path]) -> None:
     expected_keys = {
         "population_master_clean",
         "segment_labels",
         "participation_propensity",
         "media_reachability_by_segment",
+        "media_reachability_by_segment_department",
     }
     assert expected_keys == set(export_artifacts.keys())
     for name, path in export_artifacts.items():
         assert path.exists(), f"Artifact {name} not written to {path}"
+
+
+def test_media_reachability_dept_artifact_grain(export_artifacts: dict[str, Path]) -> None:
+    """Segment-by-department reach artifact must be dense and contract-aligned."""
+    from population_segmentation.data.segment_reachability_aggregate import (
+        DEPARTMENTS,
+        SEGMENT_LABELS,
+    )
+
+    df = pd.read_csv(export_artifacts["media_reachability_by_segment_department"])
+    expected_rows = len(SEGMENT_LABELS) * len(DEPARTMENTS)
+    assert len(df) == expected_rows, (
+        f"Expected {expected_rows} dense rows in "
+        f"media_reachability_by_segment_department.csv, got {len(df)}"
+    )
+
+    required = [
+        "segment_label",
+        "department",
+        "region",
+        "segment_size",
+        "segment_size_pct_of_department",
+        "segment_size_pct_of_segment",
+        "mean_participation_propensity",
+        "pct_internet_access",
+        "mean_tv_penetration",
+        "mean_radio_penetration",
+        "mean_whatsapp_penetration",
+        "pct_rural",
+        "pct_jopara",
+        "pct_structural_dependency",
+        "primary_reach_channel",
+    ]
+    for col in required:
+        assert col in df.columns, f"missing column: {col}"
+
+    assert not df.duplicated(["segment_label", "department"]).any()
+    assert set(df["region"]).issubset({"ORIENTAL", "CHACO"})
+    chaco = {"Presidente Hayes", "Boqueron", "Alto Paraguay"}
+    assert (df.loc[df["department"].isin(chaco), "region"] == "CHACO").all()
 
 
 def test_segment_labels_row_count_matches_master(export_artifacts: dict[str, Path]) -> None:

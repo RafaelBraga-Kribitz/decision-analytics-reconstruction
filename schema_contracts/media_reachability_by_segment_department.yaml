@@ -1,0 +1,121 @@
+schema_name: media_reachability_by_segment_department
+schema_version: "1.0.0"
+description: >
+  Department-grained companion to media_reachability_by_segment.
+  One row per (segment_label, department) pair.  Required so Module B can
+  build channel caps and persuasion-efficiency multipliers at the geographic
+  granularity its LP/MILP actually consumes.
+  Produced by: module_a (aggregation step).
+  Consumed by: Module B (reach caps per department per segment).
+
+unique_key:
+  - segment_label
+  - department
+
+row_count:
+  # k=6 segments * 18 departments; empty cells (no entity assigned to a
+  # segment in a department) are emitted with segment_size=0 so the artifact
+  # is dense.
+  exact: 108
+
+fields:
+  segment_label:
+    type: string
+    nullable: false
+    allowed_values:
+      - rural_committed
+      - urban_high_volatility
+      - youth_volatile
+      - structurally_dependent_bloc
+      - rural_low_propensity
+      - committed_opposition
+  department:
+    type: string
+    nullable: false
+    allowed_values:
+      - Asuncion
+      - Concepcion
+      - San Pedro
+      - Cordillera
+      - Guaira
+      - Caaguazu
+      - Caazapa
+      - Itapua
+      - Misiones
+      - Paraguari
+      - Alto Parana
+      - Central
+      - Neembucu
+      - Amambay
+      - Canindeyu
+      - Presidente Hayes
+      - Boqueron
+      - Alto Paraguay
+  segment_size:
+    type: int64
+    nullable: false
+    min: 0
+  segment_size_pct_of_department:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+  segment_size_pct_of_segment:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+  mean_participation_propensity:
+    type: float32
+    nullable: true
+    min: 0.0
+    max: 1.0
+  pct_internet_access:
+    type: float32
+    nullable: true
+    min: 0.0
+    max: 1.0
+  mean_tv_penetration:
+    type: float32
+    nullable: true
+    min: 0.0
+    max: 1.0
+  mean_radio_penetration:
+    type: float32
+    nullable: true
+    min: 0.0
+    max: 1.0
+  mean_whatsapp_penetration:
+    type: float32
+    nullable: true
+    min: 0.0
+    max: 1.0
+  pct_rural:
+    type: float32
+    nullable: true
+    min: 0.0
+    max: 1.0
+  pct_jopara:
+    type: float32
+    nullable: true
+    min: 0.0
+    max: 1.0
+  pct_structural_dependency:
+    type: float32
+    nullable: true
+    min: 0.0
+    max: 1.0
+  region:
+    type: string
+    nullable: false
+    allowed_values: [ORIENTAL, CHACO]
+    description: Geographic regime tag; CHACO = {Presidente Hayes, Boqueron, Alto Paraguay}.
+  primary_reach_channel:
+    type: string
+    nullable: true
+    allowed_values: [tv, radio, whatsapp, direct]
+    description: Channel with highest mean penetration in this (segment, department) cell.
+
+quality_gates:
+  empty_cells_allowed: true
+  segment_size_zero_implies_null_means: true

@@ -1,0 +1,130 @@
+schema_name: routing_cost_matrix
+schema_version: "1.0.0"
+description: >
+  Symmetric departmental routing cost matrix for Module B TSP/VRP volunteer
+  routing.  Edge weights are minutes (travel + service buffer) under the
+  scenario tag, layered with surface multipliers, weather impassability, and
+  Oriente vs Chaco regime separation.
+  Produced by: module_b_resource_allocation/routing/build_cost_matrix.py
+  Consumed by: module_b_resource_allocation/routing/heuristic.py.
+
+unique_key:
+  - origin_department
+  - destination_department
+  - scenario_id
+
+fields:
+  origin_department:
+    type: string
+    nullable: false
+    allowed_values:
+      - Asuncion
+      - Concepcion
+      - San Pedro
+      - Cordillera
+      - Guaira
+      - Caaguazu
+      - Caazapa
+      - Itapua
+      - Misiones
+      - Paraguari
+      - Alto Parana
+      - Central
+      - Neembucu
+      - Amambay
+      - Canindeyu
+      - Presidente Hayes
+      - Boqueron
+      - Alto Paraguay
+  destination_department:
+    type: string
+    nullable: false
+    allowed_values:
+      - Asuncion
+      - Concepcion
+      - San Pedro
+      - Cordillera
+      - Guaira
+      - Caaguazu
+      - Caazapa
+      - Itapua
+      - Misiones
+      - Paraguari
+      - Alto Parana
+      - Central
+      - Neembucu
+      - Amambay
+      - Canindeyu
+      - Presidente Hayes
+      - Boqueron
+      - Alto Paraguay
+  scenario_id:
+    type: string
+    nullable: false
+    allowed_values: [dry_standard, wet_election_week, chaco_stress]
+  region_pair:
+    type: string
+    nullable: false
+    allowed_values: [ORIENTAL_ORIENTAL, ORIENTAL_CHACO, CHACO_CHACO, SELF]
+  base_distance_km:
+    type: float32
+    nullable: false
+    min: 0.0
+  surface_share_paved:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+  surface_share_unpaved:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+  surface_share_earth_track:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+  time_multiplier:
+    type: float32
+    nullable: false
+    min: 1.0
+    max: 10.0
+    description: TIME_MULT applied to unpaved/earth edges; >= 3 for unpaved.
+  travel_time_minutes:
+    type: float32
+    nullable: false
+    min: 0.0
+  weather_p_fail:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+    description: Probability the edge is impassable in this scenario (tau/365 ~ 70/365 default).
+  tau_walk_minutes_mean:
+    type: float32
+    nullable: false
+    min: 0.0
+  tau_walk_minutes_p95:
+    type: float32
+    nullable: false
+    min: 0.0
+  edge_feasible:
+    type: bool
+    nullable: false
+    description: False when scenario removes this edge from the routable graph.
+
+quality_gates:
+  symmetric_within_scenario: true
+  self_loop_zero_distance: true
+  surface_shares_sum_to_one_tolerance: 0.005
+  chaco_min_time_multiplier: 3.0
+  oriente_min_time_multiplier_unpaved: 3.0
+
+provenance:
+  default_anchors:
+    paved_share_national: 0.087
+    earth_track_share_national: 0.86
+    weather_failure_days_per_year: 70
+    rural_access_indicator: 0.424
+  required_status: [PRIOR, ESTIMATED, VERIFIED]

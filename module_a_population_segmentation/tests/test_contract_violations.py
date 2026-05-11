@@ -237,5 +237,119 @@ def test_valid_frames_do_not_raise(anchors: dict[str, Any]) -> None:
     prop = _valid_prop(master, anchors)
     labels = _valid_labels(master)
     reach = _valid_reach()
-    # Must complete without exception
-    _validate_export_contracts(master, prop, labels, anchors, reach=reach)
+    reach_dept = _valid_reach_dept()
+    _validate_export_contracts(master, prop, labels, anchors, reach=reach, reach_dept=reach_dept)
+
+
+# ---------------------------------------------------------------------------
+# media_reachability_by_segment_department violations
+# ---------------------------------------------------------------------------
+
+
+def _valid_reach_dept() -> pd.DataFrame:
+    """Dense, contract-aligned segment×department reach frame (108 rows)."""
+    from population_segmentation.data.segment_reachability_aggregate import (
+        DEPARTMENTS,
+        SEGMENT_LABELS,
+        _region_for,
+    )
+
+    rows = []
+    for seg in SEGMENT_LABELS:
+        for dept in DEPARTMENTS:
+            rows.append(
+                {
+                    "segment_label": seg,
+                    "department": dept,
+                    "region": _region_for(dept),
+                    "segment_size": 50,
+                    "segment_size_pct_of_department": 1.0 / len(SEGMENT_LABELS),
+                    "segment_size_pct_of_segment": 1.0 / len(DEPARTMENTS),
+                    "mean_participation_propensity": 0.5,
+                    "pct_internet_access": 0.4,
+                    "mean_tv_penetration": 0.85,
+                    "mean_radio_penetration": 0.5,
+                    "mean_whatsapp_penetration": 0.3,
+                    "pct_rural": 0.4,
+                    "pct_jopara": 0.3,
+                    "pct_structural_dependency": 0.2,
+                    "primary_reach_channel": "tv",
+                }
+            )
+    return pd.DataFrame(rows)
+
+
+def test_dept_reach_wrong_row_count_raises(anchors: dict[str, Any]) -> None:
+    from population_segmentation.pipeline.export import _validate_export_contracts
+
+    master = _valid_master()
+    prop = _valid_prop(master, anchors)
+    labels = _valid_labels(master)
+    reach = _valid_reach()
+    reach_dept = _valid_reach_dept().iloc[:-1].copy()  # 107 rows, need 108
+    with pytest.raises(ValueError, match="expected 108 rows"):
+        _validate_export_contracts(
+            master, prop, labels, anchors, reach=reach, reach_dept=reach_dept
+        )
+
+
+def test_dept_reach_duplicate_key_raises(anchors: dict[str, Any]) -> None:
+    from population_segmentation.pipeline.export import _validate_export_contracts
+
+    master = _valid_master()
+    prop = _valid_prop(master, anchors)
+    labels = _valid_labels(master)
+    reach = _valid_reach()
+    reach_dept = _valid_reach_dept().copy()
+    # Force a duplicate (segment, department) pair by overwriting row 0 with row 1's keys.
+    reach_dept.loc[0, ["segment_label", "department"]] = reach_dept.loc[
+        1, ["segment_label", "department"]
+    ].values
+    with pytest.raises(ValueError, match="duplicate \\(segment_label, department\\)"):
+        _validate_export_contracts(
+            master, prop, labels, anchors, reach=reach, reach_dept=reach_dept
+        )
+
+
+def test_dept_reach_bad_region_raises(anchors: dict[str, Any]) -> None:
+    from population_segmentation.pipeline.export import _validate_export_contracts
+
+    master = _valid_master()
+    prop = _valid_prop(master, anchors)
+    labels = _valid_labels(master)
+    reach = _valid_reach()
+    reach_dept = _valid_reach_dept().copy()
+    reach_dept.loc[0, "region"] = "PAMPA"  # not in allowed set
+    with pytest.raises(ValueError, match="invalid region values"):
+        _validate_export_contracts(
+            master, prop, labels, anchors, reach=reach, reach_dept=reach_dept
+        )
+
+
+def test_dept_reach_proportion_out_of_range_raises(anchors: dict[str, Any]) -> None:
+    from population_segmentation.pipeline.export import _validate_export_contracts
+
+    master = _valid_master()
+    prop = _valid_prop(master, anchors)
+    labels = _valid_labels(master)
+    reach = _valid_reach()
+    reach_dept = _valid_reach_dept().copy()
+    reach_dept.loc[0, "segment_size_pct_of_segment"] = 1.5
+    with pytest.raises(ValueError, match="segment_size_pct_of_segment"):
+        _validate_export_contracts(
+            master, prop, labels, anchors, reach=reach, reach_dept=reach_dept
+        )
+
+
+def test_dept_reach_missing_column_raises(anchors: dict[str, Any]) -> None:
+    from population_segmentation.pipeline.export import _validate_export_contracts
+
+    master = _valid_master()
+    prop = _valid_prop(master, anchors)
+    labels = _valid_labels(master)
+    reach = _valid_reach()
+    reach_dept = _valid_reach_dept().drop(columns=["region"])
+    with pytest.raises(ValueError, match="media_reachability_by_segment_department missing"):
+        _validate_export_contracts(
+            master, prop, labels, anchors, reach=reach, reach_dept=reach_dept
+        )
