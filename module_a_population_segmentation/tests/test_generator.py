@@ -167,6 +167,28 @@ class TestRequiredColumns:
         assert not missing, f"Missing columns: {missing}"
 
 
+class TestWhatsAppPenetrationFromConfig:
+    """Rural/urban WhatsApp penetration must follow media_penetration_defaults in YAML."""
+
+    def test_whatsapp_penetration_matches_yaml_anchors(
+        self, config: dict, generated_population: pd.DataFrame  # type: ignore[type-arg]
+    ) -> None:
+        ict = config["media_penetration_defaults"]
+        expected_rural = float(ict["whatsapp_rural"])
+        expected_urban = float(ict["whatsapp_urban"])
+        rural = generated_population["rural_flag"].astype(bool)
+        rural_vals = generated_population.loc[rural, "media_penetration_whatsapp"]
+        urban_vals = generated_population.loc[~rural, "media_penetration_whatsapp"]
+        assert (rural_vals == expected_rural).all(), (
+            f"Rural WhatsApp must equal config whatsapp_rural={expected_rural}, "
+            f"got unique={sorted(rural_vals.unique().tolist())}"
+        )
+        assert (urban_vals == expected_urban).all(), (
+            f"Urban WhatsApp must equal config whatsapp_urban={expected_urban}, "
+            f"got unique={sorted(urban_vals.unique().tolist())}"
+        )
+
+
 def test_generator_module_cli_sample_size_override(tmp_path: Path) -> None:
     """CLI --sample-size overrides YAML before generate_population."""
     out = tmp_path / "gen_cli.parquet"

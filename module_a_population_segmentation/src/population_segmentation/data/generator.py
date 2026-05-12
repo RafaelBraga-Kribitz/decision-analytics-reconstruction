@@ -212,6 +212,7 @@ def generate_population(
     # ── internet_access_flag ───────────────────────────────────────────────────
     ict = config.get("media_penetration_defaults", {})
     urban_inet = float(ict.get("whatsapp_urban", 0.74))
+    rural_whatsapp = float(ict.get("whatsapp_rural", 0.31))
     # Approximate internet access from ICT anchors
     inet_prob = np.where(rural_flags, 0.279, 0.734)
     internet_access_flags = rng.random(n) < inet_prob
@@ -219,7 +220,7 @@ def generate_population(
     # ── media penetration ──────────────────────────────────────────────────────
     tv_pen = np.array([_TV_BY_DEPT.get(d, 0.89) for d in departments], dtype=np.float32)
     radio_pen = np.array([_RADIO_BY_DEPT.get(d, 0.82) for d in departments], dtype=np.float32)
-    whatsapp_pen = np.where(rural_flags, urban_inet * 0.42, urban_inet).astype(np.float32)
+    whatsapp_pen = np.where(rural_flags, rural_whatsapp, urban_inet).astype(np.float32)
 
     # ── nbi_stress_prior ───────────────────────────────────────────────────────
     nbi_vals = np.where(
