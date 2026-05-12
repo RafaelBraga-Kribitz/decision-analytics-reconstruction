@@ -60,9 +60,9 @@
 ~~- [ ] `department_weights` sum: correct to 1.0000 exactly, add assertion in generator~~
 ~~- [ ] `docker-compose.yml` version: "3.9"~~
 ~~- [ ] No `__main__` entry points: add argparse blocks to generator.py and raw_injector.py~~
-- [ ] `enc_source` vs `enc_source_raw`: standardize field names, update schema, add comment explaining raw vs clean layer naming
-- [ ] Column name constants: import from schema.py everywhere in raw_injector.py, not bare strings
-- [ ] `KMeans n_jobs` parameter: remove from model_params.yaml, document `OMP_NUM_THREADS` alternative
+~~- [ ] `enc_source` vs `enc_source_raw`: standardize field names, update schema, add comment explaining raw vs clean layer naming — [`cleaner.py`](module_a_population_segmentation/src/population_segmentation/data/cleaner.py) step 1 promotes `enc_source_raw` → `enc_source`; [`schema.py`](module_a_population_segmentation/src/population_segmentation/utils/schema.py) + [`schema_contracts/population_master_{raw,clean}.yaml`](schema_contracts/population_master_raw.yaml); regression [`module_a_population_segmentation/tests/test_cleaner.py`](module_a_population_segmentation/tests/test_cleaner.py) `test_enc_source_promoted_from_raw_layer`.~~ [agent Composer(2026-05-12-encsrc) currently working on it]
+~~- [ ] Column name constants: import from schema.py everywhere in raw_injector.py, not bare strings~~ *(already uses `schema` constants for all column access; verified 2026-05-12)*
+~~- [ ] `KMeans n_jobs` parameter: remove from model_params.yaml, document `OMP_NUM_THREADS` alternative~~ *(done 2026-05-12: `kmeans.n_jobs` removed, threading env vars documented, `test_model_params_kmeans_no_n_jobs.py`.)*
 - [ ] CI `--no-root`: change to `poetry install`, add module importability test
 - [ ] `rural_inet` unused + magic `0.42`: replace with config variable, move internet penetration to generation.yaml
 - [ ] `max_noise_rate` contradiction: fix comment to match value (0.01)

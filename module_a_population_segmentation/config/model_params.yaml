@@ -42,6 +42,11 @@ dbscan:
   n_jobs: -1
   max_noise_rate: 0.01           # Gate A4
 
+# ─── Threading (KMeans + NumPy / scikit-learn stack) ─────────────────────────
+# sklearn KMeans (>=1.4 in this repo) does not accept ``n_jobs``; parallelism
+# is driven by BLAS / OpenMP. To limit CPU use, set environment variables, e.g.:
+#   OMP_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4 MKL_NUM_THREADS=4
+
 # ─── K-Means segmentation ─────────────────────────────────────────────────────
 kmeans:
   k_range: [4, 5, 6, 7, 8]
@@ -50,7 +55,6 @@ kmeans:
   init: k-means++
   max_iter: 300
   random_state: 42               # Overridden by RANDOM_SEED env var at runtime
-  n_jobs: -1
   # Gate A5: silhouette threshold set to 0.22 (honest achievable value in PCA(5)
   # space for synthetic mixed-categorical/continuous data with k=6 at n≥10k;
   # measured ≈0.28 at n=15k).  The original gate of 0.35 was only satisfied
