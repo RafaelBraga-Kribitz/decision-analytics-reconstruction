@@ -102,3 +102,9 @@ ruvector.db
 # ─── Maintainer-only docs (not for public clone) ─────────────────────────────
 maintainer/
 reports/task_verify_*.md
+
+# ─── Project Scope Documents ───────────────────────────────────────────────────
+Project_Action_list.md
+Project_Evaluation.md
+reports/integration_audit_2026-05-12.md
+reports/verification_session_proof_2026-05-12.md
