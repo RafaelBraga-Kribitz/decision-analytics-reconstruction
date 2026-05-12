@@ -4,6 +4,18 @@ Records every non-trivial architectural choice: decision, alternatives considere
 
 ---
 
+## 2026-05-15 — Project Action List §3: “All outputs Pydantic” vs layered contracts
+
+**Decision:** Reconcile Architecture Quality line 42 (“all module outputs explicitly typed”) with the **shipped** design: **versioned YAML** in [`schema_contracts/`](../schema_contracts/) defines cross-module tabular contracts; **Pydantic** covers the narrow Module B→C handshake row ([`AllocationHandshakeRow`](../module_b_resource_allocation/src/module_b_resource_allocation/contracts/schemas.py)); **frozen dataclasses** and Pandera gate selected Module A structures and clean-population frames; Module C validates against the same YAML corpus via `contract_validate`. Add [`tests/test_architecture_inter_module_contracts_surface.py`](../tests/test_architecture_inter_module_contracts_surface.py) as a regression guard (no new umbrella Pydantic per parquet file).
+
+**Alternatives considered:** Wrapping every export column set in generated Pydantic models — deferred as high churn and low marginal value versus existing Pandera + YAML contracts.
+
+**Reason:** One-task §3 closure with verifiable commands; no handshake or schema_contracts semantic edits.
+
+**Source:** Project Action List §3 Architecture Quality — task 5 (2026-05-15).
+
+---
+
 ## 2026-05-14 — Project Action List §3: Module C checklist vs shipped tree
 
 **Decision:** Reconcile Architecture Quality “Module C: METHODOLOGY.md + forecast_model.py stub” with the **shipped** layout: hierarchical tracking model, multi-stage `pipeline/` CLIs, `config/calibration.yaml`, and research-facing proof table under `module_c_forecasting_scenarios/reports/`. Add [`tests/test_architecture_module_c_surface.py`](../tests/test_architecture_module_c_surface.py) asserting canonical paths exist, legacy-only filenames absent, and lightweight imports (`paths`, `contract_validate`) without requiring a new root `METHODOLOGY.md` or `forecast_model.py` shim.

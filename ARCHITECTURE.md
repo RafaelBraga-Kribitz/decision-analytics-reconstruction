@@ -19,6 +19,8 @@ Module B specification path plus allocator import surface are guarded by [`tests
 
 Module C methodology artifacts, pipeline paths, and lightweight package imports are guarded by [`tests/test_architecture_module_c_surface.py`](tests/test_architecture_module_c_surface.py).
 
+Inter-module contract layers (YAML `schema_contracts/`, Pydantic handshake, frozen dataclass gates) are guarded by [`tests/test_architecture_inter_module_contracts_surface.py`](tests/test_architecture_inter_module_contracts_surface.py).
+
 ---
 
 ## Component map
