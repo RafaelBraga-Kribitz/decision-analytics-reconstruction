@@ -36,15 +36,7 @@
 **Actions to reach 10/10:**
 
 ~~- [ ] Canonical three-module repository roots with implementation (not stubs): `module_a_population_segmentation/`, `module_b_resource_allocation/`, `module_c_forecasting_scenarios/` — declared in root `pyproject.toml` `[tool.poetry]` `packages` and regression-checked in [`tests/test_architecture_three_module_layout.py`](tests/test_architecture_three_module_layout.py).~~
-- [ ] Module A: all files exist and runnable
-  - [ ] `src/population_segmentation/data/generator.py` (exists, complete)
-  - [ ] `src/population_segmentation/data/raw_injector.py` (exists, P0 bugs fixed)
-  - [ ] `src/population_segmentation/data/cleaner.py` (NEW, implements 14-step pipeline)
-  - [ ] `src/population_segmentation/features/engineer.py` (NEW, produces 15+ feature columns)
-  - [ ] `src/population_segmentation/models/segmentation.py` (NEW, KMeans + validation)
-  - [ ] `src/population_segmentation/models/propensity.py` (NEW, logistic regression + calibration)
-  - [ ] `src/population_segmentation/evaluation/validator.py` (NEW, Pandera + schema contracts)
-  - [ ] `src/population_segmentation/app/streamlit_dashboard.py` (NEW, displays results)
+~~- [ ] Module A (`module_a_population_segmentation/`): production surface exists and runnable — data `generator.py` / `raw_injector.py` / `cleaner.py` / `validator.py`; feature stack `demographic.py`, `behavioral.py`, `reachability.py`; models `segmentation.py`, `propensity.py`; evaluation `schema_validator.py`; pipeline `export.py`, `__main__.py`; app `module_a_population_segmentation/app/streamlit_dashboard.py`; regression in [`tests/test_architecture_module_a_surface.py`](tests/test_architecture_module_a_surface.py); pipeline CLI/help covered by `module_a_population_segmentation/tests/test_pipeline_cli.py`.~~
 - [ ] Module B: directory exists with specification.md + skeleton code (not full implementation needed, but structure clear)
   - [ ] `module_b_resource_allocation/SPECIFICATION.md` with mathematical LP formulation
   - [ ] `module_b_resource_allocation/src/optimization_engine.py` (stub with clear interface)

@@ -13,6 +13,8 @@ The installable Poetry packages ([`pyproject.toml`](pyproject.toml) `[tool.poetr
 
 Layout invariants are covered by [`tests/test_architecture_three_module_layout.py`](tests/test_architecture_three_module_layout.py).
 
+Module A file-level surface and pipe import hooks are guarded by [`tests/test_architecture_module_a_surface.py`](tests/test_architecture_module_a_surface.py).
+
 ---
 
 ## Component map

@@ -4,6 +4,18 @@ Records every non-trivial architectural choice: decision, alternatives considere
 
 ---
 
+## 2026-05-13 — Project Action List §3: Module A surface checklist vs shipped tree
+
+**Decision:** Reconcile Architecture Quality “Module A: all files exist and runnable” with the **actual** `population_segmentation` layout (split `features/` modules, `evaluation/schema_validator.py`, dashboard under `module_a_population_segmentation/app/streamlit_dashboard.py`) and add [`tests/test_architecture_module_a_surface.py`](../tests/test_architecture_module_a_surface.py) as a regression guard. Do **not** introduce legacy-only filenames (`features/engineer.py`, `evaluation/validator.py`, dashboard under `src/…/app/`) solely to match an outdated bullet list.
+
+**Alternatives considered:** Creating thin re-export shims with old paths — rejected as YAGNI and import-noise.
+
+**Reason:** One-task Architecture Quality closure with verifiable commands and no export/schema drift.
+
+**Source:** Project Action List §3 Architecture Quality — task 2 (2026-05-13).
+
+---
+
 ## 2026-05-12 — Module A: `python -m population_segmentation.pipeline` + `model_run_manifest.json`
 
 **Decision:** (1) Add `population_segmentation/pipeline/__main__.py` so the full export path is runnable as `poetry run python -m population_segmentation.pipeline` with repository-root defaults for `module_a_population_segmentation/config/generation.yaml`, `calibration_anchors.yaml`, and `data/processed/`. (2) After contract validation, `run_export` writes `model_run_manifest.json` (package version via `importlib.metadata`, UTC `train_date`, `git rev-parse` best-effort, exported artifact paths, fixed RNG seed map) and optionally logs to MLflow when `MLFLOW_TRACKING_URI` is set, matching the opt-in pattern used for Module C.
