@@ -4,7 +4,12 @@ from __future__ import annotations
 
 import numpy as np
 from sklearn.cluster import KMeans
-from sklearn.metrics import adjusted_rand_score, silhouette_score
+from sklearn.metrics import (
+    adjusted_rand_score,
+    calinski_harabasz_score,
+    davies_bouldin_score,
+    silhouette_score,
+)
 
 
 def compute_silhouette(x: np.ndarray, labels: np.ndarray) -> float:
@@ -30,3 +35,15 @@ def compute_bootstrap_ari(
         sub = km.fit_predict(x[idx])
         scores.append(float(adjusted_rand_score(labels[idx], sub)))
     return float(np.mean(scores))
+
+
+def compute_davies_bouldin(x: np.ndarray, labels: np.ndarray) -> float:
+    if len(np.unique(labels)) < 2:
+        return 0.0
+    return float(davies_bouldin_score(x, labels))
+
+
+def compute_calinski_harabasz(x: np.ndarray, labels: np.ndarray) -> float:
+    if len(np.unique(labels)) < 2:
+        return 0.0
+    return float(calinski_harabasz_score(x, labels))

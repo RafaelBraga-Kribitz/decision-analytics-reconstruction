@@ -73,15 +73,14 @@ This upgrade is a Phase 2 enhancement documented in `ROADMAP.md`.
 
 ## Sensitivity analysis (post-solver)
 
-The LP solver (CBC via PuLP) produces **shadow prices (dual values)** for each binding constraint. These are the key post-solve artifacts:
+The LP solver (CBC via PuLP) exposes **shadow prices (dual values)** on named constraints after an optimal solve. Implementation lives in [`src/module_b_resource_allocation/models/allocation.py`](../../module_b_resource_allocation/src/module_b_resource_allocation/models/allocation.py) (`solve` collects `budget_upper` / `budget_lower` constraint `pi` values and the top five `cap_*` reach-cap rows). CSV exports are written by [`src/module_b_resource_allocation/reporting/duals_export.py`](../../module_b_resource_allocation/src/module_b_resource_allocation/reporting/duals_export.py) when the allocation CLI is run with ``--sensitivity``.
 
 | Artifact | Meaning | Module B output |
 |----------|---------|-----------------|
-| Shadow price — budget envelope | Marginal value of +$1,000 to department budget | `dual_budget_envelope.csv` |
-| Shadow price — reach cap | Marginal value of +1% coverage ceiling | `dual_reach_caps.csv` |
-| Shadow price — municipality coverage | Cost of the ≥80% municipality constraint | `dual_municipality_coverage.csv` |
-| Budget expansion curve | Win-probability delta per additional $10K | `budget_expansion_curve.csv` (linked to Module C) |
+| Shadow price — budget envelope | Marginal value of relaxing the global spend row | `dual_budget_envelope_<scenario>.csv` |
+| Shadow price — reach cap | Marginal value of relaxing selected `cap_*` rows (top five by \|pi\|) | `dual_reach_caps_<scenario>.csv` |
+| Budget expansion curve | Optimal persuasion-adjusted contacts vs campaign envelope multiples {0.25 … 2.0}× | `budget_expansion_curve_<scenario>.csv` (from [`reporting/budget_sensitivity.py`](../../module_b_resource_allocation/src/module_b_resource_allocation/reporting/budget_sensitivity.py)) |
 
-These artifacts are produced by `src/module_b_resource_allocation/solver.py` after an OPTIMAL solution. The budget expansion curve requires the Module C linkage (currently unlinked — see `ROADMAP.md` known gap).
+**Module C linkage:** interpreting marginal contacts as win-probability delta still requires the Module B→C handshake (`reports/module_b_module_c_handshake.md`); the CSV curve is an **allocation-layer** elasticity artifact.
 
-**Reference:** Vanderbei (2014) §4.2 on LP duality; PuLP documentation on `constraint.pi` for accessing dual variables from CBC.
+**Reference:** Vanderbei (2014) on LP duality; PuLP documentation on `constraint.pi` for CBC duals.

@@ -34,7 +34,6 @@ mlflow/mlruns/
 
 # ─── Reports (generated artifacts) ──────────────────────────────────────────
 module_a_population_segmentation/reports/qa_report_*.md
-module_a_population_segmentation/reports/shap_summary.png
 module_a_population_segmentation/reports/model_evaluation.md
 
 # ─── Notebooks (checkpoints only — sources committed) ────────────────────────

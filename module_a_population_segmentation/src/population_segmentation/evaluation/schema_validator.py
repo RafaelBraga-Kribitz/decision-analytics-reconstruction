@@ -11,8 +11,9 @@ Usage:
 
 from __future__ import annotations
 
+import pandas as pd
 import pandera.pandas as pa
-from pandera.pandas import Column, DataFrameSchema, Check
+from pandera.pandas import Check, Column, DataFrameSchema
 
 from population_segmentation.utils.schema import (
     CANONICAL_DEPARTMENTS,
@@ -183,7 +184,7 @@ FEATURE_FRAME_SCHEMA = DataFrameSchema(
 # ─── Public validation functions ──────────────────────────────────────────────
 
 
-def validate_clean_population(df: "pd.DataFrame") -> None:  # type: ignore[name-defined]
+def validate_clean_population(df: pd.DataFrame) -> None:  # type: ignore[name-defined]
     """Validate clean population DataFrame at cleaner.py exit.
 
     Raises pa.errors.SchemaError with column-level detail on any violation.
@@ -192,7 +193,7 @@ def validate_clean_population(df: "pd.DataFrame") -> None:  # type: ignore[name-
     CLEAN_POPULATION_SCHEMA.validate(df)
 
 
-def validate_feature_frame(df: "pd.DataFrame") -> None:  # type: ignore[name-defined]
+def validate_feature_frame(df: pd.DataFrame) -> None:  # type: ignore[name-defined]
     """Validate feature-engineered DataFrame at features/ layer exit.
 
     Raises pa.errors.SchemaError with column-level detail on any violation.

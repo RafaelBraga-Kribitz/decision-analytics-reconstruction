@@ -62,9 +62,7 @@ def run_export(
     from population_segmentation.models.propensity import PropensityModel
     from population_segmentation.models.segmentation import build_segmentation_frame
 
-    model_params_path = (
-        Path(__file__).resolve().parents[3] / "config" / "model_params.yaml"
-    )
+    model_params_path = Path(__file__).resolve().parents[3] / "config" / "model_params.yaml"
     with open(model_params_path, encoding="utf-8") as f:
         model_params: dict[str, Any] = yaml.safe_load(f)
     stratify_by = tuple(model_params["propensity"]["stratify_by"])

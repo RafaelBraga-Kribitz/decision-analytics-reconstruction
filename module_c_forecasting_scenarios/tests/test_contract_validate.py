@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import pandas as pd
 import pytest
-
 from module_c_forecasting_scenarios.data.contract_validate import validate_dataframe_contract
 from module_c_forecasting_scenarios.data.exceptions import QAGateFailure
 

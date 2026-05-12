@@ -150,7 +150,7 @@ def test_matrix_computed_once_in_build_segmentation_frame(feature_df: pd.DataFra
     """
     from unittest.mock import patch
 
-    import population_segmentation.models.segmentation as seg_module
+    import population_segmentation.pipeline.models.segmentation as seg_module
 
     original = seg_module._matrix
     call_count = 0
@@ -185,7 +185,7 @@ def test_dbscan_noise_filter_accepts_precomputed_matrix(feature_df: pd.DataFrame
     """Passing a precomputed matrix must produce identical results to not passing one."""
     from unittest.mock import patch
 
-    import population_segmentation.models.segmentation as seg_module
+    import population_segmentation.pipeline.models.segmentation as seg_module
 
     filt = seg_module.DBSCANNoiseFilter(eps=2.0, min_samples=5)
 

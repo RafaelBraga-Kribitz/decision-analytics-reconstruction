@@ -24,6 +24,8 @@ import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
+import pandas as pd
+
 from module_b_resource_allocation.constants import VALID_SCENARIOS
 from module_b_resource_allocation.data.fx import fx_layer_to_frame, load_fx_layer
 from module_b_resource_allocation.models.allocation import build_problem, solve
@@ -32,6 +34,15 @@ from module_b_resource_allocation.models.counterfactual import (
     run_broadcast_to_direct,
 )
 from module_b_resource_allocation.models.feature_join import build_allocation_features
+from module_b_resource_allocation.reporting.budget_sensitivity import (
+    compute_budget_expansion_curve,
+)
+from module_b_resource_allocation.reporting.duals_export import (
+    write_budget_dual_csv,
+    write_reach_cap_duals_csv,
+)
+from module_b_resource_allocation.reporting.run_markdown import render_allocation_run_markdown
+from module_b_resource_allocation.reporting.scenario_benchmark import write_scenario_benchmark_csv
 from module_b_resource_allocation.routing.cost_matrix import build_cost_matrix
 from module_b_resource_allocation.utils.allocation_output_gate import (
     validate_allocation_output_df,
@@ -61,6 +72,14 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Also produce the broadcast_to_direct counterfactual allocation.",
     )
     parser.add_argument("--shift-share", type=float, default=0.30)
+    parser.add_argument(
+        "--sensitivity",
+        action="store_true",
+        help=(
+            "Run budget expansion re-solves (0.25–2.0× envelope) and attach LP dual "
+            "snapshot to the run manifest (slower)."
+        ),
+    )
     return parser.parse_args(argv)
 
 
@@ -138,7 +157,7 @@ def main(argv: list[str] | None = None) -> int:
         artifacts["reallocation_counterfactuals_parquet"] = str(rc_parquet)
         artifacts["routing_feasible_share"] = str(round(cf.routing_feasible_share, 4))
 
-    manifest = {
+    manifest: dict[str, object] = {
         "run_id": datetime.now(UTC).isoformat(),
         "scenario_id": args.scenario,
         "fx_series_id": args.fx_series,
@@ -146,14 +165,48 @@ def main(argv: list[str] | None = None) -> int:
         "solver_seed": args.seed,
         "solver_status": result.solver_status,
         "total_budget_usd": round(result.total_budget_usd, 4),
-        "total_persuasion_contacts": round(
-            float(result.allocation["persuasion_adjusted_contacts"].sum()), 2
-        ),
+        "total_persuasion_contacts": round(result.total_persuasion_adjusted_contacts, 2),
         "row_count": int(len(result.allocation)),
         "artifacts": artifacts,
         "provenance": "PRIOR",
         "module_b_version": "0.1.0",
+        "lp_diagnostics": result.lp_diagnostics,
     }
+    if args.sensitivity:
+        curve = compute_budget_expansion_curve(
+            scenario_id=args.scenario,
+            fx_series_id=args.fx_series,
+            solver_seed=args.seed,
+        )
+        manifest["budget_expansion_curve"] = curve
+        try:
+            curve_csv = args.out_dir / f"budget_expansion_curve_{args.scenario}.csv"
+            pd.DataFrame(curve).to_csv(curve_csv, index=False)
+            artifacts["budget_expansion_curve_csv"] = str(curve_csv)
+        except Exception as exc:  # pragma: no cover
+            logger.warning("budget expansion CSV skipped: %s", exc)
+        try:
+            db = write_budget_dual_csv(result, args.out_dir, args.scenario)
+            dr = write_reach_cap_duals_csv(result, args.out_dir, args.scenario)
+            artifacts["dual_budget_envelope_csv"] = str(db)
+            artifacts["dual_reach_caps_csv"] = str(dr)
+            bench = args.out_dir / f"scenario_benchmark_{args.scenario}.csv"
+            write_scenario_benchmark_csv(bench, fx_series_id=args.fx_series, solver_seed=args.seed)
+            artifacts["scenario_benchmark_csv"] = str(bench)
+            report_md = args.out_dir / f"allocation_run_{args.scenario}.md"
+            report_md.write_text(
+                render_allocation_run_markdown(
+                    result,
+                    scenario_id=args.scenario,
+                    fx_series_id=args.fx_series,
+                    routing_scenario=args.routing_scenario,
+                    sensitivity_run=True,
+                ),
+                encoding="utf-8",
+            )
+            artifacts["allocation_run_md"] = str(report_md)
+        except Exception as exc:  # pragma: no cover
+            logger.warning("dual CSV export skipped: %s", exc)
     manifest_path = args.out_dir / f"run_manifest_{args.scenario}.json"
     try:
         with open(manifest_path, "w") as f:

@@ -65,6 +65,38 @@ jobs:
           files: coverage.xml
           flags: module_a
 
+  module-b:
+    name: Module B — lint / typecheck / test
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        run: poetry install --no-root
+
+      - name: Black format check
+        run: poetry run black --check module_b_resource_allocation/src module_b_resource_allocation/tests
+
+      - name: Ruff lint
+        run: poetry run ruff check module_b_resource_allocation/src module_b_resource_allocation/tests
+
+      - name: Pyright type check
+        run: poetry run pyright module_b_resource_allocation/src
+
+      - name: pytest Module B
+        run: poetry run pytest module_b_resource_allocation/tests -v --tb=short -m "not slow"
+
   module-c:
     name: Module C — pytest (fast subset, MC_FAST)
     runs-on: ubuntu-latest
@@ -111,3 +143,23 @@ jobs:
         run: docker compose run --rm module_a python -c "import population_segmentation; print('ok')"
       - name: Up no-start
         run: docker compose up --build --no-start module_a
+
+      - name: MLflow image import smoke
+        run: docker compose run --rm mlflow python -c "import mlflow; print(mlflow.__version__)"
+
+  tier3-smoke:
+    name: Tier 3 — DVC + terminology scripts
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install poetry
+      - name: Install with DVC extra
+        run: poetry install --no-root --extras tracking
+      - name: DVC version
+        run: poetry run dvc version
+      - name: Terminology sample check
+        run: poetry run python scripts/check_terminology.py

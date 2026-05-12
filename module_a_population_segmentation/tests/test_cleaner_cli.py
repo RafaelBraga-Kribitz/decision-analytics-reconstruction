@@ -28,9 +28,7 @@ def tiny_raw_parquet(tmp_path: Path) -> Path:
     return p
 
 
-def test_cleaner_module_cli_writes_parquet(
-    tiny_raw_parquet: Path, tmp_path: Path
-) -> None:
+def test_cleaner_module_cli_writes_parquet(tiny_raw_parquet: Path, tmp_path: Path) -> None:
     out = tmp_path / "clean.parquet"
     cmd = [
         sys.executable,

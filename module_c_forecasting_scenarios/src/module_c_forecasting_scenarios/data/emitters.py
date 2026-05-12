@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 import pandas as pd
 
 
-def build_house_effect_seed_matrix(tracking: pd.DataFrame, m_star_pp: float, calibration_series: str) -> pd.DataFrame:
+def build_house_effect_seed_matrix(
+    tracking: pd.DataFrame, m_star_pp: float, calibration_series: str
+) -> pd.DataFrame:
     rows = []
     for _, r in tracking.iterrows():
         rows.append(
@@ -36,5 +36,5 @@ def build_polling_transparency_audit(tracking: pd.DataFrame) -> pd.DataFrame:
         n_waves=("poll_wave_id", "count"),
         ficha_share=("has_ficha", "mean"),
     )
-    g.rename(columns={"week_key": "iso_week"}, inplace=True)
+    g = g.rename(columns={"week_key": "iso_week"})
     return g

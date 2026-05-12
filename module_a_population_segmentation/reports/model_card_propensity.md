@@ -5,6 +5,10 @@
 - **Feature matrix**: 9 demographic/behavioral features + `department_logit_offset` + `gender_youth_interaction`
 - **Train/cal/test split**: 60%/20%/20%, stratified by department
 
+## Explainability (SHAP)
+
+Run `poetry install --extras explainability` (adds SHAP) then `poetry run python scripts/generate_module_a_shap.py` to emit `reports/module_a/shap_summary.png` (toy linear demo for pipeline wiring; swap in your exported feature matrix for production-style review).
+
 ## Quality gates (measured at n=15k, seed=42 — no masking applied)
 
 | Gate | Criterion | Measured | Status |

@@ -11,7 +11,9 @@ import pymc as pm
 MODEL_VERSION = "c_exit_bias_v0.1"
 
 
-def fit_exit_quickcount(exit_df: pd.DataFrame, *, calibration_series: str) -> tuple[pd.DataFrame, object | None]:
+def fit_exit_quickcount(
+    exit_df: pd.DataFrame, *, calibration_series: str
+) -> tuple[pd.DataFrame, object | None]:
     """Bayesian normal model for exit margin with OEA/EU timing flags as linear covariates."""
     if exit_df.shape[0] < 2:
         summary = pd.DataFrame(
@@ -20,7 +22,9 @@ def fit_exit_quickcount(exit_df: pd.DataFrame, *, calibration_series: str) -> tu
                     "calibration_series": calibration_series,
                     "model_version": MODEL_VERSION,
                     "note": "insufficient_exit_rows_for_regression",
-                    "m_poll_pp_mean": float(exit_df["m_poll_pp"].mean()) if len(exit_df) else float("nan"),
+                    "m_poll_pp_mean": (
+                        float(exit_df["m_poll_pp"].mean()) if len(exit_df) else float("nan")
+                    ),
                 }
             ]
         )
@@ -46,7 +50,7 @@ def fit_exit_quickcount(exit_df: pd.DataFrame, *, calibration_series: str) -> tu
             random_seed=42,
             progressbar=False,
         )
-    post = idata.posterior
+    post = idata.posterior  # type: ignore[union-attr]
     rows = []
     for v in ("intercept", "beta_oea", "beta_eu", "sigma"):
         s = post[v].stack(sample=("chain", "draw"))

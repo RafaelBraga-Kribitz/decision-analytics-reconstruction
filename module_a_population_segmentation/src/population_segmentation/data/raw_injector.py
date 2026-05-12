@@ -147,12 +147,8 @@ def inject_flaws(
     # ── ENC: Encoding errors in name fields ───────────────────────────────────
     rate = rates["encoding_error_rate"]
     mask = rng.random(n_total) < rate
-    df.loc[df.index[mask], FIRST_NAME] = df.loc[df.index[mask], FIRST_NAME].apply(
-        _garble_encoding
-    )
-    df.loc[df.index[mask], LAST_NAME] = df.loc[df.index[mask], LAST_NAME].apply(
-        _garble_encoding
-    )
+    df.loc[df.index[mask], FIRST_NAME] = df.loc[df.index[mask], FIRST_NAME].apply(_garble_encoding)
+    df.loc[df.index[mask], LAST_NAME] = df.loc[df.index[mask], LAST_NAME].apply(_garble_encoding)
 
     # ── FMT-3: Phone format variants ──────────────────────────────────────────
     rate = rates["phone_format_variant_rate"]
@@ -193,9 +189,9 @@ def inject_flaws(
     # Half of affected rows: scale 1–5; other half: scale 0–100
     half = mask.sum() // 2
     mask_idx = np.where(mask)[0]
-    df.loc[df.index[mask_idx[:half]], QUALITATIVE_SENTIMENT] = rng.integers(
-        1, 6, size=half
-    ).astype(float)
+    df.loc[df.index[mask_idx[:half]], QUALITATIVE_SENTIMENT] = rng.integers(1, 6, size=half).astype(
+        float
+    )
     if len(mask_idx) > half:
         remaining = len(mask_idx) - half
         df.loc[df.index[mask_idx[half:]], QUALITATIVE_SENTIMENT] = rng.integers(

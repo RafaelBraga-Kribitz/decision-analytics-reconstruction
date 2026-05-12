@@ -49,6 +49,8 @@ ruff = ">=0.4"
 pyright = ">=1.1.350"
 graphifyy = ">=0.7,<0.8"
 httpx = ">=0.27"
+pre-commit = ">=4.0"
+matplotlib = ">=3.8"
 
 [build-system]
 requires = ["poetry-core"]
@@ -66,13 +68,15 @@ target-version = "py311"
 select = ["E", "F", "I", "N", "UP", "B", "SIM"]
 ignore = []
 
+[tool.ruff.lint.per-file-ignores]
+"module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/data/exceptions.py" = ["N818"]
+
 [tool.pyright]
 pythonVersion = "3.11"
 typeCheckingMode = "basic"
 include = [
     "module_a_population_segmentation/src",
     "module_b_resource_allocation/src",
-    "module_c_forecasting_scenarios/src",
 ]
 exclude = [
     "module_a_population_segmentation/notebooks",
@@ -93,6 +97,7 @@ testpaths = [
     "module_a_population_segmentation/tests",
     "module_b_resource_allocation/tests",
     "module_c_forecasting_scenarios/tests",
+    "tests",
 ]
 addopts = "--tb=short -v --import-mode=importlib"
 markers = [

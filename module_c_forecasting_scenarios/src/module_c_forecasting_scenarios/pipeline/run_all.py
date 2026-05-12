@@ -50,7 +50,11 @@ def main(argv: list[str] | None = None) -> None:
     qdst = args.out_dir / "post_mortem.qmd"
     if qsrc.exists():
         shutil.copy(qsrc, qdst)
-    logger.info("run_all complete -> %s (render Quarto manually: quarto render %s)", args.out_dir, qdst)
+    logger.info(
+        "run_all complete -> %s (render Quarto manually: quarto render %s)",
+        args.out_dir,
+        qdst,
+    )
 
 
 if __name__ == "__main__":

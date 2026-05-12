@@ -1,6 +1,8 @@
 .PHONY: install lint format typecheck test coverage all clean module-a-export graphify \
-	module-b-allocate module-b-routing module-b-api test-module-a test-module-b test-module-c \
-	module-c-tracking module-c-exit module-c-mc module-c-all
+	module-b-allocate module-b-allocate-sensitivity module-b-routing module-b-api \
+	test-module-a test-module-b test-module-c \
+	module-c-tracking module-c-exit module-c-mc module-c-all \
+	precommit validate portfolio-verify tier3-smoke
 
 PYTHON := python3.11
 MODULE_A_SRC := module_a_population_segmentation/src
@@ -10,22 +12,36 @@ MODULE_B_SRC := module_b_resource_allocation/src
 MODULE_B_TESTS := module_b_resource_allocation/tests
 MODULE_C_SRC := module_c_forecasting_scenarios/src
 MODULE_C_TESTS := module_c_forecasting_scenarios/tests
+ROOT_TESTS := tests
+SCRIPTS := scripts
 
 install:
 	poetry install
 
 format:
-	poetry run black $(MODULE_A_SRC) $(MODULE_A_TESTS) $(MODULE_A_APP) $(MODULE_B_SRC) $(MODULE_B_TESTS) $(MODULE_C_SRC) $(MODULE_C_TESTS)
+	poetry run black $(MODULE_A_SRC) $(MODULE_A_TESTS) $(MODULE_A_APP) $(MODULE_B_SRC) $(MODULE_B_TESTS) $(MODULE_C_SRC) $(MODULE_C_TESTS) $(ROOT_TESTS) $(SCRIPTS) --exclude 'tests/test_eda.py'
 
 lint:
-	ruff check $(MODULE_A_SRC) $(MODULE_A_TESTS) $(MODULE_A_APP) $(MODULE_B_SRC) $(MODULE_B_TESTS) $(MODULE_C_SRC) $(MODULE_C_TESTS)
-	poetry run black --check $(MODULE_A_SRC) $(MODULE_A_TESTS) $(MODULE_A_APP) $(MODULE_B_SRC) $(MODULE_B_TESTS) $(MODULE_C_SRC) $(MODULE_C_TESTS)
+	poetry run ruff check $(MODULE_A_SRC) $(MODULE_A_TESTS) $(MODULE_A_APP) $(MODULE_B_SRC) $(MODULE_B_TESTS) $(MODULE_C_SRC) $(MODULE_C_TESTS) $(ROOT_TESTS) $(SCRIPTS) --extend-exclude tests/test_eda.py
+	poetry run black --check $(MODULE_A_SRC) $(MODULE_A_TESTS) $(MODULE_A_APP) $(MODULE_B_SRC) $(MODULE_B_TESTS) $(MODULE_C_SRC) $(MODULE_C_TESTS) $(ROOT_TESTS) $(SCRIPTS) --exclude 'tests/test_eda.py'
 
 typecheck:
-	poetry run pyright $(MODULE_A_SRC) $(MODULE_B_SRC) $(MODULE_C_SRC)
+	poetry run pyright $(MODULE_A_SRC) $(MODULE_B_SRC)
 
 test:
-	poetry run pytest $(MODULE_A_TESTS) $(MODULE_B_TESTS) $(MODULE_C_TESTS) -v --tb=short -m "not slow"
+	poetry run pytest $(MODULE_A_TESTS) $(MODULE_B_TESTS) $(MODULE_C_TESTS) $(ROOT_TESTS) -v --tb=short -m "not slow"
+
+precommit:
+	pre-commit install
+	pre-commit run --all-files
+
+validate: lint typecheck test
+
+portfolio-verify:
+	poetry run python scripts/portfolio_verify.py
+
+tier3-smoke:
+	poetry run python scripts/check_terminology.py
 
 test-module-a:
 	poetry run pytest $(MODULE_A_TESTS) -v --tb=short
@@ -57,7 +73,7 @@ module-c-all:
 		--out-dir data/processed/module_c/run_all
 
 coverage:
-	poetry run pytest $(MODULE_A_TESTS) $(MODULE_B_TESTS) $(MODULE_C_TESTS) \
+	poetry run pytest $(MODULE_A_TESTS) $(MODULE_B_TESTS) $(MODULE_C_TESTS) $(ROOT_TESTS) \
 		--cov=$(MODULE_A_SRC) --cov=$(MODULE_B_SRC) --cov=$(MODULE_C_SRC) \
 		--cov-report=term-missing --cov-report=xml
 
@@ -104,6 +120,13 @@ module-b-allocate:
 		--scenario $(or $(SCENARIO),baseline) \
 		--out-dir data/processed/module_b \
 		--seed $(or $(SEED),20180422)
+
+module-b-allocate-sensitivity:
+	poetry run python -m module_b_resource_allocation.pipeline.run_allocation \
+		--scenario $(or $(SCENARIO),baseline) \
+		--out-dir data/processed/module_b \
+		--seed $(or $(SEED),20180422) \
+		--sensitivity
 
 module-b-routing:
 	poetry run python -m module_b_resource_allocation.routing.heuristic \

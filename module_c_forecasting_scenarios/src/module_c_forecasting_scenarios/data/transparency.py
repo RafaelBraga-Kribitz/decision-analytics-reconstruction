@@ -15,10 +15,7 @@ def compute_phi_transparency(
 ) -> float:
     pillars = (sample_size_known, field_window_known, mode_known)
     n_ok = sum(1 for p in pillars if p)
-    if not has_ficha:
-        base = 0.55
-    else:
-        base = 0.85
+    base = 0.55 if not has_ficha else 0.85
     step = 0.12
     phi = base + step * n_ok
     if n_ok <= 1:

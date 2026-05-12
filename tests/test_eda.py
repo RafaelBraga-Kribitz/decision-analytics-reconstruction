@@ -5,11 +5,9 @@ Run from project root:
     python3 -m pytest tests/test_eda.py -v
 """
 
-import os
 import hashlib
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 import pytest
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import arviz as az
 import numpy as np
@@ -39,7 +39,9 @@ def _sampler_kwargs() -> dict[str, Any]:
     }
 
 
-def _build_day_index(tracking: pd.DataFrame, outcome_event_date: date) -> tuple[pd.DatetimeIndex, np.ndarray]:
+def _build_day_index(
+    tracking: pd.DataFrame, outcome_event_date: date
+) -> tuple[pd.DatetimeIndex, np.ndarray]:
     fs = pd.to_datetime(tracking["field_window_start"])
     fe = pd.to_datetime(tracking["field_window_end"])
     mid = fs + (fe - fs) / 2
@@ -47,11 +49,19 @@ def _build_day_index(tracking: pd.DataFrame, outcome_event_date: date) -> tuple[
     end = outcome_event_date - timedelta(days=1)
     start = min(mid_dates.min(), date(2017, 12, 1))
     days = pd.date_range(pd.Timestamp(start), pd.Timestamp(end), freq="D")
-    day_to_i = {d.date(): i for i, d in enumerate(days)}
-    start_d, end_d = days[0].date(), days[-1].date()
+    day_to_i: dict[date, int] = {}
+    for i in range(len(days)):
+        d_i = pd.Timestamp(days.iloc[i]).date()
+        day_to_i[d_i] = i
+    start_d = pd.Timestamp(days.iloc[0]).date()
+    end_d = pd.Timestamp(days.iloc[-1]).date()
     poll_day_idx_list: list[int] = []
     for md in mid_dates:
-        md2 = max(min(md, end_d), start_d)
+        md_ts = pd.Timestamp(cast(object, md))
+        if pd.isna(md_ts):
+            raise ValueError("invalid publication midpoint date in tracking")
+        md_clean = md_ts.date()
+        md2 = max(min(md_clean, end_d), start_d)
         poll_day_idx_list.append(day_to_i[md2])
     poll_day_idx = np.array(poll_day_idx_list, dtype=np.int64)
     return days, poll_day_idx
@@ -66,7 +76,6 @@ def fit_tracking_hierarchical(
     if tracking.empty:
         raise ValueError("tracking dataframe is empty")
     days, poll_day_idx = _build_day_index(tracking, outcome_event_date)
-    T = len(days)
     y = tracking["m_poll_pp"].to_numpy(dtype=np.float64)
     pollsters = sorted(tracking["pollster_id"].astype(str).unique())
     p2i = {p: i for i, p in enumerate(pollsters)}
@@ -96,7 +105,7 @@ def export_daily_posterior_table(
     days: pd.DatetimeIndex,
     calibration_series: str,
 ) -> pd.DataFrame:
-    post = idata.posterior["mu_margin"]
+    post = idata.posterior["mu_margin"]  # type: ignore[union-attr]
     mean_m = post.mean(dim=("chain", "draw")).values
     low = post.quantile(0.05, dim=("chain", "draw")).values
     high = post.quantile(0.95, dim=("chain", "draw")).values
@@ -125,7 +134,7 @@ def export_house_effects_table(
     calibration_series: str,
     tracking: pd.DataFrame,
 ) -> pd.DataFrame:
-    post = idata.posterior["house_offset"]
+    post = idata.posterior["house_offset"]  # type: ignore[union-attr]
     mean_m = post.mean(dim=("chain", "draw")).values.flatten()
     low = post.quantile(0.05, dim=("chain", "draw")).values.flatten()
     high = post.quantile(0.95, dim=("chain", "draw")).values.flatten()

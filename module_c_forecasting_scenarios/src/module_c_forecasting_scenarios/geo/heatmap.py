@@ -7,9 +7,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from scipy.special import expit
-
 from module_b_resource_allocation.constants import DEPARTMENTS
+from scipy.special import expit
 
 MODEL_VERSION = "c_battleground_v0.1"
 

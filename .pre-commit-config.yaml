@@ -1,0 +1,30 @@
+repos:
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        language_version: python3.11
+        args: ["--line-length=100"]
+        files: ^(module_a_population_segmentation|module_b_resource_allocation|module_c_forecasting_scenarios|tests|scripts)/.*\.py$
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      - id: ruff
+        args: ["check", "--fix", "--exit-non-zero-on-fix"]
+        files: ^(module_a_population_segmentation|module_b_resource_allocation|module_c_forecasting_scenarios|tests|scripts)/.*\.py$
+
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.8.1
+    hooks:
+      - id: nbstripout
+        files: \.ipynb$
+
+  - repo: local
+    hooks:
+      - id: pyright
+        name: pyright
+        entry: poetry run pyright
+        language: system
+        types: [python]
+        pass_filenames: false

@@ -12,7 +12,10 @@ import yaml
 
 from module_c_forecasting_scenarios.data.cleaning_pipeline import clean_raw_polls
 from module_c_forecasting_scenarios.data.contract_validate import validate_dataframe_contract
-from module_c_forecasting_scenarios.data.emitters import build_house_effect_seed_matrix, build_polling_transparency_audit
+from module_c_forecasting_scenarios.data.emitters import (
+    build_house_effect_seed_matrix,
+    build_polling_transparency_audit,
+)
 from module_c_forecasting_scenarios.data.raw_loader import load_raw_polls_csv
 from module_c_forecasting_scenarios.mlflow_tracking import log_run_params
 from module_c_forecasting_scenarios.models.tracking.hierarchical import run_tracking_fit_and_export

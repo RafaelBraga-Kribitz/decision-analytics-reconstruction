@@ -8,6 +8,8 @@ Repository: `/Users/rbk/Desktop/PARAGUAY_ELLECTION`
 Walkthrough generated: 2026-05-11 (post end-to-end smoke run, see verification
 section at the bottom).
 
+**Technical companion:** for a code-path walkthrough of one entity through Modules A→B→C, read [`system_walkthrough.md`](system_walkthrough.md).
+
 ---
 
 ## 60-second story

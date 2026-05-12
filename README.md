@@ -10,21 +10,21 @@
 
 ## What this is
 
-A practitioner rebuilt, from scratch and with full methodological rigor, the decision analytics
-infrastructure originally constructed under severe operational constraints to support a
-national-scale program affecting **4.26 million entities** and a verifiable high-stakes binary outcome.
+A practitioner rebuilt the decision analytics stack that originally supported a
+national-scale program affecting **4.26 million entities** and a verifiable binary outcome event.
 
-The reconstruction demonstrates three interdependent analytical capabilities:
+The reconstruction demonstrates three interdependent capabilities:
 
-1. **Population modeling and segmentation** — synthetic population generation with verified demographic
+1. **Population modeling and segmentation** — synthetic population dataset generation with verified demographic
   calibration, realistic data quality problems, and behavioral clustering into operationally distinct segments.
-2. **Resource allocation** — constrained LP optimization allocating a limited budget across 18 geographic units
-  and 11 channel types to maximize expected participation rate per monetary unit.
-3. **Probabilistic forecasting** — Bayesian hierarchical aggregation of noisy, structurally biased measurement
-  signals into a calibrated daily forecast of a binary outcome with full uncertainty quantification.
+2. **Resource allocation** — constrained LP/MILP (PuLP + CBC) allocating a limited budget across 18 geographic units
+  and 11 channel types to maximize a persuasion-adjusted contact proxy per monetary unit.
+3. **Probabilistic forecasting** — Bayesian hierarchical aggregation of noisy, structurally biased survey measurements
+  into a daily preference-proxy track with uncertainty (Module C; fixture-backed fast CI plus slow NUTS diagnostics).
 
-The outcome was verifiable: the program achieved its objective by a confirmed margin of **+3.70 percentage points**
-against a field of 4.26 million participating entities (TSJE, April 22, 2018).
+The outcome event margin was verifiable: **+3.70 percentage points** against a field of 4.26 million participating entities (TSJE, April 22, 2018).
+
+**Epistemic calibration:** see [`reports/epistemic_boundaries.md`](reports/epistemic_boundaries.md) for what is verified vs simulated vs illustrative.
 
 ---
 
@@ -39,13 +39,15 @@ territories; media channels become product lines; verified margin becomes measur
 
 ---
 
+## Positioning (hiring signal)
+
+This repository is best read as **decision analytics / marketing science / analytical engineering**: translating operational programs into reproducible systems (segmentation, constrained allocation, probabilistic measurement aggregation) — not as a generic “deep AI” or Kaggle-style single-notebook portfolio.
+
+---
+
 ## Module A is the flagship
 
-Module A is the production-quality, fully-tested, deployed artifact. It contains 139 tests (92% coverage), CI
-enforcement, a live Streamlit dashboard, model cards, pandera runtime schema contracts, and a complete 14-step
-cleaning pipeline. Modules B and C demonstrate LP optimization and Bayesian forecasting
-respectively; they are analytically complete but not yet packaged to the same engineering standard.
-See `ROADMAP.md` for honest status on all three modules.
+Module A is the most heavily engineered surface: CI with lint + Pyright + coverage floor, a live Streamlit dashboard, model cards, Pandera runtime schema contracts, and the full cleaning pipeline. Modules B and C ship **production-oriented** solver and forecasting code with growing test and reporting coverage; Module B now emits dual and budget-expansion CSVs when run with `--sensitivity` (see `make module-b-allocate-sensitivity`). Status detail: `ROADMAP.md`.
 
 ---
 
@@ -59,6 +61,7 @@ See `ROADMAP.md` for honest status on all three modules.
    The problem, the data constraints, the methodology, the output, and what a practitioner does with it.
 3. **Open this notebook:** `module_a_population_segmentation/notebooks/03_segmentation_analysis.ipynb`
    Analysis notebook for interpretability. Production code is in `src/`; the notebook is for exploration.
+4. **Technical walkthrough (one entity row):** [`reports/system_walkthrough.md`](reports/system_walkthrough.md)
 
 For technical depth: `src/` contains the full production pipeline.
 For methodology depth: all model cards under `module_a_population_segmentation/reports/`.
@@ -82,7 +85,7 @@ flowchart TD
 
     A --> AO["population_master_clean.parquet\nsegment_labels.parquet — 6 behavioral clusters\nparticipation_propensity.parquet\nmedia_reachability_by_segment.csv"]
 
-    AO --> B["Module B: Resource Allocation Engine\nPuLP/CVXPY · FX-aware · FastAPI"]
+    AO --> B["Module B: Resource Allocation Engine\nPuLP + CBC · FX-aware · FastAPI"]
 
     B --> BO["budget_allocation_weekly.csv\nrouting_schedules.parquet\nreallocation_counterfactuals.parquet"]
 
@@ -99,9 +102,9 @@ See `ARCHITECTURE.md` for the full component breakdown, and `schema_contracts/` 
 
 | Module | Status | Artifact | Description |
 |---|---|---|---|
-| **A: Population Modeling** | Complete — 138 tests, 92% coverage | [Streamlit dashboard](https://decision-analytics-module-a.onrender.com) | Synthetic population + segmentation + propensity |
-| **B: Resource Allocation** | Analytically complete — LP/MILP + routing + counterfactuals | `make module-b-allocate` / FastAPI (`make module-b-api`) | Constrained weekly allocation + FX + broadcast_to_direct |
-| **C: Probabilistic Forecasting** | Analytically complete — PyMC tracking + exit + MC | `make test-module-c` / `make module-c-all` (fixture CSV) | Calibration series gate, shock catalog, scenario HTML |
+| **A: Population Modeling** | CI-complete — see Module A job in `.github/workflows/ci.yml` | [Streamlit dashboard](https://decision-analytics-module-a.onrender.com) | Synthetic population dataset + segmentation + propensity |
+| **B: Resource Allocation** | CI job + dual/budget expansion reports (`--sensitivity`) | `make module-b-allocate` / `make module-b-allocate-sensitivity` / FastAPI (`make module-b-api`) | Constrained weekly allocation + FX + broadcast_to_direct |
+| **C: Probabilistic Forecasting** | Fast pytest in CI; slow NUTS diagnostics optional | `make test-module-c` / `make module-c-all` (fixture CSV) | Calibration series gate, shock catalog, scenario HTML |
 
 ---
 
@@ -112,8 +115,10 @@ git clone <repo-url>
 cd decision-analytics-reconstruction
 poetry install
 cp .env.example .env
-make test          # run Module A tests
-make dashboard     # launch Streamlit dashboard
+make test          # all modules + portfolio smoke (excludes slow NUTS)
+make validate      # lint + typecheck + tests
+make portfolio-verify  # git-index hygiene for portfolio exports
+make dashboard     # launch Streamlit dashboard (Module A)
 ```
 
 **Requirements:** Python 3.11, Poetry. Docker optional (see `docker-compose.yml`). On legacy Mac workstations (Mac Pro with unreliable Metal stacks), prefer **Colima + `docker compose`** instead of Docker Desktop.
@@ -133,7 +138,7 @@ make dashboard     # launch Streamlit dashboard
 ├── module_a_population_segmentation/  <- production implementation (fully tested)
 │   ├── config/                  <- generation.yaml, calibration_anchors.yaml, model_params.yaml
 │   ├── src/population_segmentation/   <- production code
-│   ├── tests/                   <- 139 tests, 92% coverage
+│   ├── tests/                   <- pytest suite (see CI for counts)
 │   ├── app/                     <- Streamlit dashboard
 │   └── reports/                 <- model cards, QA reports
 ├── module_b_resource_allocation/  <- LP/MILP allocation + routing + API
@@ -142,11 +147,18 @@ make dashboard     # launch Streamlit dashboard
 
 ---
 
+## Benchmark comparison (illustrative on synthetic reconstruction)
+
+| Baseline | Module | Metric (higher is better unless noted) | Source |
+|----------|--------|----------------------------------------|--------|
+| Naive participation-rate classifier | A | Brier ≈ 0.245 vs model 0.088 | [`model_card_propensity.md`](module_a_population_segmentation/reports/model_card_propensity.md) |
+| Scenario timing variants | B | Compare `total_persuasion_adjusted_contacts` across `baseline` / `early_lock` / `late_flex` | `scenario_benchmark_*.csv` from `make module-b-allocate-sensitivity` |
+| Fixture-only tracking | C | Posterior export row count equals campaign day index | `module_c_forecasting_scenarios/tests/test_tracking_smoke.py` |
+
+These deltas quantify **internal reconstruction targets**, not external campaign lift.
+
+---
+
 ## Honest narrative
 
-This system was originally built under severe time and resource constraints. The reconstruction
-applies the rigor, reproducibility, and statistical discipline that were absent in the original.
-Every modeling choice is documented. Every synthetic data anchor is tied to a verified source.
-Every uncertainty estimate is propagated rather than suppressed.
-
-This is not a claim of original seniority. It demonstrates what the practitioner would build today.
+The original system was built under severe operational constraints. This repository documents modeling choices, enforces tests in CI, and separates verified anchors from synthetic layers ([`reports/epistemic_boundaries.md`](reports/epistemic_boundaries.md)). It is a reconstruction exercise demonstrating what the practitioner would build today—not a claim of original operational seniority.

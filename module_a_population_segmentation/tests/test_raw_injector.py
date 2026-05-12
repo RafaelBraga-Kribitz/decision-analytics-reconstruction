@@ -7,7 +7,6 @@ Gate A2: all 13 flaw types present at configured rates ±20%.
 from __future__ import annotations
 
 import pandas as pd
-import pytest
 
 SAMPLE_SIZE = 50_000  # session fixture sample size (see conftest.py)
 
@@ -137,10 +136,10 @@ class TestFlaw13Coverage:
 
     def test_all_13_flaw_types_accounted(self, raw_population: pd.DataFrame) -> None:
         """inject_flaws must record exactly 13 flaw types in df.attrs."""
-        assert "flaw_types_injected" in raw_population.attrs, (
-            "inject_flaws must store the injected flaw list in df.attrs['flaw_types_injected']"
-        )
+        assert (
+            "flaw_types_injected" in raw_population.attrs
+        ), "inject_flaws must store the injected flaw list in df.attrs['flaw_types_injected']"
         injected = raw_population.attrs["flaw_types_injected"]
-        assert len(injected) == 13, (
-            f"Expected exactly 13 flaw types (scope §4.2), got {len(injected)}: {injected}"
-        )
+        assert (
+            len(injected) == 13
+        ), f"Expected exactly 13 flaw types (scope §4.2), got {len(injected)}: {injected}"

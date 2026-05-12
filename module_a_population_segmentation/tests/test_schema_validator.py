@@ -9,12 +9,10 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 from pandera.errors import SchemaError
-
 from population_segmentation.evaluation.schema_validator import (
     validate_clean_population,
     validate_feature_frame,
 )
-
 
 # ─── Fixtures ────────────────────────────────────────────────────────────────
 

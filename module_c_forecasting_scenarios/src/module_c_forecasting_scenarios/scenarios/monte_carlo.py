@@ -6,7 +6,7 @@ import json
 import os
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -34,15 +34,21 @@ def run_monte_carlo_scenarios(
     n = _mc_n()
     rng = np.random.default_rng(42)
     p = yaml.safe_load((module_config_dir() / "shock_params.yaml").read_text())
-    mult = float(shock_multiplier if shock_multiplier is not None else p.get("shock_multiplier", 1.0))
+    mult = float(
+        shock_multiplier if shock_multiplier is not None else p.get("shock_multiplier", 1.0)
+    )
     baseline_zero = baseline_shock_zero or bool(p.get("baseline_shock_zero", False))
 
     shocks: list[dict[str, Any]] = []
     if "shock_score_s" not in tracking.columns:
         raise ValueError("tracking must include shock_score_s (run cleaning attach_shock_scores)")
-    for i, row in tracking.iterrows():
+    for _i, row in tracking.iterrows():
         sid = f"shock_{row['poll_wave_id']}"
-        ts = datetime.combine(row["publication_date"], datetime.min.time(), tzinfo=UTC).isoformat()
+        pub_ts = pd.Timestamp(cast(object, row.at["publication_date"]))
+        if pd.isna(pub_ts):
+            raise ValueError("invalid publication_date in tracking row")
+        pub = pub_ts.date()
+        ts = datetime.combine(pub, datetime.min.time(), tzinfo=UTC).isoformat()
         score = float(row["shock_score_s"]) * mult
         if baseline_zero:
             score = 0.0

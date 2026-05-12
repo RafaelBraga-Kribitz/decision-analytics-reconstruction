@@ -88,9 +88,9 @@ Honest status of each module and the next concrete milestones.
 |---|---|
 | Schema contracts (Module A → B) | Published |
 | Schema contracts (Module B → C) | Stub; pending Module B finalization |
-| End-to-end pipeline smoke test | Not yet implemented |
-| DVC artifact tracking | Config present; not yet enforced in CI |
-| Docker Compose full-stack | Partial (Module A only) |
+| End-to-end pipeline smoke test | `tests/test_portfolio_e2e_smoke.py` (fixture-level) |
+| DVC artifact tracking | `tier3-smoke` CI job runs `dvc version` with `--extras tracking` |
+| Docker Compose full-stack | Module A + MLflow import smoke in CI; Module B FastAPI remains local (`make module-b-api`) |
 | `01_synthetic_data_validation.ipynb` (marginal + joint correlation audit, nbval) | **Deferred** — marginal and contract checks are covered by pandera gates, CI config integrity, and exploratory notebooks under `module_a_population_segmentation/notebooks/` (e.g. segmentation analysis). A dedicated validation notebook remains optional follow-up. |
 
 ### Full 360 audit — reconciliation status (2026-05)
@@ -108,7 +108,12 @@ This section aligns the **original portfolio audit** with what the repository ac
 - **Decision log:** `reports/decision_log.md` records major modeling and pipeline choices.
 - **Model cards:** `module_a_population_segmentation/reports/model_card_segmentation.md`, `model_card_propensity.md`.
 - **Segment → action bridge:** `module_a_population_segmentation/reports/segment_action_matrix.md`.
-- **README + CI hardening:** Module A workflow includes Black/Ruff/Pyright, coverage floor, department-weights gate, job timeouts, Docker smoke (`compose config`, image build, import smoke).
+- **README + CI hardening:** Module A workflow includes Black/Ruff/Pyright, coverage floor, department-weights gate, job timeouts, Docker smoke (`compose config`, image build, import smoke, MLflow import).
+- **Module B CI + reporting:** `module_b_resource_allocation.reporting` (budget expansion curve, dual CSVs, scenario benchmark, run Markdown) with `--sensitivity` CLI bundle; dedicated CI job `module-b`.
+- **Portfolio evidence docs:** `reports/epistemic_boundaries.md`, `reports/system_walkthrough.md`, `reports/module_b_optimization_formulation.md`, `reports/module_c_forecast_validation.md`, `reports/cluster_validation.md`, `reports/data_lineage.md`, `reports/integration_audit_2026-05-12.md`, `reports/qa_gatekeeper_verdict_portfolio_360_2026-05-12.md`.
+- **Hygiene scripts:** `scripts/portfolio_verify.py`, `scripts/check_terminology.py`, `make portfolio-verify`, `make validate`, `.pre-commit-config.yaml`.
+- **Module A metrics:** Davies–Bouldin + Calinski–Harasz + PSI helpers with tests.
+- **Contracts:** Pydantic `AllocationHandshakeRow` + round-trip test.
 - **Module B specification:** `module_b_resource_allocation/SPECIFICATION.md`.
 - **Appendix FX narrative:** `appendix/verified_calibration_anchors_full.md` Module B FX row documents the Q1 2018 BCP band and corrects the older 5,800–6,000 wording.
 

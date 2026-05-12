@@ -141,9 +141,9 @@ def generate_population(
     n = int(config["sample_size"])
 
     dept_weights_raw: dict[str, float] = config["department_weights"]
-    assert abs(sum(dept_weights_raw.values()) - 1.0) < 0.001, (
-        f"department_weights must sum to 1.0, got {sum(dept_weights_raw.values()):.4f}"
-    )
+    assert (
+        abs(sum(dept_weights_raw.values()) - 1.0) < 0.001
+    ), f"department_weights must sum to 1.0, got {sum(dept_weights_raw.values()):.4f}"
     dept_names = list(dept_weights_raw.keys())
     dept_probs = np.array([dept_weights_raw[d] for d in dept_names], dtype=float)
     dept_probs /= dept_probs.sum()

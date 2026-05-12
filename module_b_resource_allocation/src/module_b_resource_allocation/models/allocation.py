@@ -101,10 +101,16 @@ class AllocationResult:
     solver_seed: int
     scenario_id: str
     fx_series_id: str
+    #: CBC shadow prices / status after ``solve`` (keys depend on constraint names).
+    lp_diagnostics: dict[str, Any] | None = None
 
     @property
     def total_budget_usd(self) -> float:
         return float(self.allocation["budget_allocation_usd"].sum())
+
+    @property
+    def total_persuasion_adjusted_contacts(self) -> float:
+        return float(self.allocation["persuasion_adjusted_contacts"].sum())
 
 
 def _load_bundles() -> dict[str, dict[str, Any]]:
@@ -294,7 +300,49 @@ def solve(problem: AllocationProblem) -> AllocationResult:
 
     solver = pulp.PULP_CBC_CMD(msg=False, options=[f"randomS {problem.solver_seed}"])
     status = prob.solve(solver)
-    row_solver_status = "OPTIMAL" if status == pulp.LpStatusOptimal else "FEASIBLE"
+    if status in (pulp.LpStatusInfeasible, pulp.LpStatusNotSolved):
+        raise RuntimeError(f"Module B allocation solve failed with status={pulp.LpStatus[status]}")
+    if status == pulp.LpStatusOptimal:
+        row_solver_status = "OPTIMAL"
+    elif status == pulp.LpStatusUndefined:
+        row_solver_status = "UNDEFINED"
+    elif status == pulp.LpStatusUnbounded:
+        row_solver_status = "UNBOUNDED"
+    else:
+        row_solver_status = "FEASIBLE"
+
+    def _constraint_pi(name: str) -> float | None:
+        cn = prob.constraints.get(name)
+        if cn is None:
+            return None
+        raw = getattr(cn, "pi", None)
+        if raw is None:
+            return None
+        try:
+            return float(raw)
+        except (TypeError, ValueError):
+            return None
+
+    cap_dual_rows: list[dict[str, Any]] = []
+    for cname, _ccon in prob.constraints.items():
+        if not str(cname).startswith("cap_"):
+            continue
+        pi = _constraint_pi(str(cname))
+        if pi is not None:
+            cap_dual_rows.append({"constraint": str(cname), "pi": float(pi)})
+    cap_dual_rows.sort(key=lambda r: abs(r["pi"]), reverse=True)
+
+    try:
+        _status_label = str(pulp.LpStatus[status])
+    except Exception:
+        _status_label = f"code_{int(status)}"
+    lp_diagnostics: dict[str, Any] = {
+        "budget_upper_pi": _constraint_pi("budget_upper"),
+        "budget_lower_pi": _constraint_pi("budget_lower"),
+        "pulp_status_code": int(status),
+        "pulp_status_label": _status_label,
+        "reach_cap_duals_top5": cap_dual_rows[:5],
+    }
 
     rows: list[dict[str, Any]] = []
     binding: list[str] = []
@@ -366,4 +414,5 @@ def solve(problem: AllocationProblem) -> AllocationResult:
         solver_seed=problem.solver_seed,
         scenario_id=problem.scenario_id,
         fx_series_id=layer.series_id,
+        lp_diagnostics=lp_diagnostics,
     )

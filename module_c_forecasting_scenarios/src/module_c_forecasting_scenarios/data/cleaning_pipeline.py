@@ -10,9 +10,15 @@ import pandas as pd
 import yaml
 
 from module_c_forecasting_scenarios.data.exceptions import QAGateFailure
-from module_c_forecasting_scenarios.data.transparency import compute_phi_transparency, compute_tau_eff
+from module_c_forecasting_scenarios.data.transparency import (
+    compute_phi_transparency,
+    compute_tau_eff,
+)
 from module_c_forecasting_scenarios.features.herding_weights import rho_herd_for_row
-from module_c_forecasting_scenarios.features.shock_scores import scenario_bucket_for_margin, shock_score_s
+from module_c_forecasting_scenarios.features.shock_scores import (
+    scenario_bucket_for_margin,
+    shock_score_s,
+)
 from module_c_forecasting_scenarios.features.taxonomy_tables import normalize_pollster_id
 from module_c_forecasting_scenarios.paths import module_config_dir
 
@@ -25,9 +31,7 @@ REQUIRED_RAW = (
 )
 
 
-def _redistribute_ab(
-    a: float, b: float, und: float | None, rule: str
-) -> tuple[float, float, str]:
+def _redistribute_ab(a: float, b: float, und: float | None, rule: str) -> tuple[float, float, str]:
     if und is None or (isinstance(und, float) and pd.isna(und)):
         und = 0.0
     if rule == "exclude":
@@ -153,7 +157,7 @@ def clean_raw_polls(
     if len(exit_part):
         exit_df = exit_part[exit_keep].reset_index(drop=True)
     else:
-        exit_df = pd.DataFrame(columns=exit_keep)
+        exit_df = pd.DataFrame.from_records([], columns=exit_keep)
     tracking = track_part.reset_index(drop=True)
     return tracking, exit_df
 
@@ -162,11 +166,12 @@ def attach_shock_scores(tracking: pd.DataFrame, m_star_pp: float) -> pd.DataFram
     out = tracking.copy()
     scores = []
     for _, r in out.iterrows():
+        pub = pd.Timestamp(r["publication_date"]).date()
         s = shock_score_s(
             float(r["m_poll_pp"]),
             m_star_pp,
             float(r["phi_transparency"]),
-            r["publication_date"],
+            pub,
             r.get("conglomerate_id"),
         )
         scores.append(s)

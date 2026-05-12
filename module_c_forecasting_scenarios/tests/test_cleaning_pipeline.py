@@ -6,7 +6,6 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-
 from module_c_forecasting_scenarios.data.cleaning_pipeline import clean_raw_polls
 from module_c_forecasting_scenarios.data.exceptions import QAGateFailure
 from module_c_forecasting_scenarios.data.raw_loader import load_raw_polls_csv
