@@ -4,6 +4,30 @@ Records every non-trivial architectural choice: decision, alternatives considere
 
 ---
 
+## 2026-05-14 — Project Action List §3: Module C checklist vs shipped tree
+
+**Decision:** Reconcile Architecture Quality “Module C: METHODOLOGY.md + forecast_model.py stub” with the **shipped** layout: hierarchical tracking model, multi-stage `pipeline/` CLIs, `config/calibration.yaml`, and research-facing proof table under `module_c_forecasting_scenarios/reports/`. Add [`tests/test_architecture_module_c_surface.py`](../tests/test_architecture_module_c_surface.py) asserting canonical paths exist, legacy-only filenames absent, and lightweight imports (`paths`, `contract_validate`) without requiring a new root `METHODOLOGY.md` or `forecast_model.py` shim.
+
+**Alternatives considered:** Adding placeholder `METHODOLOGY.md` and `forecast_model.py` — rejected per YAGNI; documentation intent is met by existing reports + code.
+
+**Reason:** One-task §3 closure with verifiable commands; no calibration YAML semantic edits.
+
+**Source:** Project Action List §3 Architecture Quality — task 4 (2026-05-14).
+
+---
+
+## 2026-05-14 — Project Action List §3: Module B checklist vs shipped tree
+
+**Decision:** Reconcile Architecture Quality “Module B: specification + skeleton” with the **ship-ready** layout: root [`module_b_resource_allocation/SPECIFICATION.md`](../module_b_resource_allocation/SPECIFICATION.md) plus PuLP/CBC implementation in [`models/allocation.py`](../module_b_resource_allocation/src/module_b_resource_allocation/models/allocation.py) (`build_problem`, `solve`), not a standalone `optimization_engine.py` stub (that filename is not part of the shipped tree). Add [`tests/test_architecture_module_b_surface.py`](../tests/test_architecture_module_b_surface.py) as regression guard.
+
+**Alternatives considered:** Adding `optimization_engine.py` as a facade — rejected per YAGNI; SPEC already maps readers to the canonical modules.
+
+**Reason:** One-task §3 closure with commands-only verification and no solver/schema drift.
+
+**Source:** Project Action List §3 Architecture Quality — task 3 (2026-05-14).
+
+---
+
 ## 2026-05-13 — Project Action List §3: Module A surface checklist vs shipped tree
 
 **Decision:** Reconcile Architecture Quality “Module A: all files exist and runnable” with the **actual** `population_segmentation` layout (split `features/` modules, `evaluation/schema_validator.py`, dashboard under `module_a_population_segmentation/app/streamlit_dashboard.py`) and add [`tests/test_architecture_module_a_surface.py`](../tests/test_architecture_module_a_surface.py) as a regression guard. Do **not** introduce legacy-only filenames (`features/engineer.py`, `evaluation/validator.py`, dashboard under `src/…/app/`) solely to match an outdated bullet list.

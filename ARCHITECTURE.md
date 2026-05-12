@@ -15,6 +15,10 @@ Layout invariants are covered by [`tests/test_architecture_three_module_layout.p
 
 Module A file-level surface and pipe import hooks are guarded by [`tests/test_architecture_module_a_surface.py`](tests/test_architecture_module_a_surface.py).
 
+Module B specification path plus allocator import surface are guarded by [`tests/test_architecture_module_b_surface.py`](tests/test_architecture_module_b_surface.py).
+
+Module C methodology artifacts, pipeline paths, and lightweight package imports are guarded by [`tests/test_architecture_module_c_surface.py`](tests/test_architecture_module_c_surface.py).
+
 ---
 
 ## Component map
