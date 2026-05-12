@@ -42,6 +42,30 @@ class TestEntityCount:
         assert (ids == np.arange(1, len(ids) + 1)).all()
 
 
+class TestDepartmentWeightsIntegrity:
+    """Nominal department shares must sum to 1.0000 at 4dp; RNG probs sum to exactly 1.0."""
+
+    def test_generation_yaml_department_weights_decimal_sum(self) -> None:
+        from decimal import ROUND_HALF_EVEN, Decimal
+
+        with open(CONFIG_PATH, encoding="utf-8") as f:
+            cfg = yaml.safe_load(f)
+        quant = Decimal("0.0001")
+        decimal_sum = sum(
+            Decimal(str(float(v))).quantize(quant, rounding=ROUND_HALF_EVEN)
+            for v in cfg["department_weights"].values()
+        )
+        assert decimal_sum == Decimal("1.0000")
+
+    def test_validated_sampling_probs_sum_is_exactly_one(self) -> None:
+        from population_segmentation.data.generator import _validated_department_sampling_probs
+
+        with open(CONFIG_PATH, encoding="utf-8") as f:
+            cfg = yaml.safe_load(f)
+        _, probs = _validated_department_sampling_probs(cfg["department_weights"])
+        assert probs.sum() == 1.0
+
+
 class TestDepartmentDistribution:
     def test_all_18_departments_present(self, generated_population: pd.DataFrame) -> None:
         from population_segmentation.utils.schema import CANONICAL_DEPARTMENTS

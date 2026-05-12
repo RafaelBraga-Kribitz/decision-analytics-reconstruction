@@ -58,13 +58,21 @@ jobs:
       - name: Config integrity (department_weights sum)
         run: |
           poetry run python - <<'PY'
+          from decimal import ROUND_HALF_EVEN, Decimal
           import yaml
           from pathlib import Path
           p = Path("module_a_population_segmentation/config/generation.yaml")
           cfg = yaml.safe_load(p.read_text(encoding="utf-8"))
-          total = sum(cfg["department_weights"].values())
-          assert abs(total - 1.0) < 0.001, f"department_weights must sum to 1.0, got {total:.6f}"
-          print(f"department_weights sum OK: {total:.6f}")
+          quant = Decimal("0.0001")
+          decimal_sum = sum(
+              Decimal(str(float(v))).quantize(quant, rounding=ROUND_HALF_EVEN)
+              for v in cfg["department_weights"].values()
+          )
+          assert decimal_sum == Decimal("1.0000"), (
+              "department_weights must sum to 1.0000 at 4 decimal places, "
+              f"got {decimal_sum}"
+          )
+          print(f"department_weights Decimal(4dp) sum OK: {decimal_sum}")
           PY
 
       - name: Black format check

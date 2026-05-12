@@ -9,7 +9,9 @@ N_full: 4260816              # TSJE, April 22, 2018
 outcome_event_date: "2018-04-22"
 
 # ─── Department weights (DGEEC 2018 electoral-roll shares) ───────────────────
-# All 18 departments + Asunción; shares sum to exactly 1.0000.
+# All 18 departments + Asunción; nominal shares at 4 decimal places sum to
+# Decimal("1.0000"). Binary float loads can drift; generator.py reconciles to a
+# probability vector whose float64 sum is exactly 1.0 for numpy RNG.
 # Source: TSJE 2018 voter-roll proportions, normalised from DGEEC 2018
 # projections.  Original raw values summed to 0.9200 due to rounding across
 # 18 entries; corrected 2026-05-11 by proportional normalisation (÷ 0.92),

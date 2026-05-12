@@ -7,6 +7,7 @@ All random operations use an explicitly seeded numpy Generator.
 
 from __future__ import annotations
 
+from decimal import ROUND_HALF_EVEN, Decimal
 from pathlib import Path
 from typing import Any
 
@@ -121,6 +122,57 @@ def _load_config(config_path: str | Path) -> dict[str, Any]:
         return yaml.safe_load(f)  # type: ignore[no-any-return]
 
 
+def _validated_department_sampling_probs(
+    dept_weights_raw: dict[str, float],
+) -> tuple[list[str], np.ndarray]:
+    """Validate nominal weights and return a probability vector summing *exactly* to 1.0.
+
+    ``generation.yaml`` stores human-facing shares at four decimal places; their
+    :class:`decimal.Decimal` sum must be exactly ``1.0000``. Binary ``float`` loads
+    can drift (e.g. ``1.0000000000000002``); we normalize then assign the residual
+    to the largest-weight department so :meth:`numpy.random.Generator.choice`
+    receives a mathematically valid ``p``.
+
+    Args:
+        dept_weights_raw: Mapping of department name to positive nominal weight.
+
+    Returns:
+        Department names in dict iteration order and a ``float64`` probability array.
+
+    Raises:
+        AssertionError: If Decimal(4dp) sum is not ``1.0000`` or float sum is far from 1.0.
+        ValueError: If weights are non-finite or non-positive.
+    """
+    quant = Decimal("0.0001")
+    decimal_sum = sum(
+        Decimal(str(float(v))).quantize(quant, rounding=ROUND_HALF_EVEN)
+        for v in dept_weights_raw.values()
+    )
+    assert decimal_sum == Decimal("1.0000"), (
+        "department_weights must sum to 1.0000 at 4 decimal places "
+        f"(Decimal check reflects YAML rounding intent), got {decimal_sum}"
+    )
+
+    dept_names = list(dept_weights_raw.keys())
+    probs = np.asarray([float(dept_weights_raw[d]) for d in dept_names], dtype=np.float64)
+    raw_sum = float(probs.sum())
+    if not np.isfinite(raw_sum) or raw_sum <= 0:
+        raise ValueError("department_weights must be finite and strictly positive")
+    assert abs(raw_sum - 1.0) < 0.001, (
+        "department_weights float sum must be within 0.001 of 1.0 before normalization, "
+        f"got {raw_sum:.12f}"
+    )
+
+    probs /= probs.sum()
+    imax = int(np.argmax(probs))
+    probs[imax] = 1.0 - float(np.sum(np.delete(probs, imax)))
+
+    assert np.all(probs >= 0.0), probs
+    assert probs.sum() == 1.0, float(probs.sum())
+
+    return dept_names, probs
+
+
 def generate_population(
     config: dict[str, Any],
     seed: int | None = None,
@@ -141,12 +193,7 @@ def generate_population(
     n = int(config["sample_size"])
 
     dept_weights_raw: dict[str, float] = config["department_weights"]
-    assert (
-        abs(sum(dept_weights_raw.values()) - 1.0) < 0.001
-    ), f"department_weights must sum to 1.0, got {sum(dept_weights_raw.values()):.4f}"
-    dept_names = list(dept_weights_raw.keys())
-    dept_probs = np.array([dept_weights_raw[d] for d in dept_names], dtype=float)
-    dept_probs /= dept_probs.sum()
+    dept_names, dept_probs = _validated_department_sampling_probs(dept_weights_raw)
 
     dept_urban_share: dict[str, float] = config["department_urban_share"]
 

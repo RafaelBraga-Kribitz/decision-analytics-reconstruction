@@ -57,9 +57,9 @@
 
 **Fix all P0/P1 bugs:**
 ~~- [ ] `_ENCODING_GARBLES` NameError: define dict, remove unused list, add type hints~~
-- [ ] `department_weights` sum: correct to 1.0000 exactly, add assertion in generator [agent Composer(2026-05-12-deptw) currently working on it]
+~~- [ ] `department_weights` sum: correct to 1.0000 exactly, add assertion in generator~~
 ~~- [ ] `docker-compose.yml` version: "3.9"~~
-- [ ] No `__main__` entry points: add argparse blocks to generator.py and raw_injector.py
+~~- [ ] No `__main__` entry points: add argparse blocks to generator.py and raw_injector.py~~
 - [ ] `enc_source` vs `enc_source_raw`: standardize field names, update schema, add comment explaining raw vs clean layer naming
 - [ ] Column name constants: import from schema.py everywhere in raw_injector.py, not bare strings
 - [ ] `KMeans n_jobs` parameter: remove from model_params.yaml, document `OMP_NUM_THREADS` alternative
