@@ -45,7 +45,7 @@
 ~~- [ ] Create `ARCHITECTURE.md` with: data flow Mermaid diagram, module dependency graph, schema contract table (5 contracts × 20 fields each), step-by-step walkthrough of one record — delivered in [`ARCHITECTURE.md`](ARCHITECTURE.md); regression [`tests/test_architecture_md_content_contract.py`](tests/test_architecture_md_content_contract.py).~~
 ~~- [ ] Create `data/` directory structure: `data/{raw,interim,processed}/.gitkeep` files present — tracked placeholders and `.gitignore` negations; regression [`tests/test_architecture_data_directory_layout.py`](tests/test_architecture_data_directory_layout.py).~~
 ~~- [ ] Docker: `docker-compose.yml` version correct, `docker/Dockerfile` exists and builds without error, `docker/mlflow.Dockerfile` exists~~
-- [ ] Acceptance: `git clone` → `poetry install` → `make pipeline-dev` produces clean population dataset, segmentations, propensity scores, and dashboard artifacts in `data/processed/` without manual intervention
+~~- [ ] Acceptance: `git clone` → `poetry install` → `make pipeline-dev` produces clean population dataset, segmentations, propensity scores, and dashboard artifacts in `data/processed/` without manual intervention — [`Makefile`](Makefile) `pipeline-dev` runs `population_segmentation.pipeline` → `run_export`; regression [`tests/test_architecture_pipeline_dev_contract.py`](tests/test_architecture_pipeline_dev_contract.py) (slow test runs `make pipeline-dev`).~~
 
 ---
 
@@ -56,7 +56,7 @@
 **Actions to reach 10/10:**
 
 **Fix all P0/P1 bugs:**
-- [ ] `_ENCODING_GARBLES` NameError: define dict, remove unused list, add type hints
+~~- [ ] `_ENCODING_GARBLES` NameError: define dict, remove unused list, add type hints~~
 - [ ] `department_weights` sum: correct to 1.0000 exactly, add assertion in generator
 - [ ] `docker-compose.yml` version: "3.9"
 - [ ] No `__main__` entry points: add argparse blocks to generator.py and raw_injector.py

@@ -105,6 +105,28 @@ class TestFlawTypes:
             assert abs(null_rate - expected) < 0.05
 
 
+class TestEncodingGarblesRegression:
+    """Regression: _ENCODING_GARBLES must be a dict (not a list) to avoid NameError at runtime."""
+
+    def test_encoding_garbles_is_str_to_str_dict(self) -> None:
+        from population_segmentation.data import raw_injector as ri
+
+        assert isinstance(ri._ENCODING_GARBLES, dict)
+        assert all(isinstance(k, str) and isinstance(v, str) for k, v in ri._ENCODING_GARBLES.items())
+
+    def test_garble_encoding_replaces_first_accent(self) -> None:
+        from population_segmentation.data import raw_injector as ri
+
+        out = ri._garble_encoding("Ramírez")
+        assert "Ã" in out or "?" in out
+        assert out != "Ramírez"
+
+    def test_garble_encoding_non_str_passthrough(self) -> None:
+        from population_segmentation.data import raw_injector as ri
+
+        assert ri._garble_encoding(1) == 1  # type: ignore[arg-type]
+
+
 class TestDeterminism:
     def test_same_seed_deterministic(
         self, config: dict, clean_population: pd.DataFrame  # type: ignore[type-arg]
