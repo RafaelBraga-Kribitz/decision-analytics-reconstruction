@@ -61,7 +61,7 @@
 ~~- [ ] `docker-compose.yml` version: "3.9"~~
 ~~- [ ] No `__main__` entry points: add argparse blocks to generator.py and raw_injector.py~~
 ~~- [ ] `enc_source` vs `enc_source_raw`: standardize field names, update schema, add comment explaining raw vs clean layer naming~~
-- [ ] Column name constants: import from schema.py everywhere in raw_injector.py, not bare strings
+~~- [ ] Column name constants: import from schema.py everywhere in raw_injector.py, not bare strings~~
 ~~- [ ] `KMeans n_jobs` parameter: remove from model_params.yaml, document `OMP_NUM_THREADS` alternative~~ *(done 2026-05-12: `kmeans.n_jobs` removed, threading env vars documented, `test_model_params_kmeans_no_n_jobs.py`.)*
 - [ ] CI `--no-root`: change to `poetry install`, add module importability test
 - [ ] `rural_inet` unused + magic `0.42`: replace with config variable, move internet penetration to generation.yaml
