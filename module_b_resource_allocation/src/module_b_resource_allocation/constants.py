@@ -99,9 +99,9 @@ ALLOCATION_ROWS: Final[int] = N_DEPARTMENTS * N_CHANNELS * WEEK_COUNT  # 18 * 11
 
 
 # ---------------------------------------------------------------------------
-# Campaign envelope (Jan–Apr 2018 reconstruction): USD 2,000,000 ± 0.5%.
+# Campaign envelope (Jan–Apr 2018 reconstruction): USD 6,000,000 ± 0.5%.
 # ---------------------------------------------------------------------------
-CAMPAIGN_BUDGET_USD: Final[float] = 2_000_000.0
+CAMPAIGN_BUDGET_USD: Final[float] = 6_000_000.0
 CAMPAIGN_BUDGET_TOLERANCE: Final[float] = 0.005
 COVERAGE_LOWER_BOUND_PCT: Final[float] = 0.80
 BCP_CORRIDOR_MAX_PCT: Final[float] = 0.10

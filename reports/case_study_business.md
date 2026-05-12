@@ -56,7 +56,7 @@ A constrained linear program allocated the available budget across 18 department
 - FX corridor constraints (BCP PYG/USD reference rate ±0.5%)
 - Minimum municipality coverage requirements (≥80%)
 
-The solver achieved OPTIMAL status on the baseline scenario and identified that approximately 2.5–3% of the total budget was being routed to channels with near-zero persuasion yield (billboards in negligible-tier departments, SMS). Reallocation of this $50–60K to WhatsApp activation in weeks 11–14 was the primary optimization contribution.
+The solver achieved OPTIMAL status on the baseline scenario and identified that approximately 2.5–3% of the total budget was being routed to channels with near-zero persuasion yield (billboards in negligible-tier departments, SMS). Reallocation of this $150–180K to WhatsApp activation in weeks 11–14 was the primary optimization contribution.
 
 ## System 3: Probabilistic Forecasting
 

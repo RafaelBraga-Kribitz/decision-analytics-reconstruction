@@ -51,10 +51,10 @@ def _build_day_index(
     days = pd.date_range(pd.Timestamp(start), pd.Timestamp(end), freq="D")
     day_to_i: dict[date, int] = {}
     for i in range(len(days)):
-        d_i = pd.Timestamp(days.iloc[i]).date()
+        d_i = pd.Timestamp(days[i]).date()
         day_to_i[d_i] = i
-    start_d = pd.Timestamp(days.iloc[0]).date()
-    end_d = pd.Timestamp(days.iloc[-1]).date()
+    start_d = pd.Timestamp(days[0]).date()
+    end_d = pd.Timestamp(days[-1]).date()
     poll_day_idx_list: list[int] = []
     for md in mid_dates:
         md_ts = pd.Timestamp(cast(object, md))

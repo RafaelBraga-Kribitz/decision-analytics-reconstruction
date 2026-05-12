@@ -4,6 +4,32 @@ Records every non-trivial architectural choice: decision, alternatives considere
 
 ---
 
+## 2026-05-12 — Verification sweep: Module B routing Makefile, Module C day index, EDA terminology
+
+**Decision:** (1) `module-b-routing` Makefile target now calls `build_cost_matrix` and writes `routing_cost_matrix_<scenario>.csv` because the legacy `routing.heuristic` CLI module was removed and routing matrices are produced alongside allocation. (2) `_build_day_index` indexes `pd.date_range` results with `days[i]` instead of `days.iloc[i]` (DatetimeIndex has no `iloc`). (3) `reports/eda/generate_eda.py` narrative and chart titles avoid banned portfolio tokens checked by `scripts/check_terminology.py` (`voter` / `election_date` as a symbol).
+
+**Alternatives considered:** Leaving Makefile `module-b-routing` broken — rejected because README and operators still reference it. Pinning MC draws at 200 for local `make module-c-all` with `MC_FAST=1` — accepted as fast default, but EDA contract tests require 10k draws; regenerate MC with `env -u MC_FAST` when refreshing `data/processed/`.
+
+**Reason:** Full-stack verification must pass `make tier3-smoke` and `tests/test_eda.py` after pipeline refreshes; routing and hierarchical fixes unblock `module-c-all` and downstream EDA.
+
+**Source:** full-stack verification session (2026-05-12).
+
+---
+
+## 2026-05-12 — Evaluation gap remediation: Poetry root install in CI + rural WhatsApp anchor
+
+**Decision:** GitHub Actions jobs that run pytest or import first-party packages use `poetry install` (editable root packages on `sys.path`), not `poetry install --no-root`. Module A generator reads `media_penetration_defaults.whatsapp_rural` from `generation.yaml` for rural `media_penetration_whatsapp` instead of scaling urban ICT by a hard-coded factor.
+
+**Alternatives considered:** Pytest `pythonpath` in `pyproject.toml` only — rejected because it duplicates Poetry’s package metadata and can drift from real installs.
+
+**Reason:** CI must mirror how contributors run tests locally; YAML anchors for ICT media penetration should be authoritative for rural vs urban constants.
+
+**Documentation audit (external writeups):** Some older critiques assumed a missing root-level `cleaner.py` or a `counterfactual/broadcast_to_direct.py` module path; the shipped cleaner is `module_a_population_segmentation/src/population_segmentation/data/cleaner.py` (see `reports/transformation_log.md`), and the broadcast-to-direct counterfactual lives in `module_b_resource_allocation/src/module_b_resource_allocation/models/counterfactual.py` as referenced in the Phase 9–10 entry below.
+
+**Source:** external portfolio evaluation + internal evaluation-gap plan (2026-05-12).
+
+---
+
 ## 2026-05-07 — Module A: K selection strategy
 
 **Decision:** Use k=6 as default with silhouette validation across k ∈ {4,5,6,7,8}.
@@ -195,7 +221,7 @@ Records every non-trivial architectural choice: decision, alternatives considere
 **Decision:** Complete Module B implementation through broadcast-to-direct counterfactual engine and full test suite with API/weekly-replay entrypoints.
 
 **Scope closed:**
-- Phase 9: `counterfactual/broadcast_to_direct.py` — reallocates broadcast budget (tv_spots, radio_spots, newspaper_inserts) to direct channels (canvassing, rallies_events, sound_cars, sms_blasts); applies 15% bundle-release penalty when `conglomerate_x` flips 0; emits `delta_contacts` (int64, signed), `bundle_flipped_to_zero`, and `scenario_id = "broadcast_to_direct"`.
+- Phase 9: `module_b_resource_allocation/src/module_b_resource_allocation/models/counterfactual.py` (`run_broadcast_to_direct`) — reallocates broadcast budget (tv_spots, radio_spots, newspaper_inserts) to direct channels (canvassing, rallies_events, sound_cars, sms_blasts); applies 15% bundle-release penalty when `conglomerate_x` flips 0; emits `delta_contacts` (int64, signed), `bundle_flipped_to_zero`, and `scenario_id = "broadcast_to_direct"`.
 - Phase 10: Verified all 13 integration tests pass (FastAPI TestClient), 131 Module B tests pass end-to-end, 116 Module A tests pass (no regressions).
 - Terminology: fixed two comment violations — `pre-election ramp` → `pre-outcome-event ramp` and `general election context` → `outcome event context`.
 

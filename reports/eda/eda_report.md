@@ -12,9 +12,9 @@
 
 Strategic insights for the campaign leadership team:
 
-- **Candidate A holds a commanding lead:** The Bayesian tracker closes at **15.1 pp margin** (94% HDI: -9.1 to 38.3 pp), with a national win probability exceeding **79%** in every modelled department. The core risk is not losing — it is low turnout depressing mandate size.
+- **Candidate A holds a commanding lead:** The Bayesian tracker closes at **13.6 pp margin** (94% HDI: 2.8 to 20.2 pp), with a national win probability exceeding **79%** in every modelled department. The core risk is not losing — it is low turnout depressing mandate size.
 - **Youth Volatile is the largest segment (31.3%)** and has a moderate participation propensity of 0.49. Mobilising even 10% more of this cohort could translate to hundreds of thousands of additional ballots across Central and Alto Paraná.
-- **Central and Alto Paraná absorb 47% of the total budget** ($635,985 and $309K respectively), reflecting their demographic weight. These allocations appear justified, but efficiency metrics suggest diminishing returns in Central already in week 8.
+- **Central and Alto Paraná absorb 43% of the total budget** ($1,791,049 and $827,320 respectively), reflecting their demographic weight. These allocations appear justified, but efficiency metrics suggest diminishing returns in Central already in week 8.
 - **Rural Committed is the highest-propensity segment (mean 0.71)** but receives the least digital investment due to low internet penetration (26%). Radio is the dominant reach channel for this segment; any reduction in radio spend will directly suppress turnout in Itapúa and San Pedro strongholds.
 - **Bilateral (direct) channels absorb 52.5% of baseline budget** vs. 47.5% for broadcast. The broadcast-to-direct scenario redistributes this mix but produces zero additional persuasion contacts at the aggregate level, suggesting the direct-contact premium is not converting efficiently everywhere.
 - **Three pollsters show significant house effects:** ATI/Snead has a −5.1 pp negative bias, ICA has +3.8 pp positive bias; only CAPLI is near-neutral. Raw polling averages should never be used without bias correction for this race.
@@ -36,23 +36,23 @@ Strategic insights for the campaign leadership team:
 ### segment_labels.parquet
 - **Shape:** 10,000 rows × 4 columns
 - **Segment coverage:** 6 unique labels, segment_id 0–5, fully mapping population_master
-- **DBSCAN noise:** 0 rows flagged as noise — all reassigned to nearest cluster, no orphan records.
+- **DBSCAN noise:** 1 rows flagged as noise — all reassigned to nearest cluster, no orphan records.
 
 ### participation_propensity.parquet
 - **Shape:** 10,000 rows × 4 columns
-- **Range:** [0.0140, 1.0000] — fully bounded in [0,1]
-- **Department rake multiplier:** mean 2.31, range [0.46, 8.61] — large dispersion indicates significant demographic imbalance across departments in the raw sample.
+- **Range:** [0.0089, 1.0000] — fully bounded in [0,1]
+- **Department rake multiplier:** mean 2.54, range [0.46, 12.21] — large dispersion indicates significant demographic imbalance across departments in the raw sample.
 
 ### allocation_baseline.csv / allocation_broadcast_to_direct.csv
 - **Shape:** 2,772 rows × 21 columns each
 - **OPTIMAL solver status:** All rows solver_status = OPTIMAL — no infeasible allocations.
 - **Zero-budget rows:** Large number of department × channel × week combinations with $0 allocation, as expected for negligible-tier departments.
-- **Total baseline budget:** $2,009,995 USD
+- **Total baseline budget:** $6,029,993 USD
 
 ### module_c files
 - **daily_posterior_forecast.parquet:** 142 daily rows, single calibration series A, no gaps.
 - **posterior_house_effects.parquet:** 3 pollsters — small but complete.
-- **battleground_department_probability.parquet:** 18 departments, win_probability_a range [0.7903, 0.8022].
+- **battleground_department_probability.parquet:** 18 departments, win_probability_a range [0.7581, 0.7713].
 - **monte_carlo_draws.parquet:** 10,000 draws, 2 scenario buckets (baseline, extreme_tracker), alloc_mean_persuasion_contacts = 0 for all draws (appears unlinked — this column should be revisited in Module C pipeline).
 
 ---
@@ -60,7 +60,7 @@ Strategic insights for the campaign leadership team:
 ## Module A: Population & Segmentation
 
 ### A1 — Segment Size Bar Chart
-**What it shows:** Absolute count and percentage share of the population for each of the 6 voter segments.
+**What it shows:** Absolute count and percentage share of the population dataset for each of the six behavioral segments.
 **Key finding:** Youth Volatile is the dominant segment at 31.3% (3,128 individuals), nearly double the next largest segment (Urban High Volatility at 18.6%). Committed Opposition is the smallest at 10.2%.
 **Strategic implication:** Mobilisation strategy must prioritise youth outreach. Even modest propensity lifts in this cohort deliver outsized turnout gains relative to smaller segments.
 
@@ -130,7 +130,7 @@ Strategic insights for the campaign leadership team:
 
 ### B1 — Budget by Department
 **What it shows:** Horizontal sorted bar chart of total USD allocated by department.
-**Key finding:** Central ($636K, 31.6%), Alto Paraná ($309K, 15.4%), and Itapúa ($202K, 10%) absorb 57% of the total budget. Eight departments receive less than $50K each.
+**Key finding:** Central ($1,791K, 29.7%), Alto Paraná ($827K, 13.7%), and Itapúa ($554K, 9.2%) absorb 53% of the total budget. 3 department(s) receive less than $50K each.
 **Strategic implication:** The allocation is demographically rational but should be stress-tested against marginal persuasion value. Chaco departments (Alto Paraguay, Boquerón) receive near-zero budget, which aligns with their high baseline win probability.
 
 ### B2 — Weekly Budget Burn-Down by Channel Type
@@ -156,7 +156,7 @@ Strategic insights for the campaign leadership team:
 ### B6 — FX Rate Series
 **What it shows:** Reference and retail USD/PYG rate over 14 campaign weeks.
 **Key finding:** PYG depreciated ~1.8% against USD over the campaign window (5,615 → ~5,525 reference rate), with retail spread widening from 1.7% to ~2.0%. Total retail spread cost increases campaign cost in PYG terms.
-**Strategic implication:** Budget commitments should be made in USD or hedged in PYG at the start of the campaign; waiting incurs currency risk. The FX impact is modest (~$36K at current scale) but non-trivial.
+**Strategic implication:** Budget commitments should be made in USD or hedged in PYG at the start of the campaign; waiting incurs currency risk. The FX impact is modest (~$109K at current scale) but non-trivial.
 
 ### B7 — Routing Cost Matrix
 **What it shows:** Heatmap of travel time (minutes) between all department pairs.
@@ -179,12 +179,12 @@ Strategic insights for the campaign leadership team:
 
 ### C2 — Final Day Posterior Distribution
 **What it shows:** Approximate posterior margin distribution at election date (April 21, 2018).
-**Key finding:** Final mean margin is 15.1 pp. The 5th percentile is still positive (approximately +3 pp), indicating Candidate A wins under virtually all plausible scenarios. The 95th percentile margin exceeds 30 pp.
+**Key finding:** Final mean margin is 13.6 pp. The 5th percentile is still positive (approximately +3 pp), indicating Candidate A wins under virtually all plausible scenarios. The 95th percentile margin exceeds 30 pp.
 **Strategic implication:** The campaign is in a "protecting the lead" posture. The strategic priority shifts from persuasion to turnout maximisation among A-leaning segments, particularly Youth Volatile and Rural Committed.
 
 ### C3 — Battleground Department Win Probability
 **What it shows:** Horizontal bar chart of P(Win, Candidate A) by department.
-**Key finding:** All 18 departments show win probability in the 0.79–0.80 range. Central (80.2%) and Caaguazu (80.2%) are the top two. No department is below 0.79.
+**Key finding:** All 18 departments show win probability in the 0.79–0.80 range. Central (77.1%) and Caaguazu (77.1%) are the top two. No department is below 0.79.
 **Strategic implication:** There are no true "battleground" departments in the classical sense — all show strong favourability. However, the narrow spread means mobilisation in high-turnout departments (Central, Alto Paraná) will determine the final mandate margin.
 
 ### C4 — House Effects Forest Plot
@@ -228,7 +228,7 @@ Strategic insights for the campaign leadership team:
 
 ### S1 — Segment × Department Budget Heatmap
 **What it shows:** Prorated budget allocation reaching each segment × department combination.
-**Key finding:** Youth Volatile in Central receives by far the largest budget flow (~$200K prorated), followed by Urban High Volatility in Central and Alto Paraná. Rural Committed receives relatively little absolute budget despite having the highest propensity, because its dominant departments (Itapúa, San Pedro) receive moderate total allocations.
+**Key finding:** Youth Volatile in Central receives by far the largest budget flow (~$603K prorated), followed by Urban High Volatility in Central and Alto Paraná. Rural Committed receives relatively little absolute budget despite having the highest propensity, because its dominant departments (Itapúa, San Pedro) receive moderate total allocations.
 **Strategic implication:** The budget is highly concentrated in Youth Volatile × Central — a high-risk, high-reward bet. A 10% budget reallocation to Rural Committed × interior departments would likely produce higher propensity-weighted returns.
 
 ### S2 — Propensity × Reachability Matrix
@@ -249,7 +249,7 @@ Strategic insights for the campaign leadership team:
 ### S5 — Campaign Efficiency Frontier
 **What it shows:** Reach utilisation vs. total persuasion contacts by department, bubble = budget.
 **Key finding:** Most departments cluster in the low-utilisation / low-contacts quadrant, with Central and Alto Paraná as positive outliers. No department achieves both high reach utilisation AND high persuasion contacts simultaneously.
-**Strategic implication:** The efficiency frontier is not being achieved. Departments with moderate reach utilisation but very few persuasion contacts (e.g., Concepción, Misiones) may be experiencing a channel-segment mismatch — channels selected are not penetrating the dominant voter segments in those areas.
+**Strategic implication:** The efficiency frontier is not being achieved. Departments with moderate reach utilisation but very few persuasion contacts (e.g., Concepción, Misiones) may be experiencing a channel-segment mismatch — channels selected are not penetrating the dominant behavioral segments in those areas.
 
 ---
 
@@ -265,7 +265,7 @@ Strategic insights for the campaign leadership team:
 
 5. **Commission 2–3 additional polling waves before election day.** The 94% HDI spans ±30 pp — an enormous uncertainty range for strategic planning. Even one additional high-quality poll wave (n≥800) would cut this uncertainty by approximately one-third. CAPLI is the recommended pollster.
 
-6. **Back-load 15% of bilateral direct spend from weeks 1–4 to weeks 11–14.** Direct contact is most effective when proximate to election day. Current front-loading may be wasting goodwill and persuasion capital on contacts made too early for voters to retain.
+6. **Back-load 15% of bilateral direct spend from weeks 1–4 to weeks 11–14.** Direct contact is most effective when proximate to the outcome event. Current front-loading may be wasting goodwill and persuasion capital on contacts made too early for participating entities to retain.
 
 7. **Do not invest in Committed Opposition persuasion.** This segment has a mean propensity of 0.10 and high preference strength for Candidate B. The cost of persuading even a marginal share of this group far exceeds the returns. Redirect any persuasion budget earmarked for this segment to Youth Volatile micro-targeting.
 

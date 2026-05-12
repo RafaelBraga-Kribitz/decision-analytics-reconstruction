@@ -172,7 +172,7 @@ def chart_a1():
                 f"{cnt:,}  ({pct:.1f}%)", va="center", fontsize=10)
 
     ax.set_xlabel("Number of Individuals")
-    ax.set_title("A1 — Voter Segment Sizes\n(Population Master, N=10,000)")
+    ax.set_title("A1 — Behavioral segment sizes\n(Population master, N=10,000)")
     ax.invert_yaxis()
     ax.set_xlim(0, counts.max() * 1.22)
     ax.grid(axis="y", visible=False)
@@ -1480,9 +1480,20 @@ top_seg = seg_counts.index[0]
 top_seg_pct = seg_counts.iloc[0] / seg_counts.sum() * 100
 
 mean_propensity_overall = pop["participation_propensity"].mean()
-top_dept_budget = alloc_base.groupby("department")["budget_allocation_usd"].sum().idxmax()
-top_dept_budget_val = alloc_base.groupby("department")["budget_allocation_usd"].sum().max()
-total_budget = alloc_base["budget_allocation_usd"].sum()
+_dept_budget = (
+    alloc_base.groupby("department")["budget_allocation_usd"].sum().sort_values(ascending=False)
+)
+total_budget = float(alloc_base["budget_allocation_usd"].sum())
+_b1_central = float(_dept_budget.get("Central", 0.0))
+_b1_alto = float(_dept_budget.get("Alto Parana", 0.0))
+_b1_itapua = float(_dept_budget.get("Itapua", 0.0))
+_b1_caaguazu = float(_dept_budget.get("Caaguazu", 0.0))
+_b1_top3_share = (_b1_central + _b1_alto + _b1_itapua) / total_budget * 100
+_n_dept_under_50k = int((_dept_budget < 50_000).sum())
+_central_alto_share_pct = (_b1_central + _b1_alto) / total_budget * 100
+_fx_spread_cost_usd = total_budget * 0.018
+# Historical envelope used to scale the "~$200K prorated" Youth×Central headline when the campaign envelope changes.
+_NARRATIVE_PRORATION_ANCHOR_USD = 2_000_000.0
 
 forecast_final_mean = forecast.sort_values("date").iloc[-1]["posterior_mean_preference_margin_pp"]
 forecast_final_hdi_lo = forecast.sort_values("date").iloc[-1]["posterior_hdi_low_pp"]
@@ -1511,7 +1522,7 @@ Strategic insights for the campaign leadership team:
 
 - **Candidate A holds a commanding lead:** The Bayesian tracker closes at **{forecast_final_mean:.1f} pp margin** (94% HDI: {forecast_final_hdi_lo:.1f} to {forecast_final_hdi_hi:.1f} pp), with a national win probability exceeding **79%** in every modelled department. The core risk is not losing — it is low turnout depressing mandate size.
 - **Youth Volatile is the largest segment (31.3%)** and has a moderate participation propensity of 0.49. Mobilising even 10% more of this cohort could translate to hundreds of thousands of additional ballots across Central and Alto Paraná.
-- **Central and Alto Paraná absorb 47% of the total budget** (${top_dept_budget_val:,.0f} and $309K respectively), reflecting their demographic weight. These allocations appear justified, but efficiency metrics suggest diminishing returns in Central already in week 8.
+- **Central and Alto Paraná absorb {_central_alto_share_pct:.0f}% of the total budget** (${_b1_central:,.0f} and ${_b1_alto:,.0f} respectively), reflecting their demographic weight. These allocations appear justified, but efficiency metrics suggest diminishing returns in Central already in week 8.
 - **Rural Committed is the highest-propensity segment (mean 0.71)** but receives the least digital investment due to low internet penetration (26%). Radio is the dominant reach channel for this segment; any reduction in radio spend will directly suppress turnout in Itapúa and San Pedro strongholds.
 - **Bilateral (direct) channels absorb 52.5% of baseline budget** vs. 47.5% for broadcast. The broadcast-to-direct scenario redistributes this mix but produces zero additional persuasion contacts at the aggregate level, suggesting the direct-contact premium is not converting efficiently everywhere.
 - **Three pollsters show significant house effects:** ATI/Snead has a −5.1 pp negative bias, ICA has +3.8 pp positive bias; only CAPLI is near-neutral. Raw polling averages should never be used without bias correction for this race.
@@ -1557,7 +1568,7 @@ Strategic insights for the campaign leadership team:
 ## Module A: Population & Segmentation
 
 ### A1 — Segment Size Bar Chart
-**What it shows:** Absolute count and percentage share of the population for each of the 6 voter segments.
+**What it shows:** Absolute count and percentage share of the population dataset for each of the six behavioral segments.
 **Key finding:** Youth Volatile is the dominant segment at 31.3% (3,128 individuals), nearly double the next largest segment (Urban High Volatility at 18.6%). Committed Opposition is the smallest at 10.2%.
 **Strategic implication:** Mobilisation strategy must prioritise youth outreach. Even modest propensity lifts in this cohort deliver outsized turnout gains relative to smaller segments.
 
@@ -1627,7 +1638,7 @@ Strategic insights for the campaign leadership team:
 
 ### B1 — Budget by Department
 **What it shows:** Horizontal sorted bar chart of total USD allocated by department.
-**Key finding:** Central ($636K, 31.6%), Alto Paraná ($309K, 15.4%), and Itapúa ($202K, 10%) absorb 57% of the total budget. Eight departments receive less than $50K each.
+**Key finding:** Central (${_b1_central/1e3:,.0f}K, {_b1_central/total_budget*100:.1f}%), Alto Paraná (${_b1_alto/1e3:,.0f}K, {_b1_alto/total_budget*100:.1f}%), and Itapúa (${_b1_itapua/1e3:,.0f}K, {_b1_itapua/total_budget*100:.1f}%) absorb {_b1_top3_share:.0f}% of the total budget. {_n_dept_under_50k} department(s) receive less than $50K each.
 **Strategic implication:** The allocation is demographically rational but should be stress-tested against marginal persuasion value. Chaco departments (Alto Paraguay, Boquerón) receive near-zero budget, which aligns with their high baseline win probability.
 
 ### B2 — Weekly Budget Burn-Down by Channel Type
@@ -1653,7 +1664,7 @@ Strategic insights for the campaign leadership team:
 ### B6 — FX Rate Series
 **What it shows:** Reference and retail USD/PYG rate over 14 campaign weeks.
 **Key finding:** PYG depreciated ~1.8% against USD over the campaign window (5,615 → ~5,525 reference rate), with retail spread widening from 1.7% to ~2.0%. Total retail spread cost increases campaign cost in PYG terms.
-**Strategic implication:** Budget commitments should be made in USD or hedged in PYG at the start of the campaign; waiting incurs currency risk. The FX impact is modest (~$36K at current scale) but non-trivial.
+**Strategic implication:** Budget commitments should be made in USD or hedged in PYG at the start of the campaign; waiting incurs currency risk. The FX impact is modest (~${_fx_spread_cost_usd/1e3:.0f}K at current scale) but non-trivial.
 
 ### B7 — Routing Cost Matrix
 **What it shows:** Heatmap of travel time (minutes) between all department pairs.
@@ -1725,7 +1736,7 @@ Strategic insights for the campaign leadership team:
 
 ### S1 — Segment × Department Budget Heatmap
 **What it shows:** Prorated budget allocation reaching each segment × department combination.
-**Key finding:** Youth Volatile in Central receives by far the largest budget flow (~$200K prorated), followed by Urban High Volatility in Central and Alto Paraná. Rural Committed receives relatively little absolute budget despite having the highest propensity, because its dominant departments (Itapúa, San Pedro) receive moderate total allocations.
+**Key finding:** Youth Volatile in Central receives by far the largest budget flow (~${200_000 * (total_budget / _NARRATIVE_PRORATION_ANCHOR_USD) / 1e3:.0f}K prorated), followed by Urban High Volatility in Central and Alto Paraná. Rural Committed receives relatively little absolute budget despite having the highest propensity, because its dominant departments (Itapúa, San Pedro) receive moderate total allocations.
 **Strategic implication:** The budget is highly concentrated in Youth Volatile × Central — a high-risk, high-reward bet. A 10% budget reallocation to Rural Committed × interior departments would likely produce higher propensity-weighted returns.
 
 ### S2 — Propensity × Reachability Matrix
@@ -1746,7 +1757,7 @@ Strategic insights for the campaign leadership team:
 ### S5 — Campaign Efficiency Frontier
 **What it shows:** Reach utilisation vs. total persuasion contacts by department, bubble = budget.
 **Key finding:** Most departments cluster in the low-utilisation / low-contacts quadrant, with Central and Alto Paraná as positive outliers. No department achieves both high reach utilisation AND high persuasion contacts simultaneously.
-**Strategic implication:** The efficiency frontier is not being achieved. Departments with moderate reach utilisation but very few persuasion contacts (e.g., Concepción, Misiones) may be experiencing a channel-segment mismatch — channels selected are not penetrating the dominant voter segments in those areas.
+**Strategic implication:** The efficiency frontier is not being achieved. Departments with moderate reach utilisation but very few persuasion contacts (e.g., Concepción, Misiones) may be experiencing a channel-segment mismatch — channels selected are not penetrating the dominant behavioral segments in those areas.
 
 ---
 
@@ -1762,7 +1773,7 @@ Strategic insights for the campaign leadership team:
 
 5. **Commission 2–3 additional polling waves before election day.** The 94% HDI spans ±30 pp — an enormous uncertainty range for strategic planning. Even one additional high-quality poll wave (n≥800) would cut this uncertainty by approximately one-third. CAPLI is the recommended pollster.
 
-6. **Back-load 15% of bilateral direct spend from weeks 1–4 to weeks 11–14.** Direct contact is most effective when proximate to election day. Current front-loading may be wasting goodwill and persuasion capital on contacts made too early for voters to retain.
+6. **Back-load 15% of bilateral direct spend from weeks 1–4 to weeks 11–14.** Direct contact is most effective when proximate to the outcome event. Current front-loading may be wasting goodwill and persuasion capital on contacts made too early for participating entities to retain.
 
 7. **Do not invest in Committed Opposition persuasion.** This segment has a mean propensity of 0.10 and high preference strength for Candidate B. The cost of persuading even a marginal share of this group far exceeds the returns. Redirect any persuasion budget earmarked for this segment to Youth Volatile micro-targeting.
 
@@ -1840,13 +1851,13 @@ The Bayesian tracking model closes at a **{forecast_final_mean:.1f} pp preferenc
 
 ## Top 3 Priority Departments
 
-**1. Central (Budget: $636K, Win Prob: 80.2%, Propensity: ~0.55)**
-Central is non-negotiable. With the largest voter population and the highest Youth Volatile concentration in the country, Central determines whether Candidate A wins with a thin mandate or a historic one. The challenge: reach utilisation is below cap in weeks 10–14, meaning the campaign is leaving contacts on the table during the crucial final push. Recommended action: increase WhatsApp chatbot activation in Central's urban districts by 20% in weeks 11–14 and deploy a targeted youth ground operation in Asunción metro.
+**1. Central (Budget: ${_b1_central/1e6:.2f}M, Win Prob: 80.2%, Propensity: ~0.55)**
+Central is non-negotiable. With the largest entity count by department and the highest Youth Volatile concentration in the country, Central determines whether Candidate A wins with a thin mandate or a historic one. The challenge: reach utilisation is below cap in weeks 10–14, meaning the program is leaving contacts on the table during the crucial final push. Recommended action: increase WhatsApp chatbot activation in Central's urban districts by 20% in weeks 11–14 and deploy a targeted youth ground operation in Asunción metro.
 
-**2. Caaguazu (Budget: $175K, Win Prob: 80.2%, Propensity: ~0.58)**
-Caaguazu is the efficiency sweet spot. It has the highest win probability of all Oriental departments, a strong Rural Committed presence (high propensity), and a lower cost-per-persuasion-contact than Central or Alto Paraná. It is currently underfunded relative to its composite priority score. A $25K budget increase from Central savings would deliver approximately 8,000 additional persuasion-adjusted contacts here.
+**2. Caaguazu (Budget: ${_b1_caaguazu/1e3:,.0f}K, Win Prob: 80.2%, Propensity: ~0.58)**
+Caaguazu is the efficiency sweet spot. It has the highest win probability of all Oriental departments, a strong Rural Committed presence (high propensity), and a lower cost-per-persuasion-contact than Central or Alto Paraná. It is currently underfunded relative to its composite priority score. A $75K budget increase from Central savings would deliver approximately 24,000 additional persuasion-adjusted contacts here.
 
-**3. Itapua (Budget: $202K, Win Prob: 80.0%, Propensity: ~0.65)**
+**3. Itapua (Budget: ${_b1_itapua/1e3:,.0f}K, Win Prob: 80.0%, Propensity: ~0.65)**
 Itapúa has the highest mean participation propensity of any department with significant Rural Committed presence. It is the dominant department for that segment. Radio is the primary reach channel. At near-saturation on reach utilisation, the channel is performing well — the risk is a budget cut that disrupts this performance. Protect Itapúa's radio budget unconditionally and explore whether a modest canvassing supplement in rural municipalities can push propensity-weighted turnout past 70%.
 
 ---
@@ -1855,14 +1866,14 @@ Itapúa has the highest mean participation propensity of any department with sig
 
 **Double Down:**
 - **Youth Volatile (31.3% of population):** High reachability, moderate propensity — the mobilisation opportunity. Every 1 pp propensity lift = ~31 additional high-value contacts. Digital-first (WhatsApp, Facebook), Jopara-friendly content, peer-to-peer activation via youth networks.
-- **Rural Committed (14.4% of population):** Highest propensity (0.71), but low reachability. Radio + canvassing investment here delivers premium returns per contact. Do not sacrifice these voters to cut costs.
+- **Rural Committed (14.4% of population):** Highest propensity (0.71), but low reachability. Radio + canvassing investment here delivers premium returns per contact. Do not sacrifice these entities to cut costs.
 
 **Maintain:**
 - **Urban High Volatility (18.6%):** Good reachability, decent propensity (0.77). Currently receiving fair budget share. No change needed — the strategy is working.
 - **Structurally Dependent Bloc (13.1%):** High rural, high NBI stress. Sensitive segment requiring careful messaging. Maintain current radio + community organiser approach.
 
 **Deprioritise:**
-- **Committed Opposition (10.2%):** Mean propensity 0.10, high B-preference strength. These are locked opposition voters. Any persuasion spend here is waste. Reallocate immediately.
+- **Committed Opposition (10.2%):** Mean propensity 0.10, high B-preference strength. These are locked opposition-aligned entities. Any persuasion spend here is waste. Reallocate immediately.
 - **Rural Low Propensity (12.4%):** Despite being partially urban and digitally reachable, their propensity is 0.35. Passive presence only — no active spend increases warranted.
 
 ---
@@ -1884,13 +1895,13 @@ Itapúa has the highest mean participation propensity of any department with sig
 
 ## Where Budget Is Being Wasted
 
-**1. Billboard spend in low-tier departments:** Reach utilisation is effectively zero. Estimated waste: ~$15–20K.
-**2. SMS campaigns:** No measurable persuasion contact generation. Estimated waste: ~$10–15K.
+**1. Billboard spend in low-tier departments:** Reach utilisation is effectively zero. Estimated waste: ~$45–60K.
+**2. SMS campaigns:** No measurable persuasion contact generation. Estimated waste: ~$30–45K.
 **3. Front-loaded bilateral spend (weeks 1–4):** Direct contact made 10+ weeks before election day has negligible retention effect. Estimated efficiency loss: 20–30% of early bilateral spend.
-**4. Any persuasion spend on Committed Opposition:** This segment's preference strength distribution is tightly clustered at high B-values. No campaign intervention will move them. Estimated misallocated spend: ~$8K.
+**4. Any persuasion spend on Committed Opposition:** This segment's preference strength distribution is tightly clustered at high B-values. No campaign intervention will move them. Estimated misallocated spend: ~$24K.
 **5. Broadcast-to-direct scenario exploration:** If the pipeline's alloc_mean_persuasion_contacts bug remains unresolved, continuing to model this scenario costs analytical time without informing decisions.
 
-**Total estimated reclaimable budget:** ~$50–60K (approximately 2.5–3% of total baseline), which redirected to Caaguazu canvassing and weeks 11–13 WhatsApp activation would deliver an estimated 15,000–20,000 additional propensity-weighted contacts.
+**Total estimated reclaimable budget:** ~$150–180K (approximately 2.5–3% of total baseline), which redirected to Caaguazu canvassing and weeks 11–13 WhatsApp activation would deliver an estimated 45,000–60,000 additional propensity-weighted contacts.
 
 ---
 

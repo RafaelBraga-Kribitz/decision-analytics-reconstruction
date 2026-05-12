@@ -2,7 +2,7 @@
 	module-b-allocate module-b-allocate-sensitivity module-b-routing module-b-api \
 	test-module-a test-module-b test-module-c \
 	module-c-tracking module-c-exit module-c-mc module-c-all \
-	precommit validate portfolio-verify tier3-smoke e2e-smoke
+	precommit validate doc-path-verify portfolio-verify tier3-smoke e2e-smoke
 
 PYTHON := python3.11
 MODULE_A_SRC := module_a_population_segmentation/src
@@ -35,13 +35,17 @@ precommit:
 	pre-commit install
 	pre-commit run --all-files
 
-validate: lint typecheck test
+validate: lint typecheck test doc-path-verify
+
+doc-path-verify:
+	poetry run python scripts/verify_doc_code_paths.py
 
 portfolio-verify:
 	poetry run python scripts/portfolio_verify.py
 
 tier3-smoke:
 	poetry run python scripts/check_terminology.py
+	poetry run python scripts/verify_doc_code_paths.py
 	poetry run python -c "import mlflow; print('mlflow_ok', mlflow.__version__)"
 
 e2e-smoke:
@@ -133,10 +137,7 @@ module-b-allocate-sensitivity:
 		--sensitivity
 
 module-b-routing:
-	poetry run python -m module_b_resource_allocation.routing.heuristic \
-		--scenario $(or $(SCENARIO),dry_standard) \
-		--out-dir data/processed/module_b \
-		--seed $(or $(SEED),20180422)
+	poetry run python -c "from pathlib import Path; from module_b_resource_allocation.routing.cost_matrix import build_cost_matrix; rs='$(or $(ROUTING_SCENARIO),dry_standard)'; seed=$(or $(SEED),20180422); p=Path('data/processed/module_b'); p.mkdir(parents=True, exist_ok=True); build_cost_matrix(scenario=rs, seed=seed).to_csv(p / f'routing_cost_matrix_{rs}.csv', index=False); print('wrote', p / f'routing_cost_matrix_{rs}.csv')"
 
 module-b-api:
 	poetry run uvicorn module_b_resource_allocation.api.app:app --host 127.0.0.1 --port 8088

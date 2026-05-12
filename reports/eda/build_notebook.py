@@ -917,7 +917,7 @@ plt.show()
 
 cells.append(md("""**Finding:** Caaguazu and Itapua show the lowest cost per persuasion-adjusted contact among mid-size departments (<$0.08 per contact), making them the efficiency leaders. Chaco departments have the highest cost-per-contact (>$0.40) due to routing overheads and thin populations. Central, despite its high total budget, achieves moderate cost-per-contact efficiency due to volume effects in digital channels.
 
-**Strategic implication:** Caaguazu is the most under-resourced high-efficiency department in the baseline scenario — redirecting $20–25K from billboard waste into Caaguazu canvassing would generate approximately 8,000 additional contacts at below-average cost."""))
+**Strategic implication:** Caaguazu is the most under-resourced high-efficiency department in the baseline scenario — redirecting $60–75K from billboard waste into Caaguazu canvassing would generate approximately 24,000 additional contacts at below-average cost."""))
 
 # ── B6 — FX Rate Series ──────────────────────────────────────────────────────
 cells.append(code("""
@@ -946,7 +946,7 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** The PYG/USD rate depreciated from approximately 5,710 in week 1 to 5,620 by week 14 — a cumulative depreciation of ~1.6%. The retail spread (campaign buying rate vs. reference) averages ~1.8%, adding approximately $36K in effective cost to a $2M budget. The rate is most stable in weeks 6–10, suggesting this window is optimal for locking in USD-denominated contracts.
+cells.append(md("""**Finding:** The PYG/USD rate depreciated from approximately 5,710 in week 1 to 5,620 by week 14 — a cumulative depreciation of ~1.6%. The retail spread (campaign buying rate vs. reference) averages ~1.8%, adding approximately $108K in effective cost to a $6M budget. The rate is most stable in weeks 6–10, suggesting this window is optimal for locking in USD-denominated contracts.
 
 **Strategic implication:** Hedge currency exposure by pre-committing USD amounts for weeks 11–14 media placements during weeks 6–8 — the FX window of stability allows cost certainty for the highest-spend period of the campaign."""))
 
@@ -1496,7 +1496,7 @@ plt.show()
 
 cells.append(md("""**Finding:** Itapua and Caaguazu occupy the high-propensity corridor (>0.60) with win probabilities above 79.5%, but carry smaller bubbles (lower total budget) than Central — suggesting they are under-resourced relative to their combined value score. Central dominates budget allocation but sits at median propensity (~0.55), meaning its large bubble reflects volume rather than per-voter efficiency. Chaco departments cluster at low propensity with small bubbles, justifying their minimal allocation.
 
-**Strategic implication:** The optimal final-sprint reallocation shifts $20–30K from low-propensity, high-budget departments (Central billboard spend) toward high-propensity, under-budgeted departments (Caaguazu canvassing, Itapua radio top-up) — maximising propensity-weighted contacts per marginal dollar."""))
+**Strategic implication:** The optimal final-sprint reallocation shifts $60–90K from low-propensity, high-budget departments (Central billboard spend) toward high-propensity, under-budgeted departments (Caaguazu canvassing, Itapua radio top-up) — maximising propensity-weighted contacts per marginal dollar."""))
 
 # ── S5 — Efficiency Frontier ─────────────────────────────────────────────────
 cells.append(code("""
@@ -1553,15 +1553,15 @@ The Bayesian tracking model closes at a **+15.1 pp preference margin** for Candi
 
 ### Top 3 Priority Departments
 
-**1. Central — Budget: $636K | Win Prob: 80.2% | Propensity: ~0.55**
+**1. Central — Budget: $1.79M | Win Prob: 80.2% | Propensity: ~0.55**
 
 Central is non-negotiable. With the largest voter population and the highest Youth Volatile concentration in the country, Central determines whether Candidate A wins with a thin mandate or a historic one. Reach utilisation is below cap in weeks 10–14, meaning the campaign is leaving contacts on the table during the crucial final push. **Action:** Increase WhatsApp chatbot activation in Central's urban districts by 20% in weeks 11–14 and deploy a targeted youth ground operation in Asuncion metro.
 
-**2. Caaguazu — Budget: $175K | Win Prob: 80.2% | Propensity: ~0.58**
+**2. Caaguazu — Budget: $510K | Win Prob: 80.2% | Propensity: ~0.58**
 
-Caaguazu is the efficiency sweet spot. Highest win probability among Oriental departments, strong Rural Committed presence (high propensity), and the lowest cost-per-persuasion-contact in the tier. Currently underfunded relative to its composite priority score. **Action:** A $25K budget increase from Central billboard savings would deliver approximately 8,000 additional persuasion-adjusted contacts.
+Caaguazu is the efficiency sweet spot. Highest win probability among Oriental departments, strong Rural Committed presence (high propensity), and the lowest cost-per-persuasion-contact in the tier. Currently underfunded relative to its composite priority score. **Action:** A $75K budget increase from Central billboard savings would deliver approximately 24,000 additional persuasion-adjusted contacts.
 
-**3. Itapua — Budget: $202K | Win Prob: 80.0% | Propensity: ~0.65**
+**3. Itapua — Budget: $554K | Win Prob: 80.0% | Propensity: ~0.65**
 
 Itapua has the highest mean participation propensity of any department with significant Rural Committed presence. Radio is the primary reach channel and is performing near saturation. **Action:** Protect Itapua's radio budget unconditionally and explore a modest canvassing supplement in rural municipalities to push propensity-weighted turnout past 70%.
 
@@ -1597,13 +1597,13 @@ Itapua has the highest mean participation propensity of any department with sign
 
 ### Where Budget Is Being Wasted
 
-1. **Billboard spend in low-tier departments** — reach utilisation near zero. *Estimated waste: $15–20K*
-2. **SMS campaigns** — no measurable persuasion contact generation. *Estimated waste: $10–15K*
+1. **Billboard spend in low-tier departments** — reach utilisation near zero. *Estimated waste: $45–60K*
+2. **SMS campaigns** — no measurable persuasion contact generation. *Estimated waste: $30–45K*
 3. **Front-loaded bilateral spend (weeks 1–4)** — direct contact 10+ weeks before election day has negligible retention. *Efficiency loss: 20–30% of early bilateral spend*
-4. **Any persuasion spend on Committed Opposition** — preference strength tightly clustered at high B-values. *Misallocated: ~$8K*
+4. **Any persuasion spend on Committed Opposition** — preference strength tightly clustered at high B-values. *Misallocated: ~$24K*
 5. **Broadcast-to-direct scenario modelling with alloc_mean_persuasion_contacts bug** — costs analytical time without informing decisions until pipeline is fixed.
 
-**Total estimated reclaimable budget: $50–60K** (~2.5–3% of total baseline), which redirected to Caaguazu canvassing and weeks 11–13 WhatsApp activation would deliver **15,000–20,000 additional propensity-weighted contacts**.
+**Total estimated reclaimable budget: $150–180K** (~2.5–3% of total baseline), which redirected to Caaguazu canvassing and weeks 11–13 WhatsApp activation would deliver **45,000–60,000 additional propensity-weighted contacts**.
 
 ---
 

@@ -81,7 +81,7 @@ flowchart TD
     DGEEC --> A
     SIM --> A
 
-    A["Module A: Population Modeling & Segmentation\n[FLAGSHIP]\n139 tests · 80%+ coverage · live dashboard"]
+    A["Module A: Population Modeling & Segmentation\n[FLAGSHIP]\n147 tests · 80%+ coverage · live dashboard"]
 
     A --> AO["population_master_clean.parquet\nsegment_labels.parquet — 6 behavioral clusters\nparticipation_propensity.parquet\nmedia_reachability_by_segment.csv"]
 
@@ -116,7 +116,7 @@ cd decision-analytics-reconstruction
 poetry install
 cp .env.example .env
 make test          # all modules + portfolio smoke (excludes slow NUTS)
-make validate      # lint + typecheck + tests
+make validate      # lint + typecheck + tests + doc-path-verify
 make e2e-smoke     # fixture-only cross-module smoke (A schema + B solve + C CSV + handshake)
 make tier3-smoke   # terminology sample + mlflow import (local mirror of part of CI tier3 job)
 make portfolio-verify  # git-index hygiene for portfolio exports
@@ -124,6 +124,8 @@ make dashboard     # launch Streamlit dashboard (Module A)
 ```
 
 **Requirements:** Python 3.11, Poetry. Docker optional (see `docker-compose.yml`). On legacy Mac workstations (Mac Pro with unreliable Metal stacks), prefer **Colima + `docker compose`** instead of Docker Desktop.
+
+**Module C observability (optional):** MLflow logging is **opt-in**. Set `MLFLOW_TRACKING_URI` (and optionally `MLFLOW_EXPERIMENT_NAME`) when you want runs recorded to a tracking server; pipeline entry points such as `python -m module_c_forecasting_scenarios.pipeline.run_tracking` call the tracking helper only when that environment is present.
 
 ---
 

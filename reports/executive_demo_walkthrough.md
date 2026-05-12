@@ -34,7 +34,7 @@ verifiable binary outcome event.
 **What was verified in this session** (see "Reproduction evidence" below):
 Module C test suite passes (17/17, MC_FAST); Module A export pipeline emits
 all four contract-aligned artifacts; Module B baseline + counterfactual MILPs
-both solve to OPTIMAL ($2,009,994.89 total, 2,772 allocation rows); Module C
+both solve to OPTIMAL ($6,029,992.61 total, 2,772 allocation rows); Module C
 end-to-end run (tracking + exit + Monte Carlo + battleground geojson)
 completes against the fixture CSV.
 
@@ -142,7 +142,7 @@ translate dollars into contacts:
 **Scenarios available.**
 
 - `baseline` — the canonical solve. Both runs in this session solved to
-`OPTIMAL` with total spend $2,009,994.89 across 2,772 rows (18 × 11 × 14).
+`OPTIMAL` with total spend $6,029,992.61 across 2,772 rows (18 × 11 × 14).
 - `broadcast_to_direct` — a counterfactual: take the budget currently
 flowing to broadcast channels (TV spots, radio spots, newspaper inserts)
 and reallocate it to direct channels (canvassing, rallies and events,
@@ -356,7 +356,7 @@ outputs are quoted verbatim where useful.
 | -------------------------------------------------------------------------------- | ------ | --------------------------------------------------------------------------------------------- |
 | `MC_FAST=1 poetry run pytest module_c_forecasting_scenarios/tests -m "not slow"` | exit 0 | 17 passed, 4 deselected, 10.04s                                                               |
 | `make module-a-export SAMPLE=10000`                                              | exit 0 | Five contract-aligned artifacts written under `data/processed/`; contract validation passed   |
-| `make module-b-allocate SCENARIO=baseline`                                       | exit 0 | `solver_status=OPTIMAL total_usd=2009994.89`, 2,772 rows                                      |
+| `make module-b-allocate SCENARIO=baseline`                                       | exit 0 | `solver_status=OPTIMAL total_usd=6029992.61`, 2,772 rows                                      |
 | `make module-b-allocate SCENARIO=broadcast_to_direct`                            | exit 0 | `solver_status=OPTIMAL`, counterfactual rows written                                          |
 | `make module-c-all`                                                              | exit 0 | Tracking + exit + Monte Carlo + battleground geojson under `data/processed/module_c/run_all/` |
 

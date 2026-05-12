@@ -64,6 +64,7 @@ Honest status of each module and the next concrete milestones.
 - 10,000-draw Monte Carlo scenario engine (baseline / moderate / extreme shock profiles)
 - MCMC diagnostics: R-hat < 1.01, ESS > 400, zero divergences
 - Quarto post-mortem document (`portfolio/quarto/post_mortem.qmd`; `quarto render` exit 0 required)
+- MLflow experiment logging is **opt-in** via `MLFLOW_TRACKING_URI` (see `module_c_forecasting_scenarios` tracking pipeline); omit it to run exports without a tracking server
 
 **What is missing vs. Module A standard:**
 
@@ -111,10 +112,10 @@ This section aligns the **original portfolio audit** with what the repository ac
 - **README + CI hardening:** Module A workflow includes Black/Ruff/Pyright, coverage floor, department-weights gate, job timeouts, Docker smoke (`compose config`, image build, import smoke, MLflow import).
 - **Module B CI + reporting:** `module_b_resource_allocation.reporting` (budget expansion curve, dual CSVs, scenario benchmark, run Markdown) with `--sensitivity` CLI bundle; dedicated CI job `module-b`.
 - **Portfolio evidence docs:** `reports/epistemic_boundaries.md`, `reports/system_walkthrough.md`, `reports/module_b_optimization_formulation.md`, `reports/module_c_forecast_validation.md`, `reports/cluster_validation.md`, `reports/data_lineage.md`, `reports/integration_audit_2026-05-12.md`, `reports/qa_gatekeeper_verdict_portfolio_360_2026-05-12.md`.
-- **Hygiene scripts:** `scripts/portfolio_verify.py`, `scripts/check_terminology.py`, `make portfolio-verify`, `make validate`, `.pre-commit-config.yaml`.
+- **Hygiene scripts:** `scripts/portfolio_verify.py`, `scripts/check_terminology.py`, `scripts/verify_doc_code_paths.py`, `make portfolio-verify`, `make validate`, `.pre-commit-config.yaml`.
 - **Baseline narrative (Module B):** `module_b_resource_allocation.reporting.baselines` (cap-only water-fill vs MILP totals for transparency) + `test_baselines.py`.
 - **Fixture E2E smoke:** `make e2e-smoke` runs `tests/test_portfolio_e2e_smoke.py` (Module A schema import, B solve + handshake row, C fixture CSV).
-- **Task verify packet:** `reports/task_verify_portfolio_360_2026-05-12.md` (command/evidence table for this audit).
+- **Task verify packet:** `reports/task_verify_portfolio_360_2026-05-12.md` (command/evidence table for this audit); evaluation-gap follow-up: `reports/task_verify_evaluation_gap_2026-05-12.md`.
 - **Module A metrics:** Davies–Bouldin + Calinski–Harasz + PSI helpers with tests.
 - **Contracts:** Pydantic `AllocationHandshakeRow` + round-trip test.
 - **Module B specification:** `module_b_resource_allocation/SPECIFICATION.md`.

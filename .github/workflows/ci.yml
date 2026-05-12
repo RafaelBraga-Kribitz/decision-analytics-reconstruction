@@ -27,6 +27,9 @@ jobs:
       - name: Install dependencies
         run: poetry install
 
+      - name: Doc markdown path sanity (repo-root .py references)
+        run: poetry run python scripts/verify_doc_code_paths.py
+
       - name: Config integrity (department_weights sum)
         run: |
           poetry run python - <<'PY'
