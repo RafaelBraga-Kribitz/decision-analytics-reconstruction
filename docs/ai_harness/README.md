@@ -2,6 +2,8 @@
 
 This folder plus `.cursor/rules`, `.cursor/commands`, `.cursor/agents`, and `.cursor/skills` implement the **plan-first, evidence-complete** workflow for the decision-analytics reconstruction project.
 
+**Always-on in Cursor:** [`.cursor/rules/08-controlled-workflow-playbook.mdc`](../../.cursor/rules/08-controlled-workflow-playbook.mdc) (`alwaysApply: true`) requires following the playbook below for non-trivial work.
+
 **Full controlled workflow (single narrative):** [`CONTROLLED_WORKFLOW_PLAYBOOK.md`](CONTROLLED_WORKFLOW_PLAYBOOK.md) — lifecycle, guardrails, coordination precedence, and appendices (git, CRISP-DM map, optional external tools).
 
 ## Quick start

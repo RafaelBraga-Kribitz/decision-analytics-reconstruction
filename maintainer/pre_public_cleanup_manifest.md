@@ -55,6 +55,8 @@
 | M26 | review / redact | [`reports/task_verify_architecture_quality_task8_architecture_md_2026-05-12.md`](../reports/task_verify_architecture_quality_task8_architecture_md_2026-05-12.md) | Agent DoD proof for Project_Action_list §3 task 8 (`ARCHITECTURE.md` diagrams + tables + walkthrough) — trim for public portfolio | [ ] |
 | M27 | review / redact | [`reports/task_verify_architecture_quality_task9_data_gitkeep_2026-05-12.md`](../reports/task_verify_architecture_quality_task9_data_gitkeep_2026-05-12.md) | Agent DoD proof for Project_Action_list §3 task 9 (`data/` `.gitkeep` + gitignore) — trim for public portfolio | [ ] |
 | M28 | review / redact | [`docs/ai_harness/CONTROLLED_WORKFLOW_PLAYBOOK.md`](../docs/ai_harness/CONTROLLED_WORKFLOW_PLAYBOOK.md) | Operator harness playbook (slash-command lifecycle, internal paths); trim or omit from **public** tree per M4 | [ ] |
+| M29 | review / redact | [`reports/task_verify_architecture_quality_pipeline_dev_acceptance_2026-05-12.md`](../reports/task_verify_architecture_quality_pipeline_dev_acceptance_2026-05-12.md) | Agent DoD proof for Project_Action_list §3 acceptance (`make pipeline-dev` → `data/processed/`) — trim for public portfolio | [ ] |
+| M30 | review / redact | [`.cursor/rules/08-controlled-workflow-playbook.mdc`](../.cursor/rules/08-controlled-workflow-playbook.mdc) | Always-on harness rule (`alwaysApply`); trim for **public** tree per M1 | [ ] |
 
 ## Add new rows (template)
 
@@ -68,7 +70,7 @@ Copy a line into the table above:
 
 ## Relationship to `.gitignore`
 
-This repository **ignores almost all** `.cursor/` and `.claude/` helpers but **exceptions** expose a tiny shipped set that must stay coherent with harness duty (see root `.gitignore`): the pre-public rule file, mirrored orchestrator `SKILL.md`, and [`docs/ai_harness/README.md`](../docs/ai_harness/README.md). `AGENTS.md` / `CLAUDE.md` remain local-only unless you change ignore rules.
+This repository **ignores almost all** `.cursor/` and `.claude/` helpers but **exceptions** expose a tiny shipped set that must stay coherent with harness duty (see root `.gitignore`): the pre-public rule file, the controlled-workflow playbook rule (`08-`), mirrored orchestrator `SKILL.md`, [`docs/ai_harness/README.md`](../docs/ai_harness/README.md), and [`docs/ai_harness/CONTROLLED_WORKFLOW_PLAYBOOK.md`](../docs/ai_harness/CONTROLLED_WORKFLOW_PLAYBOOK.md). `AGENTS.md` / `CLAUDE.md` remain local-only unless you change ignore rules.
 
 **Ignore rules do not replace this manifest:** for a **public** remote or zip, verify what is **actually included** when ignore rules change or when using `git archive`.
 

@@ -57,6 +57,7 @@ module_a_population_segmentation/reports/model_evaluation.md
 !.cursor/rules/
 .cursor/rules/*
 !.cursor/rules/07-pre-public-cleanup-manifest.mdc
+!.cursor/rules/08-controlled-workflow-playbook.mdc
 !.cursor/skills/
 .cursor/skills/*
 !.cursor/skills/project-orchestrator/

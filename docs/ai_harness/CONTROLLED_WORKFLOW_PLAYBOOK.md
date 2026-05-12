@@ -12,7 +12,7 @@
 
 | Step | Command / artifact | Canonical detail |
 |------|---------------------|------------------|
-| 0 | Rules + entrypoints | [`AGENTS.md`](../../AGENTS.md), [`.cursor/rules/00-plan-first-governance.mdc`](../../.cursor/rules/00-plan-first-governance.mdc), [`.cursor/rules/02-definition-of-done.mdc`](../../.cursor/rules/02-definition-of-done.mdc) |
+| 0 | Rules + entrypoints | [`AGENTS.md`](../../AGENTS.md), [`.cursor/rules/08-controlled-workflow-playbook.mdc`](../../.cursor/rules/08-controlled-workflow-playbook.mdc) (`alwaysApply: true`), [`.cursor/rules/00-plan-first-governance.mdc`](../../.cursor/rules/00-plan-first-governance.mdc), [`.cursor/rules/02-definition-of-done.mdc`](../../.cursor/rules/02-definition-of-done.mdc) |
 | 1 | `/task-intake` | [`.cursor/commands/task-intake.md`](../../.cursor/commands/task-intake.md), [`task-taxonomy.md`](task-taxonomy.md) |
 | 2 | `/task-plan` | [`.cursor/commands/task-plan.md`](../../.cursor/commands/task-plan.md) — sections A–J mandatory |
 | 3 | `/task-dispatch` | [`.cursor/commands/task-dispatch.md`](../../.cursor/commands/task-dispatch.md), [`routing-matrix.md`](routing-matrix.md) |
