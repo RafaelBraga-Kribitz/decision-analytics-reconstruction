@@ -4,6 +4,18 @@ Records every non-trivial architectural choice: decision, alternatives considere
 
 ---
 
+## 2026-05-12 — Project Action List §3: `data/` stages and `.gitkeep` with gitignore negation
+
+**Decision:** Replace blanket `data/raw/`, `data/interim/`, `data/processed/` ignore entries in [`.gitignore`](../.gitignore) with `data/<stage>/*` plus `!data/<stage>/.gitkeep` so empty clone directories stay **tracked** while generated parquet and CSV remain ignored. Add [`data/raw/.gitkeep`](../data/raw/.gitkeep), [`data/interim/.gitkeep`](../data/interim/.gitkeep), [`data/processed/.gitkeep`](../data/processed/.gitkeep) and [`tests/test_architecture_data_directory_layout.py`](../tests/test_architecture_data_directory_layout.py) as regression guard.
+
+**Alternatives considered:** Relying on DVC only without tracked placeholders — rejected for Architecture Quality line 46 explicit `.gitkeep` requirement.
+
+**Reason:** Fresh `git clone` gets stable paths for Makefile targets without committing heavy artifacts.
+
+**Source:** Project Action List §3 Architecture Quality — task 9 (`data/` layout) (2026-05-12).
+
+---
+
 ## 2026-05-12 — Project Action List §3: ARCHITECTURE.md diagrams and contract tables
 
 **Decision:** Expand root [`ARCHITECTURE.md`](../ARCHITECTURE.md) with two Mermaid diagrams (artifact flow and package dependency), five markdown contract tables keyed to shipped YAML under [`schema_contracts/`](../schema_contracts/) (`population_master_clean`, `segment_labels`, `participation_propensity`, `allocation_output`, `polls_clean_tracking_wave`), each with at least twenty table rows (field rows plus explicit metadata rows where the YAML has fewer than twenty `fields:` keys), and a numbered **Walkthrough: one entity** section. Add [`tests/test_architecture_md_content_contract.py`](../tests/test_architecture_md_content_contract.py) to prevent silent removal of Mermaid blocks, contract headings, README cross-link, or short tables.

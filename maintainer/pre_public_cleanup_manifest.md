@@ -53,6 +53,7 @@
 | M24 | review / redact | [`reports/task_verify_architecture_quality_task6_makefile_2026-05-12.md`](../reports/task_verify_architecture_quality_task6_makefile_2026-05-12.md) | Agent DoD proof for Project_Action_list §3 task 6 (Makefile Poetry / pre-commit) — trim for public portfolio | [ ] |
 | M25 | review / redact | [`reports/task_verify_architecture_quality_task7_ci_make_test_2026-05-12.md`](../reports/task_verify_architecture_quality_task7_ci_make_test_2026-05-12.md) | Agent DoD proof for Project_Action_list §3 task 7 (`make test` + coverage + CI) — trim for public portfolio | [ ] |
 | M26 | review / redact | [`reports/task_verify_architecture_quality_task8_architecture_md_2026-05-12.md`](../reports/task_verify_architecture_quality_task8_architecture_md_2026-05-12.md) | Agent DoD proof for Project_Action_list §3 task 8 (`ARCHITECTURE.md` diagrams + tables + walkthrough) — trim for public portfolio | [ ] |
+| M27 | review / redact | [`reports/task_verify_architecture_quality_task9_data_gitkeep_2026-05-12.md`](../reports/task_verify_architecture_quality_task9_data_gitkeep_2026-05-12.md) | Agent DoD proof for Project_Action_list §3 task 9 (`data/` `.gitkeep` + gitignore) — trim for public portfolio | [ ] |
 
 ## Add new rows (template)
 

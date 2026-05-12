@@ -2,6 +2,7 @@
 
 Three-module decision analytics system. Each module is an independent deployable unit;
 cross-module communication is through versioned Parquet/CSV artifacts and schema contracts.
+Clone-stable layout for local or DVC outputs: [`data/raw/.gitkeep`](data/raw/.gitkeep), [`data/interim/.gitkeep`](data/interim/.gitkeep), and [`data/processed/.gitkeep`](data/processed/.gitkeep) keep the tree present while `.gitignore` still excludes heavy parquet and CSV blobs (see [`tests/test_architecture_data_directory_layout.py`](tests/test_architecture_data_directory_layout.py)).
 
 ### Canonical repository roots (three modules)
 

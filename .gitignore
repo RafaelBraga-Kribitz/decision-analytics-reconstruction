@@ -22,9 +22,12 @@ venv/
 ENV/
 
 # ─── Data (DVC-tracked — never commit raw data) ──────────────────────────────
-data/raw/
-data/interim/
-data/processed/
+data/raw/*
+!data/raw/.gitkeep
+data/interim/*
+!data/interim/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
 *.parquet
 *.csv
 !schema_contracts/

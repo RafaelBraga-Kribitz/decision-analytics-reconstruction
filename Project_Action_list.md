@@ -43,7 +43,7 @@
 ~~- [ ] Makefile: every target uses `poetry run`, respects virtualenv, no direct `python` calls — regression [`tests/test_architecture_makefile_poetry_policy.py`](tests/test_architecture_makefile_poetry_policy.py).~~
 ~~- [ ] CI/CD: `make test` actually runs pytest and reports coverage; passes on fresh clone — regression [`tests/test_architecture_makefile_test_coverage_contract.py`](tests/test_architecture_makefile_test_coverage_contract.py); GitHub Actions job `repo-make-test` runs `poetry install` then `make test`.~~
 ~~- [ ] Create `ARCHITECTURE.md` with: data flow Mermaid diagram, module dependency graph, schema contract table (5 contracts × 20 fields each), step-by-step walkthrough of one record — delivered in [`ARCHITECTURE.md`](ARCHITECTURE.md); regression [`tests/test_architecture_md_content_contract.py`](tests/test_architecture_md_content_contract.py).~~
-- [ ] Create `data/` directory structure: `data/{raw,interim,processed}/.gitkeep` files present
+~~- [ ] Create `data/` directory structure: `data/{raw,interim,processed}/.gitkeep` files present — tracked placeholders and `.gitignore` negations; regression [`tests/test_architecture_data_directory_layout.py`](tests/test_architecture_data_directory_layout.py).~~
 - [ ] Docker: `docker-compose.yml` version correct, `docker/Dockerfile` exists and builds without error, `docker/mlflow.Dockerfile` exists
 - [ ] Acceptance: `git clone` → `poetry install` → `make pipeline-dev` produces clean population dataset, segmentations, propensity scores, and dashboard artifacts in `data/processed/` without manual intervention
 
