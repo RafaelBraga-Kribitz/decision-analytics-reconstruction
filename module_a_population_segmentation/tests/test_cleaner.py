@@ -76,6 +76,62 @@ def test_cleaner_synthetic_internet_flag_uses_config_rates(
     assert out.loc[~rural, "internet_access_flag"].mean() > 0.85
 
 
+def test_cleaner_synthetic_rural_flag_respects_yaml_prior(
+    raw_population: pd.DataFrame, config: dict, tmp_path: Path  # type: ignore[type-arg]
+) -> None:
+    """When rural_flag column is absent, Bernoulli rate comes from cleaner_synthetic_defaults."""
+    from population_segmentation.data.cleaner import clean_population
+
+    raw = raw_population.drop(columns=["rural_flag"])
+    cfg = {
+        **config,
+        "cleaner_synthetic_defaults": {
+            **(config.get("cleaner_synthetic_defaults") or {}),
+            "rural_flag_true_rate": 0.95,
+        },
+    }
+    out = clean_population(raw, cfg, qa_report_dir=tmp_path, seed=123)
+    assert out["rural_flag"].astype(bool).mean() > 0.88
+
+
+def test_cleaner_synthetic_language_respects_yaml_priors(
+    raw_population: pd.DataFrame, config: dict, tmp_path: Path  # type: ignore[type-arg]
+) -> None:
+    """When language_census_bucket is absent, labels are drawn from normalised language_priors."""
+    from population_segmentation.data.cleaner import clean_population
+
+    raw = raw_population.drop(columns=["language_census_bucket"])
+    cfg = {
+        **config,
+        "language_priors": {
+            "jopara_bilingual": 1.0,
+            "guarani_only": 0.0,
+            "spanish_only": 0.0,
+            "other": 0.0,
+        },
+    }
+    out = clean_population(raw, cfg, qa_report_dir=tmp_path, seed=7)
+    assert (out["language_census_bucket"] == "jopara_bilingual").all()
+
+
+def test_cleaner_synthetic_structural_dependency_respects_yaml_prior(
+    raw_population: pd.DataFrame, config: dict, tmp_path: Path  # type: ignore[type-arg]
+) -> None:
+    """When structural_dependency_proxy is absent, rate comes from cleaner_synthetic_defaults."""
+    from population_segmentation.data.cleaner import clean_population
+
+    raw = raw_population.drop(columns=["structural_dependency_proxy"])
+    cfg = {
+        **config,
+        "cleaner_synthetic_defaults": {
+            **(config.get("cleaner_synthetic_defaults") or {}),
+            "structural_dependency_true_rate": 0.97,
+        },
+    }
+    out = clean_population(raw, cfg, qa_report_dir=tmp_path, seed=99)
+    assert out["structural_dependency_proxy"].astype(bool).mean() > 0.92
+
+
 def test_cedula_standardized(cleaned_population: pd.DataFrame) -> None:
     assert cleaned_population["cedula"].notna().all()
     assert cleaned_population["cedula"].astype(str).str.match(r"^\d{8}$").all()

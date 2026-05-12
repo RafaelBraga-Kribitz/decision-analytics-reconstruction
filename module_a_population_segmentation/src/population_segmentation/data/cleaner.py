@@ -64,6 +64,29 @@ _GENDER_MAP = {
     "2": "F",
 }
 
+_LANGUAGE_IMPUTATION_KEYS = (
+    "jopara_bilingual",
+    "guarani_only",
+    "spanish_only",
+    "other",
+)
+
+
+def _language_imputation_labels_and_probs(config: dict[str, Any]) -> tuple[list[str], np.ndarray]:
+    """Canonical labels and a normalised probability vector for language bucket imputation."""
+    lp = config.get("language_priors") or {}
+    probs = np.array(
+        [float(lp.get(k, 0.0)) for k in _LANGUAGE_IMPUTATION_KEYS],
+        dtype=np.float64,
+    )
+    total = float(probs.sum())
+    if total <= 0.0:
+        n_keys = len(_LANGUAGE_IMPUTATION_KEYS)
+        probs = np.ones(n_keys, dtype=np.float64) / n_keys
+    else:
+        probs = probs / total
+    return list(_LANGUAGE_IMPUTATION_KEYS), probs
+
 
 def clean_population(
     raw_df: pd.DataFrame,
@@ -160,21 +183,22 @@ def clean_population(
 
     # Step 10: ensure rural flag exists and complete
     if "rural_flag" not in df.columns:
-        df["rural_flag"] = rng.random(len(df)) < 0.383
+        csd = config.get("cleaner_synthetic_defaults") or {}
+        rural_p = float(csd.get("rural_flag_true_rate", 0.383))
+        df["rural_flag"] = rng.random(len(df)) < rural_p
     df["rural_flag"] = df["rural_flag"].fillna(False).astype(bool)
     df["rural_flag_derived"] = True
 
     # Step 11: language raking rough pass
     if "language_census_bucket" not in df.columns:
-        df["language_census_bucket"] = rng.choice(
-            ["jopara_bilingual", "guarani_only", "spanish_only", "other"],
-            size=len(df),
-            p=[0.46, 0.34, 0.15, 0.05],
-        )
+        labels, probs = _language_imputation_labels_and_probs(config)
+        df["language_census_bucket"] = rng.choice(labels, size=len(df), p=probs)
 
     # Step 12: structural dependency proxy ensure bool
     if "structural_dependency_proxy" not in df.columns:
-        df["structural_dependency_proxy"] = rng.random(len(df)) < 0.25
+        csd = config.get("cleaner_synthetic_defaults") or {}
+        sdp = float(csd.get("structural_dependency_true_rate", 0.25))
+        df["structural_dependency_proxy"] = rng.random(len(df)) < sdp
     df["structural_dependency_proxy"] = df["structural_dependency_proxy"].astype(bool)
 
     # Step 13: internet flag ensure bool

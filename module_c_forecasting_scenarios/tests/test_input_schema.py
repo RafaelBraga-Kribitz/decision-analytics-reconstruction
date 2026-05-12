@@ -27,8 +27,8 @@ def test_allocation_output_contract_loads() -> None:
 
 
 def test_pymc_importable() -> None:
-    import arviz as az  # noqa: F401
-    import pymc as pm  # noqa: F401
+    import arviz as az
+    import pymc as pm
 
     assert pm.__name__ == "pymc"
     assert az.__name__ == "arviz"

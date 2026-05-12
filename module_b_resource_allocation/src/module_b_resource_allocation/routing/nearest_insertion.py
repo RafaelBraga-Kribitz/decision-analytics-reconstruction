@@ -46,7 +46,9 @@ def nearest_insertion_tour(
     dist:
         Mapping ``(u, v) -> distance``.  Self-edges may be omitted.
     seed:
-        Random seed; chooses the start node and tie-breaks insertions.
+        Integer seed for ``random.Random``; picks the start node and tie-breaks
+        insertions. Fixed ``nodes``, ``dist``, and ``seed`` return the same tour
+        and length across runs.
 
     Returns
     -------

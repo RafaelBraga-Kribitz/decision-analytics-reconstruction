@@ -11,7 +11,7 @@ import pandas as pd
 from population_segmentation.utils.schema import CANONICAL_DEPARTMENTS, CANONICAL_GENDER
 
 
-class QAGateFailure(Exception):  # noqa: N818
+class QAGateFailure(Exception):  # noqa: N818  # Stable QA API symbol; not renamed to *Error.
     """Raised when any QA gate fails."""
 
 

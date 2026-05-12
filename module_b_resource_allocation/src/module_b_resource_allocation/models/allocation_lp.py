@@ -56,7 +56,9 @@ def run_allocation(
     weeks:
         Truncate output to the first ``weeks`` ISO weeks (1..14).
     seed:
-        CBC random seed.
+        CBC random seed forwarded to :func:`build_problem` as ``solver_seed``.
+        With identical arguments, the same ``seed`` yields the same solver
+        inputs; allocation outputs are reproducible for a fixed PuLP/CBC build.
     fx_path:
         Scenario / FX narrative tag (``early_lock``, ``late_flex``, ``baseline``, …).
     fx_series_id:

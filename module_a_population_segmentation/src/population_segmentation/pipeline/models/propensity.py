@@ -38,6 +38,7 @@ class PropensityModel:
         stratify_by: Tuple of column names used to build stratified train or test
             partitions when class balance allows.
     """
+
     random_state: int = 42
     stratify_by: tuple[str, ...] = field(
         default_factory=lambda: ("department", "age_bin_encoded", "gender_encoded")

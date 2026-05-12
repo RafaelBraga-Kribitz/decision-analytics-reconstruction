@@ -273,3 +273,94 @@ def test_generator_module_cli_sample_size_override(tmp_path: Path) -> None:
     assert out.is_file()
     df = pd.read_parquet(out)
     assert len(df) == 127
+
+
+def test_rural_flag_mean_tracks_cleaner_synthetic_rural_anchor() -> None:
+    """Mean rural share after rake tracks ``cleaner_synthetic_defaults.rural_flag_true_rate``."""
+    from population_segmentation.data.generator import generate_population
+
+    with open(CONFIG_PATH, encoding="utf-8") as f:
+        base = yaml.safe_load(f)
+    cfg = {
+        **base,
+        "sample_size": 90_000,
+        "cleaner_synthetic_defaults": {
+            **(base.get("cleaner_synthetic_defaults") or {}),
+            "rural_flag_true_rate": 0.52,
+        },
+    }
+    df = generate_population(cfg, seed=11)
+    mean_rural = float(df["rural_flag"].astype(bool).mean())
+    assert 0.47 < mean_rural < 0.57, mean_rural
+
+
+def test_structural_dependency_mean_respects_yaml_rates() -> None:
+    """High structural Bernoulli rates in YAML produce high ``structural_dependency_proxy`` mean."""
+    from population_segmentation.data.generator import generate_population
+
+    with open(CONFIG_PATH, encoding="utf-8") as f:
+        base = yaml.safe_load(f)
+    cfg = {
+        **base,
+        "sample_size": 100_000,
+        "generator_structural_dependency": {
+            **(base.get("generator_structural_dependency") or {}),
+            "rural_base_rate": 0.95,
+            "urban_base_rate": 0.95,
+            "elevated_rural_rate": 0.95,
+        },
+    }
+    df = generate_population(cfg, seed=42)
+    assert df["structural_dependency_proxy"].astype(bool).mean() > 0.85
+
+
+def test_enc_source_raw_utf8_share_tracks_yaml_distribution() -> None:
+    """``generator_enc_source_raw_distribution`` skews ``enc_source_raw`` histogram."""
+    from population_segmentation.data.generator import generate_population
+
+    with open(CONFIG_PATH, encoding="utf-8") as f:
+        base = yaml.safe_load(f)
+    cfg = {
+        **base,
+        "sample_size": 120_000,
+        "generator_enc_source_raw_distribution": {
+            "windows1252": 0.02,
+            "utf8": 0.96,
+            "unknown": 0.02,
+        },
+    }
+    df = generate_population(cfg, seed=5)
+    utf8_share = (df["enc_source_raw"] == "utf8").mean()
+    assert float(utf8_share) > 0.90, utf8_share
+
+
+def test_ballot_blank_rates_follow_yaml() -> None:
+    """Ballot blank Bernoulli rates follow ``generator_ballot_blank_rates``."""
+    from population_segmentation.data.generator import generate_population
+
+    with open(CONFIG_PATH, encoding="utf-8") as f:
+        base = yaml.safe_load(f)
+    cfg = {
+        **base,
+        "sample_size": 200_000,
+        "generator_ballot_blank_rates": {"president": 0.50, "parlasur": 0.50},
+    }
+    df = generate_population(cfg, seed=8)
+    assert 0.47 < df["ballot_blank_president"].astype(bool).mean() < 0.53
+    assert 0.47 < df["ballot_blank_parlasur"].astype(bool).mean() < 0.53
+
+
+def test_tv_penetration_follows_yaml_per_department() -> None:
+    """``media_penetration_tv`` for Asunción matches ``generator_dept_media_nbi`` override."""
+    from population_segmentation.data.generator import generate_population
+
+    with open(CONFIG_PATH, encoding="utf-8") as f:
+        base = yaml.safe_load(f)
+    gdm = dict(base["generator_dept_media_nbi"])
+    tv = dict(gdm["tv_by_department"])
+    tv["Asuncion"] = 0.11
+    gdm["tv_by_department"] = tv
+    cfg = {**base, "sample_size": 55_000, "generator_dept_media_nbi": gdm}
+    df = generate_population(cfg, seed=0)
+    sub = df.loc[df["department"] == "Asuncion", "media_penetration_tv"].astype(float)
+    assert (sub - 0.11).abs().max() < 1e-4

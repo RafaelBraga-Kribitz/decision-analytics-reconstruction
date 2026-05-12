@@ -1,6 +1,84 @@
-# Decision Log
+## 2026-05-12 — Project Action List §4: Magic numbers — generator structural / ballot / enc
 
-Records every non-trivial architectural choice: decision, alternatives considered, reason, date.
+**Decision:** Add [`generator_structural_dependency`](../module_a_population_segmentation/config/generation.yaml), [`generator_ballot_blank_rates`](../module_a_population_segmentation/config/generation.yaml), and [`generator_enc_source_raw_distribution`](../module_a_population_segmentation/config/generation.yaml) (elevated departments as YAML list). [`generator.py`](../module_a_population_segmentation/src/population_segmentation/data/generator.py) reads them in `generate_population` with module-level defaults matching prior literals when keys are absent. Add [`test_architecture_generator_synthetic_rates_contract.py`](../module_a_population_segmentation/tests/test_architecture_generator_synthetic_rates_contract.py) and behavioural tests in [`test_generator.py`](../module_a_population_segmentation/tests/test_generator.py). Extend **pytest-smoke** in [`.pre-commit-config.yaml`](../.pre-commit-config.yaml).
+
+**Alternatives considered:** Inlining TV/radio/NBI per-department tables into the same YAML file in this pass — rejected as too large for one diff; deferred.
+
+**Reason:** Second tranche on Project Action List §4 line 76 without duplicating anchors already in `media_penetration_defaults` / department tables.
+
+**Source:** Project Action List §4 Code quality — magic numbers (2026-05-12).
+
+---
+
+## 2026-05-12 — Project Action List §4: Magic numbers — generator dept TV/radio/NBI YAML
+
+**Decision:** Move per-department TV, radio, and rural NBI stress tables from [`generator.py`](../module_a_population_segmentation/src/population_segmentation/data/generator.py) into [`generation.yaml`](../module_a_population_segmentation/config/generation.yaml) under **`generator_dept_media_nbi`** (`tv_by_department`, `radio_by_department`, `nbi_rural_stress_by_department`, `nbi_urban_from_rural`, noise and unknown-department fallbacks). National TV/radio fallbacks continue to use **`media_penetration_defaults`** (`tv_national`, `radio_national`). Add [`_generator_dept_media_nbi_tables`](../module_a_population_segmentation/src/population_segmentation/data/generator.py) and [`test_architecture_generator_dept_media_yaml_contract.py`](../module_a_population_segmentation/tests/test_architecture_generator_dept_media_yaml_contract.py); behavioural [`test_tv_penetration_follows_yaml_per_department`](../module_a_population_segmentation/tests/test_generator.py). Extend **pytest-smoke**.
+
+**Alternatives considered:** Splitting into a second YAML file — deferred to keep a single `generation.yaml` entrypoint for the generator.
+
+**Reason:** Closes the remaining “per-dept TV/radio/NBI dicts” gap on Project Action List §4 line 76.
+
+**Source:** Project Action List §4 Code quality — magic numbers (2026-05-12).
+
+---
+
+## 2026-05-12 — Project Action List §4: Magic numbers — generator rural anchor
+
+**Decision:** Read national rural rake target from [`generation.yaml`](../module_a_population_segmentation/config/generation.yaml) `cleaner_synthetic_defaults.rural_flag_true_rate` inside [`generator.py`](../module_a_population_segmentation/src/population_segmentation/data/generator.py) (same key as cleaner imputation). Preliminary `department_urban_share` fallback uses **`1 - rural_flag_true_rate`** (national urban complement). Keep a single module-level `_DEFAULT_NATIONAL_RURAL_ANCHOR` only for missing YAML. Add [`module_a_population_segmentation/tests/test_architecture_generator_rural_anchor_contract.py`](../module_a_population_segmentation/tests/test_architecture_generator_rural_anchor_contract.py) and [`test_rural_flag_mean_tracks_cleaner_synthetic_rural_anchor`](../module_a_population_segmentation/tests/test_generator.py). Extend pre-commit **pytest-smoke** to run the new contract test.
+
+**Alternatives considered:** Duplicating a separate `generator_rural_anchor` YAML key — rejected to avoid two sources of truth for the same marginal.
+
+**Reason:** Advances Project Action List §4 magic-numbers row without breaking calibration alignment between generator rake and cleaner defaults.
+
+**Source:** Project Action List §4 Code quality — magic numbers (2026-05-12).
+
+---
+
+## 2026-05-12 — Project Action List §4: Pre-commit (Ruff, Black, Pyright, pytest smoke)
+
+**Decision:** Refresh [`.pre-commit-config.yaml`](../.pre-commit-config.yaml): **Black 26.3.1** and **ruff-pre-commit v0.15.12** (matches [`poetry.lock`](../poetry.lock) `ruff`). Ruff runs **check-only** (removed `--fix`) with `--extend-exclude tests/test_eda.py` to mirror [`Makefile`](../Makefile) `lint`. Black adds the same `--exclude`. **Pyright** entry explicitly passes `module_a_population_segmentation/src` and `module_b_resource_allocation/src`. **`pytest-smoke`** runs five fast contract files including portfolio e2e. **nbstripout** `files` regex limits to module package trees so `reports/**/*.ipynb` is not rewritten on every hook run. Add [`tests/test_architecture_pre_commit_contract.py`](../tests/test_architecture_pre_commit_contract.py) (hook inventory + ruff rev lockfile parity + nbstripout scope).
+
+**Alternatives considered:** Running full `pytest -m "not slow"` in pre-commit — rejected as too slow for every commit.
+
+**Reason:** Closes Project Action List §4 pre-commit row with Makefile-aligned lint/typecheck and a bounded smoke test bundle.
+
+**Source:** Project Action List §4 Code quality — pre-commit hooks (2026-05-12).
+
+---
+
+## 2026-05-12 — Project Action List §4: Unused imports and justified noqa
+
+**Decision:** Keep Ruff `F` rules for unused imports; add **`RUF100`** to [`pyproject.toml`](../pyproject.toml) `select` so unused `noqa` directives fail CI. Remove obsolete `noqa: F401` from [`module_c_forecasting_scenarios/tests/test_input_schema.py`](../module_c_forecasting_scenarios/tests/test_input_schema.py). Require every remaining `noqa` to list codes **and** a trailing justification (`#` second comment or `--` tail) via [`tests/test_architecture_noqa_justification_contract.py`](../tests/test_architecture_noqa_justification_contract.py). Document **`N818`** on [`QAGateFailure`](../module_a_population_segmentation/src/population_segmentation/data/validator.py) with an inline reason (stable QA API name).
+
+**Alternatives considered:** Renaming `QAGateFailure` to `QAGateError` — rejected as a breaking public symbol change for this hygiene pass.
+
+**Reason:** Closes the Ruff-visible half of Project Action List §4 line 77; Pyright `type: ignore` tail comments can be normalised in a follow-up if desired.
+
+**Source:** Project Action List §4 Code quality — unused imports / noqa (2026-05-12).
+
+---
+
+## 2026-05-12 — Project Action List §4: Magic numbers — Module A cleaner imputation
+
+**Decision:** Move synthetic-imputation priors for missing raw columns out of [`module_a_population_segmentation/src/population_segmentation/data/cleaner.py`](../module_a_population_segmentation/src/population_segmentation/data/cleaner.py) into [`module_a_population_segmentation/config/generation.yaml`](../module_a_population_segmentation/config/generation.yaml): `language_priors` (language bucket) and new `cleaner_synthetic_defaults` (`rural_flag_true_rate`, `structural_dependency_true_rate`). Internet rates remain under `media_penetration_defaults`. Add [`module_a_population_segmentation/tests/test_architecture_cleaner_no_magic_priors_contract.py`](../module_a_population_segmentation/tests/test_architecture_cleaner_no_magic_priors_contract.py) plus behavioural tests in [`module_a_population_segmentation/tests/test_cleaner.py`](../module_a_population_segmentation/tests/test_cleaner.py).
+
+**Alternatives considered:** Enabling Ruff `PLR2004` globally — deferred; would surface many unrelated literals across the repo in one pass.
+
+**Reason:** Closes the first concrete slice of Project Action List §4 “no magic numbers” for the cleaner’s Bernoulli and categorical draws while keeping YAML as the single source of truth alongside existing generator anchors.
+
+**Source:** Project Action List §4 Code quality — magic numbers (2026-05-12).
+
+---
+
+## 2026-05-12 — Project Action List §4: Stochastic determinism (Module B surface)
+
+**Decision:** Treat routing (`build_cost_matrix`, `nearest_insertion_tour`) and dirty CSV synthesis (`generate_all` / `DirtyGenConfig.seed`) as seed-stable Module B surfaces. Add [`tests/test_stochastic_determinism_module_b_surface.py`](../tests/test_stochastic_determinism_module_b_surface.py) mirroring the Module A gate. Document `run_allocation(..., seed=...)` as forwarding to `solver_seed` with fixed-build reproducibility wording (not a bitwise cross-platform guarantee for CBC).
+
+**Alternatives considered:** Adding a full MILP output bit-identical regression — deferred; CBC binaries vary by platform enough that the gate focuses on explicit seeds plus routing/dirty-gen reproducibility.
+
+**Reason:** Closes the “extend to Module B” follow-up on Project Action List §4 line 75 without flaky CI.
+
+**Source:** Project Action List §4 Code quality — random behavior / seeds (2026-05-12).
 
 ---
 

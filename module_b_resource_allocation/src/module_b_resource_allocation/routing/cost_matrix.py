@@ -141,7 +141,9 @@ def build_cost_matrix(scenario: str = "dry_standard", seed: int = 42) -> pd.Data
 
     Args:
         scenario: Routing scenario label (see module-local ``_SCENARIOS``).
-        seed: RNG seed controlling stochastic surface mixes.
+        seed: Integer seed for ``random.Random`` when sampling surface mixes and
+            tie breaks. The same ``(scenario, seed)`` pair yields an identical
+            DataFrame across runs (stdlib RNG only).
 
     Returns:
         Edge list with travel times, weather failure probabilities, and feasibility flags.

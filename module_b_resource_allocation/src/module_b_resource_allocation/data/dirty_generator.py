@@ -107,9 +107,12 @@ DEPARTMENT_ALIASES: dict[str, str] = {
 
 @dataclass(frozen=True)
 class DirtyGenConfig:
+    """Row counts, corruption rates, and root RNG seed for dirty CSV synthesis."""
+
     n_budget_rows: int = 2_500
     n_volunteer_rows: int = 3_500
     n_media_rows: int = 1_200
+    #: Root integer seed for ``numpy.random.default_rng`` in :func:`generate_all`.
     seed: int = 20180422
     null_rate: float = 0.03
     duplicate_rate: float = 0.02
@@ -332,7 +335,9 @@ def generate_all(cfg: DirtyGenConfig, out_dir: Path) -> dict[str, Path]:
     """Generate the full trio of dirty CSV fixtures under ``out_dir``.
 
     Args:
-        cfg: Shared configuration for row counts and corruption rates.
+        cfg: Shared configuration for row counts, corruption rates, and
+            ``cfg.seed`` (drives ``numpy.random.default_rng``). Two runs with the
+            same ``cfg`` produce identical CSV contents byte-for-byte.
         out_dir: Output directory (created if missing).
 
     Returns:
