@@ -4,6 +4,18 @@ Records every non-trivial architectural choice: decision, alternatives considere
 
 ---
 
+## 2026-05-12 — Project Action List §4: Ruff zero warnings on configured corpus
+
+**Decision:** Add `[tool.ruff] exclude` in [`pyproject.toml`](../pyproject.toml) for generated or non-Python trees (`reports/`, `**/*.ipynb`, `graphify-out/`, build artifacts) so `poetry run ruff check .` matches “all first-party source” intent without linting EDA outputs. Fix residual E501 / I001 in scoped tests ([`test_cleaner.py`](../module_a_population_segmentation/tests/test_cleaner.py), [`test_raw_injector.py`](../module_a_population_segmentation/tests/test_raw_injector.py), [`tests/test_architecture_docker_surface.py`](../tests/test_architecture_docker_surface.py)). Add [`tests/test_architecture_ruff_configuration.py`](../tests/test_architecture_ruff_configuration.py).
+
+**Alternatives considered:** Auto-fixing hundreds of `reports/*.py` violations — rejected; those paths are generated / auxiliary.
+
+**Reason:** Closes Project Action List §4 line 71 while keeping `make validate`’s Ruff stage meaningful.
+
+**Source:** Project Action List §4 Codebase Maturity — Ruff (2026-05-12).
+
+---
+
 ## 2026-05-12 — Project Action List §4: `max_noise_rate` comment vs Gate A4
 
 **Decision:** Inline comment on [`model_params.yaml`](../module_a_population_segmentation/config/model_params.yaml) `dbscan.max_noise_rate: 0.01` must state Gate A4 is a **1%** noise ceiling (no stray `0.03` text). Add [`test_model_params_dbscan_max_noise_consistency.py`](../module_a_population_segmentation/tests/test_model_params_dbscan_max_noise_consistency.py).

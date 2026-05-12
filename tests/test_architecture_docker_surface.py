@@ -23,7 +23,9 @@ def test_canonical_dockerfiles_exist() -> None:
 
 def test_docker_compose_points_at_existing_dockerfiles() -> None:
     cfg = _compose()
-    assert cfg.get("version") == "3.9", "docker-compose.yml must declare version: '3.9' (Codebase Maturity contract)"
+    assert (
+        cfg.get("version") == "3.9"
+    ), "docker-compose.yml must declare version: '3.9' (Codebase Maturity contract)"
     services = cfg.get("services") or {}
     module_a = services.get("module_a") or {}
     mlflow = services.get("mlflow") or {}

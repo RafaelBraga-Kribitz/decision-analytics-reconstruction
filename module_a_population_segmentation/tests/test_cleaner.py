@@ -7,6 +7,11 @@ from pathlib import Path
 import pandas as pd
 import pytest
 import yaml
+from population_segmentation.utils.schema import (
+    CANONICAL_ENC_SOURCE,
+    ENC_SOURCE,
+    ENC_SOURCE_RAW,
+)
 
 CONFIG_PATH = Path(__file__).parent.parent / "config" / "generation.yaml"
 
@@ -42,8 +47,6 @@ def cleaned_population(
 
 def test_enc_source_promoted_from_raw_layer(cleaned_population: pd.DataFrame) -> None:
     """Clean output must expose enc_source only; values must match raw generator mix."""
-    from population_segmentation.utils.schema import CANONICAL_ENC_SOURCE, ENC_SOURCE, ENC_SOURCE_RAW
-
     assert ENC_SOURCE_RAW not in cleaned_population.columns
     assert ENC_SOURCE in cleaned_population.columns
     vals = set(cleaned_population[ENC_SOURCE].dropna().unique())

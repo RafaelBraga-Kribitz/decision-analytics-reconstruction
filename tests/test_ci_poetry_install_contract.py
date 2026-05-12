@@ -18,9 +18,9 @@ def test_github_workflows_forbid_poetry_install_no_root() -> None:
     assert _WORKFLOWS.is_dir()
     for path in sorted(_WORKFLOWS.glob("*.yml")):
         text = path.read_text(encoding="utf-8")
-        assert "poetry install --no-root" not in text, (
-            f"{path.name}: must not use poetry install --no-root"
-        )
+        assert (
+            "poetry install --no-root" not in text
+        ), f"{path.name}: must not use poetry install --no-root"
 
 
 def test_poetry_declared_packages_importable() -> None:

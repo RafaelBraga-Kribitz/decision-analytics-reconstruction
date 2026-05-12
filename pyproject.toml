@@ -63,6 +63,25 @@ target-version = ["py311"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+exclude = [
+    ".git",
+    ".venv",
+    ".eggs",
+    "__pycache__",
+    "build",
+    "dist",
+    "graphify-out",
+    "htmlcov",
+    "node_modules",
+    "reports",
+    "**/*.ipynb",
+]
+extend-exclude = [
+    "module_a_population_segmentation/notebooks",
+    "reports",
+    "graphify-out",
+    "*.ipynb",
+]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "N", "UP", "B", "SIM"]

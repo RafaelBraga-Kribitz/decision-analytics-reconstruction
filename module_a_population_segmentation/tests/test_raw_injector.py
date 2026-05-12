@@ -115,7 +115,8 @@ class TestEncodingGarblesRegression:
         from population_segmentation.data import raw_injector as ri
 
         assert isinstance(ri._ENCODING_GARBLES, dict)
-        assert all(isinstance(k, str) and isinstance(v, str) for k, v in ri._ENCODING_GARBLES.items())
+        pairs = ri._ENCODING_GARBLES.items()
+        assert all(isinstance(k, str) and isinstance(v, str) for k, v in pairs)
 
     def test_garble_encoding_replaces_first_accent(self) -> None:
         from population_segmentation.data import raw_injector as ri
@@ -186,10 +187,14 @@ def test_raw_injector_source_avoids_string_dataframe_column_keys() -> None:
             continue
         code = line.split("#", 1)[0]
         if df_lit.search(code):
-            raise AssertionError(
-                f"{path.name}:{lineno}: use schema constants for df[...] keys, not literals: {line!r}"
+            msg = (
+                f"{path.name}:{lineno}: use schema constants for df[...] keys, "
+                f"not literals: {line!r}"
             )
+            raise AssertionError(msg)
         if at_lit.search(code):
-            raise AssertionError(
-                f"{path.name}:{lineno}: use schema constants for .at[..., col], not literals: {line!r}"
+            msg = (
+                f"{path.name}:{lineno}: use schema constants for .at[..., col], "
+                f"not literals: {line!r}"
             )
+            raise AssertionError(msg)
