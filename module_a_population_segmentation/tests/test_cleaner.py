@@ -40,6 +40,18 @@ def cleaned_population(
     return clean_population(raw_population, config, qa_report_dir=report_dir)
 
 
+def test_enc_source_promoted_from_raw_layer(cleaned_population: pd.DataFrame) -> None:
+    """Clean output must expose enc_source only; values must match raw generator mix."""
+    from population_segmentation.utils.schema import CANONICAL_ENC_SOURCE, ENC_SOURCE, ENC_SOURCE_RAW
+
+    assert ENC_SOURCE_RAW not in cleaned_population.columns
+    assert ENC_SOURCE in cleaned_population.columns
+    vals = set(cleaned_population[ENC_SOURCE].dropna().unique())
+    assert vals.issubset(CANONICAL_ENC_SOURCE)
+    utf8_share = (cleaned_population[ENC_SOURCE] == "utf8").mean()
+    assert 0.30 < utf8_share < 0.70, f"unexpected utf8 share after promotion: {utf8_share:.3f}"
+
+
 def test_cedula_standardized(cleaned_population: pd.DataFrame) -> None:
     assert cleaned_population["cedula"].notna().all()
     assert cleaned_population["cedula"].astype(str).str.match(r"^\d{8}$").all()

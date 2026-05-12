@@ -288,8 +288,8 @@ def generate_population(
     ballot_blank_pres = rng.random(n) < 0.0241
     ballot_blank_parl = rng.random(n) < 0.0848
 
-    # ── enc_source_raw ─────────────────────────────────────────────────────────
-    # Raw layer uses enc_source_raw; cleaner renames to enc_source in step 2.
+    # ── enc_source_raw (raw contract) ───────────────────────────────────────
+    # Cleaner step 1 promotes this column to ENC_SOURCE and drops ENC_SOURCE_RAW.
     enc_sources = rng.choice(
         ["windows1252", "utf8", "unknown"],
         size=n,

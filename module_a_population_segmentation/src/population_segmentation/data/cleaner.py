@@ -13,7 +13,12 @@ import pandas as pd
 import yaml
 
 from population_segmentation.evaluation.schema_validator import validate_clean_population
-from population_segmentation.utils.schema import CANONICAL_DEPARTMENTS
+from population_segmentation.utils.schema import (
+    CANONICAL_DEPARTMENTS,
+    CANONICAL_ENC_SOURCE,
+    ENC_SOURCE,
+    ENC_SOURCE_RAW,
+)
 from population_segmentation.utils.seeds import make_rng
 
 _DEPT_NORMALIZE = {
@@ -70,9 +75,14 @@ def clean_population(
     rng = make_rng(seed)
     df = raw_df.copy()
 
-    # Step 1: encoding normalization marker
-    if "enc_source" not in df.columns:
-        df["enc_source"] = "utf8"
+    # Step 1: encoding provenance — raw contract uses `enc_source_raw`; clean contract
+    # uses `enc_source` (see schema_contracts/population_master_{raw,clean}.yaml).
+    if ENC_SOURCE_RAW in df.columns:
+        raw_tags = df[ENC_SOURCE_RAW].fillna("unknown").astype(str).str.strip().str.lower()
+        df[ENC_SOURCE] = raw_tags.where(raw_tags.isin(CANONICAL_ENC_SOURCE), "unknown")
+        df = df.drop(columns=[ENC_SOURCE_RAW])
+    elif ENC_SOURCE not in df.columns:
+        df[ENC_SOURCE] = "utf8"
 
     # Step 2: cedula standardization to 8 digits
     df["cedula"] = df["cedula"].astype(str).str.replace(r"\D", "", regex=True).str.zfill(8).str[-8:]

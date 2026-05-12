@@ -61,7 +61,11 @@ DBSCAN_NOISE_FLAG: Final = "dbscan_noise_flag"
 BALLOT_BLANK_PRESIDENT: Final = "ballot_blank_president"
 BALLOT_BLANK_PARLASUR: Final = "ballot_blank_parlasur"
 
-# ─── Quality flags ────────────────────────────────────────────────────────────
+# ─── Encoding provenance (raw vs clean column names) ────────────────────────
+# Raw layer (`population_master_raw.yaml`): `enc_source_raw` — value sampled at
+# generation / flaw injection. Clean layer (`population_master_clean.yaml`):
+# `enc_source` — populated in cleaner step 1 by promoting `enc_source_raw`, then
+# dropping the raw-only column so downstream sees a single canonical name.
 ENC_SOURCE: Final = "enc_source"
 ENC_SOURCE_RAW: Final = "enc_source_raw"
 

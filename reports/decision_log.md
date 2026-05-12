@@ -4,6 +4,18 @@ Records every non-trivial architectural choice: decision, alternatives considere
 
 ---
 
+## 2026-05-12 — Project Action List §4: `enc_source_raw` → `enc_source` at clean boundary
+
+**Decision:** In [`cleaner.py`](../module_a_population_segmentation/src/population_segmentation/data/cleaner.py) step 1, when `enc_source_raw` is present, fill nulls with `unknown`, coerce values outside [`CANONICAL_ENC_SOURCE`](../module_a_population_segmentation/src/population_segmentation/utils/schema.py) to `unknown`, assign to `enc_source`, then drop `enc_source_raw`. Contract copy lives in [`population_master_raw.yaml`](../schema_contracts/population_master_raw.yaml) and [`population_master_clean.yaml`](../schema_contracts/population_master_clean.yaml). Regression [`test_enc_source_promoted_from_raw_layer`](../module_a_population_segmentation/tests/test_cleaner.py).
+
+**Alternatives considered:** Using one column name in both raw and clean YAML — rejected to preserve lineage between layers.
+
+**Reason:** Closes Project Action List §4 line 63; avoids defaulting `enc_source` to `utf8` while `enc_source_raw` held the generator mix.
+
+**Source:** Project Action List §4 Codebase Maturity — `enc_source` / `enc_source_raw` (2026-05-12).
+
+---
+
 ## 2026-05-12 — Project Action List §3: `pipeline-dev` runs full Module A export
 
 **Decision:** Replace incremental `generator` → `raw_injector` → `cleaner`-only [`Makefile`](../Makefile) `pipeline-dev` recipe with a single `poetry run python -m population_segmentation.pipeline` invocation (default `--sample-size $(or $(SAMPLE),10000)` for clone-local speed), delegating to [`run_export`](../module_a_population_segmentation/src/population_segmentation/pipeline/export.py) so `data/processed/` receives the wide population master with segment and propensity columns, `segment_labels.parquet`, `participation_propensity.parquet`, reachability CSVs, and `model_run_manifest.json`. Document in [`ARCHITECTURE.md`](../ARCHITECTURE.md). Add [`tests/test_architecture_pipeline_dev_contract.py`](../tests/test_architecture_pipeline_dev_contract.py) (Makefile parse tests plus optional `@pytest.mark.slow` `make pipeline-dev` smoke).
