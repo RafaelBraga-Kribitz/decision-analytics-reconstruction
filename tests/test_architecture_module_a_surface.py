@@ -41,3 +41,11 @@ def test_population_segmentation_pipeline_import_surface() -> None:
 
     assert callable(export_mod.run_export), "run_export must be callable"
     assert hasattr(main_mod, "main"), "pipeline.__main__ should expose main()"
+
+
+def test_generator_and_raw_injector_have_cli_entry() -> None:
+    gen = (_SRC / "data" / "generator.py").read_text(encoding="utf-8")
+    raw = (_SRC / "data" / "raw_injector.py").read_text(encoding="utf-8")
+    for label, text in (("generator.py", gen), ("raw_injector.py", raw)):
+        assert 'if __name__ == "__main__"' in text, f"{label} must define __main__ guard"
+        assert "argparse" in text, f"{label} must use argparse for CLI"

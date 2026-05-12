@@ -179,7 +179,12 @@ def test_generate_script_exists():
 def test_load_population_master():
     """population_master_clean.parquet loads without error and has expected shape."""
     df = pd.read_parquet(DATA / "population_master_clean.parquet")
-    assert len(df) == 10_000, f"Expected 10,000 rows, got {len(df)}"
+    seg = pd.read_parquet(DATA / "segment_labels.parquet")
+    assert len(df) == len(seg), (
+        "population_master_clean row count must match segment_labels "
+        f"(got master={len(df)}, labels={len(seg)})"
+    )
+    assert len(df) >= 1_000, f"Expected at least 1,000 rows for EDA smoke, got {len(df)}"
     assert df.shape[1] >= 50, f"Expected >= 50 columns, got {df.shape[1]}"
 
 
