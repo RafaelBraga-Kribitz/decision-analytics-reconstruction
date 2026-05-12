@@ -182,7 +182,10 @@ def generate_population(
 
     Args:
         config: Generation configuration dict (from generation.yaml).
-        seed:   Random seed. If None, reads RANDOM_SEED env var.
+        seed: Explicit RNG seed forwarded to :func:`population_segmentation.utils.seeds.make_rng`.
+            Same ``config`` and the same integer ``seed`` (or both using the same
+            ``RANDOM_SEED`` environment when ``seed`` is ``None``) return an identical
+            population dataset across runs.
         output_path: Optional parquet path to write output.
 
     Returns:

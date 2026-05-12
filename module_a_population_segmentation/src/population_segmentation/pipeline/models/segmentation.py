@@ -157,7 +157,10 @@ def build_segmentation_frame(
     Args:
         df: Feature DataFrame containing all ``FEATURE_COLUMNS`` and ``entity_id``.
         k: Number of KMeans clusters (default 6, matching contract k).
-        random_state: Seed forwarded to KMeans and bootstrap ARI subsampling.
+        random_state: Seed forwarded to KMeans, bootstrap ARI subsampling, and
+            internal :class:`numpy.random.Generator` draws. Same ``df``, ``k``, and
+            ``random_state`` reproduce ``labels_df`` and the scalar metrics in the
+            returned dict.
 
     Returns:
         Tuple ``(labels_df, metrics_dict)`` where ``labels_df`` has one row per

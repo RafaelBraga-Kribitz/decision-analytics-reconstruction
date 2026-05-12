@@ -27,6 +27,17 @@ FEATURES = [
 
 @dataclass
 class PropensityModel:
+    """Logistic propensity with Platt scaling and calibration-aware synthetic labels.
+
+    Attributes:
+        random_state: Integer seed passed to :mod:`sklearn` splitters and models and
+            to :class:`numpy.random.Generator` for the synthetic binary target. Two
+            fits with the same ``random_state``, ``df``, and ``anchors`` return
+            identical prediction vectors and metric scalars (within floating-point
+            equality of sklearn outputs).
+        stratify_by: Tuple of column names used to build stratified train or test
+            partitions when class balance allows.
+    """
     random_state: int = 42
     stratify_by: tuple[str, ...] = field(
         default_factory=lambda: ("department", "age_bin_encoded", "gender_encoded")
@@ -42,6 +53,8 @@ class PropensityModel:
         Args:
             df: Feature-rich population dataset after Module A feature engineering.
             anchors: Parsed calibration anchors controlling synthetic label mass.
+                Stochastic steps use the instance :attr:`random_state`; the same
+                ``df`` and ``anchors`` reproduce identical returned tensors across runs.
 
         Returns:
             Dict with fitted artifacts, evaluation metrics, and ``prob`` column

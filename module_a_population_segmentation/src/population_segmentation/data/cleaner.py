@@ -79,7 +79,9 @@ def clean_population(
         config: Generation configuration dict (controls synthetic internet flags,
             ``qa_report`` toggles, etc.).
         qa_report_dir: Directory to write QA sidecars; ``None`` skips report emission.
-        seed: RNG seed forwarded to any stochastic repair paths.
+        seed: RNG seed forwarded to :func:`population_segmentation.utils.seeds.make_rng`
+            for any stochastic repair paths. Same ``raw_df``, ``config``, and
+            ``seed`` reproduce the clean frame exactly.
 
     Returns:
         Clean population dataset satisfying the Module A clean contract.

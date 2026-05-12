@@ -82,7 +82,9 @@ def inject_flaws(
     Args:
         df:     Clean population DataFrame from generator.py.
         config: Generation config dict (flaw_injection section used).
-        seed:   Random seed.
+        seed: Explicit RNG seed forwarded to :func:`population_segmentation.utils.seeds.make_rng`.
+            Same ``df``, ``config``, and integer ``seed`` reproduce the flawed output
+            exactly (including duplicate rows and attrs).
 
     Returns:
         Modified DataFrame with injected flaws. May be longer than input (DUP rows).
