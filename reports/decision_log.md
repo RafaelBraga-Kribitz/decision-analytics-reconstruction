@@ -4,6 +4,30 @@ Records every non-trivial architectural choice: decision, alternatives considere
 
 ---
 
+## 2026-05-12 — Project Action List §4: `max_noise_rate` comment vs Gate A4
+
+**Decision:** Inline comment on [`model_params.yaml`](../module_a_population_segmentation/config/model_params.yaml) `dbscan.max_noise_rate: 0.01` must state Gate A4 is a **1%** noise ceiling (no stray `0.03` text). Add [`test_model_params_dbscan_max_noise_consistency.py`](../module_a_population_segmentation/tests/test_model_params_dbscan_max_noise_consistency.py).
+
+**Alternatives considered:** Raising the cap to 0.03 — rejected; tests and contracts assume 1%.
+
+**Reason:** Closes Project Action List §4 line 68 (N1.4-style value vs comment drift).
+
+**Source:** Project Action List §4 Codebase Maturity — `max_noise_rate` (2026-05-12).
+
+---
+
+## 2026-05-12 — Project Action List §4: raw_injector column names via schema.py
+
+**Decision:** Keep all DataFrame column access in [`raw_injector.py`](../module_a_population_segmentation/src/population_segmentation/data/raw_injector.py) on imported names from [`schema.py`](../module_a_population_segmentation/src/population_segmentation/utils/schema.py) (no `df["…"]` / `df.loc[..., "…"]` / `df.at[..., "…"]` for contract fields). Add [`tests/test_architecture_raw_injector_schema_columns.py`](../tests/test_architecture_raw_injector_schema_columns.py) to block regressions.
+
+**Alternatives considered:** Runtime column registry — rejected as YAGNI while the file stays small.
+
+**Reason:** Closes Project Action List §4 line 64 (column constant discipline).
+
+**Source:** Project Action List §4 Codebase Maturity — raw_injector / schema.py (2026-05-12).
+
+---
+
 ## 2026-05-12 — Project Action List §4: `enc_source_raw` → `enc_source` at clean boundary
 
 **Decision:** In [`cleaner.py`](../module_a_population_segmentation/src/population_segmentation/data/cleaner.py) step 1, when `enc_source_raw` is present, fill nulls with `unknown`, coerce values outside [`CANONICAL_ENC_SOURCE`](../module_a_population_segmentation/src/population_segmentation/utils/schema.py) to `unknown`, assign to `enc_source`, then drop `enc_source_raw`. Contract copy lives in [`population_master_raw.yaml`](../schema_contracts/population_master_raw.yaml) and [`population_master_clean.yaml`](../schema_contracts/population_master_clean.yaml). Regression [`test_enc_source_promoted_from_raw_layer`](../module_a_population_segmentation/tests/test_cleaner.py).

@@ -40,7 +40,7 @@ dbscan:
   min_samples: 5
   metric: euclidean
   n_jobs: -1
-  max_noise_rate: 0.01           # Gate A4
+  max_noise_rate: 0.01  # Gate A4: fail QA if DBSCAN noise_rate exceeds this cap (1%).
 
 # ─── Threading (KMeans + NumPy / scikit-learn stack) ─────────────────────────
 # sklearn KMeans (>=1.4 in this repo) does not accept ``n_jobs``; parallelism

@@ -52,6 +52,27 @@ def test_enc_source_promoted_from_raw_layer(cleaned_population: pd.DataFrame) ->
     assert 0.30 < utf8_share < 0.70, f"unexpected utf8 share after promotion: {utf8_share:.3f}"
 
 
+def test_cleaner_synthetic_internet_flag_uses_config_rates(
+    raw_population: pd.DataFrame, config: dict, tmp_path: Path  # type: ignore[type-arg]
+) -> None:
+    """When internet_access_flag is missing, imputation uses YAML rural/urban rates."""
+    from population_segmentation.data.cleaner import clean_population
+
+    raw = raw_population.drop(columns=["internet_access_flag"])
+    cfg = {
+        **config,
+        "media_penetration_defaults": {
+            **config["media_penetration_defaults"],
+            "internet_access_rural_rate": 0.08,
+            "internet_access_urban_rate": 0.92,
+        },
+    }
+    out = clean_population(raw, cfg, qa_report_dir=tmp_path)
+    rural = out["rural_flag"].astype(bool)
+    assert out.loc[rural, "internet_access_flag"].mean() < 0.15
+    assert out.loc[~rural, "internet_access_flag"].mean() > 0.85
+
+
 def test_cedula_standardized(cleaned_population: pd.DataFrame) -> None:
     assert cleaned_population["cedula"].notna().all()
     assert cleaned_population["cedula"].astype(str).str.match(r"^\d{8}$").all()

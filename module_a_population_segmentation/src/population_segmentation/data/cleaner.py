@@ -157,10 +157,13 @@ def clean_population(
 
     # Step 13: internet flag ensure bool
     if "internet_access_flag" not in df.columns:
+        ict = config.get("media_penetration_defaults", {})
+        rural_inet_p = float(ict.get("internet_access_rural_rate", 0.279))
+        urban_inet_p = float(ict.get("internet_access_urban_rate", 0.734))
         df["internet_access_flag"] = np.where(
             df["rural_flag"],
-            rng.random(len(df)) < 0.279,
-            rng.random(len(df)) < 0.734,
+            rng.random(len(df)) < rural_inet_p,
+            rng.random(len(df)) < urban_inet_p,
         )
     df["internet_access_flag"] = df["internet_access_flag"].astype(bool)
 

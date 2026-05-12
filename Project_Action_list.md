@@ -61,11 +61,11 @@
 ~~- [ ] `docker-compose.yml` version: "3.9"~~
 ~~- [ ] No `__main__` entry points: add argparse blocks to generator.py and raw_injector.py~~
 ~~- [ ] `enc_source` vs `enc_source_raw`: standardize field names, update schema, add comment explaining raw vs clean layer naming~~
-- [ ] Column name constants: import from schema.py everywhere in raw_injector.py, not bare strings
-~~- [ ] `KMeans n_jobs` parameter: remove from model_params.yaml, document `OMP_NUM_THREADS` alternative~~ *(done 2026-05-12: `kmeans.n_jobs` removed, threading env vars documented, `test_model_params_kmeans_no_n_jobs.py`.)*
-- [ ] CI `--no-root`: change to `poetry install`, add module importability test
-- [ ] `rural_inet` unused + magic `0.42`: replace with config variable, move internet penetration to generation.yaml
-- [ ] `max_noise_rate` contradiction: fix comment to match value (0.01)
+~~- [ ] Column name constants: import from schema.py everywhere in raw_injector.py, not bare strings~~ — enforced by [`tests/test_architecture_raw_injector_schema_columns.py`](tests/test_architecture_raw_injector_schema_columns.py); implementation uses [`population_segmentation.utils.schema`](module_a_population_segmentation/src/population_segmentation/utils/schema.py) in [`raw_injector.py`](module_a_population_segmentation/src/population_segmentation/data/raw_injector.py). *(already uses `schema` constants; verified 2026-05-12)*
+~~- [ ] `KMeans n_jobs` parameter: remove from model_params.yaml, document `OMP_NUM_THREADS` alternative~~ *(done 2026-05-12: `kmeans.n_jobs` removed + `test_model_params_kmeans_no_n_jobs.py`.)*
+~~- [ ] CI `--no-root`: change to `poetry install`, add module importability test~~ *(CI already `poetry install`; regression `tests/test_ci_poetry_install_contract.py`, 2026-05-12)*
+~~- [ ] `rural_inet` unused + magic `0.42`: replace with config variable, move internet penetration to generation.yaml~~ *(internet_access rural/urban Bernoulli rates in `media_penetration_defaults` in `generation.yaml`; `generator.py` and `cleaner.py` read `internet_access_rural_rate` / `internet_access_urban_rate`; tests `TestInternetAccessRatesFromConfig`, `test_cleaner_synthetic_internet_flag_uses_config_rates`, 2026-05-12)*
+~~- [ ] `max_noise_rate` contradiction: fix comment to match value (0.01) — [`model_params.yaml`](module_a_population_segmentation/config/model_params.yaml) Gate A4 comment; regression [`module_a_population_segmentation/tests/test_model_params_dbscan_max_noise_consistency.py`](module_a_population_segmentation/tests/test_model_params_dbscan_max_noise_consistency.py).~~
 
 **Code quality:**
 - [ ] Run Ruff on all source files: zero warnings
