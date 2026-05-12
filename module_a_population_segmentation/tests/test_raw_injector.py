@@ -6,6 +6,9 @@ Gate A2: all 13 flaw types present at configured rates ±20%.
 
 from __future__ import annotations
 
+import re
+from pathlib import Path
+
 import pandas as pd
 
 SAMPLE_SIZE = 50_000  # session fixture sample size (see conftest.py)
@@ -165,3 +168,28 @@ class TestFlaw13Coverage:
         assert (
             len(injected) == 13
         ), f"Expected exactly 13 flaw types (scope §4.2), got {len(injected)}: {injected}"
+
+
+def test_raw_injector_source_avoids_string_dataframe_column_keys() -> None:
+    """Regression: index DataFrames with schema constants, not quoted column names."""
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "src"
+        / "population_segmentation"
+        / "data"
+        / "raw_injector.py"
+    )
+    df_lit = re.compile(r"\bdf\[\s*[\"']")
+    at_lit = re.compile(r"\.at\[[^,\]]+,\s*[\"']")
+    for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        if line.lstrip().startswith("#"):
+            continue
+        code = line.split("#", 1)[0]
+        if df_lit.search(code):
+            raise AssertionError(
+                f"{path.name}:{lineno}: use schema constants for df[...] keys, not literals: {line!r}"
+            )
+        if at_lit.search(code):
+            raise AssertionError(
+                f"{path.name}:{lineno}: use schema constants for .at[..., col], not literals: {line!r}"
+            )
