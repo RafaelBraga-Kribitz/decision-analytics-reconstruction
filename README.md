@@ -8,6 +8,12 @@
 
 ---
 
+## Executive overview (around one minute)
+
+A national-scale **program** had to move a multi-million-dollar budget across heterogeneous geographies while honoring feasibility caps, currency corridors, and a tight weekly calendar influencing a measurable **preference proxy**. The reconstruction packages three interoperable streams: behavioural segmentation plus participation scoring on an entity-scale **population dataset**, constrained MILP allocation with reproducible manifests, and probabilistic condensation of biased **survey measurement** into coherent uncertainty. The payoff for a VP without code access is spelled out economically in [`reports/business_case.md`](reports/business_case.md): transparent **department-uniform naive** spend vs optimized allocation (with seeded reruns via `make module-b-allocate`), plus documented downside shocks for budget truncation and modeled FX posture. Calibration boundaries—what mirrors verified registries versus synthetic layers—sit in [`reports/epistemic_boundaries.md`](reports/epistemic_boundaries.md). For stakeholder-to-artifact routing, skim [`reports/stakeholder_scenario_table.md`](reports/stakeholder_scenario_table.md).
+
+---
+
 ## What this is
 
 A practitioner rebuilt the decision analytics stack that originally supported a

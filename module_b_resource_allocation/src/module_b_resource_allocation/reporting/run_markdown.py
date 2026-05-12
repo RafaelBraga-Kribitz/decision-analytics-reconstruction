@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from module_b_resource_allocation.models.allocation import AllocationResult
 
 
@@ -12,6 +14,7 @@ def render_allocation_run_markdown(
     fx_series_id: str,
     routing_scenario: str,
     sensitivity_run: bool,
+    baseline_comparison: dict[str, Any] | None = None,
 ) -> str:
     diag = result.lp_diagnostics or {}
     dual5 = diag.get("reach_cap_duals_top5") or []
@@ -28,14 +31,39 @@ def render_allocation_run_markdown(
         f"| Persuasion-adjusted contacts | {result.total_persuasion_adjusted_contacts:,.2f} |",
         f"| Sensitivity bundle | `{'yes' if sensitivity_run else 'no'}` |",
         "",
-        "## Budget envelope duals (CBC `pi`)",
-        "",
-        f"- `budget_upper`: {diag.get('budget_upper_pi')}",
-        f"- `budget_lower`: {diag.get('budget_lower_pi')}",
-        "",
-        "## Top reach-cap dual magnitudes",
-        "",
     ]
+    if baseline_comparison:
+        eff = baseline_comparison.get("efficiency_vs_department_uniform_naive") or {}
+        naive = baseline_comparison.get("department_uniform_naive") or {}
+        milp = baseline_comparison.get("milp_optimized") or {}
+        lines.extend(
+            [
+                "## Baseline comparison (business framing)",
+                "",
+                "| Baseline | Linearized persuasion proxy | Spend USD |",
+                "|----------|----------------------------:|----------:|",
+                f"| Department-uniform naive | {naive.get('persuasion_proxy_linearized', '')} | "
+                f"{naive.get('total_usd_spent', '')} |",
+                f"| MILP (this run) | {milp.get('persuasion_proxy_linearized', '')} | "
+                f"{milp.get('total_budget_usd_allocated', '')} |",
+                "",
+                f"- Linearized lift vs department-uniform naive (%): "
+                f"`{eff.get('linearized_lift_pct_milp_vs_naive', '')}`",
+                f"- Unspent under naive (USD): `{eff.get('naive_budget_left_unspent_usd', '')}`",
+                "",
+            ]
+        )
+    lines.extend(
+        [
+            "## Budget envelope duals (CBC `pi`)",
+            "",
+            f"- `budget_upper`: {diag.get('budget_upper_pi')}",
+            f"- `budget_lower`: {diag.get('budget_lower_pi')}",
+            "",
+            "## Top reach-cap dual magnitudes",
+            "",
+        ]
+    )
     if not dual5:
         lines.append("_No cap duals returned (solver may omit shadow prices)._")
     else:

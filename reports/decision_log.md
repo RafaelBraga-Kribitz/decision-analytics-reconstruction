@@ -4,6 +4,18 @@ Records every non-trivial architectural choice: decision, alternatives considere
 
 ---
 
+## 2026-05-12 — Module B CFO baseline comparator (department-uniform naive)
+
+**Decision:** Persist `baseline_comparison` on every allocation run manifest (`run_manifest_<scenario>.json`) computed in `module_b_resource_allocation.reporting.baselines`. The **department-uniform naive** benchmark splits `CAMPAIGN_BUDGET_USD` evenly across all 18 geographic units in `DEPARTMENTS`, then applies uniform cap-limited water-fill within each unit using the **same linearized marginal persuasion-per-USD slopes** as the MILP LP objective (`_linear_cell_specs`). The MILP row reports both that linear projection on solved spends and the sum of **nonlinear** `persuasion_adjusted_contacts` on solver output rows (diminishing-returns reconstruction). Cap-only national water-fill remains as a relaxation transparency row.
+
+**Alternatives considered:** Using cap-water-fill alone as the “business naive” — rejected for narrative mismatch with geographically uniform budgeting in `reports/case_study_business.md`. Encoding full MILP feasibility (bundles, coverage) into naive — deferred to avoid coupling portfolio framing to MILP internals; caveat is spelled out in manifest `definitions`.
+
+**Reason:** CFO-facing business framing needs reproducible naive vs optimized numbers without opening code; deltas must trace to deterministic seeds (`--seed 20180422`) and pinned constants in `module_b_resource_allocation/src/module_b_resource_allocation/constants.py`.
+
+**Source:** Project Action List §1 Business Framing (2026-05-12).
+
+---
+
 ## 2026-05-12 — Verification sweep: Module B routing Makefile, Module C day index, EDA terminology
 
 **Decision:** (1) `module-b-routing` Makefile target now calls `build_cost_matrix` and writes `routing_cost_matrix_<scenario>.csv` because the legacy `routing.heuristic` CLI module was removed and routing matrices are produced alongside allocation. (2) `_build_day_index` indexes `pd.date_range` results with `days[i]` instead of `days.iloc[i]` (DatetimeIndex has no `iloc`). (3) `reports/eda/generate_eda.py` narrative and chart titles avoid banned portfolio tokens checked by `scripts/check_terminology.py` (`voter` / `election_date` as a symbol).

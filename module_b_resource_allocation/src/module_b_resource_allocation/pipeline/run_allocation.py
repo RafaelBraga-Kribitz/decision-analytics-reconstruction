@@ -23,6 +23,7 @@ import logging
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any, cast
 
 import pandas as pd
 
@@ -34,6 +35,7 @@ from module_b_resource_allocation.models.counterfactual import (
     run_broadcast_to_direct,
 )
 from module_b_resource_allocation.models.feature_join import build_allocation_features
+from module_b_resource_allocation.reporting.baselines import build_baseline_comparison_for_run
 from module_b_resource_allocation.reporting.budget_sensitivity import (
     compute_budget_expansion_curve,
 )
@@ -157,6 +159,7 @@ def main(argv: list[str] | None = None) -> int:
         artifacts["reallocation_counterfactuals_parquet"] = str(rc_parquet)
         artifacts["routing_feasible_share"] = str(round(cf.routing_feasible_share, 4))
 
+    baseline_comparison_payload = build_baseline_comparison_for_run(problem, result)
     manifest: dict[str, object] = {
         "run_id": datetime.now(UTC).isoformat(),
         "scenario_id": args.scenario,
@@ -171,6 +174,7 @@ def main(argv: list[str] | None = None) -> int:
         "provenance": "PRIOR",
         "module_b_version": "0.1.0",
         "lp_diagnostics": result.lp_diagnostics,
+        "baseline_comparison": baseline_comparison_payload,
     }
     if args.sensitivity:
         curve = compute_budget_expansion_curve(
@@ -201,6 +205,7 @@ def main(argv: list[str] | None = None) -> int:
                     fx_series_id=args.fx_series,
                     routing_scenario=args.routing_scenario,
                     sensitivity_run=True,
+                    baseline_comparison=cast(dict[str, Any], baseline_comparison_payload),
                 ),
                 encoding="utf-8",
             )

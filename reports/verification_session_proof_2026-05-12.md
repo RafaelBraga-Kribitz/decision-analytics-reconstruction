@@ -41,7 +41,7 @@
 ## Code / config fixes applied this session
 
 - [`Makefile`](Makefile): `module-b-routing` now writes `routing_cost_matrix_<ROUTING_SCENARIO>.csv` via `build_cost_matrix` (removed dead `routing.heuristic` module path).
-- [`module_c_forecasting_scenarios/.../hierarchical.py`](module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/models/tracking/hierarchical.py): `_build_day_index` uses `days[i]` not `days.iloc[i]`.
+- `_build_day_index` (Module C tracking): use `days[i]` not `days.iloc[i]` — [hierarchical.py](module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/models/tracking/hierarchical.py).
 - New test [`test_hierarchical_day_index.py`](module_c_forecasting_scenarios/tests/test_hierarchical_day_index.py).
 - [`reports/eda/generate_eda.py`](reports/eda/generate_eda.py): remove banned tokens for `scripts/check_terminology.py`.
 - [`README.md`](README.md): Module A test count in mermaid 139 → 147.
