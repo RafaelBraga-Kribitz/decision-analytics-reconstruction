@@ -2,6 +2,8 @@
 
 This folder plus `.cursor/rules`, `.cursor/commands`, `.cursor/agents`, and `.cursor/skills` implement the **plan-first, evidence-complete** workflow for the decision-analytics reconstruction project.
 
+**Full controlled workflow (single narrative):** [`CONTROLLED_WORKFLOW_PLAYBOOK.md`](CONTROLLED_WORKFLOW_PLAYBOOK.md) — lifecycle, guardrails, coordination precedence, and appendices (git, CRISP-DM map, optional external tools).
+
 ## Quick start
 
 1. `**/task-intake`** — classify and recommend routing.

@@ -90,6 +90,7 @@ project_scope/
 # Harness docs — keep folder private except operator README pre-public section
 docs/ai_harness/*
 !docs/ai_harness/README.md
+!docs/ai_harness/CONTROLLED_WORKFLOW_PLAYBOOK.md
 
 # ─── Local graph context artifacts ───────────────────────────────────────────
 graphify-out/
