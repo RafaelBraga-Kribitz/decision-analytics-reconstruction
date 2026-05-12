@@ -18,7 +18,7 @@ Records every non-trivial architectural choice: decision, alternatives considere
 
 ## 2026-05-12 — Verification sweep: Module B routing Makefile, Module C day index, EDA terminology
 
-**Decision:** (1) `module-b-routing` Makefile target now calls `build_cost_matrix` and writes `routing_cost_matrix_<scenario>.csv` because the legacy `routing.heuristic` CLI module was removed and routing matrices are produced alongside allocation. (2) `_build_day_index` indexes `pd.date_range` results with `days[i]` instead of `days.iloc[i]` (DatetimeIndex has no `iloc`). (3) `reports/eda/generate_eda.py` narrative and chart titles avoid banned portfolio tokens checked by `scripts/check_terminology.py` (`voter` / `election_date` as a symbol).
+**Decision:** (1) `module-b-routing` Makefile target now calls `build_cost_matrix` and writes `routing_cost_matrix_<scenario>.csv` because the legacy `routing.heuristic` CLI module was removed and routing matrices are produced alongside allocation. (2) `_build_day_index` indexes `pd.date_range` results with `days[i]` instead of `days.iloc[i]` (DatetimeIndex has no `iloc`). (3) `reports/eda/generate_eda.py` narrative and chart titles align with the regex rules in `scripts/check_terminology.py` (open that script for the disallow list).
 
 **Alternatives considered:** Leaving Makefile `module-b-routing` broken — rejected because README and operators still reference it. Pinning MC draws at 200 for local `make module-c-all` with `MC_FAST=1` — accepted as fast default, but EDA contract tests require 10k draws; regenerate MC with `env -u MC_FAST` when refreshing `data/processed/`.
 
