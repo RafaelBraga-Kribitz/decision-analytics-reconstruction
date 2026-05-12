@@ -56,6 +56,17 @@ def resolve_tc_for_week(
     -------
     float
         TC rate in PYG / USD.
+
+    Raises
+    ------
+    KeyError
+        If ``tc_ref`` / ``tc_retail`` columns are missing from ``daily_df``.
+    ValueError
+        If the lock week or requested ``iso_week`` cannot be located.
+
+    Examples
+    --------
+    ``resolve_tc_for_week(daily_df, \"2018-W05\", FxPath.LATE_FLEX)`` in FX QA notebooks.
     """
     col = "tc_ref" if tier == "REF" else "tc_retail"
 

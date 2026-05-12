@@ -73,7 +73,8 @@ def test_module_a_architecture_surface_public_functions_have_google_docstrings()
                 incomplete.append(label)
 
     assert not missing, "Public functions missing docstrings:\n" + "\n".join(missing)
-    assert not incomplete, (
-        "Public functions missing Google sections (Args/Returns/Raises/Example):\n"
-        + "\n".join(incomplete)
+    assert (
+        not incomplete
+    ), "Public functions missing Google sections (Args/Returns/Raises/Example):\n" + "\n".join(
+        incomplete
     )

@@ -61,6 +61,21 @@ def run_allocation(
         Scenario / FX narrative tag (``early_lock``, ``late_flex``, ``baseline``, …).
     fx_series_id:
         FX layer series passed to :func:`build_problem`.
+
+    Returns
+    -------
+    dict
+        Legacy keys ``allocation_df``, ``bundle_active``, ``solver_obj``, and
+        ``solver_status_code`` for notebook compatibility.
+
+    Raises
+    ------
+    ValueError
+        Propagated from :func:`build_problem` when inputs are inconsistent.
+
+    Examples
+    --------
+    ``run_allocation(total_budget_usd=1.5e6, weeks=14)`` in older integration tests.
     """
     scenario_id = _scenario_id_from_fx_path(fx_path)
     problem = build_problem(

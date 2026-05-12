@@ -33,7 +33,20 @@ _APRIL_HI: Final[float] = 5_750.0
 def load_weekly_prior(path: Path | None = None) -> pd.DataFrame:
     """Return a 14-row DataFrame from the weekly prior YAML.
 
-    Columns: ``iso_week``, ``tc_ref``, ``provenance``.
+    Args:
+        path: Optional override for the weekly BCP prior YAML path.
+
+    Returns
+    -------
+    pd.DataFrame
+        Columns ``iso_week``, ``tc_ref``, and ``provenance``.
+
+    Raises:
+        OSError: If ``path`` cannot be read.
+        KeyError: If ``weekly_reference_rate`` is missing from the YAML payload.
+
+    Example:
+        ``load_weekly_prior()`` seeds :func:`build_daily_series`.
     """
     cfg_path = path or _PRIOR_FILE
     with open(cfg_path) as f:
@@ -52,12 +65,26 @@ def load_weekly_prior(path: Path | None = None) -> pd.DataFrame:
 def build_daily_series(path: Path | None = None) -> pd.DataFrame:
     """Build a daily TC_Ref DataFrame for Jan 1 – Apr 30 2018.
 
+    Args:
+        path: Optional override forwarded to :func:`load_weekly_prior`.
+
     Each calendar day in the campaign window gets:
     - ``tc_ref``:  the anchor rate of its ISO week (constant within each week).
     - ``tc_ref_imputed_flag``:  True for weekends (Mon=0 … Sun=6, weekends 5-6).
     - ``provenance``:  passed through from the weekly prior.
 
     The returned DataFrame has columns ``TC_REF_COLUMNS`` and is indexed 0…N-1.
+
+    Returns
+    -------
+    pd.DataFrame
+        Daily rows with ``date``, ``iso_week``, ``tc_ref``, imputation flag, and provenance.
+
+    Raises:
+        OSError: If the weekly prior cannot be read.
+
+    Example:
+        ``build_daily_series()`` feeds :func:`apply_retail_spread` in FX smoke tests.
     """
     weekly = load_weekly_prior(path)
     week_to_rate: dict[str, float] = dict(zip(weekly["iso_week"], weekly["tc_ref"], strict=True))
@@ -94,6 +121,18 @@ def build_daily_series(path: Path | None = None) -> pd.DataFrame:
 
 def validate_daily_series(df: pd.DataFrame) -> None:
     """Raise ValueError if the daily series violates spec hard gates.
+
+    Args:
+        df: Daily frame from :func:`build_daily_series` with ``date`` and ``tc_ref``.
+
+    Returns:
+        ``None`` when validation succeeds.
+
+    Raises:
+        ValueError: If March floor or April band constraints are violated.
+
+    Example:
+        ``validate_daily_series(build_daily_series())`` in CI fixtures.
 
     Gates (plan §4.3 and §7.2):
     - March floor: every row with date.month==3 must have tc_ref >= 5_500.

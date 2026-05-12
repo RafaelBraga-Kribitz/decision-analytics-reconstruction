@@ -47,6 +47,20 @@ def nearest_insertion_tour(
         Mapping ``(u, v) -> distance``.  Self-edges may be omitted.
     seed:
         Random seed; chooses the start node and tie-breaks insertions.
+
+    Returns
+    -------
+    tuple[list[T], float]
+        Closed tour (including return to start) and total edge length.
+
+    Raises
+    ------
+    KeyError
+        If ``dist`` lacks a required directed edge while expanding the tour.
+
+    Examples
+    --------
+    ``nearest_insertion_tour(nodes, dist, seed=42)`` inside routing QA scripts.
     """
     node_list = list(nodes)
     if not node_list:

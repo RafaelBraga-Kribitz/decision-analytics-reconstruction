@@ -64,7 +64,21 @@ def _department_population() -> dict[str, int]:
 
 
 def build_allocation_features() -> pd.DataFrame:
-    """Return the denormalized LP-facing (department, channel) feature frame."""
+    """Return the denormalized LP-facing ``(department, channel)`` feature frame.
+
+    Args:
+        None.
+
+    Returns:
+        DataFrame joining reach caps, district tiers, and diminishing-return knobs.
+
+    Raises:
+        OSError: If required YAML configuration files cannot be read.
+        KeyError: If upstream builders omit expected join keys.
+
+    Example:
+        ``build_allocation_features()`` feeds :func:`build_problem` when reach caps are omitted.
+    """
     caps = build_reach_caps().copy()
     tiers = build_district_tiers().rename(columns={"provenance": "tier_provenance"})
     dr = build_dr_params().rename(

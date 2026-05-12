@@ -21,6 +21,20 @@ def compute_budget_expansion_curve(
 
     Each row includes CBC/PuLP status codes so callers can filter to optimal runs
     when checking monotonicity of the objective in the campaign budget.
+
+    Args:
+        scenario_id: Scenario label forwarded to :func:`build_problem`.
+        fx_series_id: FX calibration series identifier.
+        solver_seed: Deterministic CBC seed reused for each multiple.
+
+    Returns:
+        List of dict rows keyed by budget multiple and solver diagnostics.
+
+    Raises:
+        None: ``RuntimeError`` from :func:`solve` is caught and mapped to infeasible rows.
+
+    Example:
+        Invoked when ``--sensitivity`` is passed to the Module B allocation CLI.
     """
     base = float(CAMPAIGN_BUDGET_USD)
     rows: list[dict[str, Any]] = []

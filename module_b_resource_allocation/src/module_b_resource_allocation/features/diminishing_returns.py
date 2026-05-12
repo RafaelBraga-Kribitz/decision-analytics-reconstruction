@@ -83,11 +83,20 @@ def _build_breakpoints(max_usd: float, k: int = _K_BREAKPOINTS) -> list[float]:
 def build_dr_params() -> pd.DataFrame:
     """Build the 198-row (dept × channel) diminishing-returns parameter table.
 
+    Args:
+        None.
+
     Returns
     -------
     pd.DataFrame
         Columns: department, channel, k_shape, inflection_pct, breakpoints_usd,
         saturation_spend_usd.
+
+    Raises:
+        None: This builder does not raise for canonical configuration inputs.
+
+    Example:
+        Consumed by :func:`build_allocation_features` before MILP assembly.
     """
     # Equal budget weight per department (naive prior — LP will reallocate)
     dept_budget = CAMPAIGN_BUDGET_USD / N_DEPARTMENTS

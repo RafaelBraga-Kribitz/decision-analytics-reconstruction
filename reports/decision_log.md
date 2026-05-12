@@ -4,6 +4,18 @@ Records every non-trivial architectural choice: decision, alternatives considere
 
 ---
 
+## 2026-05-12 — Project Action List §4: Public API docstrings (Google / NumPy sections)
+
+**Decision:** Require Google- or NumPy-style section headers (summary + Args/Parameters + Returns/Yields + Raises + Example/Examples) on every public function/property in Module A and Module B `src/` trees scanned by [`tests/test_architecture_public_google_docstrings_contract.py`](../tests/test_architecture_public_google_docstrings_contract.py). Accept NumPy underline headers (e.g., `Parameters` / `Returns` blocks) in addition to `Args:` / `Returns:`.
+
+**Alternatives considered:** `pydocstyle` / `interrogate` as the gate — deferred; a focused AST regression keeps the dependency surface minimal and encodes the action-list wording precisely.
+
+**Reason:** Closes Project Action List §4 public-docstring row with deterministic, CI-local verification across both allocator and segmentation packages.
+
+**Source:** Project Action List §4 Code quality — public docstrings (2026-05-12).
+
+---
+
 ## 2026-05-12 — Project Action List §4: Pyright basic on Makefile roots
 
 **Decision:** Keep [`pyproject.toml`](../pyproject.toml) `typeCheckingMode = basic` on `module_a_population_segmentation/src` and `module_b_resource_allocation/src` (matches root [`Makefile`](../Makefile) `typecheck`). Add [`tests/test_architecture_pyright_basic_contract.py`](../tests/test_architecture_pyright_basic_contract.py) subprocess guard.

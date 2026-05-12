@@ -53,10 +53,19 @@ _TIER_MAP: Final[dict[str, str]] = {
 def build_district_tiers() -> pd.DataFrame:
     """Return the 18-row district tier table.
 
+    Args:
+        None.
+
     Returns
     -------
     pd.DataFrame
         Columns: department, region, department_tier, provenance.
+
+    Raises:
+        None: This builder does not raise for the bundled tier map.
+
+    Example:
+        Merged inside :func:`build_allocation_features` for tier-aware caps.
     """
     rows = [
         {

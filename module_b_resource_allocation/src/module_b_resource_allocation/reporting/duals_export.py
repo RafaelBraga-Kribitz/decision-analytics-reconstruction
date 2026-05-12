@@ -10,7 +10,22 @@ from module_b_resource_allocation.models.allocation import AllocationResult
 
 
 def write_budget_dual_csv(result: AllocationResult, out_dir: Path, scenario_id: str) -> Path:
-    """Single-row shadow prices on the global budget envelope (upper / lower rows)."""
+    """Persist single-row shadow prices for the global budget envelope.
+
+    Args:
+        result: Solved allocation containing ``lp_diagnostics`` dual entries.
+        out_dir: Directory that will receive ``dual_budget_envelope_<scenario>.csv``.
+        scenario_id: Scenario label embedded in the filename and rows.
+
+    Returns:
+        Path to the written CSV.
+
+    Raises:
+        OSError: If ``out_dir`` cannot be created or the CSV cannot be written.
+
+    Example:
+        ``write_budget_dual_csv(result, out_dir, \"baseline\")`` during sensitivity bundles.
+    """
     out_dir.mkdir(parents=True, exist_ok=True)
     diag = result.lp_diagnostics or {}
     path = out_dir / f"dual_budget_envelope_{scenario_id}.csv"
@@ -33,7 +48,22 @@ def write_budget_dual_csv(result: AllocationResult, out_dir: Path, scenario_id: 
 
 
 def write_reach_cap_duals_csv(result: AllocationResult, out_dir: Path, scenario_id: str) -> Path:
-    """Top reach-cap shadow prices (see SPECIFICATION.md sensitivity outputs)."""
+    """Write the top reach-cap shadow prices returned by CBC.
+
+    Args:
+        result: Solved allocation whose diagnostics include ``reach_cap_duals_top5``.
+        out_dir: Output directory for ``dual_reach_caps_<scenario>.csv``.
+        scenario_id: Scenario label embedded in the filename and rows.
+
+    Returns:
+        Path to the written CSV.
+
+    Raises:
+        OSError: If ``out_dir`` cannot be created or the CSV cannot be written.
+
+    Example:
+        Paired with :func:`write_budget_dual_csv` when ``--sensitivity`` is enabled.
+    """
     out_dir.mkdir(parents=True, exist_ok=True)
     diag = result.lp_diagnostics or {}
     rows = list(diag.get("reach_cap_duals_top5") or [])

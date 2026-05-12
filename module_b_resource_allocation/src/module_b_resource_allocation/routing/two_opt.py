@@ -30,9 +30,19 @@ def two_opt_improve(
 ) -> tuple[list[T], float]:
     """Return a 2-opt-improved tour and its total length.
 
-    Uses first-improvement scanning with an outer pass loop bounded by
-    ``max_passes``.  Each pass is O(n²); for 18-department problems this is
-    trivial.
+    Args:
+        tour: Current Hamiltonian cycle node ordering.
+        dist: Directed edge lengths ``(u, v)``.
+        max_passes: Upper bound on outer improvement sweeps.
+
+    Returns:
+        Tuple ``(improved_tour, length)`` including the closing edge.
+
+    Raises:
+        KeyError: If any referenced edge is missing from ``dist``.
+
+    Example:
+        ``two_opt_improve(tour, dist)`` after :func:`nearest_insertion_tour`.
     """
     if len(tour) < 4:
         return list(tour), _tour_length(tour, dist)

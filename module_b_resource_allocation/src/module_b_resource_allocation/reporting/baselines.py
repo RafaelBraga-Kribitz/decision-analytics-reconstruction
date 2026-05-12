@@ -98,6 +98,18 @@ def linear_cap_waterfill_persuasion(problem: _alloc.AllocationProblem) -> tuple[
     :func:`module_b_resource_allocation.models.allocation.solve` when constructing
     objective terms, but allocates budget by :func:`_water_fill` only against
     per-cell ``max_spend = audience * unit_cost``.
+
+    Args:
+        problem: Frozen allocation inputs describing caps and unit costs.
+
+    Returns:
+        Tuple ``(persuasion_score, total_usd_spent)`` for the relaxed water-fill.
+
+    Raises:
+        None: This helper does not raise beyond empty ``specs`` (returns zeros).
+
+    Example:
+        Called from :func:`build_baseline_comparison_for_run` as the cap-only baseline.
     """
     specs = _linear_cell_specs(problem)
     if not specs:
@@ -122,6 +134,18 @@ def linear_department_uniform_naive_persuasion(
     without solver-driven reallocation. It intentionally **ignores** MILP-only
     feasibility (bundles, coverage floors, pay-TV locks beyond the ineligible
     departments already excluded here).
+
+    Args:
+        problem: Frozen allocation inputs describing caps and unit costs.
+
+    Returns:
+        Tuple ``(persuasion_score, total_usd_spent)`` for the naive policy.
+
+    Raises:
+        None: This helper returns zeros when no feasible specs exist.
+
+    Example:
+        Baseline narrative block inside :func:`build_baseline_comparison_for_run`.
     """
     specs = _linear_cell_specs(problem)
     if not specs:
@@ -151,7 +175,21 @@ def linear_persuasion_from_milp_allocation(
     problem: _alloc.AllocationProblem,
     result: _alloc.AllocationResult,
 ) -> float:
-    """Linearized persuasion proxy Σ (coef * USD) evaluated on a MILP allocation."""
+    """Linearized persuasion proxy Σ (coef * USD) evaluated on a MILP allocation.
+
+    Args:
+        problem: Problem used to rebuild linearized marginal coefficients.
+        result: Solved allocation containing ``budget_allocation_usd`` by cell.
+
+    Returns:
+        Scalar linearized persuasion score matching the MILP slopes.
+
+    Raises:
+        None: Unknown cells are skipped silently.
+
+    Example:
+        ``build_baseline_comparison_for_run`` uses this for apples-to-apples MILP comparisons.
+    """
     lut: dict[tuple[str, str, int], float] = {}
     for d, wi, c, _cap, coef in _linear_cell_specs(problem):
         lut[(d, c, wi)] = coef
@@ -170,7 +208,21 @@ def build_baseline_comparison_for_run(
     problem: _alloc.AllocationProblem,
     result: _alloc.AllocationResult,
 ) -> dict[str, Any]:
-    """Structured baseline rows for manifests and portfolio CFO narratives."""
+    """Structured baseline rows for manifests and portfolio CFO narratives.
+
+    Args:
+        problem: Allocation inputs shared across naive and MILP comparisons.
+        result: Solved MILP output used for optimized rows.
+
+    Returns:
+        JSON-serializable dict with definitions and numeric comparisons.
+
+    Raises:
+        None: Assumes ``problem`` and ``result`` are internally consistent.
+
+    Example:
+        Attached to ``run_manifest_<scenario>.json`` by the Module B CLI.
+    """
 
     dept_p, dept_usd = linear_department_uniform_naive_persuasion(problem)
     wf_p, wf_usd = linear_cap_waterfill_persuasion(problem)
@@ -235,7 +287,21 @@ def build_baseline_comparison_for_run(
 
 
 def cap_waterfill_vs_optimized_ratio(problem: _alloc.AllocationProblem) -> dict[str, Any]:
-    """Portfolio helper: water-fill vs MILP optimized totals (numeric transparency)."""
+    """Portfolio helper: water-fill vs MILP optimized totals (numeric transparency).
+
+    Args:
+        problem: Allocation inputs used to re-solve both relaxed and MILP paths.
+
+    Returns:
+        Dict summarizing persuasion scores and their ratio.
+
+    Raises:
+        RuntimeError: Propagated if the MILP solver
+        :func:`~module_b_resource_allocation.models.allocation.solve` fails.
+
+    Example:
+        ``cap_waterfill_vs_optimized_ratio(problem)`` in investor-facing QA notebooks.
+    """
     wf_p, wf_usd = linear_cap_waterfill_persuasion(problem)
     opt = _alloc.solve(problem)
     opt_p = opt.total_persuasion_adjusted_contacts

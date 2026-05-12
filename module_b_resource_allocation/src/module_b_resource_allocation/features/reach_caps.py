@@ -130,12 +130,21 @@ _PROVENANCE: dict[str, str] = {
 def build_reach_caps() -> pd.DataFrame:
     """Build the 198-row reach caps table (18 departments × 11 channels).
 
+    Args:
+        None.
+
     Returns
     -------
     pd.DataFrame
         Columns: department, channel, region, reach_cap_share,
         pay_tv_eligible, salience_multiplier, attention_multiplier,
         network_hostility, provenance.
+
+    Raises:
+        None: This builder does not raise for canonical channel metadata.
+
+    Example:
+        First join target inside :func:`build_allocation_features`.
     """
     rows = []
     for dept in DEPARTMENTS:

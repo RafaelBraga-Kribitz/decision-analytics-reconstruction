@@ -17,7 +17,22 @@ def compute_scenario_benchmark_rows(
     solver_seed: int,
     scenario_ids: tuple[str, ...] = ("baseline", "early_lock", "late_flex"),
 ) -> list[dict[str, Any]]:
-    """One solve per scenario; return comparable objective and budget rows."""
+    """Run one solve per scenario and return comparable summary rows.
+
+    Args:
+        fx_series_id: FX calibration series forwarded to each :func:`build_problem` call.
+        solver_seed: Shared deterministic seed across scenarios.
+        scenario_ids: Iterable of scenario labels (unknown ids are skipped).
+
+    Returns:
+        List of dict rows with objective totals and solver metadata.
+
+    Raises:
+        None: Invalid scenario ids are skipped quietly.
+
+    Example:
+        ``compute_scenario_benchmark_rows(fx_series_id=\"series_b_weekly\", solver_seed=42)``.
+    """
     rows: list[dict[str, Any]] = []
     for sid in scenario_ids:
         if sid not in VALID_SCENARIOS:
@@ -44,7 +59,22 @@ def compute_scenario_benchmark_rows(
 
 
 def write_scenario_benchmark_csv(path: str | Path, **kwargs: Any) -> Path:
-    """Write CSV; path may be str or Path."""
+    """Write the scenario benchmark table to ``path``.
+
+    Args:
+        path: Destination CSV (``str`` or ``Path``).
+        **kwargs: Forwarded to :func:`compute_scenario_benchmark_rows`.
+
+    Returns:
+        Resolved ``Path`` after writing.
+
+    Raises:
+        OSError: If parent directories cannot be created or the CSV cannot be written.
+
+    Example:
+        Call with a path string and keyword overrides, for example
+        ``fx_series_id="series_b_weekly"`` and ``solver_seed=1``.
+    """
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
     rows = compute_scenario_benchmark_rows(**kwargs)

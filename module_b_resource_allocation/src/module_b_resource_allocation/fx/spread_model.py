@@ -23,7 +23,21 @@ DEFAULT_SPREAD_PYG_PER_USD: Final[float] = 50.0
 
 
 def load_spread_config(path: Path | None = None) -> dict:
-    """Load the retail spread YAML config."""
+    """Load the retail spread YAML used by :func:`apply_retail_spread`.
+
+    Args:
+        path: Optional override for the spread prior file location.
+
+    Returns:
+        Parsed YAML dict (for example containing ``series_b_weekly``).
+
+    Raises:
+        OSError: If the YAML file cannot be read.
+        yaml.YAMLError: If the file contents are not valid YAML.
+
+    Example:
+        ``load_spread_config()`` before building the daily retail curve.
+    """
     cfg_path = path or _SPREAD_FILE
     with open(cfg_path) as f:
         return yaml.safe_load(f)
@@ -58,6 +72,16 @@ def apply_retail_spread(
     -------
     pd.DataFrame
         Input DataFrame with an added ``tc_retail`` column.
+
+    Raises
+    ------
+    KeyError
+        If ``daily_df`` lacks ``date``, ``iso_week``, or ``tc_ref`` columns.
+
+    Examples
+    --------
+    ``apply_retail_spread(build_daily_series(), load_spread_config())`` as used in the module
+    docstring smoke test.
     """
     df = daily_df.copy()
     if spread_cfg is None:

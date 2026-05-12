@@ -2,10 +2,6 @@
 
 Mirrors ``Project_Action_list.md`` Section 4 (code quality): description plus
 ``Args``/``Parameters``, ``Returns``, ``Raises``, and ``Example``/``Examples``.
-
-The pytest asserts a **non-increasing** violation count (ratchet baseline); the
-Module A architecture surface is additionally locked by
-``tests/test_docstrings_module_a_architecture_surface.py``.
 """
 
 from __future__ import annotations
@@ -56,7 +52,7 @@ def _google_or_numpy_doc_complete(doc: str | None) -> bool:
 
 
 def _iter_violations() -> list[tuple[str, int, str, str]]:
-    """Yield ``(relative_path, lineno, qual_name, reason)`` for each violation."""
+    """Return ``(relative_path, lineno, qual_name, reason)`` for each violation."""
     violations: list[tuple[str, int, str, str]] = []
 
     def walk_file(path: Path) -> None:
@@ -134,17 +130,13 @@ def _iter_violations() -> list[tuple[str, int, str, str]]:
     return violations
 
 
-_DOCSTRING_VIOLATION_BASELINE = 61  # Ratchet: lower in same commit as docstring fixes (target: 0).
-
-
-def test_public_functions_docstring_sections_do_not_regress() -> None:
+def test_public_functions_have_google_or_numpy_docstring_sections() -> None:
     violations = _iter_violations()
-    if len(violations) > _DOCSTRING_VIOLATION_BASELINE:
+    if violations:
         sample = "\n".join(f"  {v[0]}:{v[1]} {v[2]} ({v[3]})" for v in violations[:30])
         extra = "" if len(violations) <= 30 else f"\n  ... and {len(violations) - 30} more"
         msg = (
-            f"Docstring violations {len(violations)} exceed baseline "
-            f"{_DOCSTRING_VIOLATION_BASELINE}. Fix docstrings or (if intentional) update "
-            f"the baseline in the same change.\n{sample}{extra}"
+            f"{len(violations)} public API items lack required docstring sections:\n"
+            f"{sample}{extra}"
         )
         raise AssertionError(msg)

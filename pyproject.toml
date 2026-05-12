@@ -59,6 +59,8 @@ build-backend = "poetry.core.masonry.api"
 [tool.black]
 line-length = 100
 target-version = ["py311"]
+# Match Ruff: do not invoke notebook formatting without ``black[jupyter]`` (CI / minimal env).
+extend-exclude = "\\.ipynb$|/graphify-out/|/module_a_population_segmentation/notebooks/|/reports/"
 
 [tool.ruff]
 line-length = 100

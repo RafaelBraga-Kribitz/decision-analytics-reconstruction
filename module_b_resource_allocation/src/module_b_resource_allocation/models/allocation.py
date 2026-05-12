@@ -106,10 +106,38 @@ class AllocationResult:
 
     @property
     def total_budget_usd(self) -> float:
+        """Aggregate allocated USD across the MILP decision table.
+
+        Args:
+            None.
+
+        Returns:
+            Sum of ``budget_allocation_usd`` in ``allocation``.
+
+        Raises:
+            KeyError: If ``budget_allocation_usd`` is missing from ``allocation``.
+
+        Example:
+            ``result.total_budget_usd`` when comparing scenarios in reports.
+        """
         return float(self.allocation["budget_allocation_usd"].sum())
 
     @property
     def total_persuasion_adjusted_contacts(self) -> float:
+        """Aggregate persuasion-adjusted contacts implied by the allocation.
+
+        Args:
+            None.
+
+        Returns:
+            Sum of ``persuasion_adjusted_contacts`` in ``allocation``.
+
+        Raises:
+            KeyError: If ``persuasion_adjusted_contacts`` is missing.
+
+        Example:
+            ``result.total_persuasion_adjusted_contacts`` in baseline dashboards.
+        """
         return float(self.allocation["persuasion_adjusted_contacts"].sum())
 
 
@@ -127,6 +155,27 @@ def build_problem(
     budget_tolerance: float = CAMPAIGN_BUDGET_TOLERANCE,
     solver_seed: int = 20180422,
 ) -> AllocationProblem:
+    """Assemble frozen inputs for the Module B MILP without global side effects.
+
+    Args:
+        scenario_id: Scenario label validated against ``VALID_SCENARIOS``.
+        fx_series_id: FX calibration series passed to :func:`load_fx_layer`.
+        reach_caps: Optional pre-built reach caps; defaults to
+            :func:`build_allocation_features`.
+        budget_usd: Total spend envelope before tolerance bands.
+        budget_tolerance: Fractional slack applied to ``budget_usd``.
+        solver_seed: Deterministic CBC seed stored on the problem.
+
+    Returns:
+        :class:`AllocationProblem` ready for :func:`solve`.
+
+    Raises:
+        ValueError: If ``scenario_id`` is unknown.
+
+    Example:
+        ``build_problem(scenario_id=\"baseline\", solver_seed=20180422)`` mirrors the
+        FastAPI ``GET /allocation/baseline`` path.
+    """
     if scenario_id not in VALID_SCENARIOS:
         raise ValueError(f"Unknown scenario_id {scenario_id!r}")
     return AllocationProblem(
@@ -159,6 +208,21 @@ def _tier_penalty(tier: str) -> float:
 
 
 def solve(problem: AllocationProblem) -> AllocationResult:
+    """Construct the PuLP model for ``problem`` and return the solved allocation.
+
+    Args:
+        problem: Immutable problem bundle from :func:`build_problem`.
+
+    Returns:
+        :class:`AllocationResult` with ``allocation`` plus solver diagnostics.
+
+    Raises:
+        RuntimeError: If CBC reports an infeasible or error status (via PuLP).
+
+    Example:
+        ``solve(build_problem(scenario_id=\"baseline\"))`` is the core API call
+        for both CLI and HTTP surfaces.
+    """
     layer = problem.fx_layer
     caps_lookup = problem.reach_caps.set_index(["department", "channel"], drop=False)
 

@@ -140,6 +140,24 @@ def _pick(items: Iterable, rng: np.random.Generator):
 
 
 def generate_budget_lines(cfg: DirtyGenConfig, out_path: Path, rng: np.random.Generator) -> Path:
+    """Synthesize a noisy ``budget_lines_raw.csv`` fixture for cleaner tests.
+
+    Args:
+        cfg: Row counts, corruption rates, and RNG controls.
+        out_path: Destination CSV path (parent directories must exist or be created by caller).
+        rng: Seeded NumPy generator for deterministic dirty data.
+
+    Returns:
+        ``out_path`` after the CSV is written.
+
+    Raises:
+        OSError: If ``out_path`` cannot be opened for writing.
+
+    Example:
+        From ``generate_all``::
+
+            generate_budget_lines(cfg, out_dir / "budget_lines_raw.csv", rng)
+    """
     channel_alias_keys = list(CHANNEL_ALIASES.keys())
     dept_alias_keys = list(DEPARTMENT_ALIASES.keys())
     currency_pairs = [
@@ -205,6 +223,22 @@ def generate_budget_lines(cfg: DirtyGenConfig, out_path: Path, rng: np.random.Ge
 
 
 def generate_volunteer_logs(cfg: DirtyGenConfig, out_path: Path, rng: np.random.Generator) -> Path:
+    """Synthesize ``volunteer_logs_raw.csv`` with field-noise and locale quirks.
+
+    Args:
+        cfg: Row counts and corruption knobs.
+        out_path: Destination CSV path.
+        rng: Seeded NumPy generator.
+
+    Returns:
+        ``out_path`` after writing.
+
+    Raises:
+        OSError: If ``out_path`` cannot be written.
+
+    Example:
+        ``generate_volunteer_logs(cfg, out_dir / \"volunteer_logs_raw.csv\", rng)``.
+    """
     dept_alias_keys = list(DEPARTMENT_ALIASES.keys())
     canvas_channels = ("Puerta a puerta", "Canvas", "Door-to-door", "Mitin", "Auto parlante")
 
@@ -240,6 +274,22 @@ def generate_volunteer_logs(cfg: DirtyGenConfig, out_path: Path, rng: np.random.
 
 
 def generate_media_buy_sheet(cfg: DirtyGenConfig, out_path: Path, rng: np.random.Generator) -> Path:
+    """Synthesize ``media_buy_sheet_raw.csv`` with mixed currencies and aliases.
+
+    Args:
+        cfg: Row counts and corruption knobs.
+        out_path: Destination CSV path.
+        rng: Seeded NumPy generator.
+
+    Returns:
+        ``out_path`` after writing.
+
+    Raises:
+        OSError: If ``out_path`` cannot be written.
+
+    Example:
+        ``generate_media_buy_sheet(cfg, out_dir / \"media_buy_sheet_raw.csv\", rng)``.
+    """
     dept_alias_keys = list(DEPARTMENT_ALIASES.keys())
     broadcast_channels = ("TV Spot", "FTA TV", "Radio", "Cuña Radio", "Vallas", "FB Ads")
 
@@ -279,6 +329,21 @@ def generate_media_buy_sheet(cfg: DirtyGenConfig, out_path: Path, rng: np.random
 
 
 def generate_all(cfg: DirtyGenConfig, out_dir: Path) -> dict[str, Path]:
+    """Generate the full trio of dirty CSV fixtures under ``out_dir``.
+
+    Args:
+        cfg: Shared configuration for row counts and corruption rates.
+        out_dir: Output directory (created if missing).
+
+    Returns:
+        Dict mapping logical names to written CSV paths.
+
+    Raises:
+        OSError: If any CSV cannot be written.
+
+    Example:
+        ``generate_all(cfg, Path(\"data/raw/module_b_synth\"))`` before cleaner tests.
+    """
     out_dir.mkdir(parents=True, exist_ok=True)
     rng = np.random.default_rng(cfg.seed)
     return {

@@ -86,6 +86,20 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Execute the Module B allocation CLI and write artifacts to ``--out-dir``.
+
+    Args:
+        argv: Optional argument vector (defaults to ``sys.argv`` when ``None``).
+
+    Returns:
+        Process exit code (``0`` success, non-zero for solver/IO failures).
+
+    Raises:
+        None: Errors are returned as integer exit codes, not raised exceptions.
+
+    Example:
+        ``python -m module_b_resource_allocation.pipeline.run_allocation --help``
+    """
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     args = _parse_args(argv)
     args.out_dir.mkdir(parents=True, exist_ok=True)

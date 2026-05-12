@@ -86,6 +86,24 @@ def run_broadcast_to_direct(
     saturation_pct:
         Hard cap on per-week reach utilization for the receiving direct
         channels.
+
+    Returns
+    -------
+    CounterfactualResult
+        Bundles counterfactual and baseline allocations, ``deltas``, and
+        routing feasibility diagnostics.
+
+    Raises
+    ------
+    ValueError
+        If ``shift_share`` or ``saturation_pct`` are outside their valid ranges.
+    TypeError
+        If grouped keys are not 2-tuples as expected.
+
+    Examples
+    --------
+    ``run_broadcast_to_direct(baseline, routing_cost, shift_share=0.25)`` for
+    what-if reporting.
     """
     if not 0.0 <= shift_share <= 1.0:
         raise ValueError("shift_share must be in [0, 1]")
@@ -228,7 +246,20 @@ def run_broadcast_to_direct(
 
 
 def build_reallocation_counterfactuals_table(result: CounterfactualResult) -> pd.DataFrame:
-    """Wide table for ``reallocation_counterfactuals.parquet`` / schema contract."""
+    """Materialize a wide counterfactual table for parquet export.
+
+    Args:
+        result: Output bundle from :func:`run_broadcast_to_direct`.
+
+    Returns:
+        DataFrame aligned with ``reallocation_counterfactuals`` schema contracts.
+
+    Raises:
+        KeyError: If expected delta columns are absent on ``result.deltas``.
+
+    Example:
+        ``build_reallocation_counterfactuals_table(result).to_parquet(path)`` in reporting jobs.
+    """
     out = result.deltas.copy()
     out["scenario_id"] = SCENARIO_BROADCAST_TO_DIRECT
     out["delta_contacts"] = (

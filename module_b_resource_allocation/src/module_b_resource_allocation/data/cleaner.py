@@ -152,6 +152,21 @@ class MediaBuySheetFrame:
 
 
 def clean_budget_lines(raw: pd.DataFrame) -> BudgetLineFrame:
+    """Normalize dirty budget line CSV rows to the solver contract schema.
+
+    Args:
+        raw: Vendor extract containing ``channel_text``, ``department_text``,
+            ``week_label``, ``currency``, ``amount_text``, and ``fx_tier_hint``.
+
+    Returns:
+        ``BudgetLineFrame`` wrapping sorted, deduplicated clean rows.
+
+    Raises:
+        KeyError: If ``raw`` lacks any required input column.
+
+    Example:
+        ``clean_budget_lines(pd.read_csv(in_dir / \"budget_lines_raw.csv\"))`` in QA notebooks.
+    """
     required = {
         "row_id",
         "channel_text",
@@ -202,6 +217,20 @@ def clean_budget_lines(raw: pd.DataFrame) -> BudgetLineFrame:
 
 
 def clean_volunteer_logs(raw: pd.DataFrame) -> VolunteerLogFrame:
+    """Normalize volunteer log extracts to the structured contract schema.
+
+    Args:
+        raw: Field-ops extract with contacts, hours, and PYG cost text columns.
+
+    Returns:
+        ``VolunteerLogFrame`` wrapping sorted, deduplicated clean rows.
+
+    Raises:
+        KeyError: If ``raw`` lacks any required input column.
+
+    Example:
+        ``clean_volunteer_logs(pd.read_csv(in_dir / \"volunteer_logs_raw.csv\"))``.
+    """
     required = {
         "row_id",
         "channel_text",
@@ -253,6 +282,20 @@ def clean_volunteer_logs(raw: pd.DataFrame) -> VolunteerLogFrame:
 
 
 def clean_media_buy_sheet(raw: pd.DataFrame) -> MediaBuySheetFrame:
+    """Normalize paid media buy rows (impressions + spend) for downstream joins.
+
+    Args:
+        raw: Media agency sheet with impressions and mixed-currency amounts.
+
+    Returns:
+        ``MediaBuySheetFrame`` wrapping sorted, deduplicated clean rows.
+
+    Raises:
+        KeyError: If ``raw`` lacks any required input column.
+
+    Example:
+        ``clean_media_buy_sheet(pd.read_csv(in_dir / \"media_buy_sheet_raw.csv\"))``.
+    """
     required = {
         "row_id",
         "channel_text",
@@ -307,7 +350,22 @@ def clean_media_buy_sheet(raw: pd.DataFrame) -> MediaBuySheetFrame:
 
 
 def clean_directory(in_dir: Path) -> dict[str, pd.DataFrame]:
-    """Convenience: read the three raw CSVs and return cleaned frames keyed by name."""
+    """Read the three raw CSV fixtures from ``in_dir`` and return cleaned frames.
+
+    Args:
+        in_dir: Directory containing ``budget_lines_raw.csv``,
+            ``volunteer_logs_raw.csv``, and ``media_buy_sheet_raw.csv``.
+
+    Returns:
+        Dict mapping logical artifact names to cleaned pandas frames.
+
+    Raises:
+        FileNotFoundError: If expected CSVs are absent from ``in_dir``.
+        KeyError: Propagated from the cleaners when raw columns are missing.
+
+    Example:
+        ``clean_directory(Path(\"data/raw/module_b\"))`` in integration tests.
+    """
     budget = clean_budget_lines(pd.read_csv(in_dir / "budget_lines_raw.csv"))
     volunteer = clean_volunteer_logs(pd.read_csv(in_dir / "volunteer_logs_raw.csv"))
     media = clean_media_buy_sheet(pd.read_csv(in_dir / "media_buy_sheet_raw.csv"))

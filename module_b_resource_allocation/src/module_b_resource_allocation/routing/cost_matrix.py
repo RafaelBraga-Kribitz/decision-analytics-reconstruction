@@ -137,6 +137,21 @@ def _time_multiplier(surface_class: str, scenario: str) -> float:
 
 
 def build_cost_matrix(scenario: str = "dry_standard", seed: int = 42) -> pd.DataFrame:
+    """Build the directed routing cost matrix for ``scenario``.
+
+    Args:
+        scenario: Routing scenario label (see module-local ``_SCENARIOS``).
+        seed: RNG seed controlling stochastic surface mixes.
+
+    Returns:
+        Edge list with travel times, weather failure probabilities, and feasibility flags.
+
+    Raises:
+        ValueError: If ``scenario`` is not a supported routing label.
+
+    Example:
+        ``build_cost_matrix(\"dry_standard\", seed=42)`` feeds counterfactual routing checks.
+    """
     if scenario not in _SCENARIOS:
         raise ValueError(f"Unknown routing scenario {scenario!r}; valid: {sorted(_SCENARIOS)}")
     rng = random.Random(seed)

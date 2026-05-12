@@ -16,6 +16,25 @@ def render_allocation_run_markdown(
     sensitivity_run: bool,
     baseline_comparison: dict[str, Any] | None = None,
 ) -> str:
+    """Render a Markdown evidence bundle for a single allocation solve.
+
+    Args:
+        result: Solved allocation including diagnostics used in tables.
+        scenario_id: Scenario label for the title block.
+        fx_series_id: FX series label displayed in the header table.
+        routing_scenario: Routing scenario label for context.
+        sensitivity_run: Whether dual/sensitivity artifacts were collected.
+        baseline_comparison: Optional payload from :func:`build_baseline_comparison_for_run`.
+
+    Returns:
+        Multi-line Markdown string suitable for version control or email.
+
+    Raises:
+        None: Assumes ``result`` fields referenced in the template exist.
+
+    Example:
+        Written beside CSV artifacts when operators request narrative output.
+    """
     diag = result.lp_diagnostics or {}
     dual5 = diag.get("reach_cap_duals_top5") or []
     lines = [

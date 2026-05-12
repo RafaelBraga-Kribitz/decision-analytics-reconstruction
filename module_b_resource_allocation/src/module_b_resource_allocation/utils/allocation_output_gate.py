@@ -17,7 +17,20 @@ _SOLVER_OK: Final[tuple[str, ...]] = ("OPTIMAL", "FEASIBLE")
 
 
 def validate_allocation_output_df(df: pd.DataFrame) -> None:
-    """Raise ``ValueError`` if the frame violates core allocation_output gates."""
+    """Validate ``df`` against the ``allocation_output`` schema contract.
+
+    Args:
+        df: Post-solve allocation table emitted by :func:`solve`.
+
+    Returns:
+        ``None`` when all gates pass.
+
+    Raises:
+        ValueError: If row counts, keys, statuses, or canonical labels are invalid.
+
+    Example:
+        ``validate_allocation_output_df(result.allocation)`` at the end of the CLI pipeline.
+    """
     errors: list[str] = []
     if len(df) != ALLOCATION_ROWS:
         errors.append(f"row_count: expected {ALLOCATION_ROWS}, got {len(df)}")
