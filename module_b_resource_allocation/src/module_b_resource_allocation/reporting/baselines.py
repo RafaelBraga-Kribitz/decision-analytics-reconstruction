@@ -77,7 +77,8 @@ def linear_cap_waterfill_persuasion(problem: _alloc.AllocationProblem) -> tuple[
                 contacts_per_unit_below = 1.0 / uc_usd
                 contacts_per_unit_above = avg_residual / uc_usd
                 contacts_per_unit_eff = (
-                    inflection * contacts_per_unit_below + (1.0 - inflection) * contacts_per_unit_above
+                    inflection * contacts_per_unit_below
+                    + (1.0 - inflection) * contacts_per_unit_above
                 )
                 scenario_w = _alloc._scenario_week_weight(problem.scenario_id, wi)
                 tier_w = _alloc._tier_penalty(tier)
@@ -90,7 +91,7 @@ def linear_cap_waterfill_persuasion(problem: _alloc.AllocationProblem) -> tuple[
     if not caps_list:
         return 0.0, 0.0
     spend = _water_fill(caps_list, problem.budget_usd)
-    persuasion = sum(c * s for c, s in zip(coef_list, spend))
+    persuasion = sum(c * s for c, s in zip(coef_list, spend, strict=True))
     return float(persuasion), float(sum(spend))
 
 

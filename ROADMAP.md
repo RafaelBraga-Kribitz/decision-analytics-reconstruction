@@ -112,6 +112,9 @@ This section aligns the **original portfolio audit** with what the repository ac
 - **Module B CI + reporting:** `module_b_resource_allocation.reporting` (budget expansion curve, dual CSVs, scenario benchmark, run Markdown) with `--sensitivity` CLI bundle; dedicated CI job `module-b`.
 - **Portfolio evidence docs:** `reports/epistemic_boundaries.md`, `reports/system_walkthrough.md`, `reports/module_b_optimization_formulation.md`, `reports/module_c_forecast_validation.md`, `reports/cluster_validation.md`, `reports/data_lineage.md`, `reports/integration_audit_2026-05-12.md`, `reports/qa_gatekeeper_verdict_portfolio_360_2026-05-12.md`.
 - **Hygiene scripts:** `scripts/portfolio_verify.py`, `scripts/check_terminology.py`, `make portfolio-verify`, `make validate`, `.pre-commit-config.yaml`.
+- **Baseline narrative (Module B):** `module_b_resource_allocation.reporting.baselines` (cap-only water-fill vs MILP totals for transparency) + `test_baselines.py`.
+- **Fixture E2E smoke:** `make e2e-smoke` runs `tests/test_portfolio_e2e_smoke.py` (Module A schema import, B solve + handshake row, C fixture CSV).
+- **Task verify packet:** `reports/task_verify_portfolio_360_2026-05-12.md` (command/evidence table for this audit).
 - **Module A metrics:** Davies–Bouldin + Calinski–Harasz + PSI helpers with tests.
 - **Contracts:** Pydantic `AllocationHandshakeRow` + round-trip test.
 - **Module B specification:** `module_b_resource_allocation/SPECIFICATION.md`.

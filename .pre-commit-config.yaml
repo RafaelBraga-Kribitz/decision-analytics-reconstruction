@@ -11,7 +11,7 @@ repos:
     rev: v0.8.4
     hooks:
       - id: ruff
-        args: ["check", "--fix", "--exit-non-zero-on-fix"]
+        args: ["--fix", "--exit-non-zero-on-fix"]
         files: ^(module_a_population_segmentation|module_b_resource_allocation|module_c_forecasting_scenarios|tests|scripts)/.*\.py$
 
   - repo: https://github.com/kynan/nbstripout
@@ -27,4 +27,10 @@ repos:
         entry: poetry run pyright
         language: system
         types: [python]
+        pass_filenames: false
+
+      - id: portfolio-e2e-smoke
+        name: portfolio e2e smoke (fixtures)
+        entry: poetry run pytest tests/test_portfolio_e2e_smoke.py -q --tb=line
+        language: system
         pass_filenames: false

@@ -12,9 +12,9 @@ import pandas as pd
 import pytest
 
 # ── Paths ────────────────────────────────────────────────────────────────────
-ROOT    = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[1]
 EDA_DIR = ROOT / "reports" / "eda"
-DATA    = ROOT / "data" / "processed"
+DATA = ROOT / "data" / "processed"
 
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -70,13 +70,14 @@ SYNTHESIS_CHARTS = [
 
 ALL_CHARTS = MODULE_A_CHARTS + MODULE_B_CHARTS + MODULE_C_CHARTS + SYNTHESIS_CHARTS
 
-MIN_PNG_SIZE_BYTES  = 10_000   # 10 KB
-MIN_REPORT_CHARS    = 5_000
+MIN_PNG_SIZE_BYTES = 10_000  # 10 KB
+MIN_REPORT_CHARS = 5_000
 
 
 # ════════════════════════════════════════════════════════════════════════════
 # PNG FILE EXISTENCE AND SIZE TESTS
 # ════════════════════════════════════════════════════════════════════════════
+
 
 @pytest.mark.parametrize("fname", ALL_CHARTS)
 def test_png_exists(fname):
@@ -92,9 +93,9 @@ def test_png_minimum_size(fname):
     if not path.exists():
         pytest.skip(f"File not found, skipped size check: {fname}")
     size = path.stat().st_size
-    assert size >= MIN_PNG_SIZE_BYTES, (
-        f"{fname} is only {size} bytes — likely a blank/corrupt image"
-    )
+    assert (
+        size >= MIN_PNG_SIZE_BYTES
+    ), f"{fname} is only {size} bytes — likely a blank/corrupt image"
 
 
 @pytest.mark.parametrize("fname", ALL_CHARTS)
@@ -105,14 +106,13 @@ def test_png_valid_header(fname):
         pytest.skip(f"File not found, skipped header check: {fname}")
     with open(path, "rb") as fh:
         header = fh.read(4)
-    assert header == b"\x89PNG", (
-        f"{fname} does not have a valid PNG header: {header!r}"
-    )
+    assert header == b"\x89PNG", f"{fname} does not have a valid PNG header: {header!r}"
 
 
 # ════════════════════════════════════════════════════════════════════════════
 # REPORT FILE TESTS
 # ════════════════════════════════════════════════════════════════════════════
+
 
 def test_eda_report_exists():
     """eda_report.md must exist."""
@@ -125,9 +125,9 @@ def test_eda_report_minimum_length():
     if not path.exists():
         pytest.skip("eda_report.md not found")
     text = path.read_text(encoding="utf-8")
-    assert len(text) >= MIN_REPORT_CHARS, (
-        f"eda_report.md is only {len(text)} chars — expected >= {MIN_REPORT_CHARS}"
-    )
+    assert (
+        len(text) >= MIN_REPORT_CHARS
+    ), f"eda_report.md is only {len(text)} chars — expected >= {MIN_REPORT_CHARS}"
 
 
 def test_eda_report_required_sections():
@@ -163,9 +163,7 @@ def test_strategic_brief_minimum_length():
         pytest.skip("strategic_brief.md not found")
     text = path.read_text(encoding="utf-8")
     word_count = len(text.split())
-    assert word_count >= 600, (
-        f"strategic_brief.md has only {word_count} words — expected >= 600"
-    )
+    assert word_count >= 600, f"strategic_brief.md has only {word_count} words — expected >= 600"
 
 
 def test_generate_script_exists():
@@ -176,6 +174,7 @@ def test_generate_script_exists():
 # ════════════════════════════════════════════════════════════════════════════
 # INPUT DATA LOADING TESTS
 # ════════════════════════════════════════════════════════════════════════════
+
 
 def test_load_population_master():
     """population_master_clean.parquet loads without error and has expected shape."""
@@ -252,13 +251,17 @@ def test_load_routing_cost_matrix():
 
 def test_load_daily_posterior_forecast():
     """daily_posterior_forecast.parquet loads without error and has 142 rows."""
-    df = pd.read_parquet(DATA / "module_c" / "run_all" / "tracking" / "daily_posterior_forecast.parquet")
+    df = pd.read_parquet(
+        DATA / "module_c" / "run_all" / "tracking" / "daily_posterior_forecast.parquet"
+    )
     assert len(df) == 142, f"Expected 142 rows, got {len(df)}"
 
 
 def test_load_posterior_house_effects():
     """posterior_house_effects.parquet loads without error."""
-    df = pd.read_parquet(DATA / "module_c" / "run_all" / "tracking" / "posterior_house_effects.parquet")
+    df = pd.read_parquet(
+        DATA / "module_c" / "run_all" / "tracking" / "posterior_house_effects.parquet"
+    )
     assert len(df) > 0
 
 
@@ -276,7 +279,13 @@ def test_load_house_effect_seed_matrix():
 
 def test_load_battleground():
     """battleground_department_probability.parquet loads without error."""
-    df = pd.read_parquet(DATA / "module_c" / "run_all" / "battleground" / "battleground_department_probability.parquet")
+    df = pd.read_parquet(
+        DATA
+        / "module_c"
+        / "run_all"
+        / "battleground"
+        / "battleground_department_probability.parquet"
+    )
     assert len(df) > 0
     assert "win_probability_a" in df.columns
 
@@ -296,6 +305,7 @@ def test_load_monte_carlo_draws():
 # ════════════════════════════════════════════════════════════════════════════
 # DATA INVARIANT TESTS
 # ════════════════════════════════════════════════════════════════════════════
+
 
 def test_no_duplicate_entity_ids():
     """population_master must have no duplicate entity_ids."""
@@ -324,21 +334,27 @@ def test_segment_id_coverage_matches_labels():
     """Every entity_id in segment_labels must appear in population_master and vice versa."""
     pop = pd.read_parquet(DATA / "population_master_clean.parquet")
     segs = pd.read_parquet(DATA / "segment_labels.parquet")
-    pop_ids  = set(pop["entity_id"].values)
+    pop_ids = set(pop["entity_id"].values)
     segs_ids = set(segs["entity_id"].values)
-    missing_in_pop  = segs_ids - pop_ids
+    missing_in_pop = segs_ids - pop_ids
     missing_in_segs = pop_ids - segs_ids
-    assert len(missing_in_pop) == 0, (
-        f"{len(missing_in_pop)} entity_ids in segment_labels missing from population_master"
-    )
-    assert len(missing_in_segs) == 0, (
-        f"{len(missing_in_segs)} entity_ids in population_master missing from segment_labels"
-    )
+    assert (
+        len(missing_in_pop) == 0
+    ), f"{len(missing_in_pop)} entity_ids in segment_labels missing from population_master"
+    assert (
+        len(missing_in_segs) == 0
+    ), f"{len(missing_in_segs)} entity_ids in population_master missing from segment_labels"
 
 
 def test_win_probability_in_unit_interval():
     """win_probability_a must be in [0, 1] for all battleground department rows."""
-    df = pd.read_parquet(DATA / "module_c" / "run_all" / "battleground" / "battleground_department_probability.parquet")
+    df = pd.read_parquet(
+        DATA
+        / "module_c"
+        / "run_all"
+        / "battleground"
+        / "battleground_department_probability.parquet"
+    )
     col = df["win_probability_a"]
     assert col.min() >= 0.0, f"win_probability_a below 0: {col.min()}"
     assert col.max() <= 1.0, f"win_probability_a above 1: {col.max()}"
@@ -379,9 +395,13 @@ def test_mc_draws_10000():
 
 def test_forecast_date_range():
     """daily_posterior_forecast must span from 2017-12-01 to 2018-04-21."""
-    df = pd.read_parquet(DATA / "module_c" / "run_all" / "tracking" / "daily_posterior_forecast.parquet")
+    df = pd.read_parquet(
+        DATA / "module_c" / "run_all" / "tracking" / "daily_posterior_forecast.parquet"
+    )
     df["date"] = pd.to_datetime(df["date"])
-    assert df["date"].min() == pd.Timestamp("2017-12-01"), f"Start date mismatch: {df['date'].min()}"
+    assert df["date"].min() == pd.Timestamp(
+        "2017-12-01"
+    ), f"Start date mismatch: {df['date'].min()}"
     assert df["date"].max() == pd.Timestamp("2018-04-21"), f"End date mismatch: {df['date'].max()}"
 
 
@@ -404,10 +424,18 @@ def test_population_master_expected_columns():
     """population_master must contain all critical columns."""
     df = pd.read_parquet(DATA / "population_master_clean.parquet")
     required = [
-        "entity_id", "department", "gender", "age_on_event_date",
-        "rural_flag", "language_census_bucket", "participation_propensity",
-        "segment_label", "segment_id", "reachability_index",
-        "preference_proxy", "nbi_stress_prior",
+        "entity_id",
+        "department",
+        "gender",
+        "age_on_event_date",
+        "rural_flag",
+        "language_census_bucket",
+        "participation_propensity",
+        "segment_label",
+        "segment_id",
+        "reachability_index",
+        "preference_proxy",
+        "nbi_stress_prior",
     ]
     for col in required:
         assert col in df.columns, f"Missing required column: {col}"
@@ -416,6 +444,7 @@ def test_population_master_expected_columns():
 # ════════════════════════════════════════════════════════════════════════════
 # IDEMPOTENCY TEST
 # ════════════════════════════════════════════════════════════════════════════
+
 
 def _file_hash(path: Path) -> str:
     """Return MD5 hash of file contents."""
@@ -456,12 +485,13 @@ def test_idempotency_reports_stable():
 # CHART COUNT COMPLETENESS
 # ════════════════════════════════════════════════════════════════════════════
 
+
 def test_total_chart_count():
     """Exactly 36 PNG charts must be present in reports/eda/."""
     png_files = list(EDA_DIR.glob("*.png"))
-    assert len(png_files) >= 36, (
-        f"Expected >= 36 PNG charts, found {len(png_files)}: {[p.name for p in png_files]}"
-    )
+    assert (
+        len(png_files) >= 36
+    ), f"Expected >= 36 PNG charts, found {len(png_files)}: {[p.name for p in png_files]}"
 
 
 def test_module_a_complete():
