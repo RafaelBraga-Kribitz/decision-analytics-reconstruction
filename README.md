@@ -117,6 +117,8 @@ poetry install
 cp .env.example .env
 make test          # all modules + portfolio smoke (excludes slow NUTS)
 make validate      # lint + typecheck + tests
+make e2e-smoke     # fixture-only cross-module smoke (A schema + B solve + C CSV + handshake)
+make tier3-smoke   # terminology sample + mlflow import (local mirror of part of CI tier3 job)
 make portfolio-verify  # git-index hygiene for portfolio exports
 make dashboard     # launch Streamlit dashboard (Module A)
 ```
