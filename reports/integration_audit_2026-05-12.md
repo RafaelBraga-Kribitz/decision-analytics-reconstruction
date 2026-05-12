@@ -25,3 +25,11 @@ Cross-module surfaces touched: Module B `reporting/` package, allocation CLI `--
 ## Sign-off
 
 Prepared as part of the integration-impact checklist (`reports/decision_log.md` entry 2026-05-12 — Portfolio 360° hardening).
+
+---
+
+## 2026-05-12 — Makefile `pipeline-dev` → Module A `run_export`
+
+**Scope:** Root [`Makefile`](../Makefile) `pipeline-dev` now delegates to `python -m population_segmentation.pipeline` (same `run_export` path as `module-a-export`). Downstream unchanged: Module B still consumes `data/processed/` contract filenames.
+
+**Residual:** Interim `data/interim/population_master_*.parquet` from the old three-step dev recipe are no longer refreshed by `pipeline-dev` alone; use `generate-dev` or a full export when those files are needed for debugging.

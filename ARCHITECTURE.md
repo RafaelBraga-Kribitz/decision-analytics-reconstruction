@@ -24,6 +24,8 @@ Inter-module contract layers (YAML `schema_contracts/`, Pydantic handshake, froz
 
 Root [`Makefile`](Makefile) dev targets use Poetry for the interpreter and pre-commit hooks; that policy is guarded by [`tests/test_architecture_makefile_poetry_policy.py`](tests/test_architecture_makefile_poetry_policy.py).
 
+`make pipeline-dev` runs `python -m population_segmentation.pipeline` (thin wrapper over [`export.py`](module_a_population_segmentation/src/population_segmentation/pipeline/export.py) `run_export`) and writes the Module A contract bundle under `data/processed/` (default `SAMPLE` 10000 in the Makefile for speed); the Streamlit dashboard builds an in-memory sample by default while consuming the same feature and propensity stack—see [`tests/test_architecture_pipeline_dev_contract.py`](tests/test_architecture_pipeline_dev_contract.py).
+
 The default `make test` path runs pytest with shared `$(COV_FLAGS)` (terminal and XML coverage reports) and excludes the `slow` marker; that contract is guarded by [`tests/test_architecture_makefile_test_coverage_contract.py`](tests/test_architecture_makefile_test_coverage_contract.py).
 
 Mermaid diagrams, detailed contract tables, and the entity walkthrough below are guarded by [`tests/test_architecture_md_content_contract.py`](tests/test_architecture_md_content_contract.py).

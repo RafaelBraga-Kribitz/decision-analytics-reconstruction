@@ -4,6 +4,18 @@ Records every non-trivial architectural choice: decision, alternatives considere
 
 ---
 
+## 2026-05-12 — Project Action List §3: `pipeline-dev` runs full Module A export
+
+**Decision:** Replace incremental `generator` → `raw_injector` → `cleaner`-only [`Makefile`](../Makefile) `pipeline-dev` recipe with a single `poetry run python -m population_segmentation.pipeline` invocation (default `--sample-size $(or $(SAMPLE),10000)` for clone-local speed), delegating to [`run_export`](../module_a_population_segmentation/src/population_segmentation/pipeline/export.py) so `data/processed/` receives the wide population master with segment and propensity columns, `segment_labels.parquet`, `participation_propensity.parquet`, reachability CSVs, and `model_run_manifest.json`. Document in [`ARCHITECTURE.md`](../ARCHITECTURE.md). Add [`tests/test_architecture_pipeline_dev_contract.py`](../tests/test_architecture_pipeline_dev_contract.py) (Makefile parse tests plus optional `@pytest.mark.slow` `make pipeline-dev` smoke).
+
+**Alternatives considered:** Chaining `module-a-export` after cleaner-only steps — rejected as duplicate full population generation; keeping cleaner-only `pipeline-dev` — rejected as failing Project Action List §3 acceptance line 48.
+
+**Reason:** One command matches clone → install → dev pipeline expectations without a separate export step.
+
+**Source:** Project Action List §3 Architecture Quality — acceptance line 48 (`make pipeline-dev` contract bundle) (2026-05-12).
+
+---
+
 ## 2026-05-12 — Project Action List §3: `data/` stages and `.gitkeep` with gitignore negation
 
 **Decision:** Replace blanket `data/raw/`, `data/interim/`, `data/processed/` ignore entries in [`.gitignore`](../.gitignore) with `data/<stage>/*` plus `!data/<stage>/.gitkeep` so empty clone directories stay **tracked** while generated parquet and CSV remain ignored. Add [`data/raw/.gitkeep`](../data/raw/.gitkeep), [`data/interim/.gitkeep`](../data/interim/.gitkeep), [`data/processed/.gitkeep`](../data/processed/.gitkeep) and [`tests/test_architecture_data_directory_layout.py`](../tests/test_architecture_data_directory_layout.py) as regression guard.

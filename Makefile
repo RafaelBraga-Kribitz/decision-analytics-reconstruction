@@ -96,18 +96,13 @@ clean:
 generate-dev:
 	poetry run python -m population_segmentation.data.generator --config module_a_population_segmentation/config/generation.yaml
 
+# Dev default SAMPLE=10000 keeps ``make pipeline-dev`` minutes, not hours (override: ``make pipeline-dev SAMPLE=50000``).
 pipeline-dev:
-	poetry run python -m population_segmentation.data.generator \
+	poetry run python -m population_segmentation.pipeline \
 		--config module_a_population_segmentation/config/generation.yaml \
-		--output data/interim/population_master_base.parquet
-	poetry run python -m population_segmentation.data.raw_injector \
-		--input data/interim/population_master_base.parquet \
-		--output data/interim/population_master_raw.parquet \
-		--config module_a_population_segmentation/config/generation.yaml
-	poetry run python -m population_segmentation.data.cleaner \
-		--input data/interim/population_master_raw.parquet \
-		--output data/processed/population_master_clean.parquet \
-		--config module_a_population_segmentation/config/generation.yaml
+		--anchors module_a_population_segmentation/config/calibration_anchors.yaml \
+		--out-dir data/processed \
+		--sample-size $(or $(SAMPLE),10000)
 
 dashboard:
 	poetry run streamlit run module_a_population_segmentation/app/streamlit_dashboard.py
