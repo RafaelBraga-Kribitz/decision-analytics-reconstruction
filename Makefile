@@ -1,4 +1,4 @@
-.PHONY: install lint format typecheck test coverage all clean module-a-export graphify \
+.PHONY: install lint format typecheck test coverage all clean module-a-export module-a-pipeline graphify \
 	module-b-allocate module-b-allocate-sensitivity module-b-routing module-b-api \
 	test-module-a test-module-b test-module-c \
 	module-c-tracking module-c-exit module-c-mc module-c-all \
@@ -118,6 +118,13 @@ graphify:
 
 module-a-export:
 	poetry run python -m population_segmentation.pipeline.export \
+		--config module_a_population_segmentation/config/generation.yaml \
+		--anchors module_a_population_segmentation/config/calibration_anchors.yaml \
+		--out-dir data/processed \
+		--sample-size $(or $(SAMPLE),50000)
+
+module-a-pipeline:
+	poetry run python -m population_segmentation.pipeline \
 		--config module_a_population_segmentation/config/generation.yaml \
 		--anchors module_a_population_segmentation/config/calibration_anchors.yaml \
 		--out-dir data/processed \

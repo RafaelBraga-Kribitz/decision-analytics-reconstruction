@@ -13,19 +13,19 @@
 
 ---
 
-## 2. Data Science Framing (5.5 → 10.0)
+## ~~2. Data Science Framing (5.5 → 10.0)~~
 
-**Current state:** Conceptual framing is clear; actual modeling is ~30% done.
+~~**Current state:** Conceptual framing is clear; actual modeling is ~30% done.~~
 
-**Actions to reach 10/10:**
+~~**Actions to reach 10/10:**~~
 
-- [ ] Implement complete Module A pipeline end-to-end: generator → raw_injector → cleaner → features → segmentation model → propensity model → outputs all runnable via `poetry run python -m population_segmentation.pipeline --config config.yaml`
-- [ ] Add `reports/model_hierarchy.md`: explicit map of which models feed which (e.g., propensity depends on clean population, which depends on cleaning rules, which depend on schema contracts)
-- [ ] For each model, document: input schema (exact columns, dtypes, constraints) → transformations → model class → output schema (exact columns, dtypes). Use schema.py constants everywhere.
-- [ ] Create `notebooks/01_end_to_end_walkthrough.ipynb` showing: raw data → one row traced through entire pipeline → final segment assignment + propensity score. Fully reproducible, deterministic RNG.
-- [ ] Implement model versioning: each model artifact tags (model_type, version, train_date, git_commit). MLflow integration (even if just local file store).
-- [ ] Add feature engineering justification doc: each feature → why it matters → how it's constructed → validation check
-- [ ] Acceptance: A ML engineer can run `poetry run python -m population_segmentation.pipeline` once and get reproducible feature matrix, segmentation assignments, and propensity scores. No missing files, no manual steps, no silent failures.
+~~- [ ] Implement complete Module A pipeline end-to-end: generator → raw_injector → cleaner → features → segmentation model → propensity model → outputs all runnable via `poetry run python -m population_segmentation.pipeline --config config.yaml`~~
+~~- [ ] Add `reports/model_hierarchy.md`: explicit map of which models feed which (e.g., propensity depends on clean population, which depends on cleaning rules, which depend on schema contracts)~~
+~~- [ ] For each model, document: input schema (exact columns, dtypes, constraints) → transformations → model class → output schema (exact columns, dtypes). Use schema.py constants everywhere.~~
+~~- [ ] Create `notebooks/01_end_to_end_walkthrough.ipynb` showing: raw data → one row traced through entire pipeline → final segment assignment + propensity score. Fully reproducible, deterministic RNG.~~
+~~- [ ] Implement model versioning: each model artifact tags (model_type, version, train_date, git_commit). MLflow integration (even if just local file store).~~
+~~- [ ] Add feature engineering justification doc: each feature → why it matters → how it's constructed → validation check~~
+~~- [ ] Acceptance: A ML engineer can run `poetry run python -m population_segmentation.pipeline` once and get reproducible feature matrix, segmentation assignments, and propensity scores. No missing files, no manual steps, no silent failures.~~
 
 ---
 
@@ -207,7 +207,7 @@
 - [ ] Fix all false claims in documentation:
   - [ ] `transformation_log.md` claim that cleaner.py is implemented → replace with honest status
   - [ ] IMPLEMENTATION_PLAN.md missing → create it
-  - [ ] Module B/C directories missing → create them (even if just stubs with READMEs)
+  - [ ] Module B/C directories missing → create them (with READMEs)
   - [ ] Render dashboard URL dead → remove or update with actual deployment URL
   - [ ] README references ARCHITECTURE.md → create it
 - [ ] Fix all broken automation:
@@ -262,7 +262,7 @@
 |---|---|---|
 | Business Framing | Business case doc + CFO scenario table + cost/benefit delta | CFO understands why without opening code |
 | Data Science Framing | Implement complete Module A pipeline end-to-end, all models runnable | `poetry run python -m population_segmentation.pipeline` produces outputs |
-| Architecture Quality | All 3 modules exist (even if B/C are stubs), all files present, CI works | Fresh clone → `make pipeline-dev` works |
+| Architecture Quality | All 3 modules exist, all files present, CI works | Fresh clone → `make pipeline-dev` works |
 | Codebase Maturity | Fix all P0/P1 bugs, pass Ruff/Black/Pyright, 80%+ test coverage | `ruff check . && black --check . && pyright . && pytest` all pass |
 | Statistical Rigor | Generate calibration curves, silhouette plots, ROC-AUC, posterior traces | Statistician can verify all claims with evidence |
 | Reproducibility | DVC initialized, lockfile present, hash-verified outputs, Docker works | Colleague gets byte-for-byte identical outputs as reference run |

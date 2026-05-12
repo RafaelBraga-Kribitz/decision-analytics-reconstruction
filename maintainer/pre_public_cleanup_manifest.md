@@ -44,6 +44,7 @@
 | M15 | review | [`scripts/verify_doc_code_paths.py`](../scripts/verify_doc_code_paths.py) | CI gate: markdown repo-root `.py` path existence under curated scan roots | [ ] |
 | M16 | review / redact | [`reports/task_verify_evaluation_gap_2026-05-12.md`](../reports/task_verify_evaluation_gap_2026-05-12.md), [`reports/qa_gatekeeper_verdict_evaluation_gap_2026-05-12.md`](../reports/qa_gatekeeper_verdict_evaluation_gap_2026-05-12.md) | Agent DoD / QA verdict artifacts — trim for public portfolio | [ ] |
 | M17 | review / redact | [`reports/verification_session_proof_2026-05-12.md`](../reports/verification_session_proof_2026-05-12.md) | Full-stack verification command log / harness proof table — trim for public portfolio | [ ] |
+| M18 | review / redact | [`reports/task_verify_data_science_framing_2026-05-12.md`](../reports/task_verify_data_science_framing_2026-05-12.md) | Agent DoD proof table for §2 DS framing — trim or relocate for public portfolio | [ ] |
 
 ## Add new rows (template)
 

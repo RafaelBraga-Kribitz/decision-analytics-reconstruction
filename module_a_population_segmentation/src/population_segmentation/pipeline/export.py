@@ -13,6 +13,8 @@ Produces (all under --out-dir):
     segment_labels.parquet
     participation_propensity.parquet
     media_reachability_by_segment.csv
+    media_reachability_by_segment_department.csv
+    model_run_manifest.json
 """
 
 from __future__ import annotations
@@ -24,6 +26,12 @@ from typing import Any
 
 import pandas as pd
 import yaml
+
+from population_segmentation.pipeline.model_run_manifest import (
+    build_model_run_manifest,
+    maybe_log_mlflow_export,
+    write_model_run_manifest,
+)
 
 
 def run_export(
@@ -159,6 +167,22 @@ def run_export(
         reach_dept=reach_dept_df,
     )
     print("[export] Contract validation passed.", flush=True)
+
+    manifest_path = out_dir / "model_run_manifest.json"
+    manifest_payload = build_model_run_manifest(
+        {k: v for k, v in artifacts.items()},
+        random_seeds={
+            "population_generation": 42,
+            "raw_injection": 42,
+            "cleaning": 42,
+            "segmentation": 42,
+            "propensity": 42,
+        },
+    )
+    write_model_run_manifest(manifest_path, manifest_payload)
+    maybe_log_mlflow_export(manifest_payload)
+    artifacts["model_run_manifest"] = manifest_path
+    print(f"[export] Written {manifest_path}", flush=True)
 
     return artifacts
 

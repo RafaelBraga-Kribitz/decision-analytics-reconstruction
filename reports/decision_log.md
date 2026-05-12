@@ -4,6 +4,18 @@ Records every non-trivial architectural choice: decision, alternatives considere
 
 ---
 
+## 2026-05-12 — Module A: `python -m population_segmentation.pipeline` + `model_run_manifest.json`
+
+**Decision:** (1) Add `population_segmentation/pipeline/__main__.py` so the full export path is runnable as `poetry run python -m population_segmentation.pipeline` with repository-root defaults for `module_a_population_segmentation/config/generation.yaml`, `calibration_anchors.yaml`, and `data/processed/`. (2) After contract validation, `run_export` writes `model_run_manifest.json` (package version via `importlib.metadata`, UTC `train_date`, `git rev-parse` best-effort, exported artifact paths, fixed RNG seed map) and optionally logs to MLflow when `MLFLOW_TRACKING_URI` is set, matching the opt-in pattern used for Module C.
+
+**Alternatives considered:** Requiring only `python -m population_segmentation.pipeline.export` — kept as the low-level entry; the new module path matches the Data Science Framing acceptance string. Storing only MLflow without a JSON sidecar — rejected because file-store provenance should not depend on a tracking server.
+
+**Reason:** Data Science Framing (action list) requires a single canonical command, explicit model lineage documentation (`reports/model_hierarchy.md`, `module_a_model_io_spec.md`), feature justification, notebook walkthrough, and reproducibility metadata for ML engineers without opening multiple modules manually.
+
+**Source:** Project Action List section 2 — Data Science Framing (2026-05-12).
+
+---
+
 ## 2026-05-12 — Module B CFO baseline comparator (department-uniform naive)
 
 **Decision:** Persist `baseline_comparison` on every allocation run manifest (`run_manifest_<scenario>.json`) computed in `module_b_resource_allocation.reporting.baselines`. The **department-uniform naive** benchmark splits `CAMPAIGN_BUDGET_USD` evenly across all 18 geographic units in `DEPARTMENTS`, then applies uniform cap-limited water-fill within each unit using the **same linearized marginal persuasion-per-USD slopes** as the MILP LP objective (`_linear_cell_specs`). The MILP row reports both that linear projection on solved spends and the sum of **nonlinear** `persuasion_adjusted_contacts` on solver output rows (diminishing-returns reconstruction). Cap-only national water-fill remains as a relaxation transparency row.

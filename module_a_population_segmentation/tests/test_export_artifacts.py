@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -47,7 +48,14 @@ def export_artifacts(tmp_path_factory: pytest.TempPathFactory) -> dict[str, Path
     # entities at 3k) are only stable above ~10k rows where the rake multiplicative
     # factor does not cause systematic clipping.
     artifacts = run_export(config, anchors, out_dir, sample_size=15_000)
+    assert "model_run_manifest" in artifacts
     return artifacts
+
+
+def test_model_run_manifest_payload(export_artifacts: dict[str, Path]) -> None:
+    payload = json.loads(export_artifacts["model_run_manifest"].read_text(encoding="utf-8"))
+    for key in ("model_type", "version", "train_date", "git_commit", "artifacts", "random_seeds"):
+        assert key in payload
 
 
 def test_segment_labels_columns(export_artifacts: dict[str, Path]) -> None:
@@ -138,13 +146,14 @@ def test_dbscan_noise_flag_is_bool(export_artifacts: dict[str, Path]) -> None:
     ), f"dbscan_noise_flag dtype is {df['dbscan_noise_flag'].dtype}, expected bool"
 
 
-def test_all_five_artifacts_exist(export_artifacts: dict[str, Path]) -> None:
+def test_all_export_artifact_keys_exist(export_artifacts: dict[str, Path]) -> None:
     expected_keys = {
         "population_master_clean",
         "segment_labels",
         "participation_propensity",
         "media_reachability_by_segment",
         "media_reachability_by_segment_department",
+        "model_run_manifest",
     }
     assert expected_keys == set(export_artifacts.keys())
     for name, path in export_artifacts.items():
