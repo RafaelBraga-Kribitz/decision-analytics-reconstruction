@@ -260,8 +260,9 @@ def generate_population(
     ict = config.get("media_penetration_defaults", {})
     urban_inet = float(ict.get("whatsapp_urban", 0.74))
     rural_whatsapp = float(ict.get("whatsapp_rural", 0.31))
-    # Approximate internet access from ICT anchors
-    inet_prob = np.where(rural_flags, 0.279, 0.734)
+    inet_rural = float(ict.get("internet_access_rural_rate", 0.279))
+    inet_urban = float(ict.get("internet_access_urban_rate", 0.734))
+    inet_prob = np.where(rural_flags, inet_rural, inet_urban)
     internet_access_flags = rng.random(n) < inet_prob
 
     # ── media penetration ──────────────────────────────────────────────────────

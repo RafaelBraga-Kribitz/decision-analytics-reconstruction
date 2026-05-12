@@ -102,6 +102,10 @@ media_penetration_defaults:
   radio_national: 0.82
   whatsapp_urban: 0.74
   whatsapp_rural: 0.31
+  # Bernoulli P(online) for synthetic internet_access_flag (ICT ~2018; aligns
+  # calibration_anchors). Single source of truth — generator.py and cleaner.py read these keys.
+  internet_access_rural_rate: 0.279
+  internet_access_urban_rate: 0.734
 
 # ─── Preference proxy priors (calibrated to dept × urban/rural historical share)
 preference_proxy_priors:

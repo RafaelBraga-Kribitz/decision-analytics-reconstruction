@@ -191,6 +191,45 @@ class TestRequiredColumns:
         assert not missing, f"Missing columns: {missing}"
 
 
+class TestInternetAccessRatesFromConfig:
+    """internet_access_flag Bernoulli rates must follow media_penetration_defaults."""
+
+    def test_yaml_declares_internet_access_rates(self, config: dict) -> None:  # type: ignore[type-arg]
+        ict = config["media_penetration_defaults"]
+        assert "internet_access_rural_rate" in ict
+        assert "internet_access_urban_rate" in ict
+
+    def test_internet_access_rates_follow_yaml(self, config: dict) -> None:  # type: ignore[type-arg]
+        from population_segmentation.data.generator import generate_population
+
+        ict = config["media_penetration_defaults"]
+        cfg = {**config, "sample_size": 80_000}
+        df = generate_population(cfg, seed=123)
+        rural = df["rural_flag"].astype(bool)
+        rural_mean = df.loc[rural, "internet_access_flag"].mean()
+        urban_mean = df.loc[~rural, "internet_access_flag"].mean()
+        tol = 0.02
+        assert abs(rural_mean - float(ict["internet_access_rural_rate"])) < tol
+        assert abs(urban_mean - float(ict["internet_access_urban_rate"])) < tol
+
+    def test_internet_access_extreme_config_shifts_rates(self, config: dict) -> None:  # type: ignore[type-arg]
+        from population_segmentation.data.generator import generate_population
+
+        cfg = {
+            **config,
+            "sample_size": 60_000,
+            "media_penetration_defaults": {
+                **config["media_penetration_defaults"],
+                "internet_access_rural_rate": 0.05,
+                "internet_access_urban_rate": 0.95,
+            },
+        }
+        df = generate_population(cfg, seed=7)
+        rural = df["rural_flag"].astype(bool)
+        assert df.loc[rural, "internet_access_flag"].mean() < 0.12
+        assert df.loc[~rural, "internet_access_flag"].mean() > 0.88
+
+
 class TestWhatsAppPenetrationFromConfig:
     """Rural/urban WhatsApp penetration must follow media_penetration_defaults in YAML."""
 
