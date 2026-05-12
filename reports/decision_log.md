@@ -4,6 +4,18 @@ Records every non-trivial architectural choice: decision, alternatives considere
 
 ---
 
+## 2026-05-12 — Project Action List §3: ARCHITECTURE.md diagrams and contract tables
+
+**Decision:** Expand root [`ARCHITECTURE.md`](../ARCHITECTURE.md) with two Mermaid diagrams (artifact flow and package dependency), five markdown contract tables keyed to shipped YAML under [`schema_contracts/`](../schema_contracts/) (`population_master_clean`, `segment_labels`, `participation_propensity`, `allocation_output`, `polls_clean_tracking_wave`), each with at least twenty table rows (field rows plus explicit metadata rows where the YAML has fewer than twenty `fields:` keys), and a numbered **Walkthrough: one entity** section. Add [`tests/test_architecture_md_content_contract.py`](../tests/test_architecture_md_content_contract.py) to prevent silent removal of Mermaid blocks, contract headings, README cross-link, or short tables.
+
+**Alternatives considered:** Auto-generating tables from YAML in CI — deferred as YAGNI; manual tables plus test are enough for this checklist closure.
+
+**Reason:** Documentation-only closure for Architecture Quality line 45; no schema semantic edits.
+
+**Source:** Project Action List §3 Architecture Quality — task 8 (`ARCHITECTURE.md` depth) (2026-05-12).
+
+---
+
 ## 2026-05-12 — Project Action List §3: `make test` + coverage and CI contract
 
 **Decision:** Root [`Makefile`](../Makefile) defines `MODULE_TEST_ARGS` and `COV_FLAGS`; **`test`** runs `poetry run pytest` over all module and root test dirs with `-m "not slow"` and `$(COV_FLAGS)` (three `--cov=` roots plus `term-missing` and `xml` reports). **`coverage`** reuses the same `$(COV_FLAGS)` without a marker filter (full suite for `make ci`). Add [`tests/test_architecture_makefile_test_coverage_contract.py`](../tests/test_architecture_makefile_test_coverage_contract.py). Add GitHub Actions job **`repo-make-test`** (`poetry install` then `make test`, 30-minute cap) so a clean clone exercises the same entrypoint as local `make validate`’s test stage.
