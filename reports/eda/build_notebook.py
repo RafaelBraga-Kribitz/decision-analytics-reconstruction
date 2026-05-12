@@ -15,6 +15,7 @@ from nbformat.v4 import new_code_cell, new_markdown_cell, new_notebook
 # Helpers
 # ---------------------------------------------------------------------------
 
+
 def md(source: str) -> nbformat.NotebookNode:
     return new_markdown_cell(source)
 
@@ -30,7 +31,9 @@ def code(source: str) -> nbformat.NotebookNode:
 cells = []
 
 # ── Cell 1 — Title ──────────────────────────────────────────────────────────
-cells.append(md(r"""# Paraguay Presidential Campaign — Full EDA
+cells.append(
+    md(
+        r"""# Paraguay Presidential Campaign — Full EDA
 **Campaign Data Science Unit | Confidential**
 
 > *"The race is won. The mandate is what's at stake."*
@@ -38,7 +41,9 @@ cells.append(md(r"""# Paraguay Presidential Campaign — Full EDA
 A complete exploratory data analysis across population segmentation, resource allocation, and electoral forecasting — structured as an actionable intelligence brief for the campaign team.
 
 ---
-**Contents:** Data Quality · Population & Segments · Resource Allocation · Electoral Forecasting · Cross-Module Synthesis · Strategic Recommendations"""))
+**Contents:** Data Quality · Population & Segments · Resource Allocation · Electoral Forecasting · Cross-Module Synthesis · Strategic Recommendations"""
+    )
+)
 
 # ── Cell 2 — Setup & Configuration ──────────────────────────────────────────
 cells.append(code("""
@@ -165,11 +170,15 @@ print(summary_df.to_string(index=False))
 """))
 
 # ── Cell 3 — Section 1 header ───────────────────────────────────────────────
-cells.append(md("""## 1. Data Quality Assessment
+cells.append(
+    md(
+        """## 1. Data Quality Assessment
 
 Before any modelling or visualisation, we subject every dataset to a systematic quality audit. The pipeline ingests raw voter-registry exports, census overlays, and pollster microdata — each with its own provenance and failure modes. Rigorous quality gating at this stage prevents downstream conclusions from being artifacts of data artefacts.
 
-Key concerns going in: (a) entity deduplication across sources, (b) propensity scores outside the probability simplex, (c) budget allocations violating non-negativity, and (d) a known pipeline defect in the Monte Carlo module where `alloc_mean_persuasion_contacts` is hardwired to zero in the current build."""))
+Key concerns going in: (a) entity deduplication across sources, (b) propensity scores outside the probability simplex, (c) budget allocations violating non-negativity, and (d) a known pipeline defect in the Monte Carlo module where `alloc_mean_persuasion_contacts` is hardwired to zero in the current build."""
+    )
+)
 
 # ── Cell 4 — Data Quality Code ──────────────────────────────────────────────
 cells.append(code("""
@@ -223,7 +232,9 @@ if all_zero:
 """))
 
 # ── Cell 5 — Section 2 header ───────────────────────────────────────────────
-cells.append(md("""## 2. Population & Segmentation
+cells.append(
+    md(
+        """## 2. Population & Segmentation
 
 The **population master** contains 10,000 de-identified voter records drawn from the 2018 Paraguay presidential election cycle. Each record integrates three source streams: the national voter registry (cedula, dob, municipality), the 2012 census overlay (NBI stress priors, language buckets, rural flags), and proprietary qualitative sentiment surveys.
 
@@ -238,7 +249,9 @@ The **population master** contains 10,000 de-identified voter records drawn from
 | S4 | Rural Low Propensity | Passive rural voters |
 | S5 | Youth Volatile | Largest segment, digital-native, mobilisation priority |
 
-The **Johnny Decimal** chart convention used throughout this section labels each chart A1–A13 for traceability to the source EDA pipeline run."""))
+The **Johnny Decimal** chart convention used throughout this section labels each chart A1–A13 for traceability to the source EDA pipeline run."""
+    )
+)
 
 # ── A1 — Segment Size Distribution ──────────────────────────────────────────
 cells.append(code("""
@@ -271,9 +284,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Youth Volatile is the dominant segment at 31.3% of the population (3,130 records), nearly double the next largest group (Urban High Volatility at 18.6%). Committed Opposition and Structurally Dependent Bloc together represent only 23.3% of records. Rural Committed, at 14.4%, punches above its numeric weight due to its high participation propensity.
+cells.append(
+    md(
+        """**Finding:** Youth Volatile is the dominant segment at 31.3% of the population (3,130 records), nearly double the next largest group (Urban High Volatility at 18.6%). Committed Opposition and Structurally Dependent Bloc together represent only 23.3% of records. Rural Committed, at 14.4%, punches above its numeric weight due to its high participation propensity.
 
-**Strategic implication:** Campaign resource allocation should skew toward Youth Volatile mobilisation and Rural Committed retention — these two segments together account for 45.7% of all records and represent the highest expected return on turnout investment."""))
+**Strategic implication:** Campaign resource allocation should skew toward Youth Volatile mobilisation and Rural Committed retention — these two segments together account for 45.7% of all records and represent the highest expected return on turnout investment."""
+    )
+)
 
 # ── A2 — Age Distribution per Segment ───────────────────────────────────────
 cells.append(code("""
@@ -302,9 +319,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Youth Volatile has the youngest distribution with a median age around 24 years, confirming its demographic identity. Rural Committed and Structurally Dependent Bloc skew older (medians 38–42), reflecting traditional rural demographics. Committed Opposition shows a bimodal distribution, suggesting it contains both established older voters and a mobilised younger counter-base.
+cells.append(
+    md(
+        """**Finding:** Youth Volatile has the youngest distribution with a median age around 24 years, confirming its demographic identity. Rural Committed and Structurally Dependent Bloc skew older (medians 38–42), reflecting traditional rural demographics. Committed Opposition shows a bimodal distribution, suggesting it contains both established older voters and a mobilised younger counter-base.
 
-**Strategic implication:** Youth Volatile outreach must use age-appropriate digital channels (WhatsApp, Facebook) — traditional TV and radio will systematically under-index for this segment."""))
+**Strategic implication:** Youth Volatile outreach must use age-appropriate digital channels (WhatsApp, Facebook) — traditional TV and radio will systematically under-index for this segment."""
+    )
+)
 
 # ── A3 — Gender per Segment ──────────────────────────────────────────────────
 cells.append(code("""
@@ -340,9 +361,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Gender distribution is broadly balanced across all segments (roughly 45–55% female), with no segment deviating from parity by more than 8 percentage points. Structurally Dependent Bloc shows a slight female skew (~54% F), consistent with female-headed household prevalence in high-NBI areas. Youth Volatile is the most gender-balanced segment.
+cells.append(
+    md(
+        """**Finding:** Gender distribution is broadly balanced across all segments (roughly 45–55% female), with no segment deviating from parity by more than 8 percentage points. Structurally Dependent Bloc shows a slight female skew (~54% F), consistent with female-headed household prevalence in high-NBI areas. Youth Volatile is the most gender-balanced segment.
 
-**Strategic implication:** No gender-targeting correction is warranted — messaging should be universal by segment, though youth-targeted creative should reflect balanced gender representation."""))
+**Strategic implication:** No gender-targeting correction is warranted — messaging should be universal by segment, though youth-targeted creative should reflect balanced gender representation."""
+    )
+)
 
 # ── A4 — Heatmap: Department × Segment Propensity ────────────────────────────
 cells.append(code("""
@@ -369,9 +394,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Itapua and Alto Parana show the highest propensity values for Rural Committed (>0.70), making them the most efficient turnout investment per contact. The Committed Opposition segment consistently registers propensities near 0.10 across all departments, confirming that geography does not rescue this segment's persuadability. Asuncion's Youth Volatile propensity (~0.48) is below the national segment average, suggesting capital-city youth face structural barriers to participation.
+cells.append(
+    md(
+        """**Finding:** Itapua and Alto Parana show the highest propensity values for Rural Committed (>0.70), making them the most efficient turnout investment per contact. The Committed Opposition segment consistently registers propensities near 0.10 across all departments, confirming that geography does not rescue this segment's persuadability. Asuncion's Youth Volatile propensity (~0.48) is below the national segment average, suggesting capital-city youth face structural barriers to participation.
 
-**Strategic implication:** Concentrate Rural Committed budget in Itapua, Caaguazu, and Alto Parana — these three departments deliver the highest propensity-weighted returns per dollar spent."""))
+**Strategic implication:** Concentrate Rural Committed budget in Itapua, Caaguazu, and Alto Parana — these three departments deliver the highest propensity-weighted returns per dollar spent."""
+    )
+)
 
 # ── A5 — Violin: Propensity per Segment ─────────────────────────────────────
 cells.append(code("""
@@ -411,9 +440,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Urban High Volatility (median ~0.77) and Rural Committed (~0.71) have the tightest, highest propensity distributions, indicating reliable turnout behaviour. Youth Volatile shows the widest spread (0.10–0.90), reflecting true volatility — a substantial tail of disengaged youth. Committed Opposition has a narrow low distribution (~0.10 median), with almost no mass above 0.25.
+cells.append(
+    md(
+        """**Finding:** Urban High Volatility (median ~0.77) and Rural Committed (~0.71) have the tightest, highest propensity distributions, indicating reliable turnout behaviour. Youth Volatile shows the widest spread (0.10–0.90), reflecting true volatility — a substantial tail of disengaged youth. Committed Opposition has a narrow low distribution (~0.10 median), with almost no mass above 0.25.
 
-**Strategic implication:** Youth Volatile's wide propensity distribution is the key uncertainty variable — targeted mobilisation that shifts even the bottom quartile of this segment upward by 0.10 would add ~780 high-value contacts nationally."""))
+**Strategic implication:** Youth Volatile's wide propensity distribution is the key uncertainty variable — targeted mobilisation that shifts even the bottom quartile of this segment upward by 0.10 would add ~780 high-value contacts nationally."""
+    )
+)
 
 # ── A6 — Urban vs Rural per Segment ─────────────────────────────────────────
 cells.append(code("""
@@ -443,9 +476,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Rural Committed is 82% rural (as expected by name), while Urban High Volatility is 91% urban — the segmentation algorithm cleanly separated these geographic profiles. Structurally Dependent Bloc is 67% rural, explaining its radio-first reachability profile. Youth Volatile is predominantly urban (73%), supporting the digital-first channel strategy.
+cells.append(
+    md(
+        """**Finding:** Rural Committed is 82% rural (as expected by name), while Urban High Volatility is 91% urban — the segmentation algorithm cleanly separated these geographic profiles. Structurally Dependent Bloc is 67% rural, explaining its radio-first reachability profile. Youth Volatile is predominantly urban (73%), supporting the digital-first channel strategy.
 
-**Strategic implication:** Rural Committed requires offline-first outreach (radio, canvassing) regardless of the media mix for other segments — budgeting for digital-only campaigns will systematically miss this high-propensity bloc."""))
+**Strategic implication:** Rural Committed requires offline-first outreach (radio, canvassing) regardless of the media mix for other segments — budgeting for digital-only campaigns will systematically miss this high-propensity bloc."""
+    )
+)
 
 # ── A7 — Language Composition per Segment ────────────────────────────────────
 cells.append(code("""
@@ -487,9 +524,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Jopara Bilingual is the dominant language bucket across all segments (typically 35–55%), reflecting Paraguay's bilingual reality. Rural Committed has the highest Guarani-only share (~38%), while Urban High Volatility leans toward Spanish (30%+). Youth Volatile shows the highest Jopara prevalence (~52%), consistent with urban bilingual code-switching patterns among younger Paraguayans.
+cells.append(
+    md(
+        """**Finding:** Jopara Bilingual is the dominant language bucket across all segments (typically 35–55%), reflecting Paraguay's bilingual reality. Rural Committed has the highest Guarani-only share (~38%), while Urban High Volatility leans toward Spanish (30%+). Youth Volatile shows the highest Jopara prevalence (~52%), consistent with urban bilingual code-switching patterns among younger Paraguayans.
 
-**Strategic implication:** All campaign creative — especially WhatsApp and Facebook content targeting Youth Volatile — must be produced in Jopara-friendly register, not formal Spanish or pure Guarani."""))
+**Strategic implication:** All campaign creative — especially WhatsApp and Facebook content targeting Youth Volatile — must be produced in Jopara-friendly register, not formal Spanish or pure Guarani."""
+    )
+)
 
 # ── A8 — Structural Dependency Rate per Segment ──────────────────────────────
 cells.append(code("""
@@ -517,9 +558,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Structurally Dependent Bloc registers a dependency rate of ~78%, validating the segmentation label. Rural Committed (~45%) and Rural Low Propensity (~38%) also show elevated rates, confirming that structural dependency is primarily a rural phenomenon. Urban High Volatility and Youth Volatile have rates below 15%, indicating economic independence and greater susceptibility to issue-based (rather than patronage-based) messaging.
+cells.append(
+    md(
+        """**Finding:** Structurally Dependent Bloc registers a dependency rate of ~78%, validating the segmentation label. Rural Committed (~45%) and Rural Low Propensity (~38%) also show elevated rates, confirming that structural dependency is primarily a rural phenomenon. Urban High Volatility and Youth Volatile have rates below 15%, indicating economic independence and greater susceptibility to issue-based (rather than patronage-based) messaging.
 
-**Strategic implication:** Structurally Dependent Bloc messaging must avoid means-testing or benefit-reduction framing — this segment is sensitive to perceived threats to social transfers and will respond negatively to austerity signals."""))
+**Strategic implication:** Structurally Dependent Bloc messaging must avoid means-testing or benefit-reduction framing — this segment is sensitive to perceived threats to social transfers and will respond negatively to austerity signals."""
+    )
+)
 
 # ── A9 — Correlation Heatmap ─────────────────────────────────────────────────
 cells.append(code("""
@@ -553,9 +598,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Reachability index is strongly correlated with digital reachability (r=0.84) and WhatsApp penetration (r=0.79), while negatively correlated with radio reach (r=-0.52) — confirming the urban/digital vs. rural/broadcast axis. NBI stress prior shows a negative correlation with participation propensity (r=-0.31), meaning higher material deprivation predicts lower turnout probability. Age is positively correlated with radio penetration (r=0.40) and negatively with digital reachability (r=-0.35).
+cells.append(
+    md(
+        """**Finding:** Reachability index is strongly correlated with digital reachability (r=0.84) and WhatsApp penetration (r=0.79), while negatively correlated with radio reach (r=-0.52) — confirming the urban/digital vs. rural/broadcast axis. NBI stress prior shows a negative correlation with participation propensity (r=-0.31), meaning higher material deprivation predicts lower turnout probability. Age is positively correlated with radio penetration (r=0.40) and negatively with digital reachability (r=-0.35).
 
-**Strategic implication:** The reachability index is a reliable composite — it need not be decomposed further for channel targeting decisions, as it captures the urban-digital vs. rural-broadcast trade-off in a single score."""))
+**Strategic implication:** The reachability index is a reliable composite — it need not be decomposed further for channel targeting decisions, as it captures the urban-digital vs. rural-broadcast trade-off in a single score."""
+    )
+)
 
 # ── A10 — PCA Biplot ─────────────────────────────────────────────────────────
 cells.append(code("""
@@ -604,9 +653,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** PC1 (explaining ~38% of variance) separates the population along the digital-reachability vs. NBI-stress axis — Urban High Volatility and Youth Volatile cluster on the positive PC1 side, while Structurally Dependent Bloc and Rural Committed cluster negative. PC2 (~21% variance) primarily separates by propensity and age. Committed Opposition is the most isolated cluster in PC space, confirming its distinct feature profile.
+cells.append(
+    md(
+        """**Finding:** PC1 (explaining ~38% of variance) separates the population along the digital-reachability vs. NBI-stress axis — Urban High Volatility and Youth Volatile cluster on the positive PC1 side, while Structurally Dependent Bloc and Rural Committed cluster negative. PC2 (~21% variance) primarily separates by propensity and age. Committed Opposition is the most isolated cluster in PC space, confirming its distinct feature profile.
 
-**Strategic implication:** The first two principal components cleanly separate all six segments, confirming that the six-segment solution is robust and not over-parameterised — the segments represent genuinely distinct voter archetypes."""))
+**Strategic implication:** The first two principal components cleanly separate all six segments, confirming that the six-segment solution is robust and not over-parameterised — the segments represent genuinely distinct voter archetypes."""
+    )
+)
 
 # ── A11 — NBI Stress Prior by Department ─────────────────────────────────────
 cells.append(code("""
@@ -645,9 +698,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Chaco departments (Alto Paraguay, Boqueron, Presidente Hayes) show the highest NBI stress priors, with medians above 0.65 — indicating systemic material deprivation that predates any campaign intervention. Among Oriental departments, San Pedro and Caazapa register the highest stress. Asuncion and Central are the lowest-stress departments, consistent with their metro classification.
+cells.append(
+    md(
+        """**Finding:** Chaco departments (Alto Paraguay, Boqueron, Presidente Hayes) show the highest NBI stress priors, with medians above 0.65 — indicating systemic material deprivation that predates any campaign intervention. Among Oriental departments, San Pedro and Caazapa register the highest stress. Asuncion and Central are the lowest-stress departments, consistent with their metro classification.
 
-**Strategic implication:** High-NBI departments require community-based mobilisation over media-based reach — NBI stress correlates negatively with participation propensity, and media-saturation strategies have diminishing returns where infrastructural barriers to voting (distance, transport, documentation) remain unaddressed."""))
+**Strategic implication:** High-NBI departments require community-based mobilisation over media-based reach — NBI stress correlates negatively with participation propensity, and media-saturation strategies have diminishing returns where infrastructural barriers to voting (distance, transport, documentation) remain unaddressed."""
+    )
+)
 
 # ── A12 — Reachability KDE per Segment ───────────────────────────────────────
 cells.append(code("""
@@ -671,9 +728,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Urban High Volatility and Youth Volatile show reachability distributions strongly concentrated above 0.7, making them the easiest segments to contact through digital and broadcast channels. Rural Committed has a bimodal distribution with a secondary peak near 0.2, indicating a hard-to-reach rural tail that requires bespoke canvassing. Committed Opposition has surprisingly high reachability (>0.65 median) — they can be reached, they simply cannot be persuaded.
+cells.append(
+    md(
+        """**Finding:** Urban High Volatility and Youth Volatile show reachability distributions strongly concentrated above 0.7, making them the easiest segments to contact through digital and broadcast channels. Rural Committed has a bimodal distribution with a secondary peak near 0.2, indicating a hard-to-reach rural tail that requires bespoke canvassing. Committed Opposition has surprisingly high reachability (>0.65 median) — they can be reached, they simply cannot be persuaded.
 
-**Strategic implication:** High reachability does not equal high value — Committed Opposition's reachability should not drive budget allocation toward that segment. Prioritise Rural Committed's low-reachability tail for canvassing investment, as those contacts are otherwise completely missed."""))
+**Strategic implication:** High reachability does not equal high value — Committed Opposition's reachability should not drive budget allocation toward that segment. Prioritise Rural Committed's low-reachability tail for canvassing investment, as those contacts are otherwise completely missed."""
+    )
+)
 
 # ── A13 — Preference Proxy Distribution ──────────────────────────────────────
 cells.append(code("""
@@ -723,12 +784,18 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Committed Opposition shows near-100% Preference B concentration with high proxy strength (median ~0.85), confirming this segment is ideologically locked. Youth Volatile has the most diverse preference distribution (A, B, other, none each >15%), making it genuinely persuadable. Rural Committed shows high Preference A concentration (~72%) with moderate strength — loyal but not fanatical, susceptible to demobilisation if the campaign fails to activate them.
+cells.append(
+    md(
+        """**Finding:** Committed Opposition shows near-100% Preference B concentration with high proxy strength (median ~0.85), confirming this segment is ideologically locked. Youth Volatile has the most diverse preference distribution (A, B, other, none each >15%), making it genuinely persuadable. Rural Committed shows high Preference A concentration (~72%) with moderate strength — loyal but not fanatical, susceptible to demobilisation if the campaign fails to activate them.
 
-**Strategic implication:** Campaign persuasion spend should be concentrated exclusively on Youth Volatile and Urban High Volatility — these two segments contain virtually all of the genuinely undecided or soft-A voters reachable through campaign intervention."""))
+**Strategic implication:** Campaign persuasion spend should be concentrated exclusively on Youth Volatile and Urban High Volatility — these two segments contain virtually all of the genuinely undecided or soft-A voters reachable through campaign intervention."""
+    )
+)
 
 # ── Cell 19 — Section 3 header ───────────────────────────────────────────────
-cells.append(md("""## 3. Resource Allocation
+cells.append(
+    md(
+        """## 3. Resource Allocation
 
 The resource allocation module (Module B) solves a constrained linear programme that distributes campaign budget across departments, channels, and weeks while respecting reach caps, FX-adjusted unit costs, and routing feasibility constraints. The baseline scenario uses Series B FX rates and standard dry-season routing conditions.
 
@@ -739,11 +806,13 @@ Key outputs: weekly budget by channel and department, reach utilisation rates, p
 **Channels modelled:** {:,}
 **Campaign weeks:** {:,}
 """.format(
-    0,  # will be computed inline
-    0,
-    0,
-    0,
-)))
+            0,  # will be computed inline
+            0,
+            0,
+            0,
+        )
+    )
+)
 
 # Replace placeholder with actual computation in a code cell
 cells.append(code("""
@@ -788,9 +857,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Central department receives the largest allocation (>$600K), reflecting its population size and strategic priority. Chaco departments (Alto Paraguay, Boqueron) receive the smallest allocations despite high NBI stress, as routing constraints and thin voter populations make per-contact costs prohibitive. The Oriental region accounts for approximately 87% of total campaign spend.
+cells.append(
+    md(
+        """**Finding:** Central department receives the largest allocation (>$600K), reflecting its population size and strategic priority. Chaco departments (Alto Paraguay, Boqueron) receive the smallest allocations despite high NBI stress, as routing constraints and thin voter populations make per-contact costs prohibitive. The Oriental region accounts for approximately 87% of total campaign spend.
 
-**Strategic implication:** The Chaco underfunding is partly justified by logistics constraints, but should not become an absolute zero — even modest sound-car and community-leader investment in Presidente Hayes can yield high propensity-per-contact returns in a low-competition environment."""))
+**Strategic implication:** The Chaco underfunding is partly justified by logistics constraints, but should not become an absolute zero — even modest sound-car and community-leader investment in Presidente Hayes can yield high propensity-per-contact returns in a low-competition environment."""
+    )
+)
 
 # ── B2 — Weekly Budget by Channel ────────────────────────────────────────────
 cells.append(code("""
@@ -813,9 +886,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Direct contact channels (canvassing, WhatsApp) dominate spending in weeks 10–14, reflecting the campaign's final-push strategy. Broadcast channels (TV, radio) are front-loaded in weeks 1–6 to build name recognition before switching to targeted direct contact closer to election day. There is a noticeable budget dip in weeks 7–9 — a scheduling artefact that represents an opportunity to smooth out media spending.
+cells.append(
+    md(
+        """**Finding:** Direct contact channels (canvassing, WhatsApp) dominate spending in weeks 10–14, reflecting the campaign's final-push strategy. Broadcast channels (TV, radio) are front-loaded in weeks 1–6 to build name recognition before switching to targeted direct contact closer to election day. There is a noticeable budget dip in weeks 7–9 — a scheduling artefact that represents an opportunity to smooth out media spending.
 
-**Strategic implication:** The weeks 7–9 budget trough should be partially filled by accelerating WhatsApp chatbot deployment in Central and Caaguazu — digital direct contact during this window is cost-efficient and maintains momentum between the broadcast and direct phases."""))
+**Strategic implication:** The weeks 7–9 budget trough should be partially filled by accelerating WhatsApp chatbot deployment in Central and Caaguazu — digital direct contact during this window is cost-efficient and maintains momentum between the broadcast and direct phases."""
+    )
+)
 
 # ── B3 — Broadcast vs Direct Budget Share ────────────────────────────────────
 cells.append(code("""
@@ -851,9 +928,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Broadcast spending represents approximately 55% of total campaign budget in weeks 1–5, declining to under 30% by weeks 11–14 as direct contact channels ramp up. The crossover point — where direct spend exceeds broadcast — occurs around week 8, which aligns with typical Paraguayan campaign conversion windows. Total weekly spend peaks in week 13 (final push week).
+cells.append(
+    md(
+        """**Finding:** Broadcast spending represents approximately 55% of total campaign budget in weeks 1–5, declining to under 30% by weeks 11–14 as direct contact channels ramp up. The crossover point — where direct spend exceeds broadcast — occurs around week 8, which aligns with typical Paraguayan campaign conversion windows. Total weekly spend peaks in week 13 (final push week).
 
-**Strategic implication:** The broadcast-to-direct transition timeline is broadly sound, but the transition could be accelerated by one week (crossover at week 7) to extend the direct-contact window — especially given the Youth Volatile segment's responsiveness to peer-to-peer WhatsApp activation."""))
+**Strategic implication:** The broadcast-to-direct transition timeline is broadly sound, but the transition could be accelerated by one week (crossover at week 7) to extend the direct-contact window — especially given the Youth Volatile segment's responsiveness to peer-to-peer WhatsApp activation."""
+    )
+)
 
 # ── B4 — Reach Utilisation Heatmap ───────────────────────────────────────────
 cells.append(code("""
@@ -877,9 +958,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** WhatsApp chatbot and Facebook Ads show the highest reach utilisation (>0.85) in Central and Alto Parana, indicating these channels are operating near capacity in the metro corridor. Billboards in low-tier departments (Concepcion, Caazapa) show utilisation near zero, confirming significant budget waste. SMS campaigns are universally under-utilised (<0.15 across all departments).
+cells.append(
+    md(
+        """**Finding:** WhatsApp chatbot and Facebook Ads show the highest reach utilisation (>0.85) in Central and Alto Parana, indicating these channels are operating near capacity in the metro corridor. Billboards in low-tier departments (Concepcion, Caazapa) show utilisation near zero, confirming significant budget waste. SMS campaigns are universally under-utilised (<0.15 across all departments).
 
-**Strategic implication:** Immediately eliminate billboard spend in departments where reach utilisation is below 0.10, and redirect that budget to WhatsApp chatbot in Central — where the channel is proven and at capacity, indicating incremental spend will still generate returns."""))
+**Strategic implication:** Immediately eliminate billboard spend in departments where reach utilisation is below 0.10, and redirect that budget to WhatsApp chatbot in Central — where the channel is proven and at capacity, indicating incremental spend will still generate returns."""
+    )
+)
 
 # ── B5 — Cost per Persuasion Contact ─────────────────────────────────────────
 cells.append(code("""
@@ -915,9 +1000,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Caaguazu and Itapua show the lowest cost per persuasion-adjusted contact among mid-size departments (<$0.08 per contact), making them the efficiency leaders. Chaco departments have the highest cost-per-contact (>$0.40) due to routing overheads and thin populations. Central, despite its high total budget, achieves moderate cost-per-contact efficiency due to volume effects in digital channels.
+cells.append(
+    md(
+        """**Finding:** Caaguazu and Itapua show the lowest cost per persuasion-adjusted contact among mid-size departments (<$0.08 per contact), making them the efficiency leaders. Chaco departments have the highest cost-per-contact (>$0.40) due to routing overheads and thin populations. Central, despite its high total budget, achieves moderate cost-per-contact efficiency due to volume effects in digital channels.
 
-**Strategic implication:** Caaguazu is the most under-resourced high-efficiency department in the baseline scenario — redirecting $60–75K from billboard waste into Caaguazu canvassing would generate approximately 24,000 additional contacts at below-average cost."""))
+**Strategic implication:** Caaguazu is the most under-resourced high-efficiency department in the baseline scenario — redirecting $60–75K from billboard waste into Caaguazu canvassing would generate approximately 24,000 additional contacts at below-average cost."""
+    )
+)
 
 # ── B6 — FX Rate Series ──────────────────────────────────────────────────────
 cells.append(code("""
@@ -946,9 +1035,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** The PYG/USD rate depreciated from approximately 5,710 in week 1 to 5,620 by week 14 — a cumulative depreciation of ~1.6%. The retail spread (campaign buying rate vs. reference) averages ~1.8%, adding approximately $108K in effective cost to a $6M budget. The rate is most stable in weeks 6–10, suggesting this window is optimal for locking in USD-denominated contracts.
+cells.append(
+    md(
+        """**Finding:** The PYG/USD rate depreciated from approximately 5,710 in week 1 to 5,620 by week 14 — a cumulative depreciation of ~1.6%. The retail spread (campaign buying rate vs. reference) averages ~1.8%, adding approximately $108K in effective cost to a $6M budget. The rate is most stable in weeks 6–10, suggesting this window is optimal for locking in USD-denominated contracts.
 
-**Strategic implication:** Hedge currency exposure by pre-committing USD amounts for weeks 11–14 media placements during weeks 6–8 — the FX window of stability allows cost certainty for the highest-spend period of the campaign."""))
+**Strategic implication:** Hedge currency exposure by pre-committing USD amounts for weeks 11–14 media placements during weeks 6–8 — the FX window of stability allows cost certainty for the highest-spend period of the campaign."""
+    )
+)
 
 # ── B7 — Routing Cost Matrix ──────────────────────────────────────────────────
 cells.append(code("""
@@ -972,9 +1065,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Chaco departments (Alto Paraguay, Boqueron, Presidente Hayes) have travel times exceeding 600 minutes to Oriental departments — explaining their high cost-per-contact and the routing module's binding constraints for ground operations. Oriental department pairs average 120–240 minutes, with the Central-to-Alto Parana corridor being the most efficient major route at ~180 minutes.
+cells.append(
+    md(
+        """**Finding:** Chaco departments (Alto Paraguay, Boqueron, Presidente Hayes) have travel times exceeding 600 minutes to Oriental departments — explaining their high cost-per-contact and the routing module's binding constraints for ground operations. Oriental department pairs average 120–240 minutes, with the Central-to-Alto Parana corridor being the most efficient major route at ~180 minutes.
 
-**Strategic implication:** Ground canvassing operations should be organised as regional clusters — Central+Cordillera+Paraguari, Caaguazu+Alto Parana+Itapua — to minimise routing overhead. Cross-regional canvassing is inefficient and should be replaced by local organiser networks."""))
+**Strategic implication:** Ground canvassing operations should be organised as regional clusters — Central+Cordillera+Paraguari, Caaguazu+Alto Parana+Itapua — to minimise routing overhead. Cross-regional canvassing is inefficient and should be replaced by local organiser networks."""
+    )
+)
 
 # ── B8 — Reach Caps vs Expected Contacts ─────────────────────────────────────
 cells.append(code("""
@@ -1009,9 +1106,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Central's reach cap (~180,000 population proxy units) is 3x the next largest department, but expected contacts track below cap in several weeks — indicating that the solver is budget-constrained rather than reach-constrained in Central. Caaguazu shows expected contacts very close to its reach cap, suggesting it is operating efficiently at near-saturation. Amambay's contacts fall well below its cap, indicating either budget insufficiency or channel mismatch.
+cells.append(
+    md(
+        """**Finding:** Central's reach cap (~180,000 population proxy units) is 3x the next largest department, but expected contacts track below cap in several weeks — indicating that the solver is budget-constrained rather than reach-constrained in Central. Caaguazu shows expected contacts very close to its reach cap, suggesting it is operating efficiently at near-saturation. Amambay's contacts fall well below its cap, indicating either budget insufficiency or channel mismatch.
 
-**Strategic implication:** Amambay's under-performance vs. reach cap warrants channel mix review — if TV is the primary channel but WhatsApp penetration is high, shifting budget from TV spots to digital direct would likely close the gap between cap and actual contacts."""))
+**Strategic implication:** Amambay's under-performance vs. reach cap warrants channel mix review — if TV is the primary channel but WhatsApp penetration is high, shifting budget from TV spots to digital direct would likely close the gap between cap and actual contacts."""
+    )
+)
 
 # ── Cell 28 — Section 4 header ───────────────────────────────────────────────
 cells.append(md("""## 4. Electoral Forecasting
@@ -1058,9 +1159,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** The posterior mean preference margin for Candidate A opens at approximately +12 pp in December 2017 and rises to +15.1 pp by the final tracking date. The 94% HDI is wide (-9.1 to +38.3 pp) due to only four polling waves, but remains entirely above -15 pp even at the pessimistic tail. No tracking series shows a downward trend — momentum is consistently toward Candidate A.
+cells.append(
+    md(
+        """**Finding:** The posterior mean preference margin for Candidate A opens at approximately +12 pp in December 2017 and rises to +15.1 pp by the final tracking date. The 94% HDI is wide (-9.1 to +38.3 pp) due to only four polling waves, but remains entirely above -15 pp even at the pessimistic tail. No tracking series shows a downward trend — momentum is consistently toward Candidate A.
 
-**Strategic implication:** Commission at least two additional poll waves in weeks 11–13 to narrow the HDI and provide the campaign with actionable final-week intelligence. The current uncertainty band is too wide for confident resource reallocation in the final sprint."""))
+**Strategic implication:** Commission at least two additional poll waves in weeks 11–13 to narrow the HDI and provide the campaign with actionable final-week intelligence. The current uncertainty band is too wide for confident resource reallocation in the final sprint."""
+    )
+)
 
 # ── C2 — Final-Day Posterior Margin Distribution ─────────────────────────────
 cells.append(code("""
@@ -1088,9 +1193,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** The MC shock scale distribution is bimodal, reflecting the two scenario buckets (baseline median ~1.00, extreme tracker median ~2.43). The 5th percentile sits at 0.59 (benign scenario) while the 95th percentile reaches 2.43 (full extreme-tracker shock). The 50th percentile across all draws is 1.83, meaning the campaign's median planning scenario already incorporates substantial shock amplification.
+cells.append(
+    md(
+        """**Finding:** The MC shock scale distribution is bimodal, reflecting the two scenario buckets (baseline median ~1.00, extreme tracker median ~2.43). The 5th percentile sits at 0.59 (benign scenario) while the 95th percentile reaches 2.43 (full extreme-tracker shock). The 50th percentile across all draws is 1.83, meaning the campaign's median planning scenario already incorporates substantial shock amplification.
 
-**Strategic implication:** The campaign's risk planning should use the 75th percentile shock scale (2.43) as the stress test scenario, not the median — a surprise-event in the final two weeks would push the campaign into the extreme tracker regime, requiring rapid-response capacity."""))
+**Strategic implication:** The campaign's risk planning should use the 75th percentile shock scale (2.43) as the stress test scenario, not the median — a surprise-event in the final two weeks would push the campaign into the extreme tracker regime, requiring rapid-response capacity."""
+    )
+)
 
 # ── C3 — Battleground Win Probabilities ──────────────────────────────────────
 cells.append(code("""
@@ -1118,9 +1227,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Every modelled department shows a win probability for Candidate A above 79%, with most clustering between 79.5% and 80.2%. San Pedro registers the highest win probability (80.0%), while Guaira shows the lowest (79.0%). The absence of any department below 70% win probability confirms this is not a competitive race — the variance is in mandate size, not outcome.
+cells.append(
+    md(
+        """**Finding:** Every modelled department shows a win probability for Candidate A above 79%, with most clustering between 79.5% and 80.2%. San Pedro registers the highest win probability (80.0%), while Guaira shows the lowest (79.0%). The absence of any department below 70% win probability confirms this is not a competitive race — the variance is in mandate size, not outcome.
 
-**Strategic implication:** No department should be written off or treated as a turnout sacrifice zone — the uniformly high win probabilities mean that mobilisation investment in any department directly translates to mandate size rather than swing-state insurance."""))
+**Strategic implication:** No department should be written off or treated as a turnout sacrifice zone — the uniformly high win probabilities mean that mobilisation investment in any department directly translates to mandate size rather than swing-state insurance."""
+    )
+)
 
 # ── C4 — House Effects Forest Plot ───────────────────────────────────────────
 cells.append(code("""
@@ -1144,9 +1257,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** ATI/Snead shows a small positive house effect (~+1.5 pp), suggesting this pollster historically overestimates Candidate A's margin. CAPLI registers a negative house effect (-2.1 pp), indicating a slight pro-B bias. ICA's house effect is near zero and the HDI crosses zero, making it the most unbiased pollster in the model. All HDIs are wide due to limited wave count.
+cells.append(
+    md(
+        """**Finding:** ATI/Snead shows a small positive house effect (~+1.5 pp), suggesting this pollster historically overestimates Candidate A's margin. CAPLI registers a negative house effect (-2.1 pp), indicating a slight pro-B bias. ICA's house effect is near zero and the HDI crosses zero, making it the most unbiased pollster in the model. All HDIs are wide due to limited wave count.
 
-**Strategic implication:** Commission additional ICA poll waves for the final two weeks — it is the highest-quality unbiased pollster in the panel. Do not over-index on ATI/Snead results without applying the ~1.5 pp discount for house effect."""))
+**Strategic implication:** Commission additional ICA poll waves for the final two weeks — it is the highest-quality unbiased pollster in the panel. Do not over-index on ATI/Snead results without applying the ~1.5 pp discount for house effect."""
+    )
+)
 
 # ── C5 — MC Fan Chart ────────────────────────────────────────────────────────
 cells.append(code("""
@@ -1174,9 +1291,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** The baseline scenario median shock scale is approximately 1.00 (no amplification), while the extreme tracker median is 2.43 — representing a near-2.5x shock amplification. The fan chart shows that the baseline scenario is tightly distributed (P10–P90 range: 0.59–1.00), while the extreme tracker is also narrow (discrete values at 1.83 and 2.43), reflecting a scenario architecture with three defined shock tiers rather than a continuous distribution.
+cells.append(
+    md(
+        """**Finding:** The baseline scenario median shock scale is approximately 1.00 (no amplification), while the extreme tracker median is 2.43 — representing a near-2.5x shock amplification. The fan chart shows that the baseline scenario is tightly distributed (P10–P90 range: 0.59–1.00), while the extreme tracker is also narrow (discrete values at 1.83 and 2.43), reflecting a scenario architecture with three defined shock tiers rather than a continuous distribution.
 
-**Strategic implication:** The bimodal shock architecture means campaign planners should run two distinct playbooks — a nominal-conditions playbook for the baseline scenario and a crisis-response playbook pre-positioned for activation if any extreme-tracker trigger condition is met."""))
+**Strategic implication:** The bimodal shock architecture means campaign planners should run two distinct playbooks — a nominal-conditions playbook for the baseline scenario and a crisis-response playbook pre-positioned for activation if any extreme-tracker trigger condition is met."""
+    )
+)
 
 # ── C6 — Shock Scale KDE ─────────────────────────────────────────────────────
 cells.append(code("""
@@ -1199,9 +1320,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** The KDE reveals that the shock scale is discretised into three mass points: ~0.59 (baseline low), ~1.83 (extreme tracker wave 1), and ~2.43 (extreme tracker wave 2). This discretisation reflects the scenario catalog design rather than a continuous Bayesian posterior — the model samples shock levels from a predefined catalog rather than a continuous prior distribution.
+cells.append(
+    md(
+        """**Finding:** The KDE reveals that the shock scale is discretised into three mass points: ~0.59 (baseline low), ~1.83 (extreme tracker wave 1), and ~2.43 (extreme tracker wave 2). This discretisation reflects the scenario catalog design rather than a continuous Bayesian posterior — the model samples shock levels from a predefined catalog rather than a continuous prior distribution.
 
-**Strategic implication:** The scenario catalog should be expanded for the next model iteration to include intermediate shock levels (1.0–1.5) representing moderate disruption scenarios — a primary election-related controversy that does not rise to full crisis level is currently not modelled."""))
+**Strategic implication:** The scenario catalog should be expanded for the next model iteration to include intermediate shock levels (1.0–1.5) representing moderate disruption scenarios — a primary election-related controversy that does not rise to full crisis level is currently not modelled."""
+    )
+)
 
 # ── C7 — Exit Model Forest Plot ──────────────────────────────────────────────
 cells.append(code("""
@@ -1227,9 +1352,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** The exit model intercept (+29.5 pp) represents baseline A-preference margin in the absence of covariates. Beta_OEA (-1.06 pp) indicates that OEA-linked respondents show a negative margin adjustment — a potential institutional bias signal. Beta_EU (+0.45 pp) represents a small positive correction for European-methodology pollsters. Sigma (8.68 pp) is the residual noise term, indicating substantial unexplained exit-poll variance consistent with the HDI width in the tracking model.
+cells.append(
+    md(
+        """**Finding:** The exit model intercept (+29.5 pp) represents baseline A-preference margin in the absence of covariates. Beta_OEA (-1.06 pp) indicates that OEA-linked respondents show a negative margin adjustment — a potential institutional bias signal. Beta_EU (+0.45 pp) represents a small positive correction for European-methodology pollsters. Sigma (8.68 pp) is the residual noise term, indicating substantial unexplained exit-poll variance consistent with the HDI width in the tracking model.
 
-**Strategic implication:** The high sigma (8.68 pp) in the exit model means exit-polling-day results should not trigger rapid-response media buys — the noise floor is too high for reliable real-time inference. Wait for at least 30% count aggregation before acting on exit poll signals."""))
+**Strategic implication:** The high sigma (8.68 pp) in the exit model means exit-polling-day results should not trigger rapid-response media buys — the noise floor is too high for reliable real-time inference. Wait for at least 30% count aggregation before acting on exit poll signals."""
+    )
+)
 
 # ── C8 — Win Prob vs Propensity ──────────────────────────────────────────────
 cells.append(code("""
@@ -1257,9 +1386,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** There is no strong correlation between departmental win probability and mean participation propensity in this dataset — win probabilities cluster tightly between 79–80% regardless of propensity level (0.40–0.65 range). This reflects the hierarchical model's pooling of information across departments rather than department-level partisan variation. The propensity axis is therefore the mandate-size lever, not the win-probability lever.
+cells.append(
+    md(
+        """**Finding:** There is no strong correlation between departmental win probability and mean participation propensity in this dataset — win probabilities cluster tightly between 79–80% regardless of propensity level (0.40–0.65 range). This reflects the hierarchical model's pooling of information across departments rather than department-level partisan variation. The propensity axis is therefore the mandate-size lever, not the win-probability lever.
 
-**Strategic implication:** Because win probability is effectively constant across departments, campaign resource allocation should be driven entirely by propensity-weighted contact efficiency — departments with higher propensity deserve more mobilisation investment regardless of their electoral competitiveness."""))
+**Strategic implication:** Because win probability is effectively constant across departments, campaign resource allocation should be driven entirely by propensity-weighted contact efficiency — departments with higher propensity deserve more mobilisation investment regardless of their electoral competitiveness."""
+    )
+)
 
 # ── C9 — Polling Transparency Audit ──────────────────────────────────────────
 cells.append(code("""
@@ -1285,9 +1418,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** ATI/Snead achieves perfect transparency (phi=1.00) in its single wave, while ICA scores 0.79 and CAPLI scores only 0.37 — the lowest in the panel. CAPLI's low transparency score reflects incomplete methodology disclosure (missing sample frame documentation and weighting methodology). CAPLI's ficha_share drops to 0.0 in week 9, indicating that wave contained no properly documented field records.
+cells.append(
+    md(
+        """**Finding:** ATI/Snead achieves perfect transparency (phi=1.00) in its single wave, while ICA scores 0.79 and CAPLI scores only 0.37 — the lowest in the panel. CAPLI's low transparency score reflects incomplete methodology disclosure (missing sample frame documentation and weighting methodology). CAPLI's ficha_share drops to 0.0 in week 9, indicating that wave contained no properly documented field records.
 
-**Strategic implication:** Down-weight CAPLI results by at least 40% in any manual poll aggregation exercise. If CAPLI is commissioned for additional waves, require full methodology disclosure as a contract condition before payment."""))
+**Strategic implication:** Down-weight CAPLI results by at least 40% in any manual poll aggregation exercise. If CAPLI is commissioned for additional waves, require full methodology disclosure as a contract condition before payment."""
+    )
+)
 
 # ── C10 — MC Win Probability Histogram ───────────────────────────────────────
 cells.append(code("""
@@ -1317,12 +1454,18 @@ print(f"Win condition satisfied in {win_pct:.1%} of {len(mc):,} MC draws")
 print(f"Baseline median threshold: {baseline_median:.3f}")
 """))
 
-cells.append(md("""**Finding:** Under the derived win condition (shock scale at or below baseline median), approximately 25% of all MC draws fall in the win zone. This understates true win probability because the extreme-tracker draws inflate shock scale — restricting to baseline draws alone, the win rate is 100% (all baseline draws satisfy the condition). The cross-scenario win rate of ~25% is therefore a function of the 75/25 baseline/extreme draw split, not underlying electoral uncertainty.
+cells.append(
+    md(
+        """**Finding:** Under the derived win condition (shock scale at or below baseline median), approximately 25% of all MC draws fall in the win zone. This understates true win probability because the extreme-tracker draws inflate shock scale — restricting to baseline draws alone, the win rate is 100% (all baseline draws satisfy the condition). The cross-scenario win rate of ~25% is therefore a function of the 75/25 baseline/extreme draw split, not underlying electoral uncertainty.
 
-**Strategic implication:** The MC architecture should be reconfigured to assign scenario probabilities explicitly (e.g., 85% baseline, 15% extreme tracker) rather than equal-weight sampling — current equal weighting implies a 75% probability of crisis scenarios, which is not a credible prior for a stable democratic election."""))
+**Strategic implication:** The MC architecture should be reconfigured to assign scenario probabilities explicitly (e.g., 85% baseline, 15% extreme tracker) rather than equal-weight sampling — current equal weighting implies a 75% probability of crisis scenarios, which is not a credible prior for a stable democratic election."""
+    )
+)
 
 # ── Cell 39 — Section 5 header ───────────────────────────────────────────────
-cells.append(md("""## 5. Cross-Module Synthesis
+cells.append(
+    md(
+        """## 5. Cross-Module Synthesis
 
 This section integrates outputs from all three modules to surface the campaign's strategic decision space. The key analytical questions are:
 
@@ -1332,7 +1475,9 @@ This section integrates outputs from all three modules to surface the campaign's
 4. **Which departments should be the priority for final-sprint investment?** (Priority matrix)
 5. **Is the reach utilisation aligned with solver quality?** (Efficiency frontier)
 
-The synthesis charts (S1–S5) draw simultaneously on population, allocation, and forecasting data to answer these questions."""))
+The synthesis charts (S1–S5) draw simultaneously on population, allocation, and forecasting data to answer these questions."""
+    )
+)
 
 # ── S1 — Segment × Channel Budget Heatmap ────────────────────────────────────
 cells.append(code("""
@@ -1364,9 +1509,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Rural Committed-dominant departments receive the majority of radio and canvassing spend, which is strategically appropriate. However, Youth Volatile-dominant departments (primarily Urban) show high broadcast TV spend that likely under-delivers vs. digital channels for this age group. Structurally Dependent Bloc departments are under-allocated in all channel categories relative to their share of the propensity-weighted target population.
+cells.append(
+    md(
+        """**Finding:** Rural Committed-dominant departments receive the majority of radio and canvassing spend, which is strategically appropriate. However, Youth Volatile-dominant departments (primarily Urban) show high broadcast TV spend that likely under-delivers vs. digital channels for this age group. Structurally Dependent Bloc departments are under-allocated in all channel categories relative to their share of the propensity-weighted target population.
 
-**Strategic implication:** Rebalance Youth Volatile-dominant department budgets toward digital direct (WhatsApp, Facebook) from TV spots — the segment's media consumption profile strongly favours digital channels, and the current budget mix likely leaves 15–20% of achievable contacts unrealised."""))
+**Strategic implication:** Rebalance Youth Volatile-dominant department budgets toward digital direct (WhatsApp, Facebook) from TV spots — the segment's media consumption profile strongly favours digital channels, and the current budget mix likely leaves 15–20% of achievable contacts unrealised."""
+    )
+)
 
 # ── S2 — Propensity vs Reachability 4-Quadrant ───────────────────────────────
 cells.append(code("""
@@ -1416,9 +1565,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Rural Committed occupies the "High Value / Hard to Reach" quadrant — high propensity but low reachability — confirming that this segment requires disproportionate investment per contact. Urban High Volatility sits in the "High Value / Easy to Reach" quadrant, making it the highest expected-value digital target. Committed Opposition appears in "Low Value / Easy to Reach" — a budget trap to avoid. Youth Volatile sits near the quadrant intersection, making its positioning sensitive to turnout mobilisation success.
+cells.append(
+    md(
+        """**Finding:** Rural Committed occupies the "High Value / Hard to Reach" quadrant — high propensity but low reachability — confirming that this segment requires disproportionate investment per contact. Urban High Volatility sits in the "High Value / Easy to Reach" quadrant, making it the highest expected-value digital target. Committed Opposition appears in "Low Value / Easy to Reach" — a budget trap to avoid. Youth Volatile sits near the quadrant intersection, making its positioning sensitive to turnout mobilisation success.
 
-**Strategic implication:** The 4-quadrant framework provides a direct resource allocation heuristic: invest heavily in "High Value / Hard to Reach" (Rural Committed via canvassing), maintain efficiently in "High Value / Easy to Reach" (Urban High Volatility via digital), and eliminate spend on "Low Value / Easy to Reach" (Committed Opposition)."""))
+**Strategic implication:** The 4-quadrant framework provides a direct resource allocation heuristic: invest heavily in "High Value / Hard to Reach" (Rural Committed via canvassing), maintain efficiently in "High Value / Easy to Reach" (Urban High Volatility via digital), and eliminate spend on "Low Value / Easy to Reach" (Committed Opposition)."""
+    )
+)
 
 # ── S3 — Persuasion Contacts per USD by Channel/Region ───────────────────────
 cells.append(code("""
@@ -1453,9 +1606,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Canvassing and WhatsApp chatbot show the highest persuasion contacts per USD across all regions, with Oriental canvassing delivering approximately 4.2 contacts per dollar. Broadcast TV has the lowest ROI per contact dollar, particularly in Chaco where routing costs inflate unit prices. SMS delivers near-zero persuasion contacts per USD — confirming its status as the least efficient channel in the mix.
+cells.append(
+    md(
+        """**Finding:** Canvassing and WhatsApp chatbot show the highest persuasion contacts per USD across all regions, with Oriental canvassing delivering approximately 4.2 contacts per dollar. Broadcast TV has the lowest ROI per contact dollar, particularly in Chaco where routing costs inflate unit prices. SMS delivers near-zero persuasion contacts per USD — confirming its status as the least efficient channel in the mix.
 
-**Strategic implication:** Reallocate SMS budget ($10–15K estimated) and TV spots in Chaco immediately to canvassing and WhatsApp in Oriental — the ROI differential is at least 10x in favour of direct contact channels at this stage of the campaign."""))
+**Strategic implication:** Reallocate SMS budget ($10–15K estimated) and TV spots in Chaco immediately to canvassing and WhatsApp in Oriental — the ROI differential is at least 10x in favour of direct contact channels at this stage of the campaign."""
+    )
+)
 
 # ── S4 — Department Priority Matrix ──────────────────────────────────────────
 cells.append(code("""
@@ -1494,9 +1651,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Itapua and Caaguazu occupy the high-propensity corridor (>0.60) with win probabilities above 79.5%, but carry smaller bubbles (lower total budget) than Central — suggesting they are under-resourced relative to their combined value score. Central dominates budget allocation but sits at median propensity (~0.55), meaning its large bubble reflects volume rather than per-voter efficiency. Chaco departments cluster at low propensity with small bubbles, justifying their minimal allocation.
+cells.append(
+    md(
+        """**Finding:** Itapua and Caaguazu occupy the high-propensity corridor (>0.60) with win probabilities above 79.5%, but carry smaller bubbles (lower total budget) than Central — suggesting they are under-resourced relative to their combined value score. Central dominates budget allocation but sits at median propensity (~0.55), meaning its large bubble reflects volume rather than per-voter efficiency. Chaco departments cluster at low propensity with small bubbles, justifying their minimal allocation.
 
-**Strategic implication:** The optimal final-sprint reallocation shifts $60–90K from low-propensity, high-budget departments (Central billboard spend) toward high-propensity, under-budgeted departments (Caaguazu canvassing, Itapua radio top-up) — maximising propensity-weighted contacts per marginal dollar."""))
+**Strategic implication:** The optimal final-sprint reallocation shifts $60–90K from low-propensity, high-budget departments (Central billboard spend) toward high-propensity, under-budgeted departments (Caaguazu canvassing, Itapua radio top-up) — maximising propensity-weighted contacts per marginal dollar."""
+    )
+)
 
 # ── S5 — Efficiency Frontier ─────────────────────────────────────────────────
 cells.append(code("""
@@ -1533,9 +1694,13 @@ plt.tight_layout()
 plt.show()
 """))
 
-cells.append(md("""**Finding:** Departments with optimal solver status cluster in the upper-right quadrant (high utilisation, high contacts), confirming the solver is correctly identifying efficient solutions where constraints permit. Feasible-status departments show a wider dispersion, with several sitting at high utilisation but low contacts — indicating binding reach cap constraints rather than budget constraints. No infeasible solutions appear in the baseline scenario, confirming the allocation programme is well-specified.
+cells.append(
+    md(
+        """**Finding:** Departments with optimal solver status cluster in the upper-right quadrant (high utilisation, high contacts), confirming the solver is correctly identifying efficient solutions where constraints permit. Feasible-status departments show a wider dispersion, with several sitting at high utilisation but low contacts — indicating binding reach cap constraints rather than budget constraints. No infeasible solutions appear in the baseline scenario, confirming the allocation programme is well-specified.
 
-**Strategic implication:** Departments showing high reach utilisation but low contacts (middle-left quadrant) are reach-cap-constrained — adding budget here will not generate additional contacts without also raising reach caps. Campaign investment in these departments should focus on cap-raising activities (voter registration, new-partner media access agreements) rather than direct budget increases."""))
+**Strategic implication:** Departments showing high reach utilisation but low contacts (middle-left quadrant) are reach-cap-constrained — adding budget here will not generate additional contacts without also raising reach caps. Campaign investment in these departments should focus on cap-raising activities (voter registration, new-partner media access agreements) rather than direct budget increases."""
+    )
+)
 
 # ── Cell 45 — Section 6: Strategic Recommendations ───────────────────────────
 cells.append(md("""## 6. Strategic Recommendations
@@ -1727,6 +1892,7 @@ print(f"Total cells: {len(nb.cells)}")
 
 # Quick JSON validation
 import json
+
 with open(OUT_PATH) as f:
     nb_check = json.load(f)
 print(f"JSON valid: True | Cell count from JSON: {len(nb_check['cells'])}")

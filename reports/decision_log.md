@@ -4,6 +4,18 @@ Records every non-trivial architectural choice: decision, alternatives considere
 
 ---
 
+## 2026-05-12 — Project Action List §4: Pyright basic on Makefile roots
+
+**Decision:** Keep [`pyproject.toml`](../pyproject.toml) `typeCheckingMode = basic` on `module_a_population_segmentation/src` and `module_b_resource_allocation/src` (matches root [`Makefile`](../Makefile) `typecheck`). Add [`tests/test_architecture_pyright_basic_contract.py`](../tests/test_architecture_pyright_basic_contract.py) subprocess guard.
+
+**Alternatives considered:** Adding Module C `src/` to the same Pyright gate in one step — deferred; Module C has separate test job and heavier typing surface.
+
+**Reason:** Closes Project Action List §4 Pyright line with reproducible CI-local verification.
+
+**Source:** Project Action List §4 Codebase Maturity — Pyright (2026-05-12).
+
+---
+
 ## 2026-05-12 — Project Action List §4: Ruff zero warnings on configured corpus
 
 **Decision:** Add `[tool.ruff] exclude` in [`pyproject.toml`](../pyproject.toml) for generated or non-Python trees (`reports/`, `**/*.ipynb`, `graphify-out/`, build artifacts) so `poetry run ruff check .` matches “all first-party source” intent without linting EDA outputs. Fix residual E501 / I001 in scoped tests ([`test_cleaner.py`](../module_a_population_segmentation/tests/test_cleaner.py), [`test_raw_injector.py`](../module_a_population_segmentation/tests/test_raw_injector.py), [`tests/test_architecture_docker_surface.py`](../tests/test_architecture_docker_surface.py)). Add [`tests/test_architecture_ruff_configuration.py`](../tests/test_architecture_ruff_configuration.py).

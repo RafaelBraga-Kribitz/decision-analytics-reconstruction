@@ -68,9 +68,9 @@
 ~~- [ ] `max_noise_rate` contradiction: fix comment to match value (0.01) — [`model_params.yaml`](module_a_population_segmentation/config/model_params.yaml) Gate A4 comment; regression [`module_a_population_segmentation/tests/test_model_params_dbscan_max_noise_consistency.py`](module_a_population_segmentation/tests/test_model_params_dbscan_max_noise_consistency.py).~~
 
 **Code quality:**
-~~- [ ] Run Ruff on all source files: zero warnings~~ — [`pyproject.toml`](pyproject.toml) `[tool.ruff] exclude` / `extend-exclude` for `reports/`, `**/*.ipynb`, `graphify-out/`, Module A `notebooks/`; `poetry run ruff check .` clean; regression [`tests/test_architecture_ruff_configuration.py`](tests/test_architecture_ruff_configuration.py) (2026-05-12).
-~~- [ ] Run Black: all source files formatted~~ *(2026-05-12: `make lint` black --check clean on Makefile-scoped trees.)*
-- [ ] Run Pyright `basic` mode: zero errors (stretch goal: migrate to `strict` mode incrementally)
+~~- [ ] Run Ruff on all source files: zero warnings~~ — [`pyproject.toml`](pyproject.toml) `[tool.ruff] exclude` / `extend-exclude` for `reports/`, `**/*.ipynb`, `graphify-out/`, Module A `notebooks/`; `poetry run ruff check .` clean; regression [`tests/test_architecture_ruff_configuration.py`](tests/test_architecture_ruff_configuration.py), [`tests/test_architecture_ruff_black_contract.py`](tests/test_architecture_ruff_black_contract.py) (2026-05-12).
+~~- [ ] Run Black: all source files formatted~~ — `reports/eda/*.py` Black-formatted; `poetry run black --check .` clean; regression [`tests/test_architecture_ruff_black_contract.py`](tests/test_architecture_ruff_black_contract.py) (2026-05-12).
+~~- [ ] Run Pyright `basic` mode: zero errors (stretch goal: migrate to `strict` mode incrementally)~~ — [`pyproject.toml`](pyproject.toml) `[tool.pyright]` `typeCheckingMode = basic`; Makefile `typecheck` runs `pyright` on Module A and B `src/`; regression [`tests/test_architecture_pyright_basic_contract.py`](tests/test_architecture_pyright_basic_contract.py) (2026-05-12).
 - [ ] All public functions have docstrings (Google or NumPy format) with: description, Args, Returns, Raises, Example
 - [ ] All functions with random behavior: seed parameter documented, deterministic with fixed seed
 - [ ] No magic numbers: all constants in `schema.py` or `config/*.yaml`
