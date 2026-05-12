@@ -71,7 +71,27 @@ def clean_population(
     qa_report_dir: str | Path | None = None,
     seed: int | None = 42,
 ) -> pd.DataFrame:
-    """Apply deterministic cleaning steps and emit QA report."""
+    """Apply deterministic cleaning steps and emit an optional QA report.
+
+    Args:
+        raw_df: Raw or flawed population table (for example from
+            :func:`population_segmentation.data.raw_injector.inject_flaws`).
+        config: Generation configuration dict (controls synthetic internet flags,
+            ``qa_report`` toggles, etc.).
+        qa_report_dir: Directory to write QA sidecars; ``None`` skips report emission.
+        seed: RNG seed forwarded to any stochastic repair paths.
+
+    Returns:
+        Clean population dataset satisfying the Module A clean contract.
+
+    Raises:
+        KeyError: If required input columns are missing from ``raw_df``.
+
+    Example:
+        Typical export-stage call::
+
+            clean_df = clean_population(raw_dirty, config, qa_report_dir=out_dir, seed=42)
+    """
     rng = make_rng(seed)
     df = raw_df.copy()
 

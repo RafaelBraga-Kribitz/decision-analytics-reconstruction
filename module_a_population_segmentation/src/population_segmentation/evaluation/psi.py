@@ -8,9 +8,26 @@ import numpy as np
 def population_stability_index(
     expected: np.ndarray, actual: np.ndarray, *, n_bins: int = 10
 ) -> float:
-    """Symmetric PSI on histogram bins of [0,1]-bounded scores.
+    """Symmetric PSI on histogram bins of ``[0, 1]``-bounded scores.
 
-    ``expected`` and ``actual`` are 1-D arrays of participation propensity or similar.
+    ``expected`` and ``actual`` are 1-D arrays of participation propensity or
+    similar bounded scores; both are histogrammed on shared bins.
+
+    Args:
+        expected: Reference distribution sample (1-D).
+        actual: Comparison distribution sample (1-D).
+        n_bins: Number of equal-width bins spanning ``[0, 1]``.
+
+    Returns:
+        PSI statistic (float). Returns ``0.0`` if either array is empty.
+
+    Raises:
+        None: This function does not raise for typical finite numeric inputs.
+
+    Example:
+        >>> import numpy as np
+        >>> population_stability_index(np.array([0.1, 0.9]), np.array([0.2, 0.8])) >= 0.0
+        True
     """
     e = np.asarray(expected, dtype=float).ravel()
     a = np.asarray(actual, dtype=float).ravel()

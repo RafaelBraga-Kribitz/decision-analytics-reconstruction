@@ -185,17 +185,41 @@ FEATURE_FRAME_SCHEMA = DataFrameSchema(
 
 
 def validate_clean_population(df: pd.DataFrame) -> None:  # type: ignore[name-defined]
-    """Validate clean population DataFrame at cleaner.py exit.
+    """Validate a clean population DataFrame at the ``cleaner`` exit gate.
 
-    Raises pa.errors.SchemaError with column-level detail on any violation.
-    Call this after clean_population() and before any downstream module reads the output.
+    Args:
+        df: Table produced by :func:`population_segmentation.data.cleaner.clean_population`.
+
+    Returns:
+        ``None``
+
+    Raises:
+        pandera.errors.SchemaError: If any column fails dtype, nullability, or checks
+            defined on ``CLEAN_POPULATION_SCHEMA``.
+
+    Example:
+        After cleaning and before feature engineering::
+
+            validate_clean_population(clean_df)
     """
     CLEAN_POPULATION_SCHEMA.validate(df)
 
 
 def validate_feature_frame(df: pd.DataFrame) -> None:  # type: ignore[name-defined]
-    """Validate feature-engineered DataFrame at features/ layer exit.
+    """Validate a feature-engineered frame at the features-layer exit gate.
 
-    Raises pa.errors.SchemaError with column-level detail on any violation.
+    Args:
+        df: Table after demographic, behavioral, and reachability builders.
+
+    Returns:
+        ``None``
+
+    Raises:
+        pandera.errors.SchemaError: If any column fails ``FEATURE_FRAME_SCHEMA`` checks.
+
+    Example:
+        After ``build_reachability_features`` and before segmentation::
+
+            validate_feature_frame(feat_df)
     """
     FEATURE_FRAME_SCHEMA.validate(df)

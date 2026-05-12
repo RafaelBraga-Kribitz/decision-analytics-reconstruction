@@ -35,6 +35,27 @@ def _resolve_defaults(
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Run the Module A pipeline with argparse defaults resolved from ``cwd``.
+
+    Loads ``generation.yaml`` and ``calibration_anchors.yaml``, then calls
+    :func:`population_segmentation.pipeline.export.run_export`.
+
+    Args:
+        argv: Argument vector; ``None`` uses ``sys.argv[1:]`` when called from
+            ``if __name__ == "__main__"``.
+
+    Returns:
+        ``0`` on success, ``1`` if :func:`run_export` raises, ``2`` if config or
+        anchor files are missing.
+
+    Raises:
+        SystemExit: If ``argparse`` rejects the CLI (for example on ``--help``).
+
+    Example:
+        Default paths (repo root as cwd)::
+
+            python -m population_segmentation.pipeline
+    """
     parser = argparse.ArgumentParser(
         description=(
             "Module A end-to-end pipeline: generation → injection → cleaning → "

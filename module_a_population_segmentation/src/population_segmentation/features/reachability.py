@@ -6,6 +6,23 @@ import pandas as pd
 
 
 def build_reachability_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Combine digital and broadcast penetration into reachability indices and tiers.
+
+    Args:
+        df: Population frame with internet access, WhatsApp or TV or radio penetration,
+            and ``rural_flag``.
+
+    Returns:
+        Copy of ``df`` with ``reachability_*`` columns, tertile labels, and compound
+        access flags for downstream propensity and media aggregates.
+
+    Raises:
+        KeyError: If required input columns are absent.
+
+    Example::
+
+        reachability = build_reachability_features(behavioral_frame)
+    """
     out = df.copy()
 
     out["reachability_digital"] = out["internet_access_flag"].astype(float) * out[

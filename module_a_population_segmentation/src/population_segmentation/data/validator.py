@@ -25,6 +25,22 @@ class AnchorCheck:
 
 
 def validate_schema(df: pd.DataFrame) -> None:
+    """Validate that ``df`` satisfies the Module A clean-population column contract.
+
+    Args:
+        df: Clean or nearly-clean population table after ``clean_population``.
+
+    Returns:
+        ``None``.
+
+    Raises:
+        QAGateFailure: If required columns are missing, formats are invalid, or
+            canonical value sets are violated.
+
+    Example:
+        Intended for use immediately after ``clean_population``; supply anchors from
+        ``calibration_anchors.yaml`` before downstream modeling.
+    """
     required = [
         "entity_id",
         "cedula",
@@ -66,6 +82,24 @@ def validate_schema(df: pd.DataFrame) -> None:
 
 
 def validate_calibration_anchors(df: pd.DataFrame, anchors: dict[str, Any]) -> dict[str, Any]:
+    """Compare ``df`` marginals to YAML calibration anchors with sampling-aware tolerances.
+
+    Args:
+        df: Population frame containing ``rural_flag``, ``gender``,
+            ``language_census_bucket``, etc.
+        anchors: Parsed ``calibration_anchors.yaml`` (demographics, language, tolerances).
+
+    Returns:
+        Dict with keys ``passed`` (bool), ``checks`` (list of serialized
+        :class:`AnchorCheck`), and ``failed`` (list of failed checks).
+
+    Raises:
+        KeyError: If ``anchors`` is missing expected nested keys.
+
+    Example:
+        Compare rural share, male share, and language bucket rates to anchors before
+        exporting propensity or segment artifacts.
+    """
     checks: list[AnchorCheck] = []
     n = max(len(df), 1)
     # Sampling-aware floor so dev sample sizes do not fail on random noise.
@@ -115,6 +149,21 @@ def validate_calibration_anchors(df: pd.DataFrame, anchors: dict[str, Any]) -> d
 
 
 def run_all_validations(df: pd.DataFrame, anchors: dict[str, Any]) -> dict[str, Any]:
+    """Run :func:`validate_schema` then :func:`validate_calibration_anchors`.
+
+    Args:
+        df: Population frame to validate.
+        anchors: Parsed calibration anchors YAML.
+
+    Returns:
+        Anchor check report dict (same shape as :func:`validate_calibration_anchors`).
+
+    Raises:
+        QAGateFailure: If schema validation fails or any anchor check is outside tolerance.
+
+    Example:
+        Call from export or QA scripts after schema checks and before writing parquet.
+    """
     validate_schema(df)
     anchor_res = validate_calibration_anchors(df, anchors)
     if not anchor_res["passed"]:

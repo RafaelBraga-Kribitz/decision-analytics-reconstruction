@@ -55,12 +55,45 @@ class FxLayer:
     spread_by_week: dict[str, float]  # iso_week -> retail spread fraction
 
     def rate(self, iso_week: str, tier: FxTier) -> float:
+        """Return the PYG-per-USD FX rate for ``iso_week`` and ``tier``.
+
+        Args:
+            iso_week: ISO week label (``2018-W01`` … ``2018-W14``).
+            tier: ``REF`` for BCP reference or ``RETAIL`` for retail-adjusted rate.
+
+        Returns:
+            Positive float exchange rate (PYG per USD).
+
+        Raises:
+            KeyError: If ``iso_week`` is absent from the layer tables.
+
+        Example:
+            Used by :func:`_unit_cost_usd` when converting vendor quotes to USD.
+        """
         try:
             return self.ref_by_week[iso_week] if tier == "REF" else self.retail_by_week[iso_week]
         except KeyError as e:
             raise KeyError(f"FxLayer: unknown iso_week {iso_week!r}") from e
 
     def to_usd(self, amount_native: float, currency: str, iso_week: str, tier: FxTier) -> float:
+        """Convert ``amount_native`` to USD using the tiered FX path.
+
+        Args:
+            amount_native: Monetary amount expressed in ``currency``.
+            currency: ``USD`` (no-op) or ``PYG`` (divide by :meth:`rate`).
+            iso_week: ISO week label used to look up the applicable rate.
+            tier: ``REF`` or ``RETAIL`` tier for the conversion.
+
+        Returns:
+            Amount expressed in USD as a float.
+
+        Raises:
+            ValueError: If ``currency`` is not ``USD`` or ``PYG``.
+
+        Example:
+            ``layer.to_usd(1_000_000.0, \"PYG\", \"2018-W01\", \"RETAIL\")`` for a
+            street-vendor invoice line.
+        """
         if currency == "USD":
             return float(amount_native)
         if currency == "PYG":
@@ -68,6 +101,23 @@ class FxLayer:
         raise ValueError(f"FxLayer.to_usd: unsupported currency {currency!r}")
 
     def to_pyg(self, amount_native: float, currency: str, iso_week: str, tier: FxTier) -> float:
+        """Convert ``amount_native`` to PYG using the tiered FX path.
+
+        Args:
+            amount_native: Monetary amount expressed in ``currency``.
+            currency: ``PYG`` (no-op) or ``USD`` (multiply by :meth:`rate`).
+            iso_week: ISO week label used to look up the applicable rate.
+            tier: ``REF`` or ``RETAIL`` tier for the conversion.
+
+        Returns:
+            Amount expressed in PYG as a float.
+
+        Raises:
+            ValueError: If ``currency`` is not ``USD`` or ``PYG``.
+
+        Example:
+            ``layer.to_pyg(250.0, \"USD\", \"2018-W02\", \"REF\")`` for an institutional wire.
+        """
         if currency == "PYG":
             return float(amount_native)
         if currency == "USD":
@@ -105,6 +155,23 @@ def load_fx_layer(
     bcp_path: Path | None = None,
     spread_path: Path | None = None,
 ) -> FxLayer:
+    """Load YAML priors and build a frozen :class:`FxLayer` for one series.
+
+    Args:
+        series_id: ``series_a_monthly`` or ``series_b_weekly`` calibration track.
+        bcp_path: Optional override for the BCP reference YAML.
+        spread_path: Optional override for the retail spread YAML.
+
+    Returns:
+        Immutable FX layer with aligned weekly reference and retail rates.
+
+    Raises:
+        ValueError: If ``series_id`` is unknown or required weeks are missing.
+        OSError: If YAML paths cannot be read.
+
+    Example:
+        ``load_fx_layer(\"series_b_weekly\")`` is the default path for LP runs.
+    """
     bcp_path = bcp_path or _DEFAULT_BCP_PATH
     spread_path = spread_path or _DEFAULT_SPREAD_PATH
 
@@ -139,6 +206,20 @@ def load_fx_layer(
 
 
 def fx_layer_to_frame(layer: FxLayer) -> pd.DataFrame:
+    """Materialize ``layer`` as a tidy DataFrame for dashboards and APIs.
+
+    Args:
+        layer: Resolved FX layer from :func:`load_fx_layer`.
+
+    Returns:
+        DataFrame with ``iso_week``, ``series_id``, reference, spread, and retail columns.
+
+    Raises:
+        KeyError: If internal week dictionaries are inconsistent with ``WEEK_LABELS``.
+
+    Example:
+        ``fx_layer_to_frame(load_fx_layer())`` powers ``GET /fx/{series_id}``.
+    """
     return pd.DataFrame(
         {
             "iso_week": list(WEEK_LABELS),
@@ -151,7 +232,21 @@ def fx_layer_to_frame(layer: FxLayer) -> pd.DataFrame:
 
 
 def enforce_bcp_corridor(layer: FxLayer, max_pct: float = BCP_CORRIDOR_MAX_PCT) -> None:
-    """Raise ValueError if any reference rate moves > ``max_pct`` week over week."""
+    """Validate that BCP reference rates stay within a week-over-week corridor.
+
+    Args:
+        layer: FX layer whose ``ref_by_week`` series is checked sequentially.
+        max_pct: Maximum allowed relative jump between consecutive ISO weeks.
+
+    Returns:
+        ``None`` when validation succeeds.
+
+    Raises:
+        ValueError: If any week-over-week move exceeds ``max_pct``.
+
+    Example:
+        Called in QA scripts before accepting a refreshed FX YAML bundle.
+    """
     ref = [layer.ref_by_week[w] for w in WEEK_LABELS]
     for i in range(1, len(ref)):
         delta = abs(ref[i] - ref[i - 1]) / ref[i - 1]
@@ -163,10 +258,22 @@ def enforce_bcp_corridor(layer: FxLayer, max_pct: float = BCP_CORRIDOR_MAX_PCT) 
 
 
 def enforce_fx_band(layer: FxLayer, max_pct: float = FX_BAND_MAX_PCT_VS_BCP) -> None:
-    """Validate that the retail rate doesn't undercut the reference rate.
+    """Validate that retail rates do not undercut the reference band.
 
-    ``max_pct`` is the allowed absolute deviation below the reference rate.
-    Retail rates above the reference are always allowed (spreads are non-negative).
+    ``max_pct`` is the allowed absolute negative deviation of retail vs. reference.
+
+    Args:
+        layer: FX layer with populated ``ref_by_week`` and ``retail_by_week``.
+        max_pct: Maximum allowed fractional gap below the reference rate.
+
+    Returns:
+        ``None`` when validation succeeds.
+
+    Raises:
+        ValueError: If any retail rate violates the lower band.
+
+    Example:
+        Guardrail before exporting FX tables to downstream allocators.
     """
     for w in WEEK_LABELS:
         deviation = (layer.retail_by_week[w] - layer.ref_by_week[w]) / layer.ref_by_week[w]
@@ -177,10 +284,21 @@ def enforce_fx_band(layer: FxLayer, max_pct: float = FX_BAND_MAX_PCT_VS_BCP) -> 
 
 
 def convert_budget_lines_to_usd(budget_lines: pd.DataFrame, layer: FxLayer) -> pd.DataFrame:
-    """Return ``budget_lines`` with an added ``amount_usd`` column.
+    """Return ``budget_lines`` with ``amount_usd`` and ``fx_series_id`` columns.
 
-    Required input columns: ``currency``, ``amount_native``, ``iso_week``,
-    ``fx_tier`` (each row chooses its own tier).
+    Args:
+        budget_lines: Rows with ``currency``, ``amount_native``, ``iso_week``,
+            and ``fx_tier`` columns.
+        layer: FX layer providing :meth:`FxLayer.to_usd` for each row.
+
+    Returns:
+        Copy of ``budget_lines`` including ``amount_usd`` and ``fx_series_id``.
+
+    Raises:
+        KeyError: If required columns are missing.
+
+    Example:
+        Used when ingesting vendor spreadsheets prior to MILP assembly.
     """
     required = {"currency", "amount_native", "iso_week", "fx_tier"}
     missing = required - set(budget_lines.columns)

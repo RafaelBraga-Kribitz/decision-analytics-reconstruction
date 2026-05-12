@@ -18,6 +18,23 @@ def _age_bin(age: int) -> str:
 
 
 def build_demographic_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Derive age bins, gender encoding, youth or senior flags, and region indicators.
+
+    Args:
+        df: Clean population frame with ``age_on_event_date``, ``gender``, and
+            ``department``.
+
+    Returns:
+        Copy of ``df`` with demographic feature columns (for example ``age_bin``,
+        ``gender_encoded``, ``chaco_flag``, ``metro_flag``).
+
+    Raises:
+        KeyError: If required input columns are absent.
+
+    Example::
+
+        demographic = build_demographic_features(clean_df)
+    """
     out = df.copy()
     out["age_bin"] = out["age_on_event_date"].astype(int).map(_age_bin)
 

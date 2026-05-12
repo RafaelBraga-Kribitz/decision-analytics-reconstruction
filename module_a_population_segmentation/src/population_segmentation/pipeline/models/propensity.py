@@ -33,22 +33,42 @@ class PropensityModel:
     )
 
     def fit_predict(self, df: pd.DataFrame, anchors: dict[str, Any]) -> dict[str, Any]:
-        work = df.copy()
-        x = self._feature_matrix(work, anchors)
+        """Fit a Platt-calibrated logistic propensity model and score the frame.
+
+        Builds a synthetic binary target aligned to YAML anchors, trains a
+        baseline logistic regression with scaling, applies Platt calibration,
+        and returns metrics plus column-wise predictions on ``df``.
+
+        Args:
+            df: Feature-rich population dataset after Module A feature engineering.
+            anchors: Parsed calibration anchors controlling synthetic label mass.
+
+        Returns:
+            Dict with fitted artifacts, evaluation metrics, and ``prob`` column
+            aligned to ``df`` index.
+
+        Raises:
+            ValueError: If stratification columns are missing or unusable.
+
+        Example:
+            Access via ``PropensityModel().fit_predict`` from the export pipeline
+            once stratification columns exist on ``df``.
+        """
+        x = self._feature_matrix(df, anchors)
 
         # Synthetic target calibrated to anchors (for reconstruction setting)
-        y = self._synthetic_target(work, anchors)
+        y = self._synthetic_target(df, anchors)
 
         strat_cols = self.stratify_by
         if not strat_cols:
             raise ValueError("stratify_by must name at least one column")
-        missing = [c for c in strat_cols if c not in work.columns]
+        missing = [c for c in strat_cols if c not in df.columns]
         if missing:
             raise ValueError(f"Stratification columns missing from DataFrame: {missing}")
         if len(strat_cols) > 1:
-            strat_series = work[list(strat_cols)].astype(str).agg("_".join, axis=1)
+            strat_series = df[list(strat_cols)].astype(str).agg("_".join, axis=1)
         elif len(strat_cols) == 1:
-            strat_series = work[strat_cols[0]]
+            strat_series = df[strat_cols[0]]
         try:
             x_train, x_tmp, y_train, y_tmp = train_test_split(
                 x, y, test_size=0.4, random_state=self.random_state, stratify=strat_series
@@ -56,7 +76,7 @@ class PropensityModel:
         except ValueError:
             # Rare strata (small n or high-cardinality composite keys) — fall back to department.
             x_train, x_tmp, y_train, y_tmp = train_test_split(
-                x, y, test_size=0.4, random_state=self.random_state, stratify=work["department"]
+                x, y, test_size=0.4, random_state=self.random_state, stratify=df["department"]
             )
         x_cal, x_test, y_cal, y_test = train_test_split(
             x_tmp, y_tmp, test_size=0.5, random_state=self.random_state
@@ -81,18 +101,18 @@ class PropensityModel:
         prob_all = platt.predict_proba(raw_all.reshape(-1, 1))[:, 1]
 
         # Two-pass rake: national first, then per-department (IPF one iteration)
-        prob_raked, dept_multipliers = self._rake(prob_all, pd.Series(work["department"]), anchors)
+        prob_raked, dept_multipliers = self._rake(prob_all, pd.Series(df["department"]), anchors)
 
         # Build metrics on test partition
         auc = float(roc_auc_score(y_test, prob_test))
         brier = float(brier_score_loss(y_test, prob_test))
 
-        pred = pd.Series(prob_raked, index=work.index, name="participation_propensity")
-        calibration = self._calibration_report(pred, work, anchors)
+        pred = pd.Series(prob_raked, index=df.index, name="participation_propensity")
+        calibration = self._calibration_report(pred, df, anchors)
 
         return {
             "predictions": pred,
-            "raw_logit_score": pd.Series(raw_all, index=work.index),
+            "raw_logit_score": pd.Series(raw_all, index=df.index),
             "department_rake_multiplier": dept_multipliers,
             "metrics": {"auc_roc": auc, "brier_score": brier},
             "calibration": calibration,

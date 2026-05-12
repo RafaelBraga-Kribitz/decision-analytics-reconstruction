@@ -188,6 +188,16 @@ def generate_population(
     Returns:
         DataFrame with one row per entity; columns match
         schema_contracts/population_master_raw.yaml.
+
+    Raises:
+        KeyError: If ``config`` is missing required keys such as ``sample_size`` or
+            ``department_weights``.
+        ValueError: If department weights cannot be normalized to a valid distribution.
+
+    Example:
+        From a loaded ``generation.yaml`` dict::
+
+            df = generate_population(config, seed=42, output_path="data/interim/raw.parquet")
     """
     rng = make_rng(seed)
     n = int(config["sample_size"])

@@ -7,6 +7,20 @@ import plotly.express as px
 
 
 def segment_profile_table(df: pd.DataFrame) -> pd.DataFrame:
+    """Aggregate key behavioral and reachability metrics by ``segment_label``.
+
+    Args:
+        df: Population frame with segment assignment and propensity columns.
+
+    Returns:
+        One row per segment with size, means, and composition percentages.
+
+    Raises:
+        KeyError: If required columns are missing.
+
+    Example:
+        Source table for :func:`segment_size_chart` and stakeholder dashboards.
+    """
     cols = [
         "segment_label",
         "participation_propensity",
@@ -31,4 +45,18 @@ def segment_profile_table(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def segment_size_chart(profile_df: pd.DataFrame):
+    """Bar chart of segment sizes from a profile table.
+
+    Args:
+        profile_df: Output of :func:`segment_profile_table`.
+
+    Returns:
+        Plotly Express bar figure.
+
+    Raises:
+        KeyError: If ``segment_label`` or ``segment_size`` is missing.
+
+    Example:
+        Quick QA plot after re-running segmentation with a new ``k``.
+    """
     return px.bar(profile_df, x="segment_label", y="segment_size", title="Segment size")

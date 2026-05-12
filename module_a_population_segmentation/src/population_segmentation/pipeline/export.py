@@ -40,22 +40,27 @@ def run_export(
     out_dir: Path,
     sample_size: int | None = None,
 ) -> dict[str, Path]:
-    """Execute the full Module A pipeline and write contract artifacts.
+    """Execute the full Module A batch pipeline and write contract artifacts.
 
-    Parameters
-    ----------
-    config:
-        Generation config dict (from generation.yaml).
-    anchors:
-        Calibration anchors dict (from calibration_anchors.yaml).
-    out_dir:
-        Directory to write all four artifacts.
-    sample_size:
-        Override the sample_size in config when provided.
+    Args:
+        config: Generation configuration dict (from ``generation.yaml``).
+        anchors: Calibration anchors dict (from ``calibration_anchors.yaml``).
+        out_dir: Directory to create (if needed) and populate with parquet/CSV/JSON
+            outputs.
+        sample_size: When set, overrides ``config["sample_size"]`` for this run only.
 
-    Returns
-    -------
-    dict mapping artifact name to written Path.
+    Returns:
+        Mapping logical artifact keys (for example ``population_master_clean``) to
+        written :class:`~pathlib.Path` objects.
+
+    Raises:
+        Exception: Any error raised by generation, cleaning, validation, segmentation,
+            or propensity steps propagates after partial console progress output.
+
+    Example:
+        From Python, after loading YAML dicts::
+
+            paths = run_export(config, anchors, Path("data/processed"), sample_size=10_000)
     """
     from population_segmentation.data.cleaner import clean_population
     from population_segmentation.data.generator import generate_population
@@ -503,6 +508,28 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 
 
 def main(argv: list[str] | None = None) -> None:
+    """CLI entry for ``python -m population_segmentation.pipeline.export``.
+
+    Parses paths, loads YAML config and anchors, runs :func:`run_export`, and
+    prints artifact paths to stdout.
+
+    Args:
+        argv: Optional argument vector (defaults to ``sys.argv[1:]`` when invoked
+            as ``__main__``).
+
+    Returns:
+        None
+
+    Raises:
+        SystemExit: Propagated from :func:`argparse.ArgumentParser.parse_args` on
+            invalid CLI usage.
+
+    Example:
+        From the repository root after ``poetry install``::
+
+            python -m population_segmentation.pipeline.export --config ... \\
+                --anchors ... --out-dir ...
+    """
     args = _parse_args(argv)
 
     with open(args.config) as f:

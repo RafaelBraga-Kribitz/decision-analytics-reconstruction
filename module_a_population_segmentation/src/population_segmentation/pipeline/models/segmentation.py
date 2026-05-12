@@ -60,24 +60,24 @@ class DBSCANNoiseFilter:
     min_samples: int = 5
 
     def fit_transform(self, df: pd.DataFrame, *, x: np.ndarray | None = None) -> dict[str, Any]:
-        """Run DBSCAN noise detection.
+        """Run DBSCAN noise detection on the PCA-reduced feature space.
 
-        Parameters
-        ----------
-        df:
-            Feature DataFrame containing ``FEATURE_COLUMNS``.  Used only when
-            ``x`` is *not* provided.
-        x:
-            Pre-computed PCA-reduced feature matrix produced by ``_matrix(df)``.
-            Pass this to avoid redundant ``StandardScaler`` + ``PCA`` fitting
-            when the caller already holds the matrix.
+        Args:
+            df: Feature DataFrame containing ``FEATURE_COLUMNS``. Used only when
+                ``x`` is not provided.
+            x: Pre-computed PCA-reduced feature matrix from ``_matrix(df)``.
+                Pass this to avoid redundant ``StandardScaler`` + ``PCA`` when
+                the caller already holds the matrix.
 
-        Returns
-        -------
-        dict with keys:
+        Returns:
+            Dict with ``noise_rate`` (float, fraction noise) and ``noise_flags``
+            (1-D boolean array, one row per entity).
 
-        * ``noise_rate`` (float): fraction of rows flagged as noise.
-        * ``noise_flags`` (np.ndarray[bool]): per-row noise indicator array.
+        Raises:
+            KeyError: If ``df`` is used and lacks required feature columns.
+
+        Example:
+            Invoked from :func:`build_segmentation_frame` with a shared PCA matrix.
         """
         if x is None:
             x = _matrix(df)
@@ -94,17 +94,25 @@ class KMeansSegmenter:
     random_state: int = 42
 
     def fit_predict(self, df: pd.DataFrame, *, x: np.ndarray | None = None) -> dict[str, Any]:
-        """Fit KMeans and return labels with quality metrics.
+        """Fit KMeans on the PCA-reduced matrix and return labels with diagnostics.
 
-        Parameters
-        ----------
-        df:
-            Feature DataFrame containing ``FEATURE_COLUMNS``.  Used only when
-            ``x`` is *not* provided.
-        x:
-            Pre-computed PCA-reduced feature matrix produced by ``_matrix(df)``.
-            Pass this to avoid redundant ``StandardScaler`` + ``PCA`` fitting
-            when the caller already holds the matrix.
+        Args:
+            df: Feature DataFrame containing ``FEATURE_COLUMNS``. Used only when
+                ``x`` is not provided.
+            x: Pre-computed PCA-reduced feature matrix from ``_matrix(df)``.
+                Pass this to avoid redundant scaling/PCA when the caller already
+                holds the matrix.
+
+        Returns:
+            Dict with ``labels`` (cluster index per row), ``silhouette`` (float),
+            ``bootstrap_ari`` (mean ARI over subsamples), and ``segment_share``
+            (normalized cluster counts).
+
+        Raises:
+            KeyError: If ``df`` is used and lacks required feature columns.
+
+        Example:
+            Called from :func:`build_segmentation_frame` after the DBSCAN noise pass.
         """
         if x is None:
             x = _matrix(df)
@@ -144,25 +152,24 @@ def build_segmentation_frame(
     k: int = 6,
     random_state: int = 42,
 ) -> tuple[pd.DataFrame, dict]:
-    """Run DBSCAN + KMeans and return per-row labels and summary metrics.
+    """Run DBSCAN plus KMeans and return per-entity labels and summary metrics.
 
-    Parameters
-    ----------
-    df:
-        Feature DataFrame that contains all FEATURE_COLUMNS and an ``entity_id`` column.
-    k:
-        Number of KMeans clusters (default 6).
-    random_state:
-        Seed for KMeans and bootstrap ARI.
+    Args:
+        df: Feature DataFrame containing all ``FEATURE_COLUMNS`` and ``entity_id``.
+        k: Number of KMeans clusters (default 6, matching contract k).
+        random_state: Seed forwarded to KMeans and bootstrap ARI subsampling.
 
-    Returns
-    -------
-    labels_df:
-        One row per entity with columns:
-        ``entity_id``, ``segment_id`` (int), ``segment_label`` (str),
-        ``dbscan_noise_flag`` (bool).
-    metrics_dict:
-        ``silhouette``, ``bootstrap_ari``, ``noise_rate``, ``segment_share``.
+    Returns:
+        Tuple ``(labels_df, metrics_dict)`` where ``labels_df`` has one row per
+        entity with ``entity_id``, ``segment_id``, ``segment_label``, and
+        ``dbscan_noise_flag``; ``metrics_dict`` holds ``silhouette``,
+        ``bootstrap_ari``, ``noise_rate``, and ``segment_share``.
+
+    Raises:
+        KeyError: If ``df`` is missing ``entity_id`` or a required feature column.
+
+    Example:
+        Primary segmentation entrypoint for the Module A export bundle.
     """
     # Compute the PCA-reduced feature matrix once and reuse it for both
     # DBSCAN (noise pre-pass) and KMeans, avoiding two independent fits of

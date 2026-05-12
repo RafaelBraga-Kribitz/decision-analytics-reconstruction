@@ -6,6 +6,23 @@ import pandas as pd
 
 
 def build_behavioral_features(df: pd.DataFrame) -> pd.DataFrame:
+    """Encode preference proxy, structural dependency, NBI stress, and language signals.
+
+    Args:
+        df: Clean population frame with preference proxy, NBI stress, language census
+            bucket, jopara flag, and structural dependency proxy columns.
+
+    Returns:
+        Copy of ``df`` with scaled and encoded behavioral columns for segmentation and
+        participation propensity.
+
+    Raises:
+        KeyError: If required input columns are absent.
+
+    Example::
+
+        behavioral = build_behavioral_features(demographic_frame)
+    """
     out = df.copy()
 
     pref_map = {"A": 0, "B": 1, "other": 2, "none": 3}

@@ -43,20 +43,23 @@ def _primary_reach_channel(row: pd.Series) -> str:  # type: ignore[type-arg]
 def aggregate_media_reachability_by_segment(df: pd.DataFrame) -> pd.DataFrame:
     """Aggregate per-entity feature rows into one row per segment.
 
-    Parameters
-    ----------
-    df:
-        Entity-level DataFrame. Required columns:
-        ``segment_label``, ``participation_propensity``, ``internet_access_flag``,
-        ``media_penetration_tv``, ``media_penetration_radio``,
-        ``media_penetration_whatsapp``, ``rural_flag``, ``jopara_flag``,
-        ``structural_dependency_encoded``, ``department``.
+    Args:
+        df: Entity-level DataFrame. Required columns:
+            ``segment_label``, ``participation_propensity``, ``internet_access_flag``,
+            ``media_penetration_tv``, ``media_penetration_radio``,
+            ``media_penetration_whatsapp``, ``rural_flag``, ``jopara_flag``,
+            ``structural_dependency_encoded``, ``department``.
 
-    Returns
-    -------
-    pd.DataFrame
-        One row per segment with all 13 contract columns from
+    Returns:
+        One row per canonical segment with all 13 contract columns from
         ``schema_contracts/media_reachability_by_segment.yaml``.
+
+    Raises:
+        KeyError: If a required column is missing from ``df``.
+
+    Example:
+        Called from ``run_export`` after ``segment_label`` and media penetration
+        columns exist on the entity-level population dataset.
     """
     total = len(df)
 
@@ -172,17 +175,20 @@ def aggregate_media_reachability_by_segment_department(df: pd.DataFrame) -> pd.D
     mean columns set to ``NaN`` (this matches
     ``schema_contracts/media_reachability_by_segment_department.yaml``).
 
-    Parameters
-    ----------
-    df:
-        Entity-level DataFrame.  Required columns mirror those required by
-        :func:`aggregate_media_reachability_by_segment`, plus ``department``.
+    Args:
+        df: Entity-level DataFrame. Required columns mirror those required by
+            :func:`aggregate_media_reachability_by_segment`, plus ``department``.
 
-    Returns
-    -------
-    pd.DataFrame
+    Returns:
         Dense ``len(SEGMENT_LABELS) * len(DEPARTMENTS)`` rows with all
         13 columns from the contract.
+
+    Raises:
+        KeyError: If ``department`` or ``segment_label`` is missing from ``df``.
+
+    Example:
+        Emit ``media_reachability_by_segment_department`` before handing reach
+        caps to Module B allocation features.
     """
     if "department" not in df.columns:
         raise KeyError("aggregate_media_reachability_by_segment_department requires 'department'")

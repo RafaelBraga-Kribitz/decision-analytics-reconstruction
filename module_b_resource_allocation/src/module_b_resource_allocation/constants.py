@@ -40,6 +40,22 @@ CHACO_DEPARTMENTS: Final[frozenset[str]] = frozenset(
 
 
 def region_for(department: str) -> str:
+    """Map a department label to the coarse Chaco vs Oriental region bucket.
+
+    Args:
+        department: Canonical department name (see ``DEPARTMENTS``).
+
+    Returns:
+        ``CHACO`` when ``department`` is in ``CHACO_DEPARTMENTS``; otherwise
+        ``ORIENTAL``.
+
+    Raises:
+        None: This function does not raise.
+
+    Example:
+        >>> region_for("Central")
+        'ORIENTAL'
+    """
     return "CHACO" if department in CHACO_DEPARTMENTS else "ORIENTAL"
 
 

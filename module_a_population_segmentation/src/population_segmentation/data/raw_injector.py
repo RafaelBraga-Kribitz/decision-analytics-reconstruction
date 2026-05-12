@@ -87,6 +87,14 @@ def inject_flaws(
     Returns:
         Modified DataFrame with injected flaws. May be longer than input (DUP rows).
         Stores flaw types injected in df.attrs["flaw_types_injected"].
+
+    Raises:
+        KeyError: If ``config`` lacks ``flaw_injection`` or expected rate keys.
+
+    Example:
+        After generating a clean frame::
+
+            dirty = inject_flaws(clean_df, config, seed=7)
     """
     rng = make_rng(seed)
     rates: dict[str, float] = config["flaw_injection"]

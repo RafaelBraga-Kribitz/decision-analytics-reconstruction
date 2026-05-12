@@ -44,11 +44,41 @@ def _frame_to_records(df: pd.DataFrame) -> list[dict]:
 
 @app.get("/healthz")
 def healthz() -> dict[str, str]:
+    """Liveness probe for orchestration and smoke tests.
+
+    Args:
+        None.
+
+    Returns:
+        Dict with ``status``, ``module``, and API ``version`` strings.
+
+    Raises:
+        None: This handler does not raise.
+
+    Example:
+        ``curl -s http://127.0.0.1:8000/healthz`` during deploy checks.
+    """
     return {"status": "ok", "module": "module_b_resource_allocation", "version": "0.1.0"}
 
 
 @app.get("/allocation/{scenario_id}")
 def get_allocation(scenario_id: str, seed: int = 20180422) -> dict:
+    """Solve the MILP for ``scenario_id`` and return JSON allocation rows.
+
+    Args:
+        scenario_id: Canonical scenario label (see ``VALID_SCENARIOS``).
+        seed: Deterministic CBC seed forwarded to :func:`build_problem`.
+
+    Returns:
+        Dict with solver metadata plus ``rows`` as record dictionaries.
+
+    Raises:
+        HTTPException: If ``scenario_id`` is unknown or reserved for the
+            counterfactual endpoint.
+
+    Example:
+        ``GET /allocation/baseline?seed=20180422`` for a full-table replay.
+    """
     if scenario_id not in VALID_SCENARIOS:
         raise HTTPException(
             status_code=404,
@@ -73,6 +103,23 @@ def get_allocation(scenario_id: str, seed: int = 20180422) -> dict:
 
 @app.get("/allocation/{scenario_id}/week/{week_index}")
 def get_allocation_week(scenario_id: str, week_index: int, seed: int = 20180422) -> dict:
+    """Return allocation rows filtered to a single ISO week index.
+
+    Args:
+        scenario_id: Scenario label passed through to :func:`get_allocation`.
+        week_index: 1-based week index constrained to ``1..WEEK_COUNT``.
+        seed: Deterministic seed forwarded to the solver stack.
+
+    Returns:
+        Same shape as :func:`get_allocation`, but ``rows`` only include the
+        requested ``week_index`` and ``row_count`` is updated.
+
+    Raises:
+        HTTPException: If ``week_index`` is outside the allowed range.
+
+    Example:
+        ``GET /allocation/baseline/week/3`` for a narrow dashboard slice.
+    """
     if not 1 <= week_index <= WEEK_COUNT:
         raise HTTPException(status_code=400, detail=f"week_index out of range 1..{WEEK_COUNT}")
     full = get_allocation(scenario_id, seed=seed)
@@ -88,6 +135,24 @@ def get_counterfactual(
     routing_scenario: str = "dry_standard",
     shift_share: float = 0.30,
 ) -> dict:
+    """Compare baseline allocation to a broadcast-to-direct counterfactual.
+
+    Args:
+        seed: Deterministic seed for baseline solve and routing matrices.
+        routing_scenario: Label passed to :func:`build_cost_matrix`.
+        shift_share: Fraction of broadcast spend reallocated toward bilateral channels.
+
+    Returns:
+        Dict with counterfactual rows, deltas vs. baseline, and budget totals.
+
+    Raises:
+        HTTPException: If downstream builders cannot produce feasible routing
+            inputs (surfaced via standard FastAPI error handling).
+
+    Example:
+        ``GET /counterfactual/broadcast_to_direct?shift_share=0.25`` for what-if
+        budgeting.
+    """
     baseline = solve(build_problem(scenario_id="baseline", solver_seed=seed))
     routing = build_cost_matrix(scenario=routing_scenario, seed=seed)
     cf = run_broadcast_to_direct(baseline, routing, shift_share=shift_share)
@@ -110,6 +175,20 @@ def get_counterfactual(
 
 @app.get("/fx/{series_id}")
 def get_fx(series_id: Literal["series_a_monthly", "series_b_weekly"] = "series_b_weekly") -> dict:
+    """Expose the tiered FX layer used by allocation as JSON records.
+
+    Args:
+        series_id: Which calibrated FX series to materialize.
+
+    Returns:
+        Dict with ``series_id`` and ``rows`` suitable for dashboards.
+
+    Raises:
+        OSError: If the backing FX artifacts cannot be read from disk.
+
+    Example:
+        ``GET /fx/series_b_weekly`` to inspect the default weekly path.
+    """
     layer = load_fx_layer(series_id)
     return {
         "series_id": series_id,
@@ -119,12 +198,42 @@ def get_fx(series_id: Literal["series_a_monthly", "series_b_weekly"] = "series_b
 
 @app.get("/reach_caps")
 def get_reach_caps() -> dict:
+    """Return the denormalized (department, channel) reach-cap feature frame.
+
+    Args:
+        None.
+
+    Returns:
+        Dict with ``row_count`` and ``rows`` records from
+        :func:`build_allocation_features`.
+
+    Raises:
+        KeyError: If required upstream columns are missing when building features.
+
+    Example:
+        ``GET /reach_caps`` before comparing MILP inputs to raw survey tables.
+    """
     df = build_allocation_features()
     return {"row_count": int(len(df)), "rows": _frame_to_records(df)}
 
 
 @app.get("/routing/cost_matrix")
 def get_routing_cost(scenario: str = "dry_standard", seed: int = 42) -> dict:
+    """Materialize the routing cost matrix for a dry-run scenario.
+
+    Args:
+        scenario: Routing scenario label passed to :func:`build_cost_matrix`.
+        seed: RNG seed for stochastic tie breaks inside routing heuristics.
+
+    Returns:
+        Dict with ``scenario_id``, ``row_count``, and edge ``rows``.
+
+    Raises:
+        ValueError: If ``scenario`` is not recognized by the routing builder.
+
+    Example:
+        ``GET /routing/cost_matrix?scenario=dry_standard`` when debugging tours.
+    """
     df = build_cost_matrix(scenario=scenario, seed=seed)
     return {
         "scenario_id": scenario,
