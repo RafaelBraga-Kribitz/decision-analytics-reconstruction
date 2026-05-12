@@ -9,6 +9,8 @@ RUN pip install --no-cache-dir poetry==2.4.0
 
 COPY pyproject.toml poetry.lock* README.md /app/
 COPY module_a_population_segmentation /app/module_a_population_segmentation
+COPY module_b_resource_allocation /app/module_b_resource_allocation
+COPY module_c_forecasting_scenarios /app/module_c_forecasting_scenarios
 COPY schema_contracts /app/schema_contracts
 COPY reports /app/reports
 COPY appendix /app/appendix

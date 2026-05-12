@@ -2,7 +2,7 @@ services:
   module_a:
     build:
       context: .
-      dockerfile: module_a_population_segmentation/docker/Dockerfile
+      dockerfile: docker/Dockerfile
     image: decision-analytics-module-a:latest
     environment:
       - RANDOM_SEED=${RANDOM_SEED:-42}
