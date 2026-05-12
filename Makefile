@@ -4,7 +4,6 @@
 	module-c-tracking module-c-exit module-c-mc module-c-all \
 	precommit validate doc-path-verify portfolio-verify tier3-smoke e2e-smoke
 
-PYTHON := python3.11
 MODULE_A_SRC := module_a_population_segmentation/src
 MODULE_A_TESTS := module_a_population_segmentation/tests
 MODULE_A_APP := module_a_population_segmentation/app
@@ -14,6 +13,8 @@ MODULE_C_SRC := module_c_forecasting_scenarios/src
 MODULE_C_TESTS := module_c_forecasting_scenarios/tests
 ROOT_TESTS := tests
 SCRIPTS := scripts
+MODULE_TEST_ARGS := $(MODULE_A_TESTS) $(MODULE_B_TESTS) $(MODULE_C_TESTS) $(ROOT_TESTS)
+COV_FLAGS := --cov=$(MODULE_A_SRC) --cov=$(MODULE_B_SRC) --cov=$(MODULE_C_SRC) --cov-report=term-missing --cov-report=xml
 
 install:
 	poetry install
@@ -29,11 +30,11 @@ typecheck:
 	poetry run pyright $(MODULE_A_SRC) $(MODULE_B_SRC)
 
 test:
-	poetry run pytest $(MODULE_A_TESTS) $(MODULE_B_TESTS) $(MODULE_C_TESTS) $(ROOT_TESTS) -v --tb=short -m "not slow"
+	poetry run pytest $(MODULE_TEST_ARGS) -v --tb=short -m "not slow" $(COV_FLAGS)
 
 precommit:
-	pre-commit install
-	pre-commit run --all-files
+	poetry run pre-commit install
+	poetry run pre-commit run --all-files
 
 validate: lint typecheck test doc-path-verify
 
@@ -81,9 +82,7 @@ module-c-all:
 		--out-dir data/processed/module_c/run_all
 
 coverage:
-	poetry run pytest $(MODULE_A_TESTS) $(MODULE_B_TESTS) $(MODULE_C_TESTS) $(ROOT_TESTS) \
-		--cov=$(MODULE_A_SRC) --cov=$(MODULE_B_SRC) --cov=$(MODULE_C_SRC) \
-		--cov-report=term-missing --cov-report=xml
+	poetry run pytest $(MODULE_TEST_ARGS) $(COV_FLAGS)
 
 ci: lint typecheck coverage
 
@@ -95,17 +94,17 @@ clean:
 	rm -rf .pytest_cache .ruff_cache .mypy_cache htmlcov coverage.xml .coverage
 
 generate-dev:
-	$(PYTHON) -m population_segmentation.data.generator --config module_a_population_segmentation/config/generation.yaml
+	poetry run python -m population_segmentation.data.generator --config module_a_population_segmentation/config/generation.yaml
 
 pipeline-dev:
-	$(PYTHON) -m population_segmentation.data.generator \
+	poetry run python -m population_segmentation.data.generator \
 		--config module_a_population_segmentation/config/generation.yaml \
 		--output data/interim/population_master_base.parquet
-	$(PYTHON) -m population_segmentation.data.raw_injector \
+	poetry run python -m population_segmentation.data.raw_injector \
 		--input data/interim/population_master_base.parquet \
 		--output data/interim/population_master_raw.parquet \
 		--config module_a_population_segmentation/config/generation.yaml
-	$(PYTHON) -m population_segmentation.data.cleaner \
+	poetry run python -m population_segmentation.data.cleaner \
 		--input data/interim/population_master_raw.parquet \
 		--output data/processed/population_master_clean.parquet \
 		--config module_a_population_segmentation/config/generation.yaml

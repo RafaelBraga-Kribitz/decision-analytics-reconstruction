@@ -4,6 +4,30 @@ Records every non-trivial architectural choice: decision, alternatives considere
 
 ---
 
+## 2026-05-12 — Project Action List §3: `make test` + coverage and CI contract
+
+**Decision:** Root [`Makefile`](../Makefile) defines `MODULE_TEST_ARGS` and `COV_FLAGS`; **`test`** runs `poetry run pytest` over all module and root test dirs with `-m "not slow"` and `$(COV_FLAGS)` (three `--cov=` roots plus `term-missing` and `xml` reports). **`coverage`** reuses the same `$(COV_FLAGS)` without a marker filter (full suite for `make ci`). Add [`tests/test_architecture_makefile_test_coverage_contract.py`](../tests/test_architecture_makefile_test_coverage_contract.py). Add GitHub Actions job **`repo-make-test`** (`poetry install` then `make test`, 30-minute cap) so a clean clone exercises the same entrypoint as local `make validate`’s test stage.
+
+**Alternatives considered:** Leaving coverage only on `make coverage` — rejected because Project_Action_list line 44 explicitly ties `make test` to coverage reporting; duplicating `--cov=` lists without `COV_FLAGS` — rejected per DRY.
+
+**Reason:** Verifiable CI/Makefile alignment; root `tests/` architecture guards run on every `make test` without changing schemas.
+
+**Source:** Project Action List §3 Architecture Quality — task 7 (CI/CD, `make test` + coverage) (2026-05-12).
+
+---
+
+## 2026-05-12 — Project Action List §3: Makefile Poetry and pre-commit
+
+**Decision:** Root [`Makefile`](../Makefile) invokes Python tooling only through `poetry run` (no `PYTHON :=` / `$(PYTHON)`); `precommit` runs `poetry run pre-commit install` and `poetry run pre-commit run`. Dev generators under `generate-dev` / `pipeline-dev` use `poetry run python -m …`. Add [`tests/test_architecture_makefile_poetry_policy.py`](../tests/test_architecture_makefile_poetry_policy.py) as regression guard.
+
+**Alternatives considered:** Keeping a `PYTHON` variable for faster local edits — rejected so clone + `poetry install` + `make …` always hits the project venv.
+
+**Reason:** Aligns Makefile with Architecture Quality checklist and virtualenv discipline.
+
+**Source:** Project Action List §3 Architecture Quality — task 6 (Makefile / Poetry) (2026-05-12).
+
+---
+
 ## 2026-05-15 — Project Action List §3: “All outputs Pydantic” vs layered contracts
 
 **Decision:** Reconcile Architecture Quality line 42 (“all module outputs explicitly typed”) with the **shipped** design: **versioned YAML** in [`schema_contracts/`](../schema_contracts/) defines cross-module tabular contracts; **Pydantic** covers the narrow Module B→C handshake row ([`AllocationHandshakeRow`](../module_b_resource_allocation/src/module_b_resource_allocation/contracts/schemas.py)); **frozen dataclasses** and Pandera gate selected Module A structures and clean-population frames; Module C validates against the same YAML corpus via `contract_validate`. Add [`tests/test_architecture_inter_module_contracts_surface.py`](../tests/test_architecture_inter_module_contracts_surface.py) as a regression guard (no new umbrella Pydantic per parquet file).

@@ -21,6 +21,10 @@ Module C methodology artifacts, pipeline paths, and lightweight package imports 
 
 Inter-module contract layers (YAML `schema_contracts/`, Pydantic handshake, frozen dataclass gates) are guarded by [`tests/test_architecture_inter_module_contracts_surface.py`](tests/test_architecture_inter_module_contracts_surface.py).
 
+Root [`Makefile`](Makefile) dev targets use Poetry for the interpreter and pre-commit hooks; that policy is guarded by [`tests/test_architecture_makefile_poetry_policy.py`](tests/test_architecture_makefile_poetry_policy.py).
+
+The default `make test` path runs pytest with shared `$(COV_FLAGS)` (terminal and XML coverage reports) and excludes the `slow` marker; that contract is guarded by [`tests/test_architecture_makefile_test_coverage_contract.py`](tests/test_architecture_makefile_test_coverage_contract.py).
+
 ---
 
 ## Component map

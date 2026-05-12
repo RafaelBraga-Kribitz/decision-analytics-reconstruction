@@ -11,7 +11,7 @@
 3. **Do not** link this file from the top-level [`README.md`](../README.md) or other candidate-facing copy.
 4. Before the author declares the project “public ready,” an agent or the author must run a **full-repo cleanup pass** using this manifest as the checklist (tick `done`, then remove/redact).
 
-**Last updated:** 2026-05-15
+**Last updated:** 2026-05-12
 
 ---
 
@@ -50,6 +50,8 @@
 | M21 | review / redact | [`reports/task_verify_architecture_quality_task3_module_b_2026-05-14.md`](../reports/task_verify_architecture_quality_task3_module_b_2026-05-14.md) | Agent DoD proof for Project_Action_list §3 task 3 (Module B surface) — trim for public portfolio | [ ] |
 | M22 | review / redact | [`reports/task_verify_architecture_quality_task4_module_c_2026-05-14.md`](../reports/task_verify_architecture_quality_task4_module_c_2026-05-14.md) | Agent DoD proof for Project_Action_list §3 task 4 (Module C surface) — trim for public portfolio | [ ] |
 | M23 | review / redact | [`reports/task_verify_architecture_quality_task5_contracts_2026-05-15.md`](../reports/task_verify_architecture_quality_task5_contracts_2026-05-15.md) | Agent DoD proof for Project_Action_list §3 task 5 (inter-module typed contracts) — trim for public portfolio | [ ] |
+| M24 | review / redact | [`reports/task_verify_architecture_quality_task6_makefile_2026-05-12.md`](../reports/task_verify_architecture_quality_task6_makefile_2026-05-12.md) | Agent DoD proof for Project_Action_list §3 task 6 (Makefile Poetry / pre-commit) — trim for public portfolio | [ ] |
+| M25 | review / redact | [`reports/task_verify_architecture_quality_task7_ci_make_test_2026-05-12.md`](../reports/task_verify_architecture_quality_task7_ci_make_test_2026-05-12.md) | Agent DoD proof for Project_Action_list §3 task 7 (`make test` + coverage + CI) — trim for public portfolio | [ ] |
 
 ## Add new rows (template)
 
