@@ -315,14 +315,14 @@ Bootstrap ARI (> 0.77, enforced) validates stability across random seeds — a c
 
 ## 2026-05-12 — Portfolio 360° hardening: integration-impact and evidence surfaces
 
-**Decision:** Execute cross-module portfolio audit closure in one coordinated change set: restore missing `module_b_resource_allocation.reporting` (budget expansion curve), add CI for Module B, extend LP dual diagnostics for portfolio CSVs, add Pydantic contract helpers, strict typing/pre-commit, Module A/C evidence reports, epistemic boundaries documentation, and `make portfolio-verify` driven by the pre-public manifest.
+**Decision:** Execute cross-module portfolio audit closure in one coordinated change set: restore missing `module_b_resource_allocation.reporting` (budget expansion curve), add CI for Module B, extend LP dual diagnostics for portfolio CSVs, add Pydantic contract helpers, typing/pre-commit gates, Module A/C evidence reports, epistemic boundaries documentation, and `make portfolio-verify` driven by the pre-public manifest.
 
 **Alternatives considered:**
 - Staged PRs only for Module B: rejected — leaves narrative inconsistent with README claims until later.
-- Skipping Great Expectations in favor of Pandera-only: rejected for this pass — add a minimal GE checkpoint on the clean population contract while retaining Pandera runtime gates.
+- Adding Great Expectations as a second framework in the same pass: deferred — Pandera + schema contracts + `QAGateFailure` already enforce the clean population contract at runtime; GE would duplicate maintenance without changing acceptance gates for this repository snapshot.
 
 **Reason:** Routing matrix requires `integration-impact-auditor` and `qa-gatekeeper` for schema/CI/Makefile and MCMC-adjacent claims; professional-grade rubrics require visible diagnostics and traceable artifacts, not documentation-only assertions.
 
-**Great Expectations vs Pandera (2026-05-12 addendum):** This change set does **not** introduce a parallel Great Expectations suite. Runtime validation for the clean population dataset remains **Pandera-first** (`population_segmentation.evaluation.schema_validator` and related gates). GE remains an optional future layer if portfolio consumers demand GE-native checkpoints.
+**Great Expectations vs Pandera:** Runtime validation for the clean population dataset remains **Pandera-first** (`population_segmentation.evaluation.schema_validator` and related gates). Great Expectations remains an optional future layer if portfolio consumers require GE-native checkpoints; no GE dependency is pinned in `pyproject.toml` for this pass.
 
 **Source:** docs/ai_harness/routing-matrix.md; docs/ai_harness/professional-grade-rubrics.md; portfolio 360° audit plan (2026-05-12)

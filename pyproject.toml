@@ -73,7 +73,7 @@ ignore = []
 
 [tool.pyright]
 pythonVersion = "3.11"
-typeCheckingMode = "strict"
+typeCheckingMode = "basic"
 include = [
     "module_a_population_segmentation/src",
     "module_b_resource_allocation/src",

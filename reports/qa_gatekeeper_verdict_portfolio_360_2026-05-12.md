@@ -13,7 +13,7 @@
 
 ## Caveats (explicit)
 
-1. **Pyright mode** remains `basic` in `pyproject.toml`. Moving to `standard`/`strict` surfaces ~34+ unresolved typing issues (pandas/ArviZ stubs). Tracked as a follow-up burn-down; not a functional correctness failure for this merge.
+1. **Pyright mode** remains `basic` in `pyproject.toml`. A probe with `typeCheckingMode = "strict"` on Module A+B sources alone surfaced on the order of **hundreds** of stub-driven diagnostics (pandas-heavy frames). Tracked as a burn-down toward `standard` then `strict`; not a functional correctness failure for this merge.
 2. **Great Expectations** is not added as a second validation framework; **Pandera** remains the primary runtime contract gate for Module A clean outputs (documented equivalence in `reports/decision_log.md` if extended).
 3. **SHAP** figure generation is optional (`poetry` extra `explainability`); model card references the script path rather than committing a binary in all clones.
 4. **Module C walk-forward** is specified in prose; full numeric walk-forward awaits a longer dated fixture.

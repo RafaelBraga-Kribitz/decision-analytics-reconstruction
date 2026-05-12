@@ -2,7 +2,7 @@
 	module-b-allocate module-b-allocate-sensitivity module-b-routing module-b-api \
 	test-module-a test-module-b test-module-c \
 	module-c-tracking module-c-exit module-c-mc module-c-all \
-	precommit validate portfolio-verify tier3-smoke
+	precommit validate portfolio-verify tier3-smoke e2e-smoke
 
 PYTHON := python3.11
 MODULE_A_SRC := module_a_population_segmentation/src
@@ -42,6 +42,10 @@ portfolio-verify:
 
 tier3-smoke:
 	poetry run python scripts/check_terminology.py
+	poetry run python -c "import mlflow; print('mlflow_ok', mlflow.__version__)"
+
+e2e-smoke:
+	poetry run pytest tests/test_portfolio_e2e_smoke.py -v --tb=short
 
 test-module-a:
 	poetry run pytest $(MODULE_A_TESTS) -v --tb=short
