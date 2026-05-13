@@ -134,7 +134,7 @@ jobs:
         run: poetry run pytest module_b_resource_allocation/tests -v --tb=short -m "not slow"
 
   module-c:
-    name: Module C — pytest (fast subset, MC_FAST)
+    name: Module C — lint / test
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
@@ -152,6 +152,12 @@ jobs:
 
       - name: Install dependencies
         run: poetry install
+
+      - name: Black format check
+        run: poetry run black --check module_c_forecasting_scenarios/src module_c_forecasting_scenarios/tests
+
+      - name: Ruff lint
+        run: poetry run ruff check module_c_forecasting_scenarios/src module_c_forecasting_scenarios/tests
 
       - name: pytest Module C (exclude slow NUTS)
         env:
