@@ -5,6 +5,8 @@ Integration coverage for ``generate_population`` lives in ``test_generator.py``.
 
 from __future__ import annotations
 
+import time
+
 import numpy as np
 import pytest
 from population_segmentation.data.generator import (
@@ -181,6 +183,22 @@ def test_rake_categorical_same_seed_reproducible() -> None:
     out_a = _rake_categorical(arr.copy(), targets, rng_a)
     out_b = _rake_categorical(arr.copy(), targets, rng_b)
     np.testing.assert_array_equal(out_a, out_b)
+
+
+@pytest.mark.slow
+def test_rake_categorical_benchmark_500k_under_one_second() -> None:
+    """Regression guard: O(n) bucketing avoids per-donor full-array ``where`` scans."""
+    rng = make_rng(0)
+    n = 500_000
+    labels = ["a", "b", "c", "d"]
+    arr = rng.choice(labels, size=n)
+    targets = {"a": 0.1, "b": 0.2, "c": 0.3, "d": 0.4}
+    t0 = time.perf_counter()
+    out = _rake_categorical(arr, targets, rng)
+    elapsed = time.perf_counter() - t0
+    assert elapsed < 1.0, f"_rake_categorical took {elapsed:.3f}s at n={n}"
+    for lab, p in targets.items():
+        assert (out == lab).mean() == pytest.approx(p, abs=0.02)
 
 
 def test_assign_municipalities_shape_and_subset() -> None:

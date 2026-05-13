@@ -12,7 +12,6 @@ bound on the MILP optimum.
 from __future__ import annotations
 
 import math
-from typing import Any
 
 from module_b_resource_allocation.constants import CHANNEL_NAMES, DEPARTMENTS, WEEK_LABELS
 from module_b_resource_allocation.models import allocation as _alloc
@@ -207,7 +206,7 @@ def linear_persuasion_from_milp_allocation(
 def build_baseline_comparison_for_run(
     problem: _alloc.AllocationProblem,
     result: _alloc.AllocationResult,
-) -> dict[str, Any]:
+) -> dict[str, object]:
     """Structured baseline rows for manifests and portfolio CFO narratives.
 
     Args:
@@ -286,7 +285,7 @@ def build_baseline_comparison_for_run(
     }
 
 
-def cap_waterfill_vs_optimized_ratio(problem: _alloc.AllocationProblem) -> dict[str, Any]:
+def cap_waterfill_vs_optimized_ratio(problem: _alloc.AllocationProblem) -> dict[str, object]:
     """Portfolio helper: water-fill vs MILP optimized totals (numeric transparency).
 
     Args:

@@ -91,6 +91,8 @@ ignore = []
 
 [tool.ruff.lint.per-file-ignores]
 "module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/data/exceptions.py" = ["N818"]
+# AST walkers mirror ``test_architecture_public_google_docstrings_contract``; nested closures trip B023.
+"tests/test_architecture_public_type_hints_contract.py" = ["B023", "SIM102", "SIM110"]
 
 [tool.pyright]
 pythonVersion = "3.11"

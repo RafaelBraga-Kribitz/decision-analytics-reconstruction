@@ -2,10 +2,23 @@
 
 from __future__ import annotations
 
+import pandas as pd
 from population_segmentation.data.raw_injector import (
     _ENCODING_GARBLES,
+    _add_raw_fields,
     _garble_encoding,
     _randomize_phone_format,
+)
+from population_segmentation.utils.schema import (
+    AGE_ON_EVENT_DATE,
+    CEDULA,
+    DEPARTMENT,
+    DOB,
+    FIRST_NAME,
+    LAST_NAME,
+    PHONE,
+    QUALITATIVE_DISTRICT,
+    QUALITATIVE_SENTIMENT,
 )
 from population_segmentation.utils.seeds import make_rng
 
@@ -35,3 +48,16 @@ def test_randomize_phone_format_deterministic_with_seed() -> None:
     assert a == b
     digits = "".join(c for c in a if c.isdigit())
     assert len(digits) >= 9
+
+
+def test_add_raw_fields_populates_raw_layer_columns() -> None:
+    n = 5
+    df = pd.DataFrame({AGE_ON_EVENT_DATE: [35] * n, DEPARTMENT: ["Central"] * n})
+    rng = make_rng(1)
+    out = _add_raw_fields(df.copy(), n, rng)
+    assert CEDULA in out.columns and DOB in out.columns
+    assert FIRST_NAME in out.columns and LAST_NAME in out.columns
+    assert PHONE in out.columns
+    assert QUALITATIVE_SENTIMENT in out.columns
+    assert QUALITATIVE_DISTRICT in out.columns
+    assert len(out) == n

@@ -41,7 +41,7 @@ def reliability_frame(y_true: np.ndarray, y_prob: np.ndarray, n_bins: int = 10) 
     return pd.DataFrame(rows)
 
 
-def reliability_chart(frame: pd.DataFrame):
+def reliability_chart(frame: pd.DataFrame) -> go.Figure:
     """Plotly reliability diagram comparing model curve to the perfect diagonal.
 
     Args:

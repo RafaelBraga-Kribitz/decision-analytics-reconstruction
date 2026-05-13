@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -44,7 +44,7 @@ class PropensityModel:
         default_factory=lambda: ("department", "age_bin_encoded", "gender_encoded")
     )
 
-    def fit_predict(self, df: pd.DataFrame, anchors: dict[str, Any]) -> dict[str, Any]:
+    def fit_predict(self, df: pd.DataFrame, anchors: dict[str, object]) -> dict[str, object]:
         """Fit a Platt-calibrated logistic propensity model and score the frame.
 
         Builds a synthetic binary target aligned to YAML anchors, trains a
@@ -68,10 +68,11 @@ class PropensityModel:
             Access via ``PropensityModel().fit_predict`` from the export pipeline
             once stratification columns exist on ``df``.
         """
-        x = self._feature_matrix(df, anchors)
+        a = cast(dict[str, Any], anchors)  # heterogeneous nested calibration YAML
+        x = self._feature_matrix(df, a)
 
         # Synthetic target calibrated to anchors (for reconstruction setting)
-        y = self._synthetic_target(df, anchors)
+        y = self._synthetic_target(df, a)
 
         strat_cols = self.stratify_by
         if not strat_cols:
@@ -115,14 +116,14 @@ class PropensityModel:
         prob_all = platt.predict_proba(raw_all.reshape(-1, 1))[:, 1]
 
         # Two-pass rake: national first, then per-department (IPF one iteration)
-        prob_raked, dept_multipliers = self._rake(prob_all, pd.Series(df["department"]), anchors)
+        prob_raked, dept_multipliers = self._rake(prob_all, pd.Series(df["department"]), a)
 
         # Build metrics on test partition
         auc = float(roc_auc_score(y_test, prob_test))
         brier = float(brier_score_loss(y_test, prob_test))
 
         pred = pd.Series(prob_raked, index=df.index, name="participation_propensity")
-        calibration = self._calibration_report(pred, df, anchors)
+        calibration = self._calibration_report(pred, df, a)
 
         return {
             "predictions": pred,

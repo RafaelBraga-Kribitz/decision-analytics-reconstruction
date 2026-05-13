@@ -8,7 +8,6 @@ import os
 import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -78,7 +77,7 @@ def build_model_run_manifest(
     package_version: str | None = None,
     git_commit: str | None = None,
     train_date_utc_iso: str | None = None,
-) -> dict[str, Any]:
+) -> dict[str, object]:
     """Build a JSON-serializable manifest for CFO / ML engineer provenance.
 
     Args:
@@ -123,7 +122,7 @@ def build_model_run_manifest(
     }
 
 
-def write_model_run_manifest(path: Path, manifest: dict[str, Any]) -> None:
+def write_model_run_manifest(path: Path, manifest: dict[str, object]) -> None:
     """Persist ``manifest`` as UTF-8 JSON with stable key ordering.
 
     Args:
@@ -143,7 +142,7 @@ def write_model_run_manifest(path: Path, manifest: dict[str, Any]) -> None:
     path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
 
-def maybe_log_mlflow_export(manifest: dict[str, Any]) -> None:
+def maybe_log_mlflow_export(manifest: dict[str, object]) -> None:
     """Optionally log export metadata to MLflow when tracking is configured.
 
     No-ops unless ``MLFLOW_TRACKING_URI`` is set. Mirrors the opt-in pattern
@@ -177,11 +176,13 @@ def maybe_log_mlflow_export(manifest: dict[str, Any]) -> None:
             mlflow.log_param("package_version", manifest.get("version", ""))
             mlflow.log_param("git_commit", manifest.get("git_commit", ""))
             mlflow.log_param("train_date", manifest.get("train_date", ""))
-            seeds = manifest.get("random_seeds") or {}
-            for k, v in seeds.items():
-                mlflow.log_param(f"seed_{k}", v)
-            arts = manifest.get("artifacts") or {}
-            for name, pth in arts.items():
-                mlflow.log_param(f"artifact_{name}", str(pth))
+            raw_seeds = manifest.get("random_seeds")
+            if isinstance(raw_seeds, dict):
+                for k, v in raw_seeds.items():
+                    mlflow.log_param(f"seed_{k}", v)
+            raw_arts = manifest.get("artifacts")
+            if isinstance(raw_arts, dict):
+                for name, pth in raw_arts.items():
+                    mlflow.log_param(f"artifact_{name}", str(pth))
     except Exception as exc:  # pragma: no cover - optional path
         logger.warning("MLflow logging skipped: %s", exc)

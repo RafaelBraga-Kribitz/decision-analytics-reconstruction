@@ -6,7 +6,7 @@ import json
 import os
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any, cast
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -28,7 +28,7 @@ def run_monte_carlo_scenarios(
     out_dir: Path,
     shock_multiplier: float | None = None,
     baseline_shock_zero: bool = False,
-) -> dict[str, Any]:
+) -> dict[str, object]:
     """Stratified draws using shock_score_s and scenario_bucket from tracking."""
     out_dir.mkdir(parents=True, exist_ok=True)
     n = _mc_n()
@@ -39,7 +39,7 @@ def run_monte_carlo_scenarios(
     )
     baseline_zero = baseline_shock_zero or bool(p.get("baseline_shock_zero", False))
 
-    shocks: list[dict[str, Any]] = []
+    shocks: list[dict[str, object]] = []
     if "shock_score_s" not in tracking.columns:
         raise ValueError("tracking must include shock_score_s (run cleaning attach_shock_scores)")
     for _i, row in tracking.iterrows():

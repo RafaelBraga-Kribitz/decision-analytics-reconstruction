@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from typing import Any
-
 import pandas as pd
 import yaml
 
@@ -11,7 +9,7 @@ from module_c_forecasting_scenarios.data.exceptions import QAGateFailure
 from module_c_forecasting_scenarios.paths import schema_contracts_dir
 
 
-def load_contract(schema_name: str) -> dict[str, Any]:
+def load_contract(schema_name: str) -> dict[str, object]:
     d = schema_contracts_dir()
     for path in d.glob("*.yaml"):
         with open(path) as f:

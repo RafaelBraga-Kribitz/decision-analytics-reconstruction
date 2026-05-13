@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import pandas as pd
 
@@ -81,7 +81,7 @@ def validate_schema(df: pd.DataFrame) -> None:
         raise QAGateFailure("phone must match +595XXXXXXXXX")
 
 
-def validate_calibration_anchors(df: pd.DataFrame, anchors: dict[str, Any]) -> dict[str, Any]:
+def validate_calibration_anchors(df: pd.DataFrame, anchors: dict[str, object]) -> dict[str, object]:
     """Compare ``df`` marginals to YAML calibration anchors with sampling-aware tolerances.
 
     Args:
@@ -101,13 +101,14 @@ def validate_calibration_anchors(df: pd.DataFrame, anchors: dict[str, Any]) -> d
         exporting propensity or segment artifacts.
     """
     checks: list[AnchorCheck] = []
+    root = cast(dict[str, Any], anchors)  # heterogeneous nested calibration YAML
     n = max(len(df), 1)
     # Sampling-aware floor so dev sample sizes do not fail on random noise.
     sampling_floor = 2.0 / math.sqrt(n)
 
     # Rural share
-    expected_rural = float(anchors["demographics"]["rural_share"])
-    tol_rural = max(float(anchors["tolerances"]["rural_share_pp"]), sampling_floor)
+    expected_rural = float(root["demographics"]["rural_share"])
+    tol_rural = max(float(root["tolerances"]["rural_share_pp"]), sampling_floor)
     obs_rural = float(df["rural_flag"].mean())
     checks.append(
         AnchorCheck(
@@ -120,9 +121,9 @@ def validate_calibration_anchors(df: pd.DataFrame, anchors: dict[str, Any]) -> d
     )
 
     # Gender shares
-    expected_m = float(anchors["demographics"]["male_share"])
+    expected_m = float(root["demographics"]["male_share"])
     obs_m = float((df["gender"] == "M").mean())
-    tol_gender = max(float(anchors["tolerances"]["gender_rate_pp"]), sampling_floor)
+    tol_gender = max(float(root["tolerances"]["gender_rate_pp"]), sampling_floor)
     checks.append(
         AnchorCheck(
             "male_share", obs_m, expected_m, tol_gender, abs(obs_m - expected_m) <= tol_gender
@@ -130,9 +131,9 @@ def validate_calibration_anchors(df: pd.DataFrame, anchors: dict[str, Any]) -> d
     )
 
     # Language shares
-    tol_lang = max(float(anchors["tolerances"]["language_share_pp"]), sampling_floor)
+    tol_lang = max(float(root["tolerances"]["language_share_pp"]), sampling_floor)
     for k in ("jopara_bilingual", "guarani_only", "spanish_only"):
-        expected = float(anchors["language"][k])
+        expected = float(root["language"][k])
         observed = float((df["language_census_bucket"] == k).mean())
         checks.append(
             AnchorCheck(
@@ -148,7 +149,7 @@ def validate_calibration_anchors(df: pd.DataFrame, anchors: dict[str, Any]) -> d
     }
 
 
-def run_all_validations(df: pd.DataFrame, anchors: dict[str, Any]) -> dict[str, Any]:
+def run_all_validations(df: pd.DataFrame, anchors: dict[str, object]) -> dict[str, object]:
     """Run :func:`validate_schema` then :func:`validate_calibration_anchors`.
 
     Args:

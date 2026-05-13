@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import pandas as pd
 import plotly.express as px
+from plotly.graph_objects import Figure
 
 
 def segment_profile_table(df: pd.DataFrame) -> pd.DataFrame:
@@ -44,7 +45,7 @@ def segment_profile_table(df: pd.DataFrame) -> pd.DataFrame:
     return agg
 
 
-def segment_size_chart(profile_df: pd.DataFrame):
+def segment_size_chart(profile_df: pd.DataFrame) -> Figure:
     """Bar chart of segment sizes from a profile table.
 
     Args:

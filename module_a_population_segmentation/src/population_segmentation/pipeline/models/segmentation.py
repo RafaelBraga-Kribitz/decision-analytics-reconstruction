@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -59,7 +58,9 @@ class DBSCANNoiseFilter:
     eps: float = 2.0
     min_samples: int = 5
 
-    def fit_transform(self, df: pd.DataFrame, *, x: np.ndarray | None = None) -> dict[str, Any]:
+    def fit_transform(
+        self, df: pd.DataFrame, *, x: np.ndarray | None = None
+    ) -> dict[str, float | np.ndarray]:
         """Run DBSCAN noise detection on the PCA-reduced feature space.
 
         Args:
@@ -93,7 +94,9 @@ class KMeansSegmenter:
     k: int = 6
     random_state: int = 42
 
-    def fit_predict(self, df: pd.DataFrame, *, x: np.ndarray | None = None) -> dict[str, Any]:
+    def fit_predict(
+        self, df: pd.DataFrame, *, x: np.ndarray | None = None
+    ) -> dict[str, np.ndarray | float | pd.Series]:
         """Fit KMeans on the PCA-reduced matrix and return labels with diagnostics.
 
         Args:

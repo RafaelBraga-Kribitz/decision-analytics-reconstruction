@@ -22,7 +22,7 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import pandas as pd
 import yaml
@@ -111,9 +111,10 @@ def run_export(
     merged_feat["dbscan_noise_flag"] = labels_df["dbscan_noise_flag"].to_numpy()
 
     print("[export] Propensity model ...", flush=True)
-    prop_out = PropensityModel(random_state=42, stratify_by=stratify_by).fit_predict(
+    prop_raw = PropensityModel(random_state=42, stratify_by=stratify_by).fit_predict(
         merged_feat, anchors
     )
+    prop_out = cast(dict[str, Any], prop_raw)  # structured propensity bundle from ``fit_predict``
 
     prop_df = pd.DataFrame(
         {

@@ -1,3 +1,35 @@
+## 2026-05-13 — Project Action List §4 line 82 — public type hints + no bare `Any` in signatures
+
+**Decision:** Satisfy §4 **line 82** (public functions fully typed; no `Any` in annotations without justification). Add [`tests/test_architecture_public_type_hints_contract.py`](../tests/test_architecture_public_type_hints_contract.py): complete annotations on public API across Module A/B/C `src/` (same “public” rule as docstring contract); `Any` in a signature must share the `def` block with an inline `#` comment (prefer replacing `Any` with `object` or concrete unions). Refactor call sites: JSON-like and YAML blobs use `dict[str, object]` at public boundaries with `typing.cast` where needed ([`validator.py`](../module_a_population_segmentation/src/population_segmentation/data/validator.py), [`propensity.py`](../module_a_population_segmentation/src/population_segmentation/pipeline/models/propensity.py), [`export.py`](../module_a_population_segmentation/src/population_segmentation/pipeline/export.py), manifests, Module B scenario benchmark, Module C shock/MC helpers). [`write_scenario_benchmark_csv`](../module_b_resource_allocation/src/module_b_resource_allocation/reporting/scenario_benchmark.py): explicit keyword parameters. Ruff [`per-file-ignores`](../pyproject.toml) for B023/SIM on the AST walker file. Struck line 82 in [`Project_Action_list.md`](../Project_Action_list.md).
+
+**Verification:** `poetry run pytest tests/test_architecture_public_type_hints_contract.py module_a_population_segmentation/tests/test_propensity.py module_a_population_segmentation/tests/test_export_artifacts.py -q` — **17 passed**; `poetry run pytest … -m "not slow"` (module tests + root `tests/`) — **727 passed**, **2 skipped**, **7 deselected**; `make lint`; `make typecheck`; `poetry run graphify update .`.
+
+---
+
+## 2026-05-13 — Project Action List §4 line 81 — `_rake_categorical` O(n) + 500k benchmark
+
+**Decision:** Satisfy §4 **line 81** (performance: single-pass bucketing instead of repeated full-array `np.where`, benchmark &lt;1s at *n*=500k). Refactor [`_rake_categorical`](../module_a_population_segmentation/src/population_segmentation/data/generator.py) to build per-label index lists in one O(*n*) scan, then sample donor positions and update pools. Add [`test_rake_categorical_benchmark_500k_under_one_second`](../module_a_population_segmentation/tests/test_generator_helpers_unit.py) marked `@pytest.mark.slow` with `time.perf_counter()` assertion **&lt;1.0s**. Struck line 81 in [`Project_Action_list.md`](../Project_Action_list.md).
+
+**Verification:** `poetry run pytest module_a_population_segmentation/tests/test_generator_helpers_unit.py -q` — **22 passed**; `poetry run pytest …::test_rake_categorical_benchmark_500k_under_one_second` — **1 passed** (~**0.63s** session wall); `make lint`; `make typecheck`; `poetry run graphify update .`.
+
+---
+
+## 2026-05-13 — Project Action List §4 line 80 — coverage baseline and `tests/README.md`
+
+**Decision:** Satisfy §4 **line 80**: combined statement coverage on `module_a_population_segmentation/src`, `module_b_resource_allocation/src`, and `module_c_forecasting_scenarios/src` is **≥ 80%** under the default suite (`pytest -m "not slow"`). Measured **83%** total (627/3611 lines missed). Add [`tests/README.md`](../tests/README.md) with run commands, Makefile alignment, measured command, and a **gaps** table for low-coverage entrypoints (CLI `main`, MLflow, viz, pipeline `run_*` CLIs). Struck line 80 in [`Project_Action_list.md`](../Project_Action_list.md).
+
+**Verification:** `poetry run pytest module_a_population_segmentation/tests module_b_resource_allocation/tests module_c_forecasting_scenarios/tests tests -m "not slow" --cov=...` → `TOTAL ... 83%`; `725 passed`, `2 skipped`, `6 deselected`.
+
+---
+
+## 2026-05-13 — Project Action List §4 line 79 struck — full `_*` helper test sweep
+
+**Decision:** Complete §4 **line 79** (unit/parametrized tests for private helpers + integration for major flows). Added Module A I/O helpers: [`test_generator_io_helpers_unit.py`](../module_a_population_segmentation/tests/test_generator_io_helpers_unit.py) (`_load_config`), [`test_cleaner_io_helpers_unit.py`](../module_a_population_segmentation/tests/test_cleaner_io_helpers_unit.py) (`_write_qa_report`, `_parse_cli`), extended [`test_export_helpers_unit.py`](../module_a_population_segmentation/tests/test_export_helpers_unit.py) (`_parse_args`), [`test_raw_injector_helpers_unit.py`](../module_a_population_segmentation/tests/test_raw_injector_helpers_unit.py) (`_add_raw_fields`). Module B: [`test_feature_join_helpers_unit.py`](../module_b_resource_allocation/tests/test_feature_join_helpers_unit.py) (`_load_yaml`, `_channel_unit_costs_pyg`, `_department_population`), [`test_run_allocation_helpers_unit.py`](../module_b_resource_allocation/tests/test_run_allocation_helpers_unit.py) (`_parse_args`), [`test_baselines_linear_specs_unit.py`](../module_b_resource_allocation/tests/test_baselines_linear_specs_unit.py) (`_linear_cell_specs` via [`build_problem`](../module_b_resource_allocation/src/module_b_resource_allocation/models/allocation.py)). Struck line 79 in [`Project_Action_list.md`](../Project_Action_list.md).
+
+**Verification:** `poetry run pytest -q` — **731 passed**, **2 skipped** (2026-05-13); `make lint`; `make typecheck`; `poetry run graphify update .`.
+
+---
+
 ## 2026-05-12 — Project Action List line 79 Path A (deferred helper tests without waiver)
 
 **Decision:** Chose **Path A** from the scope-reality plan: extend unit tests without inventing a human waiver. Add [`test_export_helpers_unit.py`](../module_a_population_segmentation/tests/test_export_helpers_unit.py) for [`_validate_export_contracts`](../module_a_population_segmentation/src/population_segmentation/pipeline/export.py) (happy path, row-count mismatch, propensity range, bad segment label, reach row count). Extend Module B [`test_private_helpers_unit.py`](../module_b_resource_allocation/tests/test_private_helpers_unit.py) with [`_unit_cost_usd`](../module_b_resource_allocation/src/module_b_resource_allocation/models/allocation.py) (synthetic [`FxLayer`](../module_b_resource_allocation/src/module_b_resource_allocation/data/fx.py)) and [`_load_bundles`](../module_b_resource_allocation/src/module_b_resource_allocation/models/allocation.py) (reads repo `channel_bundles.yaml`). Line 79 remains open for remaining deferred helpers.

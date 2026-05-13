@@ -425,7 +425,12 @@ def _rake_categorical(
     targets: dict[str, float],
     rng: np.random.Generator,
 ) -> np.ndarray:
-    """Rake a categorical array to target marginal proportions via random reassignment."""
+    """Rake a categorical array to target marginal proportions via random reassignment.
+
+    Uses a single O(n) scan to bucket row indices by current label, then reassigns
+    by sampling donor indices from pre-built pools (no per-label full-array ``where``).
+    Total work is linear in *n* and the number of label moves.
+    """
     arr = arr.copy()
     n = len(arr)
     labels = list(targets.keys())
@@ -435,24 +440,38 @@ def _rake_categorical(
     if delta != 0:
         target_counts[labels[0]] += delta
 
-    current_counts = {k: int((arr == k).sum()) for k in labels}
+    idx_by_label: dict[str, list[int]] = {k: [] for k in labels}
+    for i in range(n):
+        lab = str(arr[i])
+        if lab in idx_by_label:
+            idx_by_label[lab].append(i)
+
+    current_counts = {k: len(idx_by_label[k]) for k in labels}
+
     for label, target_count in target_counts.items():
         diff = target_count - current_counts.get(label, 0)
-        if diff > 0:
-            # Need more of this label — steal from over-represented labels
-            over = [k for k in labels if current_counts.get(k, 0) > target_counts[k]]
-            for donor in over:
-                available = int((arr == donor).sum()) - target_counts[donor]
-                to_move = min(diff, available)
-                if to_move <= 0:
-                    continue
-                donor_idx = rng.choice(np.where(arr == donor)[0], size=to_move, replace=False)
-                arr[donor_idx] = label
-                current_counts[donor] -= to_move
-                current_counts[label] = current_counts.get(label, 0) + to_move
-                diff -= to_move
-                if diff <= 0:
-                    break
+        if diff <= 0:
+            continue
+        over = [k for k in labels if current_counts.get(k, 0) > target_counts.get(k, 0)]
+        for donor in over:
+            available = current_counts[donor] - target_counts.get(donor, 0)
+            to_move = min(diff, available)
+            if to_move <= 0:
+                continue
+            pool = idx_by_label[donor]
+            pick = rng.choice(len(pool), size=to_move, replace=False)
+            keep = np.ones(len(pool), dtype=bool)
+            keep[pick] = False
+            idx_by_label[donor] = [pool[i] for i in range(len(pool)) if keep[i]]
+            chosen_pos = [pool[int(j)] for j in pick]
+            for pos in chosen_pos:
+                arr[pos] = label
+            idx_by_label[label].extend(chosen_pos)
+            current_counts[donor] -= to_move
+            current_counts[label] = current_counts.get(label, 0) + to_move
+            diff -= to_move
+            if diff <= 0:
+                break
     return arr
 
 

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pandas as pd
 import pytest
-from population_segmentation.pipeline.export import _validate_export_contracts
+from population_segmentation.pipeline.export import _parse_args, _validate_export_contracts
 from population_segmentation.pipeline.models.segmentation import SEGMENT_LABEL_MAP
 
 
@@ -105,3 +105,22 @@ def test_validate_export_contracts_reach_wrong_row_count() -> None:
     bad_reach = _valid_reach_by_segment().head(3)
     with pytest.raises(ValueError, match="expected 6 rows"):
         _validate_export_contracts(m, p, labels_df, _minimal_anchors(), reach=bad_reach)
+
+
+def test_parse_args_requires_and_parses_paths() -> None:
+    ns = _parse_args(
+        [
+            "--config",
+            "/tmp/generation.yaml",
+            "--anchors",
+            "/tmp/anchors.yaml",
+            "--out-dir",
+            "/tmp/processed",
+            "--sample-size",
+            "500",
+        ]
+    )
+    assert ns.config.as_posix() == "/tmp/generation.yaml"
+    assert ns.anchors.as_posix() == "/tmp/anchors.yaml"
+    assert ns.out_dir.as_posix() == "/tmp/processed"
+    assert ns.sample_size == 500

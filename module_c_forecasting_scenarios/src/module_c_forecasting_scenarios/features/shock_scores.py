@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Any
 
 import yaml
 
@@ -11,7 +10,7 @@ from module_c_forecasting_scenarios.features.herding_weights import rho_herd_for
 from module_c_forecasting_scenarios.paths import module_config_dir
 
 
-def load_shock_params() -> dict[str, Any]:
+def load_shock_params() -> dict[str, object]:
     path = module_config_dir() / "shock_params.yaml"
     with open(path) as f:
         return yaml.safe_load(f)
@@ -23,7 +22,7 @@ def shock_score_s(
     phi: float,
     publication_date: date,
     conglomerate_carrier: str | None,
-    params: dict[str, Any] | None = None,
+    params: dict[str, object] | None = None,
 ) -> float:
     p = params or load_shock_params()
     lam1 = float(p.get("lambda1", 0.08))

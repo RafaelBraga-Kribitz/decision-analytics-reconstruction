@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Any
 
 import pandas as pd
 
@@ -16,7 +15,7 @@ def compute_scenario_benchmark_rows(
     fx_series_id: str,
     solver_seed: int,
     scenario_ids: tuple[str, ...] = ("baseline", "early_lock", "late_flex"),
-) -> list[dict[str, Any]]:
+) -> list[dict[str, object]]:
     """Run one solve per scenario and return comparable summary rows.
 
     Args:
@@ -33,7 +32,7 @@ def compute_scenario_benchmark_rows(
     Example:
         ``compute_scenario_benchmark_rows(fx_series_id=\"series_b_weekly\", solver_seed=42)``.
     """
-    rows: list[dict[str, Any]] = []
+    rows: list[dict[str, object]] = []
     for sid in scenario_ids:
         if sid not in VALID_SCENARIOS:
             continue
@@ -58,12 +57,20 @@ def compute_scenario_benchmark_rows(
     return rows
 
 
-def write_scenario_benchmark_csv(path: str | Path, **kwargs: Any) -> Path:
+def write_scenario_benchmark_csv(
+    path: str | Path,
+    *,
+    fx_series_id: str,
+    solver_seed: int,
+    scenario_ids: tuple[str, ...] = ("baseline", "early_lock", "late_flex"),
+) -> Path:
     """Write the scenario benchmark table to ``path``.
 
     Args:
         path: Destination CSV (``str`` or ``Path``).
-        **kwargs: Forwarded to :func:`compute_scenario_benchmark_rows`.
+        fx_series_id: Forwarded to :func:`compute_scenario_benchmark_rows`.
+        solver_seed: Forwarded to :func:`compute_scenario_benchmark_rows`.
+        scenario_ids: Forwarded to :func:`compute_scenario_benchmark_rows`.
 
     Returns:
         Resolved ``Path`` after writing.
@@ -77,6 +84,10 @@ def write_scenario_benchmark_csv(path: str | Path, **kwargs: Any) -> Path:
     """
     p = Path(path)
     p.parent.mkdir(parents=True, exist_ok=True)
-    rows = compute_scenario_benchmark_rows(**kwargs)
+    rows = compute_scenario_benchmark_rows(
+        fx_series_id=fx_series_id,
+        solver_seed=solver_seed,
+        scenario_ids=scenario_ids,
+    )
     pd.DataFrame(rows).to_csv(p, index=False)
     return p

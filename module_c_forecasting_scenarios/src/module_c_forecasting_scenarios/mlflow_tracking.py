@@ -3,10 +3,9 @@
 from __future__ import annotations
 
 import os
-from typing import Any
 
 
-def log_run_params(params: dict[str, Any]) -> None:
+def log_run_params(params: dict[str, object]) -> None:
     uri = os.environ.get("MLFLOW_TRACKING_URI")
     if not uri:
         return
