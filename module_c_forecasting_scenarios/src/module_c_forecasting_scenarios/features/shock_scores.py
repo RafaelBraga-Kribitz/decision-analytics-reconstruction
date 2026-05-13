@@ -25,10 +25,10 @@ def shock_score_s(
     params: dict[str, object] | None = None,
 ) -> float:
     p = params or load_shock_params()
-    lam1 = float(p.get("lambda1", 0.08))
-    lam2 = float(p.get("lambda2", 0.35))
-    lam3 = float(p.get("lambda3", 0.12))
-    clip_days = int(p.get("clip_days_before_outcome", 45))
+    lam1 = float(p.get("lambda1", 0.08))  # type: ignore[arg-type]  # dict[str, object] value; runtime is float
+    lam2 = float(p.get("lambda2", 0.35))  # type: ignore[arg-type]  # dict[str, object] value; runtime is float
+    lam3 = float(p.get("lambda3", 0.12))  # type: ignore[arg-type]  # dict[str, object] value; runtime is float
+    clip_days = int(p.get("clip_days_before_outcome", 45))  # type: ignore[arg-type]  # dict[str, object] value; runtime is int
     outcome = date.fromisoformat(str(p.get("outcome_event_date", "2018-04-22")))
     if (outcome - publication_date).days > clip_days:
         scale = 1.0

@@ -21,7 +21,8 @@ def load_contract(schema_name: str) -> dict[str, object]:
 
 def validate_dataframe_contract(df: pd.DataFrame, schema_name: str) -> None:
     spec = load_contract(schema_name)
-    fields = spec.get("fields") or {}
+    fields_raw = spec.get("fields")
+    fields: dict[str, object] = fields_raw if isinstance(fields_raw, dict) else {}
     missing = [k for k in fields if k not in df.columns]
     if missing:
         raise QAGateFailure(f"{schema_name}: missing columns {missing}")

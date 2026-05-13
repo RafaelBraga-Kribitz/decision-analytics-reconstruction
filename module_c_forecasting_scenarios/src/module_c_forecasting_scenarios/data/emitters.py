@@ -36,5 +36,5 @@ def build_polling_transparency_audit(tracking: pd.DataFrame) -> pd.DataFrame:
         n_waves=("poll_wave_id", "count"),
         ficha_share=("has_ficha", "mean"),
     )
-    g = g.rename(columns={"week_key": "iso_week"})
+    g = g.rename(columns={"week_key": "iso_week"})  # type: ignore[call-overload]  # pandas stubs overload mismatch for GroupBy.rename; runtime is correct
     return g

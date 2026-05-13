@@ -100,6 +100,7 @@ typeCheckingMode = "basic"
 include = [
     "module_a_population_segmentation/src",
     "module_b_resource_allocation/src",
+    "module_c_forecasting_scenarios/src",
 ]
 exclude = [
     "module_a_population_segmentation/notebooks",

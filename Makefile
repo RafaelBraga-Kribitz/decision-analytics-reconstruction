@@ -27,7 +27,7 @@ lint:
 	poetry run black --check $(MODULE_A_SRC) $(MODULE_A_TESTS) $(MODULE_A_APP) $(MODULE_B_SRC) $(MODULE_B_TESTS) $(MODULE_C_SRC) $(MODULE_C_TESTS) $(ROOT_TESTS) $(SCRIPTS) --exclude 'tests/test_eda.py'
 
 typecheck:
-	poetry run pyright $(MODULE_A_SRC) $(MODULE_B_SRC)
+	poetry run pyright $(MODULE_A_SRC) $(MODULE_B_SRC) $(MODULE_C_SRC)
 
 test:
 	poetry run pytest $(MODULE_TEST_ARGS) -v --tb=short -m "not slow" $(COV_FLAGS)

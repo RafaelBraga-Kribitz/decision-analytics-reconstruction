@@ -8,8 +8,8 @@ from pathlib import Path
 _REPO = Path(__file__).resolve().parents[1]
 
 
-def test_pyright_basic_on_module_a_and_b_src_exits_zero() -> None:
-    """Matches root Makefile ``typecheck`` target (Module A + B ``src/`` only)."""
+def test_pyright_basic_on_all_module_src_exits_zero() -> None:
+    """Matches root Makefile ``typecheck`` target (Module A + B + C ``src/``)."""
     proc = subprocess.run(
         [
             "poetry",
@@ -17,6 +17,7 @@ def test_pyright_basic_on_module_a_and_b_src_exits_zero() -> None:
             "pyright",
             "module_a_population_segmentation/src",
             "module_b_resource_allocation/src",
+            "module_c_forecasting_scenarios/src",
         ],
         cwd=_REPO,
         capture_output=True,

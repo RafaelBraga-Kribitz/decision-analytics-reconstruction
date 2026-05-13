@@ -51,13 +51,13 @@ def _build_day_index(
     days = pd.date_range(pd.Timestamp(start), pd.Timestamp(end), freq="D")
     day_to_i: dict[date, int] = {}
     for i in range(len(days)):
-        d_i = pd.Timestamp(days[i]).date()
+        d_i = pd.Timestamp(days[i]).date()  # type: ignore[arg-type]  # DatetimeIndex item; runtime is Timestamp-compatible
         day_to_i[d_i] = i
-    start_d = pd.Timestamp(days[0]).date()
-    end_d = pd.Timestamp(days[-1]).date()
+    start_d = pd.Timestamp(days[0]).date()  # type: ignore[arg-type]  # DatetimeIndex item; runtime is Timestamp-compatible
+    end_d = pd.Timestamp(days[-1]).date()  # type: ignore[arg-type]  # DatetimeIndex item; runtime is Timestamp-compatible
     poll_day_idx_list: list[int] = []
     for md in mid_dates:
-        md_ts = pd.Timestamp(cast(object, md))
+        md_ts = pd.Timestamp(cast(object, md))  # type: ignore[arg-type]  # cast(object) used to suppress prior warning; pd.Timestamp accepts date-like at runtime
         if pd.isna(md_ts):
             raise ValueError("invalid publication midpoint date in tracking")
         md_clean = md_ts.date()

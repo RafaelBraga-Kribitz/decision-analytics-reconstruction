@@ -44,7 +44,7 @@ def run_monte_carlo_scenarios(
         raise ValueError("tracking must include shock_score_s (run cleaning attach_shock_scores)")
     for _i, row in tracking.iterrows():
         sid = f"shock_{row['poll_wave_id']}"
-        pub_ts = pd.Timestamp(cast(object, row.at["publication_date"]))
+        pub_ts = pd.Timestamp(cast(object, row.at["publication_date"]))  # type: ignore[arg-type]  # cast(object) used for stub suppression; runtime is date-like
         if pd.isna(pub_ts):
             raise ValueError("invalid publication_date in tracking row")
         pub = pub_ts.date()
