@@ -1,8 +1,30 @@
 # Business case — resource allocation under uncertainty
 
-This document frames the reconstruction as **operational analytics for a national-scale program**: segmenting an entity-scale **population dataset**, allocating a fixed budget across geographic units and **reach channels** under feasibility caps, and compressing biased **survey measurement** into probabilistic posture for the **preference proxy**. It is deliberately domain-agnostic: the motivating **outcome event** anchors calibration; the transferable product is disciplined decision support ([`reports/case_study_business.md`](case_study_business.md)).
+**Plain-language summary:** A national program needed to spend several million USD across 18 geographic regions to reach and persuade citizens before a major civic event. This repository reconstructs the decision system: who to reach, through which channels, at what cost, and how confident we should be in the outcome. Three analytical modules — population segmentation, budget allocation, and probabilistic forecasting — are linked by verified data contracts and reproducible code.
 
 For what is verified vs simulated vs illustrative, see [`reports/epistemic_boundaries.md`](epistemic_boundaries.md).
+
+---
+
+## Quick glossary
+
+The following terms appear throughout this document and the codebase. A reader unfamiliar with the original program context can treat all domain references as anonymized stand-ins for any large-scale citizen-outreach or direct-marketing program.
+
+| Term | Plain-language definition | Where it appears in code |
+|------|--------------------------|--------------------------|
+| **Entity** | One individual in the target population (a citizen eligible to participate in the outcome event). No real PII; all data is synthetically generated from census-weight distributions. | `entity_id` column; `population_segmentation/` module |
+| **Population dataset** | The full synthetic roster of entities, generated to match regional demographic weights. Analogous to a CRM or voter file in commercial programs. | `population_master_clean.parquet` |
+| **Preference proxy** | The poll-derived percentage-point lead for Candidate A over Candidate B. Equivalent to "net promoter score" or "brand preference margin" in commercial contexts. Range: typically −15 pp to +15 pp. | `m_poll_pp`, `preference_proxy_a_pct` |
+| **Outcome event** | The election — the final, hard-deadline measurement that all forecasting targets. In a commercial analogy: the launch date, the deal close, or the campaign end date. | `outcome_event_date` in calibration YAML |
+| **Survey measurement** | A single poll wave collected by a polling firm (analogous to a market-research survey). Each wave reports preference proxy values plus metadata (field window, sample size, transparency score). | `polls_clean_tracking_wave` contract |
+| **Reach channel** | A communication medium for contacting entities: TV, radio, WhatsApp, direct outreach. Each channel has a reach cap (how many people it can contact per week per region). | `CHANNEL_NAMES` constant; `reach_caps_*.csv` |
+| **Participation propensity** | An entity's estimated probability of showing up on outcome-event day. Range [0, 1]. Used to weight expected contacts in the allocation objective. | `participation_propensity.parquet` |
+| **Segmentation** | Clustering entities into six behaviorally and demographically coherent groups (e.g., `high_reach_urban`, `rural_low_contact`). Segment assignment drives per-channel cap estimates. | `segment_labels.parquet`; `build_segmentation_frame()` |
+| **MILP** | Mixed-Integer Linear Program. A mathematical solver that finds the budget allocation maximizing total persuasive contacts subject to hard feasibility constraints (caps, budget envelope, currency bands). | `module_b_resource_allocation/models/allocation_lp.py` |
+| **House effect** | The systematic polling bias of a specific polling firm — how much their surveys over- or under-state the true preference proxy. Estimated by the Bayesian tracking model. | `posterior_house_effects.parquet` |
+| **Posterior** | A probability distribution over likely values of an unknown quantity (e.g., the true preference margin), computed by combining prior beliefs with observed survey data. Output of the Bayesian (PyMC) model in Module C. | `daily_posterior_forecast.parquet` |
+| **Calibration series** | The reference election series used to anchor model parameters (A = 2018 general, B = alternative scenario). Controls which m\* (expected margin) and FX rates apply. | `calibration.yaml` `series` field |
+| **Shadow price / dual** | The MILP solver's implicit valuation of relaxing a constraint by one unit (e.g., "how much additional persuasion if the TV cap in Asunción were 1 % higher"). Exposed in sensitivity CSVs for CFO review. | `allocation_run_*.md` sensitivity tables |
 
 ---
 
