@@ -2,7 +2,7 @@
 
 **Retrospective Reconstruction of a National-Scale Marketing and Resource Allocation Decision System**
 
-[![CI](https://github.com/rafaelbk/decision-analytics-reconstruction/actions/workflows/ci.yml/badge.svg)](https://github.com/rafaelbk/decision-analytics-reconstruction/actions/workflows/ci.yml)
+[![CI](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/ci.yml/badge.svg)](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/ci.yml)
 [![Module A Dashboard](https://img.shields.io/badge/dashboard-live-blue)](https://decision-analytics-module-a.onrender.com)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue)](.python-version)
 

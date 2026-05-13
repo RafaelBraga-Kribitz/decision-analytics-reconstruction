@@ -117,5 +117,5 @@ This project is a practitioner-built, from-scratch reconstruction of the decisio
 
 The reconstruction demonstrates the ability to build production-quality analytical systems — documented, tested, and deployable — not just run analyses.
 
-**Repository:** [github.com/rafaelbk/decision-analytics-reconstruction](https://github.com/rafaelbk)
+**Repository:** [github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction)
 **Module A dashboard:** [decision-analytics-module-a.onrender.com](https://decision-analytics-module-a.onrender.com)
