@@ -1,0 +1,28 @@
+_meta:
+  description: |
+    Strategic tier classification per department (stronghold / swing / opposition
+    / negligible) used to (a) bias persuasion ROI in the LP/MILP objective and
+    (b) gate the broadcast-to-direct counterfactual reallocation rules.
+    Provenance is PRIOR: these are reconstruction-anchored assignments based on
+    2013/2018 vote-share priors and field-team operational notes.
+  provenance: PRIOR
+
+tiers:
+  Asuncion: swing
+  Concepcion: stronghold
+  San Pedro: swing
+  Cordillera: stronghold
+  Guaira: stronghold
+  Caaguazu: swing
+  Caazapa: stronghold
+  Itapua: swing
+  Misiones: stronghold
+  Paraguari: stronghold
+  Alto Parana: swing
+  Central: swing
+  Neembucu: stronghold
+  Amambay: stronghold
+  Canindeyu: stronghold
+  Presidente Hayes: stronghold
+  Boqueron: negligible
+  Alto Paraguay: negligible

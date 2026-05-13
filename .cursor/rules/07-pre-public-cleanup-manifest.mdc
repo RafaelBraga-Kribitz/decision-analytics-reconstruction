@@ -1,0 +1,24 @@
+---
+description: Pre-public cleanup manifest — agents must read and update before portfolio release
+alwaysApply: true
+---
+
+# Pre-public cleanup manifest (agent duty)
+
+## Canonical file
+
+- **[`maintainer/pre_public_cleanup_manifest.md`](maintainer/pre_public_cleanup_manifest.md)** — living checklist of paths, copy, and artifacts to **remove, hide, redact, or rewrite** before the repository is shown to peer reviewers, HR, or hiring managers.
+
+## When you MUST update it
+
+- Adding or changing: `.cursor/**`, `.claude/**`, `docs/ai_harness/**`, graphify outputs, harness-only reports, AI-specific README language, operator task-verify prose, or any path that reads as machine-generated workflow.
+- Discovering filenames, prompts, telemetry, or “how I used Cursor” residues that belong only in private worktrees.
+
+## When you MUST enforce it
+
+- On explicit **“pre-public” / “portfolio” / “cleanup for release”** tasks: execute a full pass against the manifest, mark rows done, and ensure the author’s **public-facing** tree contains none of the listed leaks unless waived in-table.
+
+## Public-facing narrative
+
+- Do **not** link the manifest from [`README.md`](README.md).
+- Prefer concise, human-authored technical documentation in README and [`ARCHITECTURE.md`](ARCHITECTURE.md); avoid slash-commands, “subagent,” and internal harness jargon in candidate-facing files.

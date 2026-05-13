@@ -1,0 +1,28 @@
+---
+description: Controlled workflow playbook — canonical harness sequence (always apply)
+alwaysApply: true
+---
+
+# Controlled workflow playbook (always on)
+
+## Binding for this workspace
+
+Before **non-trivial** work (anything touching `src/`, configs, `schema_contracts/**`, CI, Docker, DVC, or cross-module outputs), agents and operators **must** follow the ordered process in:
+
+**[`docs/ai_harness/CONTROLLED_WORKFLOW_PLAYBOOK.md`](../../docs/ai_harness/CONTROLLED_WORKFLOW_PLAYBOOK.md)**
+
+That document is the **single narrative spine**: `/task-intake` → `/task-plan` (A–J) → `/task-dispatch` → `/task-execute` → `/task-verify` → `/task-complete`, then `poetry run graphify update .` at session end. It also defines coordination precedence (`Project_Action_list.md` vs plans), guardrails (contracts, terminology, integration-impact), and appendices (git, CRISP-DM map, optional external MCP).
+
+## Relationship to other always-on rules
+
+- Plan-first detail: [`.cursor/rules/00-plan-first-governance.mdc`](00-plan-first-governance.mdc) — must not conflict with the playbook; the playbook refines **order and evidence** for the full lifecycle.
+- DoD, testing evidence, routing, terminology, cross-module gates, graphify, pre-public manifest: remain **binding**; the playbook links them in one path.
+
+## Other repositories (Cursor “all projects”)
+
+This file applies to **this repository only**. To use the same harness elsewhere: copy [`docs/ai_harness/CONTROLLED_WORKFLOW_PLAYBOOK.md`](../../docs/ai_harness/CONTROLLED_WORKFLOW_PLAYBOOK.md) (or adapt it), add a project rule with `alwaysApply: true`, wire [`docs/ai_harness/README.md`](../../docs/ai_harness/README.md)-style quick start + [`.cursor/commands/`](../commands/) templates, and optionally add the same sequence under **Cursor Settings → Rules for AI** for defaults across workspaces.
+
+## Must-not
+
+- Skip reading the playbook when starting substantial or multi-step agent work in this repo.
+- Treat optional backlog files (for example improvement checklists at repo root) as a substitute for an approved `/task-plan` or verification proof table.

@@ -70,7 +70,12 @@ fields:
   enc_source_raw:
     type: string
     nullable: false
-    description: Encoding provenance tag injected at generation time
+    description: >
+      Raw-layer encoding provenance tag (how the synthetic source row is tagged
+      before normalization). Allowed values match the clean-layer `enc_source`
+      field in `population_master_clean.yaml`; `clean_population()` copies this
+      column to `enc_source` and drops `enc_source_raw` so the clean frame uses one
+      canonical name.
     allowed_values: [windows1252, utf8, unknown]
 
 flaw_types:

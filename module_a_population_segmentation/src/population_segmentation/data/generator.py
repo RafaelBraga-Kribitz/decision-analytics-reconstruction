@@ -7,7 +7,7 @@ All random operations use an explicitly seeded numpy Generator.
 
 from __future__ import annotations
 
-import os
+from decimal import ROUND_HALF_EVEN, Decimal
 from pathlib import Path
 from typing import Any
 
@@ -16,66 +16,157 @@ import pandas as pd
 import yaml
 
 from population_segmentation.utils.schema import (
-    CANONICAL_DEPARTMENTS,
-    ENTITY_ID,
-    DEPARTMENT,
-    MUNICIPALITY,
-    GENDER,
     AGE_ON_EVENT_DATE,
-    RURAL_FLAG,
-    RURAL_FLAG_DERIVED,
-    LANGUAGE_CENSUS_BUCKET,
+    BALLOT_BLANK_PARLASUR,
+    BALLOT_BLANK_PRESIDENT,
+    DEPARTMENT,
+    ENC_SOURCE_RAW,
+    ENTITY_ID,
+    GENDER,
+    INTERNET_ACCESS_FLAG,
     JOPARA_FLAG,
+    LANGUAGE_CENSUS_BUCKET,
+    MEDIA_PENETRATION_RADIO,
+    MEDIA_PENETRATION_TV,
+    MEDIA_PENETRATION_WHATSAPP,
+    MUNICIPALITY,
+    NBI_STRESS_PRIOR,
     PREFERENCE_PROXY,
     PREFERENCE_PROXY_STRENGTH,
+    RURAL_FLAG,
+    RURAL_FLAG_DERIVED,
     STRUCTURAL_DEPENDENCY_PROXY,
-    INTERNET_ACCESS_FLAG,
-    MEDIA_PENETRATION_TV,
-    MEDIA_PENETRATION_RADIO,
-    MEDIA_PENETRATION_WHATSAPP,
-    NBI_STRESS_PRIOR,
-    BALLOT_BLANK_PRESIDENT,
-    BALLOT_BLANK_PARLASUR,
-    ENC_SOURCE,
 )
 from population_segmentation.utils.seeds import make_rng
 
-# ─── Media penetration lookup ─────────────────────────────────────────────────
-# Department-level TV penetration; from DGEEC/media survey; national ~0.89
-_TV_BY_DEPT: dict[str, float] = {
-    "Asuncion": 0.98, "Central": 0.97, "Alto Parana": 0.92, "Itapua": 0.87,
-    "Caaguazu": 0.83, "San Pedro": 0.75, "Cordillera": 0.82, "Paraguari": 0.80,
-    "Misiones": 0.85, "Guaira": 0.84, "Amambay": 0.88, "Canindeyu": 0.74,
-    "Caazapa": 0.73, "Neembucu": 0.82, "Concepcion": 0.81,
-    "Presidente Hayes": 0.70, "Boqueron": 0.65, "Alto Paraguay": 0.62,
-}
-_RADIO_BY_DEPT: dict[str, float] = {
-    "Asuncion": 0.90, "Central": 0.89, "Alto Parana": 0.85, "Itapua": 0.82,
-    "Caaguazu": 0.80, "San Pedro": 0.78, "Cordillera": 0.80, "Paraguari": 0.79,
-    "Misiones": 0.82, "Guaira": 0.81, "Amambay": 0.83, "Canindeyu": 0.77,
-    "Caazapa": 0.76, "Neembucu": 0.80, "Concepcion": 0.80,
-    "Presidente Hayes": 0.74, "Boqueron": 0.70, "Alto Paraguay": 0.68,
-}
-_NBI_RURAL_BY_DEPT: dict[str, float] = {
-    "Asuncion": 0.15, "Central": 0.20, "Alto Parana": 0.55, "Itapua": 0.60,
-    "Caaguazu": 0.65, "San Pedro": 0.78, "Cordillera": 0.62, "Paraguari": 0.63,
-    "Misiones": 0.58, "Guaira": 0.61, "Amambay": 0.57, "Canindeyu": 0.80,
-    "Caazapa": 0.82, "Neembucu": 0.66, "Concepcion": 0.72,
-    "Presidente Hayes": 0.75, "Boqueron": 0.73, "Alto Paraguay": 0.76,
-}
-_NBI_URBAN_BY_DEPT: dict[str, float] = {
-    d: max(0.10, v * 0.35) for d, v in _NBI_RURAL_BY_DEPT.items()
-}
+# Single default when ``cleaner_synthetic_defaults.rural_flag_true_rate`` is absent from config.
+_DEFAULT_NATIONAL_RURAL_ANCHOR: float = 0.383
 
-# Structural dependency elevated in high-NBI rural departments
-_STRUCTURAL_DEP_ELEVATED: frozenset[str] = frozenset({
-    "San Pedro", "Caazapa", "Canindeyu", "Concepcion", "Paraguari",
-})
+# Defaults when ``generator_*`` YAML blocks are absent (matches historical generator behaviour).
+_DEFAULT_STRUCT_RURAL_BASE: float = 0.35
+_DEFAULT_STRUCT_URBAN_BASE: float = 0.12
+_DEFAULT_STRUCT_ELEVATED_RURAL: float = 0.60
+_DEFAULT_STRUCT_ELEVATED_DEPTS: frozenset[str] = frozenset(
+    ("San Pedro", "Caazapa", "Canindeyu", "Concepcion", "Paraguari")
+)
+_DEFAULT_BALLOT_PRES: float = 0.0241
+_DEFAULT_BALLOT_PARL: float = 0.0848
+_ENC_SOURCE_LABELS: tuple[str, ...] = ("windows1252", "utf8", "unknown")
+_DEFAULT_ENC_SOURCE_PROBS: tuple[float, float, float] = (0.45, 0.50, 0.05)
+
+
+def _nbi_urban_stress_from_rural(
+    nbi_rural: dict[str, float], floor: float, scale: float
+) -> dict[str, float]:
+    return {d: max(floor, float(v) * scale) for d, v in nbi_rural.items()}
+
+
+def _generator_dept_media_nbi_tables(
+    config: dict[str, Any],
+) -> tuple[
+    dict[str, float],
+    dict[str, float],
+    dict[str, float],
+    dict[str, float],
+    float,
+    float,
+    float,
+]:
+    """Load department TV/radio/NBI tables from ``generator_dept_media_nbi``."""
+    gdm = config.get("generator_dept_media_nbi")
+    if not isinstance(gdm, dict):
+        raise KeyError(
+            "generation config must include 'generator_dept_media_nbi' "
+            "(department TV/radio/NBI tables; see generation.yaml)"
+        )
+    for key in ("tv_by_department", "radio_by_department", "nbi_rural_stress_by_department"):
+        sub = gdm.get(key)
+        if not isinstance(sub, dict) or not sub:
+            raise KeyError(f"generator_dept_media_nbi.{key} must be a non-empty mapping")
+    tv_by = {str(k): float(v) for k, v in gdm["tv_by_department"].items()}
+    radio_by = {str(k): float(v) for k, v in gdm["radio_by_department"].items()}
+    nbi_rural = {str(k): float(v) for k, v in gdm["nbi_rural_stress_by_department"].items()}
+    urb_raw = gdm.get("nbi_urban_from_rural") or {}
+    nbi_floor = float(urb_raw.get("floor", 0.10))
+    nbi_scale = float(urb_raw.get("scale", 0.35))
+    nbi_urban = _nbi_urban_stress_from_rural(nbi_rural, nbi_floor, nbi_scale)
+    nbi_noise_std = float(gdm.get("nbi_noise_std", 0.03))
+    nbi_rural_fb = float(gdm.get("nbi_rural_unknown_department", 0.659))
+    nbi_urban_fb = float(gdm.get("nbi_urban_unknown_department", 0.252))
+    return tv_by, radio_by, nbi_rural, nbi_urban, nbi_noise_std, nbi_rural_fb, nbi_urban_fb
+
+
+def _elevated_departments_frozenset(gsd: dict[str, Any]) -> frozenset[str]:
+    raw = gsd.get("elevated_departments")
+    if isinstance(raw, list) and len(raw) > 0:
+        return frozenset(str(x) for x in raw)
+    return _DEFAULT_STRUCT_ELEVATED_DEPTS
+
+
+def _enc_source_labels_and_probs(config: dict[str, Any]) -> tuple[list[str], np.ndarray]:
+    dist = config.get("generator_enc_source_raw_distribution") or {}
+    labels = list(_ENC_SOURCE_LABELS)
+    probs = np.array([float(dist.get(k, 0.0)) for k in labels], dtype=np.float64)
+    if float(probs.sum()) <= 0.0:
+        probs = np.asarray(_DEFAULT_ENC_SOURCE_PROBS, dtype=np.float64)
+    probs = probs / probs.sum()
+    return labels, probs
 
 
 def _load_config(config_path: str | Path) -> dict[str, Any]:
     with open(config_path) as f:
         return yaml.safe_load(f)  # type: ignore[no-any-return]
+
+
+def _validated_department_sampling_probs(
+    dept_weights_raw: dict[str, float],
+) -> tuple[list[str], np.ndarray]:
+    """Validate nominal weights and return a probability vector summing *exactly* to 1.0.
+
+    ``generation.yaml`` stores human-facing shares at four decimal places; their
+    :class:`decimal.Decimal` sum must be exactly ``1.0000``. Binary ``float`` loads
+    can drift (e.g. ``1.0000000000000002``); we normalize then assign the residual
+    to the largest-weight department so :meth:`numpy.random.Generator.choice`
+    receives a mathematically valid ``p``.
+
+    Args:
+        dept_weights_raw: Mapping of department name to positive nominal weight.
+
+    Returns:
+        Department names in dict iteration order and a ``float64`` probability array.
+
+    Raises:
+        AssertionError: If Decimal(4dp) sum is not ``1.0000`` or float sum is far from 1.0.
+        ValueError: If weights are non-finite or non-positive.
+    """
+    quant = Decimal("0.0001")
+    decimal_sum = sum(
+        Decimal(str(float(v))).quantize(quant, rounding=ROUND_HALF_EVEN)
+        for v in dept_weights_raw.values()
+    )
+    assert decimal_sum == Decimal("1.0000"), (
+        "department_weights must sum to 1.0000 at 4 decimal places "
+        f"(Decimal check reflects YAML rounding intent), got {decimal_sum}"
+    )
+
+    dept_names = list(dept_weights_raw.keys())
+    probs = np.asarray([float(dept_weights_raw[d]) for d in dept_names], dtype=np.float64)
+    raw_sum = float(probs.sum())
+    if not np.isfinite(raw_sum) or raw_sum <= 0:
+        raise ValueError("department_weights must be finite and strictly positive")
+    assert abs(raw_sum - 1.0) < 0.001, (
+        "department_weights float sum must be within 0.001 of 1.0 before normalization, "
+        f"got {raw_sum:.12f}"
+    )
+
+    probs /= probs.sum()
+    imax = int(np.argmax(probs))
+    probs[imax] = 1.0 - float(np.sum(np.delete(probs, imax)))
+
+    assert np.all(probs >= 0.0), probs
+    assert probs.sum() == 1.0, float(probs.sum())
+
+    return dept_names, probs
 
 
 def generate_population(
@@ -87,21 +178,54 @@ def generate_population(
 
     Args:
         config: Generation configuration dict (from generation.yaml).
-        seed:   Random seed. If None, reads RANDOM_SEED env var.
+        seed: Explicit RNG seed forwarded to :func:`population_segmentation.utils.seeds.make_rng`.
+            Same ``config`` and the same integer ``seed`` (or both using the same
+            ``RANDOM_SEED`` environment when ``seed`` is ``None``) return an identical
+            population dataset across runs.
         output_path: Optional parquet path to write output.
 
     Returns:
-        DataFrame with one row per entity; columns match schema_contracts/population_master_raw.yaml.
+        DataFrame with one row per entity; columns match
+        schema_contracts/population_master_raw.yaml.
+
+    Raises:
+        KeyError: If ``config`` is missing required keys such as ``sample_size`` or
+            ``department_weights``.
+        ValueError: If department weights cannot be normalized to a valid distribution.
+
+    Example:
+        From a loaded ``generation.yaml`` dict::
+
+            df = generate_population(config, seed=42, output_path="data/interim/raw.parquet")
     """
     rng = make_rng(seed)
     n = int(config["sample_size"])
 
     dept_weights_raw: dict[str, float] = config["department_weights"]
-    dept_names = list(dept_weights_raw.keys())
-    dept_probs = np.array([dept_weights_raw[d] for d in dept_names], dtype=float)
-    dept_probs /= dept_probs.sum()
+    dept_names, dept_probs = _validated_department_sampling_probs(dept_weights_raw)
 
     dept_urban_share: dict[str, float] = config["department_urban_share"]
+
+    csd = config.get("cleaner_synthetic_defaults") or {}
+    national_rural_anchor = float(csd.get("rural_flag_true_rate", _DEFAULT_NATIONAL_RURAL_ANCHOR))
+    national_urban_fallback = 1.0 - national_rural_anchor
+
+    gsd = config.get("generator_structural_dependency") or {}
+    struct_rural_base = float(gsd.get("rural_base_rate", _DEFAULT_STRUCT_RURAL_BASE))
+    struct_urban_base = float(gsd.get("urban_base_rate", _DEFAULT_STRUCT_URBAN_BASE))
+    struct_elevated_rural = float(gsd.get("elevated_rural_rate", _DEFAULT_STRUCT_ELEVATED_RURAL))
+    elevated_departments = _elevated_departments_frozenset(gsd)
+
+    bbr = config.get("generator_ballot_blank_rates") or {}
+    p_ballot_pres = float(bbr.get("president", _DEFAULT_BALLOT_PRES))
+    p_ballot_parl = float(bbr.get("parlasur", _DEFAULT_BALLOT_PARL))
+
+    ict = config.get("media_penetration_defaults", {})
+    tv_nat = float(ict.get("tv_national", 0.89))
+    radio_nat = float(ict.get("radio_national", 0.82))
+    tv_by, radio_by, nbi_rural, nbi_urban, nbi_noise_std, nbi_rural_fb, nbi_urban_fb = (
+        _generator_dept_media_nbi_tables(config)
+    )
 
     # ── entity_id ──────────────────────────────────────────────────────────────
     entity_ids = np.arange(1, n + 1, dtype=np.int64)
@@ -114,7 +238,7 @@ def generate_population(
     rural_flags = np.zeros(n, dtype=bool)
     for i, dept in enumerate(dept_names):
         mask = dept_indices == i
-        urban_p = dept_urban_share.get(dept, 0.617)
+        urban_p = dept_urban_share.get(dept, national_urban_fallback)
         rural_flags[mask] = rng.random(mask.sum()) > urban_p
     rural_flag_derived = np.ones(n, dtype=bool)
 
@@ -135,8 +259,8 @@ def generate_population(
         lo, hi = bins[bi], bins[bi + 1]
         ages[mask] = rng.integers(lo, hi, size=int(mask.sum()))
 
-    # ── Rake rural_flag to national anchor (38.3%) ────────────────────────────
-    rural_flags = _rake_binary(rural_flags, target=0.383, rng=rng)
+    # ── Rake rural_flag to national anchor (see cleaner_synthetic_defaults.rural_flag_true_rate) ──
+    rural_flags = _rake_binary(rural_flags, target=national_rural_anchor, rng=rng)
 
     # ── municipality (placeholder — filled deterministically from dept) ────────
     # Full municipality lookup is applied in cleaner step 4; here we assign
@@ -163,69 +287,69 @@ def generate_population(
     preference_proxy_strengths = rng.beta(2.0, 2.0, size=n).astype(np.float32)
 
     # ── internet_access_flag ───────────────────────────────────────────────────
-    ict = config.get("media_penetration_defaults", {})
     urban_inet = float(ict.get("whatsapp_urban", 0.74))
-    rural_inet = float(ict.get("whatsapp_rural", 0.31))
-    # Approximate internet access from ICT anchors
-    inet_prob = np.where(rural_flags, 0.279, 0.734)
+    rural_whatsapp = float(ict.get("whatsapp_rural", 0.31))
+    inet_rural = float(ict.get("internet_access_rural_rate", 0.279))
+    inet_urban = float(ict.get("internet_access_urban_rate", 0.734))
+    inet_prob = np.where(rural_flags, inet_rural, inet_urban)
     internet_access_flags = rng.random(n) < inet_prob
 
     # ── media penetration ──────────────────────────────────────────────────────
-    tv_pen = np.array([_TV_BY_DEPT.get(d, 0.89) for d in departments], dtype=np.float32)
-    radio_pen = np.array([_RADIO_BY_DEPT.get(d, 0.82) for d in departments], dtype=np.float32)
-    whatsapp_pen = np.where(rural_flags, urban_inet * 0.42, urban_inet).astype(np.float32)
+    tv_pen = np.array([tv_by.get(str(d), tv_nat) for d in departments], dtype=np.float32)
+    radio_pen = np.array([radio_by.get(str(d), radio_nat) for d in departments], dtype=np.float32)
+    whatsapp_pen = np.where(rural_flags, rural_whatsapp, urban_inet).astype(np.float32)
 
     # ── nbi_stress_prior ───────────────────────────────────────────────────────
     nbi_vals = np.where(
         rural_flags,
-        np.array([_NBI_RURAL_BY_DEPT.get(d, 0.659) for d in departments]),
-        np.array([_NBI_URBAN_BY_DEPT.get(d, 0.252) for d in departments]),
+        np.array([nbi_rural.get(str(d), nbi_rural_fb) for d in departments]),
+        np.array([nbi_urban.get(str(d), nbi_urban_fb) for d in departments]),
     ).astype(np.float32)
-    nbi_noise = rng.normal(0, 0.03, size=n).astype(np.float32)
+    nbi_noise = rng.normal(0, nbi_noise_std, size=n).astype(np.float32)
     nbi_vals = np.clip(nbi_vals + nbi_noise, 0.0, 1.0).astype(np.float32)
 
     # ── structural_dependency_proxy ────────────────────────────────────────────
-    base_dep_prob = np.where(rural_flags, 0.35, 0.12)
-    elevated_mask = np.array([d in _STRUCTURAL_DEP_ELEVATED for d in departments])
-    dep_prob = np.where(elevated_mask & rural_flags, 0.60, base_dep_prob)
+    base_dep_prob = np.where(rural_flags, struct_rural_base, struct_urban_base)
+    elevated_mask = np.array([d in elevated_departments for d in departments])
+    dep_prob = np.where(elevated_mask & rural_flags, struct_elevated_rural, base_dep_prob)
     structural_dependency = rng.random(n) < dep_prob
 
     # ── ballot blanks ──────────────────────────────────────────────────────────
-    ballot_blank_pres = rng.random(n) < 0.0241
-    ballot_blank_parl = rng.random(n) < 0.0848
+    ballot_blank_pres = rng.random(n) < p_ballot_pres
+    ballot_blank_parl = rng.random(n) < p_ballot_parl
 
-    # ── enc_source ─────────────────────────────────────────────────────────────
-    enc_sources = rng.choice(
-        ["windows1252", "utf8", "unknown"],
-        size=n,
-        p=[0.45, 0.50, 0.05],
-    )
+    # ── enc_source_raw (raw contract) ───────────────────────────────────────
+    # Cleaner step 1 promotes this column to ENC_SOURCE and drops ENC_SOURCE_RAW.
+    enc_labels, enc_probs = _enc_source_labels_and_probs(config)
+    enc_sources = rng.choice(enc_labels, size=n, p=enc_probs)
 
     # ── jopara_flag ────────────────────────────────────────────────────────────
     jopara_flags = language_buckets == "jopara_bilingual"
 
-    df = pd.DataFrame({
-        ENTITY_ID: entity_ids,
-        DEPARTMENT: departments,
-        MUNICIPALITY: municipalities,
-        GENDER: genders,
-        AGE_ON_EVENT_DATE: ages,
-        RURAL_FLAG: rural_flags,
-        RURAL_FLAG_DERIVED: rural_flag_derived,
-        LANGUAGE_CENSUS_BUCKET: language_buckets,
-        JOPARA_FLAG: jopara_flags,
-        PREFERENCE_PROXY: preference_proxies,
-        PREFERENCE_PROXY_STRENGTH: preference_proxy_strengths,
-        STRUCTURAL_DEPENDENCY_PROXY: structural_dependency,
-        INTERNET_ACCESS_FLAG: internet_access_flags,
-        MEDIA_PENETRATION_TV: tv_pen,
-        MEDIA_PENETRATION_RADIO: radio_pen,
-        MEDIA_PENETRATION_WHATSAPP: whatsapp_pen,
-        NBI_STRESS_PRIOR: nbi_vals,
-        BALLOT_BLANK_PRESIDENT: ballot_blank_pres,
-        BALLOT_BLANK_PARLASUR: ballot_blank_parl,
-        ENC_SOURCE: enc_sources,
-    })
+    df = pd.DataFrame(
+        {
+            ENTITY_ID: entity_ids,
+            DEPARTMENT: departments,
+            MUNICIPALITY: municipalities,
+            GENDER: genders,
+            AGE_ON_EVENT_DATE: ages,
+            RURAL_FLAG: rural_flags,
+            RURAL_FLAG_DERIVED: rural_flag_derived,
+            LANGUAGE_CENSUS_BUCKET: language_buckets,
+            JOPARA_FLAG: jopara_flags,
+            PREFERENCE_PROXY: preference_proxies,
+            PREFERENCE_PROXY_STRENGTH: preference_proxy_strengths,
+            STRUCTURAL_DEPENDENCY_PROXY: structural_dependency,
+            INTERNET_ACCESS_FLAG: internet_access_flags,
+            MEDIA_PENETRATION_TV: tv_pen,
+            MEDIA_PENETRATION_RADIO: radio_pen,
+            MEDIA_PENETRATION_WHATSAPP: whatsapp_pen,
+            NBI_STRESS_PRIOR: nbi_vals,
+            BALLOT_BLANK_PRESIDENT: ballot_blank_pres,
+            BALLOT_BLANK_PARLASUR: ballot_blank_parl,
+            ENC_SOURCE_RAW: enc_sources,
+        }
+    )
 
     if output_path is not None:
         df.to_parquet(output_path, index=False)
@@ -301,7 +425,12 @@ def _rake_categorical(
     targets: dict[str, float],
     rng: np.random.Generator,
 ) -> np.ndarray:
-    """Rake a categorical array to target marginal proportions via random reassignment."""
+    """Rake a categorical array to target marginal proportions via random reassignment.
+
+    Uses a single O(n) scan to bucket row indices by current label, then reassigns
+    by sampling donor indices from pre-built pools (no per-label full-array ``where``).
+    Total work is linear in *n* and the number of label moves.
+    """
     arr = arr.copy()
     n = len(arr)
     labels = list(targets.keys())
@@ -311,24 +440,38 @@ def _rake_categorical(
     if delta != 0:
         target_counts[labels[0]] += delta
 
-    current_counts = {k: int((arr == k).sum()) for k in labels}
+    idx_by_label: dict[str, list[int]] = {k: [] for k in labels}
+    for i in range(n):
+        lab = str(arr[i])
+        if lab in idx_by_label:
+            idx_by_label[lab].append(i)
+
+    current_counts = {k: len(idx_by_label[k]) for k in labels}
+
     for label, target_count in target_counts.items():
         diff = target_count - current_counts.get(label, 0)
-        if diff > 0:
-            # Need more of this label — steal from over-represented labels
-            over = [k for k in labels if current_counts.get(k, 0) > target_counts[k]]
-            for donor in over:
-                available = int((arr == donor).sum()) - target_counts[donor]
-                to_move = min(diff, available)
-                if to_move <= 0:
-                    continue
-                donor_idx = rng.choice(np.where(arr == donor)[0], size=to_move, replace=False)
-                arr[donor_idx] = label
-                current_counts[donor] -= to_move
-                current_counts[label] = current_counts.get(label, 0) + to_move
-                diff -= to_move
-                if diff <= 0:
-                    break
+        if diff <= 0:
+            continue
+        over = [k for k in labels if current_counts.get(k, 0) > target_counts.get(k, 0)]
+        for donor in over:
+            available = current_counts[donor] - target_counts.get(donor, 0)
+            to_move = min(diff, available)
+            if to_move <= 0:
+                continue
+            pool = idx_by_label[donor]
+            pick = rng.choice(len(pool), size=to_move, replace=False)
+            keep = np.ones(len(pool), dtype=bool)
+            keep[pick] = False
+            idx_by_label[donor] = [pool[i] for i in range(len(pool)) if keep[i]]
+            chosen_pos = [pool[int(j)] for j in pick]
+            for pos in chosen_pos:
+                arr[pos] = label
+            idx_by_label[label].extend(chosen_pos)
+            current_counts[donor] -= to_move
+            current_counts[label] = current_counts.get(label, 0) + to_move
+            diff -= to_move
+            if diff <= 0:
+                break
     return arr
 
 
@@ -385,3 +528,50 @@ def _assign_language(
         ]
 
     return result
+
+
+if __name__ == "__main__":
+    import argparse
+
+    from dotenv import load_dotenv
+
+    load_dotenv()
+
+    parser = argparse.ArgumentParser(
+        description="Generate synthetic population. Outputs population_raw.parquet."
+    )
+    parser.add_argument(
+        "--config",
+        required=True,
+        type=Path,
+        help="Path to generation.yaml",
+    )
+    parser.add_argument(
+        "--output",
+        type=Path,
+        default=None,
+        help="Output parquet path (default: data/raw/population_raw.parquet)",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="Random seed (overrides RANDOM_SEED env var)",
+    )
+    parser.add_argument(
+        "--sample-size",
+        type=int,
+        default=None,
+        help="Override generation.yaml sample_size (entity count)",
+    )
+    args = parser.parse_args()
+
+    cfg = _load_config(args.config)
+    if args.sample_size is not None:
+        cfg["sample_size"] = int(args.sample_size)
+    out = args.output or Path("data/raw/population_raw.parquet")
+    out.parent.mkdir(parents=True, exist_ok=True)
+
+    df = generate_population(cfg, seed=args.seed, output_path=out)
+    print(f"Generated {len(df):,} entities → {out}")
+    print(f"Columns: {list(df.columns)}")

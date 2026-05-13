@@ -8,27 +8,33 @@ N_full: 4260816              # TSJE, April 22, 2018
 # ─── Outcome event date ───────────────────────────────────────────────────────
 outcome_event_date: "2018-04-22"
 
-# ─── Department weights (DGEEC 2018 population shares) ───────────────────────
-# All 18 departments + Asunción; shares sum to 1.0
+# ─── Department weights (DGEEC 2018 electoral-roll shares) ───────────────────
+# All 18 departments + Asunción; nominal shares at 4 decimal places sum to
+# Decimal("1.0000"). Binary float loads can drift; generator.py reconciles to a
+# probability vector whose float64 sum is exactly 1.0 for numpy RNG.
+# Source: TSJE 2018 voter-roll proportions, normalised from DGEEC 2018
+# projections.  Original raw values summed to 0.9200 due to rounding across
+# 18 entries; corrected 2026-05-11 by proportional normalisation (÷ 0.92),
+# rounding residual absorbed into Central (largest department).
 department_weights:
-  Asuncion: 0.0702
-  Central: 0.2997
-  Alto Parana: 0.1058
-  Itapua: 0.0795
-  Caaguazu: 0.0615
-  San Pedro: 0.0451
-  Cordillera: 0.0413
-  Paraguari: 0.0354
-  Misiones: 0.0223
-  Guaira: 0.0219
-  Amambay: 0.0203
-  Canindeyu: 0.0196
-  Caazapa: 0.0176
-  Neembucu: 0.0120
-  Concepcion: 0.0366
-  Presidente Hayes: 0.0178
-  Boqueron: 0.0081
-  Alto Paraguay: 0.0053
+  Asuncion: 0.0763
+  Central: 0.3259
+  Alto Parana: 0.1150
+  Itapua: 0.0864
+  Caaguazu: 0.0668
+  San Pedro: 0.0490
+  Cordillera: 0.0449
+  Paraguari: 0.0385
+  Misiones: 0.0242
+  Guaira: 0.0238
+  Amambay: 0.0221
+  Canindeyu: 0.0213
+  Caazapa: 0.0191
+  Neembucu: 0.0130
+  Concepcion: 0.0398
+  Presidente Hayes: 0.0193
+  Boqueron: 0.0088
+  Alto Paraguay: 0.0058
 
 # ─── Urban/rural mix per department (share urban; 1-x = rural) ───────────────
 # Based on DGEEC 2018 projections; national average 61.7% urban
@@ -74,6 +80,102 @@ language_priors:
   spanish_only: 0.15
   other: 0.05
 
+# ─── Cleaner synthetic imputation (raw columns missing entirely) ───────────────
+# Used when clean_population must fabricate rural_flag / structural_dependency_proxy;
+# language_census_bucket uses language_priors above. ``rural_flag_true_rate`` is also
+# the generator's national rural rake target; preliminary urban fallback is ``1 - rate``.
+cleaner_synthetic_defaults:
+  # National P(rural) when rural_flag column is absent (aligns generator rake anchor).
+  rural_flag_true_rate: 0.383
+  structural_dependency_true_rate: 0.25
+
+# ─── Generator synthetic rates (Bernoulli / categorical draws in generator.py) ─
+generator_structural_dependency:
+  rural_base_rate: 0.35
+  urban_base_rate: 0.12
+  elevated_rural_rate: 0.60
+  elevated_departments:
+    - San Pedro
+    - Caazapa
+    - Canindeyu
+    - Concepcion
+    - Paraguari
+
+generator_ballot_blank_rates:
+  president: 0.0241
+  parlasur: 0.0848
+
+generator_enc_source_raw_distribution:
+  windows1252: 0.45
+  utf8: 0.50
+  unknown: 0.05
+
+# ─── Department TV / radio / rural NBI (generator.py; DGEEC-style priors) ───
+generator_dept_media_nbi:
+  tv_by_department:
+    Asuncion: 0.98
+    Central: 0.97
+    Alto Parana: 0.92
+    Itapua: 0.87
+    Caaguazu: 0.83
+    San Pedro: 0.75
+    Cordillera: 0.82
+    Paraguari: 0.80
+    Misiones: 0.85
+    Guaira: 0.84
+    Amambay: 0.88
+    Canindeyu: 0.74
+    Caazapa: 0.73
+    Neembucu: 0.82
+    Concepcion: 0.81
+    Presidente Hayes: 0.70
+    Boqueron: 0.65
+    Alto Paraguay: 0.62
+  radio_by_department:
+    Asuncion: 0.90
+    Central: 0.89
+    Alto Parana: 0.85
+    Itapua: 0.82
+    Caaguazu: 0.80
+    San Pedro: 0.78
+    Cordillera: 0.80
+    Paraguari: 0.79
+    Misiones: 0.82
+    Guaira: 0.81
+    Amambay: 0.83
+    Canindeyu: 0.77
+    Caazapa: 0.76
+    Neembucu: 0.80
+    Concepcion: 0.80
+    Presidente Hayes: 0.74
+    Boqueron: 0.70
+    Alto Paraguay: 0.68
+  nbi_rural_stress_by_department:
+    Asuncion: 0.15
+    Central: 0.20
+    Alto Parana: 0.55
+    Itapua: 0.60
+    Caaguazu: 0.65
+    San Pedro: 0.78
+    Cordillera: 0.62
+    Paraguari: 0.63
+    Misiones: 0.58
+    Guaira: 0.61
+    Amambay: 0.57
+    Canindeyu: 0.80
+    Caazapa: 0.82
+    Neembucu: 0.66
+    Concepcion: 0.72
+    Presidente Hayes: 0.75
+    Boqueron: 0.73
+    Alto Paraguay: 0.76
+  nbi_urban_from_rural:
+    floor: 0.10
+    scale: 0.35
+  nbi_noise_std: 0.03
+  nbi_rural_unknown_department: 0.659
+  nbi_urban_unknown_department: 0.252
+
 # ─── Flaw injection rates (for raw_injector.py) ───────────────────────────────
 flaw_injection:
   cedula_format_error_rate: 0.035      # FMT: 7-digit without zero-pad
@@ -96,6 +198,10 @@ media_penetration_defaults:
   radio_national: 0.82
   whatsapp_urban: 0.74
   whatsapp_rural: 0.31
+  # Bernoulli P(online) for synthetic internet_access_flag (ICT ~2018; aligns
+  # calibration_anchors). Single source of truth — generator.py and cleaner.py read these keys.
+  internet_access_rural_rate: 0.279
+  internet_access_urban_rate: 0.734
 
 # ─── Preference proxy priors (calibrated to dept × urban/rural historical share)
 preference_proxy_priors:

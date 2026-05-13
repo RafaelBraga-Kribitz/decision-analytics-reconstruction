@@ -1,0 +1,155 @@
+schema_name: allocation_output
+schema_version: "1.0.0"
+description: >
+  Module B weekly resource allocation output.  One row per
+  (department, channel, week) triple for the Jan-Apr 2018 reconstruction
+  campaign window.  Produced by:
+  module_b_resource_allocation/pipeline (PuLP/CBC LP/MILP solver).
+  Consumed by: Module C (scenario priors), reporting/dashboard.
+
+unique_key:
+  - department
+  - channel
+  - week_index
+
+row_count:
+  # 18 departments * 11 channels * 14 weeks = 2772 rows in the full
+  # Jan-Apr 2018 weekly grid.
+  exact: 2772
+
+fields:
+  department:
+    type: string
+    nullable: false
+    allowed_values:
+      - Asuncion
+      - Concepcion
+      - San Pedro
+      - Cordillera
+      - Guaira
+      - Caaguazu
+      - Caazapa
+      - Itapua
+      - Misiones
+      - Paraguari
+      - Alto Parana
+      - Central
+      - Neembucu
+      - Amambay
+      - Canindeyu
+      - Presidente Hayes
+      - Boqueron
+      - Alto Paraguay
+  channel:
+    type: string
+    nullable: false
+    allowed_values:
+      - whatsapp_chatbot
+      - messenger_chatbot
+      - facebook_ads
+      - sms
+      - email
+      - tv_spots
+      - radio_spots
+      - billboards
+      - rallies_events
+      - canvassing
+      - sound_cars
+  channel_type:
+    type: string
+    nullable: false
+    allowed_values: [bilateral, broadcast, broadcast_to_bilateral, in_person]
+  week_index:
+    type: int8
+    nullable: false
+    min: 1
+    max: 14
+    description: 1-based week index within the Jan-Apr 2018 14-week window.
+  iso_week:
+    type: string
+    nullable: false
+    pattern: "^2018-W[0-1][0-9]$"
+  department_tier:
+    type: string
+    nullable: false
+    allowed_values: [stronghold, swing, opposition, negligible]
+  region:
+    type: string
+    nullable: false
+    allowed_values: [ORIENTAL, CHACO]
+  budget_allocation_usd:
+    type: float64
+    nullable: false
+    min: 0.0
+  budget_allocation_pyg:
+    type: float64
+    nullable: false
+    min: 0.0
+  fx_tier:
+    type: string
+    nullable: false
+    allowed_values: [REF, RETAIL]
+    description: Which TC_tier(t) was used to translate USD <-> PYG for this row.
+  tc_rate_pyg_per_usd:
+    type: float32
+    nullable: false
+    min: 4500.0
+    max: 7000.0
+  expected_contacts:
+    type: float64
+    nullable: false
+    min: 0.0
+  persuasion_adjusted_contacts:
+    type: float64
+    nullable: false
+    min: 0.0
+  reach_cap_population_proxy:
+    type: float64
+    nullable: false
+    min: 0.0
+    description: Reachable audience proxy = population * reach_cap_dept_channel.
+  reach_utilization:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.5
+    description: expected_contacts / reach_cap_population_proxy; > 1 only allowed when diminishing-returns curve is active.
+  binding_constraint:
+    type: string
+    nullable: true
+    description: Name of the binding LP/MILP constraint at this row, if any.
+  bundle_id:
+    type: string
+    nullable: true
+    description: Conglomerate bundle membership for this channel-department row (if any).
+  scenario_id:
+    type: string
+    nullable: false
+    description: Scenario tag, e.g. baseline | early_lock | late_flex | broadcast_to_direct.
+  solver_status:
+    type: string
+    nullable: false
+    allowed_values: [OPTIMAL, FEASIBLE]
+  solver_seed:
+    type: int32
+    nullable: false
+  schema_version_used:
+    type: string
+    nullable: false
+
+quality_gates:
+  total_budget_envelope_usd: 6000000.0
+  total_budget_envelope_tolerance_pct: 0.005
+  coverage_lower_bound_pct: 0.80
+  bcp_corridor_max_pct: 0.10
+  fx_band_max_pct_vs_bcp: 0.005
+  solver_status_allow:
+    - OPTIMAL
+    - FEASIBLE
+  forbid_infeasible: true
+
+provenance:
+  fx_rate_source: schema_contracts/bcp_tc_ref_daily_2018Q1.csv (or priors)
+  spread_source: module_b_resource_allocation/config/fx_retail_spread_prior.yaml
+  reach_cap_source: schema_contracts/reachability_caps_dept_channel.yaml
+  routing_source: schema_contracts/routing_cost_matrix.yaml

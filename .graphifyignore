@@ -1,0 +1,19 @@
+# ─── Graphify scan exclusions ─────────────────────────────────────────────────
+# Local maintainer-only files (not portfolio-facing)
+maintainer/
+
+# Agent/harness internals — keep from polluting the code graph with workflow nodes
+docs/ai_harness/
+.cursor/
+.claude/
+.claude-flow/
+
+# Generated artifacts that graphify should not re-index
+graphify-out/
+
+# Virtual environments and build artifacts
+.venv/
+__pycache__/
+*.egg-info/
+.pytest_cache/
+htmlcov/

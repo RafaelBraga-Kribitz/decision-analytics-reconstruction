@@ -6,34 +6,12 @@ Gate A2: all 13 flaw types present at configured rates ±20%.
 
 from __future__ import annotations
 
-import pytest
-import pandas as pd
-import numpy as np
-import yaml
+import re
 from pathlib import Path
 
-CONFIG_PATH = Path(__file__).parent.parent / "config" / "generation.yaml"
-SAMPLE_SIZE = 50_000
+import pandas as pd
 
-
-@pytest.fixture(scope="module")
-def config() -> dict:  # type: ignore[type-arg]
-    with open(CONFIG_PATH) as f:
-        cfg = yaml.safe_load(f)
-    cfg["sample_size"] = SAMPLE_SIZE
-    return cfg
-
-
-@pytest.fixture(scope="module")
-def clean_population(config: dict) -> pd.DataFrame:  # type: ignore[type-arg]
-    from population_segmentation.data.generator import generate_population
-    return generate_population(config, seed=42)
-
-
-@pytest.fixture(scope="module")
-def raw_population(config: dict, clean_population: pd.DataFrame) -> pd.DataFrame:  # type: ignore[type-arg]
-    from population_segmentation.data.raw_injector import inject_flaws
-    return inject_flaws(clean_population, config, seed=42)
+SAMPLE_SIZE = 50_000  # session fixture sample size (see conftest.py)
 
 
 class TestFlawTypes:
@@ -48,12 +26,14 @@ class TestFlawTypes:
     def test_dup_duplicates_present(self, raw_population: pd.DataFrame) -> None:
         """DUP: some entity_ids should appear more than once."""
         # Duplicates are injected as appended rows with slightly modified names
-        assert len(raw_population) > SAMPLE_SIZE, \
-            "No duplicate rows injected (length should exceed sample_size)"
+        assert (
+            len(raw_population) > SAMPLE_SIZE
+        ), "No duplicate rows injected (length should exceed sample_size)"
 
     def test_typ_department_typos_present(self, raw_population: pd.DataFrame) -> None:
         """TYP: some department values should be typo variants."""
         from population_segmentation.utils.schema import CANONICAL_DEPARTMENTS
+
         dept_values = set(raw_population["department"].dropna().unique())
         typos = dept_values - CANONICAL_DEPARTMENTS
         assert len(typos) > 0, f"No department typos found; all values canonical: {dept_values}"
@@ -65,8 +45,9 @@ class TestFlawTypes:
         null_rate = raw_population["municipality"].isna().mean()
         expected = config["flaw_injection"]["municipality_null_rate"]
         tolerance = expected * 0.25
-        assert abs(null_rate - expected) < tolerance, \
-            f"Municipality null rate {null_rate:.3f} not within ±25% of {expected}"
+        assert (
+            abs(null_rate - expected) < tolerance
+        ), f"Municipality null rate {null_rate:.3f} not within ±25% of {expected}"
 
     def test_fmt_date_format_swap_present(self, raw_population: pd.DataFrame) -> None:
         """FMT: dob field should exist and contain mixed format indicators."""
@@ -77,8 +58,10 @@ class TestFlawTypes:
         """ENC: some name fields should have encoding artifacts."""
         assert "first_name" in raw_population.columns
         # Encoding errors produce replacement chars or garbled sequences
-        garbled = raw_population["first_name"].astype(str).str.contains(
-            r"[?#\u00ef\u00bf\u00bd\ufffd]|Ã", na=False, regex=True
+        garbled = (
+            raw_population["first_name"]
+            .astype(str)
+            .str.contains(r"[?#\u00ef\u00bf\u00bd\ufffd]|Ã", na=False, regex=True)
         )
         assert garbled.sum() > 0, "No encoding errors found in first_name"
 
@@ -89,8 +72,7 @@ class TestFlawTypes:
         has_plus = phones.str.startswith("+595").any()
         has_zero = phones.str.startswith("0").any()
         has_raw = phones.str.match(r"^9\d{8}$").any()
-        assert sum([has_plus, has_zero, has_raw]) >= 2, \
-            "Fewer than 2 phone format variants found"
+        assert sum([has_plus, has_zero, has_raw]) >= 2, "Fewer than 2 phone format variants found"
 
     def test_typ_gender_variants_present(self, raw_population: pd.DataFrame) -> None:
         """TYP: gender field should have multiple representation variants."""
@@ -100,11 +82,16 @@ class TestFlawTypes:
         assert len(found) >= 3, f"Only {len(found)} gender variants found: {found}"
 
     def test_rng_age_range_errors_present(self, raw_population: pd.DataFrame) -> None:
-        """RNG: some derived age values should be <18 or >120 after DOB swap."""
-        # The age_range_error is encoded in dob — detection in cleaner
-        # Proxy: check dob_ambiguous flag or that some DOBs produce bad ages
-        # This flaw manifests during cleaning; mark present if dob has ambiguous entries
+        """RNG: DOB year-swap flaw must produce out-of-range ages on the event date."""
         assert "dob" in raw_population.columns
+        event_date = pd.Timestamp("2018-04-22")
+        parsed = pd.to_datetime(raw_population["dob"], format="%d/%m/%Y", errors="coerce")
+        ages = (event_date - parsed).dt.days / 365.25
+        bad_age_count = int((ages < 18).sum() + (ages > 120).sum() + parsed.isna().sum())
+        assert bad_age_count > 0, (
+            "Expected age_range flaw to produce unparseable or out-of-range DOBs, "
+            f"but all {len(raw_population):,} records have valid ages in [18, 120]"
+        )
 
     def test_sch_schema_drift_present(self, raw_population: pd.DataFrame) -> None:
         """SCH: dataset should include a schema drift marker column."""
@@ -121,11 +108,35 @@ class TestFlawTypes:
             assert abs(null_rate - expected) < 0.05
 
 
+class TestEncodingGarblesRegression:
+    """Regression: _ENCODING_GARBLES must be a dict (not a list) to avoid NameError at runtime."""
+
+    def test_encoding_garbles_is_str_to_str_dict(self) -> None:
+        from population_segmentation.data import raw_injector as ri
+
+        assert isinstance(ri._ENCODING_GARBLES, dict)
+        pairs = ri._ENCODING_GARBLES.items()
+        assert all(isinstance(k, str) and isinstance(v, str) for k, v in pairs)
+
+    def test_garble_encoding_replaces_first_accent(self) -> None:
+        from population_segmentation.data import raw_injector as ri
+
+        out = ri._garble_encoding("Ramírez")
+        assert "Ã" in out or "?" in out
+        assert out != "Ramírez"
+
+    def test_garble_encoding_non_str_passthrough(self) -> None:
+        from population_segmentation.data import raw_injector as ri
+
+        assert ri._garble_encoding(1) == 1  # type: ignore[arg-type]
+
+
 class TestDeterminism:
     def test_same_seed_deterministic(
         self, config: dict, clean_population: pd.DataFrame  # type: ignore[type-arg]
     ) -> None:
         from population_segmentation.data.raw_injector import inject_flaws
+
         df1 = inject_flaws(clean_population, config, seed=42)
         df2 = inject_flaws(clean_population, config, seed=42)
         assert len(df1) == len(df2)
@@ -141,15 +152,49 @@ class TestDeterminism:
         expected_extra = int(SAMPLE_SIZE * dup_rate)
         actual_extra = len(raw_population) - SAMPLE_SIZE
         tolerance = max(5, int(expected_extra * 0.30))
-        assert abs(actual_extra - expected_extra) <= tolerance, \
-            f"Expected ~{expected_extra} duplicate rows, got {actual_extra}"
+        assert (
+            abs(actual_extra - expected_extra) <= tolerance
+        ), f"Expected ~{expected_extra} duplicate rows, got {actual_extra}"
 
 
 class TestFlaw13Coverage:
     """All 13 flaw types from scope §4.2 must be present."""
 
     def test_all_13_flaw_types_accounted(self, raw_population: pd.DataFrame) -> None:
-        """Check flaw_summary column or metadata confirms 13 types injected."""
-        assert "flaw_types_injected" in raw_population.attrs or \
-               "cedula" in raw_population.columns, \
-               "Raw injector output has no recognizable flaw columns"
+        """inject_flaws must record exactly 13 flaw types in df.attrs."""
+        assert (
+            "flaw_types_injected" in raw_population.attrs
+        ), "inject_flaws must store the injected flaw list in df.attrs['flaw_types_injected']"
+        injected = raw_population.attrs["flaw_types_injected"]
+        assert (
+            len(injected) == 13
+        ), f"Expected exactly 13 flaw types (scope §4.2), got {len(injected)}: {injected}"
+
+
+def test_raw_injector_source_avoids_string_dataframe_column_keys() -> None:
+    """Regression: index DataFrames with schema constants, not quoted column names."""
+    path = (
+        Path(__file__).resolve().parents[1]
+        / "src"
+        / "population_segmentation"
+        / "data"
+        / "raw_injector.py"
+    )
+    df_lit = re.compile(r"\bdf\[\s*[\"']")
+    at_lit = re.compile(r"\.at\[[^,\]]+,\s*[\"']")
+    for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
+        if line.lstrip().startswith("#"):
+            continue
+        code = line.split("#", 1)[0]
+        if df_lit.search(code):
+            msg = (
+                f"{path.name}:{lineno}: use schema constants for df[...] keys, "
+                f"not literals: {line!r}"
+            )
+            raise AssertionError(msg)
+        if at_lit.search(code):
+            msg = (
+                f"{path.name}:{lineno}: use schema constants for .at[..., col], "
+                f"not literals: {line!r}"
+            )
+            raise AssertionError(msg)

@@ -1,0 +1,31 @@
+_meta:
+  description: |
+    Jan–Apr 2018 retail vs BCP-reference FX spread priors.
+    spread_pct is the RETAIL TC premium over the BCP reference rate
+    (retail = ref * (1 + spread_pct)).  Series A=monthly, B=weekly are
+    independent priors with their own provenance; LP gating MUST NOT mix
+    numerators/denominators across series.
+  fx_anchor_year: 2018
+  provenance: PRIOR
+
+series_a_monthly:
+  2018-01: 0.018
+  2018-02: 0.021
+  2018-03: 0.023
+  2018-04: 0.024
+
+series_b_weekly:
+  2018-W01: 0.017
+  2018-W02: 0.018
+  2018-W03: 0.018
+  2018-W04: 0.019
+  2018-W05: 0.020
+  2018-W06: 0.021
+  2018-W07: 0.022
+  2018-W08: 0.022
+  2018-W09: 0.023
+  2018-W10: 0.023
+  2018-W11: 0.024
+  2018-W12: 0.025
+  2018-W13: 0.025
+  2018-W14: 0.026

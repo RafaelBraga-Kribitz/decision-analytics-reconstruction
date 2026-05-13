@@ -1,9 +1,16 @@
 schema_name: media_reachability_by_segment
-schema_version: "1.0.0"
+schema_version: "1.1.0"
 description: >
-  Aggregated media reachability metrics by population segment.
-  One row per segment (k=6). Produced by: module_a (aggregation step).
-  Consumed by: Module B (channel caps per segment per district).
+  National segment-level rollup of media reachability metrics.
+  Grain is strictly one row per canonical segment_label (k=6).
+  `dominant_department` is the modal department of the segment (a descriptive
+  summary column), NOT a row key.  Module B consumers that require
+  (department, channel) caps MUST use the companion artifact
+  `media_reachability_by_segment_department.csv` and its contract
+  `media_reachability_by_segment_department.yaml` — do not reinterpret the
+  segment-only rollup as a per-department cap source.
+  Produced by: module_a (aggregation step).
+  Consumed by: Module B (segment-level reach diagnostic), Module C (segment priors).
 
 fields:
   segment_label:

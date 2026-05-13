@@ -1,0 +1,36 @@
+_meta:
+  description: |
+    Jan–Apr 2018 weekly BCP reference TC_Ref PYG/USD prior series.
+    Provenance: PRIOR — to be hardened against published BCP daily series.
+
+    Temporal narrative embedded in anchor values:
+      Jan–Feb: Guaraní-strengthening phase (harvest-dollar supply hits market).
+                TC_Ref falls from ~5,615 toward ~5,500.
+      March:   Guaraní strongest leg.  Each March week is ≥ 5,500 PYG/USD
+                (spec floor TC_Ref,March ≥ 5,500).
+      April:   Reversal — zafra cash absorbed, USD funding tightens.
+                TC_Ref re-steepens to 5,600–5,700 (spec band [5,550, 5,750]).
+
+    These weekly anchors are treated as constant within each ISO week when
+    building the daily series (no within-week interpolation in prior mode).
+  fx_anchor_year: 2018
+  provenance: PRIOR
+  march_floor_pyg_per_usd: 5500.0
+  april_band_lo_pyg_per_usd: 5550.0
+  april_band_hi_pyg_per_usd: 5750.0
+
+weekly_reference_rate:
+  2018-W01: 5615.0   # Jan 01–07: neutral open post-2017 year-end stress
+  2018-W02: 5595.0   # Jan 08–14: early harvest dollars arrive
+  2018-W03: 5575.0   # Jan 15–21: Guaraní strengthening
+  2018-W04: 5555.0   # Jan 22–28: accelerating
+  2018-W05: 5540.0   # Jan 29 – Feb 04
+  2018-W06: 5525.0   # Feb 05–11
+  2018-W07: 5515.0   # Feb 12–18: approaching peak strength
+  2018-W08: 5508.0   # Feb 19–25: near floor
+  2018-W09: 5502.0   # Feb 26 – Mar 04: March zone starts Mar 01 (≥ 5500 ✓)
+  2018-W10: 5500.0   # Mar 05–11: strongest Guaraní — floor 5500 (≥ 5500 ✓)
+  2018-W11: 5500.0   # Mar 12–18: floor holds (≥ 5500 ✓)
+  2018-W12: 5505.0   # Mar 19–25: base building (≥ 5500 ✓)
+  2018-W13: 5560.0   # Mar 26 – Apr 01: reversal begins; Apr 01 = 5560 ∈ [5550,5750] ✓
+  2018-W14: 5640.0   # Apr 02–08: April reversal; 5640 ∈ [5550,5750] ✓

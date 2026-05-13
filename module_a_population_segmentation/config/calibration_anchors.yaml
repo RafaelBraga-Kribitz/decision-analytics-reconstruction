@@ -20,22 +20,25 @@ department_participation_rates:
   Alto Parana: 0.3747            # [VERIFIED — TSJE, 2018] ±0.5 pp
   Central: 0.4399                # [VERIFIED — TSJE, 2018] ±0.5 pp
   Guaira: 0.5826                 # [VERIFIED — TSJE, 2018] ±0.5 pp
-  # Full departmental table: [VERIFIED — exemplars only] pending full TSJE table
-  # Remaining departments initialized to national mean (0.6125) until full table ingested
-  Asuncion: 0.6125
-  Concepcion: 0.6125
-  San Pedro: 0.6125
-  Cordillera: 0.6125
-  Caaguazu: 0.6125
-  Caazapa: 0.6125
-  Itapua: 0.6125
-  Misiones: 0.6125
-  Paraguari: 0.6125
-  Amambay: 0.6125
-  Canindeyu: 0.6125
-  Neembucu: 0.6125
-  Boqueron: 0.6125
-  Alto Paraguay: 0.6125
+  # ── [ESTIMATED] — national mean fallback; full TSJE table pending ───────────
+  # These 14 departments are initialised to the verified national mean (0.6125)
+  # and tagged [ESTIMATED] so the validator knows NOT to treat them as verified.
+  # Replace with [VERIFIED] entries when the full TSJE department breakdown
+  # (granularity: department × gender × age_group) is ingested.
+  Asuncion: 0.6125       # [ESTIMATED — national mean fallback]
+  Concepcion: 0.6125     # [ESTIMATED — national mean fallback]
+  San Pedro: 0.6125      # [ESTIMATED — national mean fallback]
+  Cordillera: 0.6125     # [ESTIMATED — national mean fallback]
+  Caaguazu: 0.6125       # [ESTIMATED — national mean fallback]
+  Caazapa: 0.6125        # [ESTIMATED — national mean fallback]
+  Itapua: 0.6125         # [ESTIMATED — national mean fallback]
+  Misiones: 0.6125       # [ESTIMATED — national mean fallback]
+  Paraguari: 0.6125      # [ESTIMATED — national mean fallback]
+  Amambay: 0.6125        # [ESTIMATED — national mean fallback]
+  Canindeyu: 0.6125      # [ESTIMATED — national mean fallback]
+  Neembucu: 0.6125       # [ESTIMATED — national mean fallback]
+  Boqueron: 0.6125       # [ESTIMATED — national mean fallback]
+  Alto Paraguay: 0.6125  # [ESTIMATED — national mean fallback]
 
 # Rake multipliers (populated at training time by PropensityModel; placeholder = 1.0)
 department_rake_multipliers:

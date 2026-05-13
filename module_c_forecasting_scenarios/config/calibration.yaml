@@ -1,0 +1,18 @@
+# Module C calibration gate — Series A vs Series B (TSJE reporting conventions).
+# Do not blend numerators across series; pick exactly one active series per run.
+series: A
+# Valid values: A | B
+# Series A: valid-vote shares (micro-target replication anchor).
+# Series B: final official headline pair (alternate rollup).
+anchors:
+  A:
+    preference_proxy_a_pct: 46.43
+    preference_proxy_b_pct: 42.73
+    margin_m_star_pp: 3.70
+  B:
+    preference_proxy_a_pct: 48.96
+    preference_proxy_b_pct: 45.08
+    margin_m_star_pp: 3.88
+# Posterior bracket QA (percentage points) vs active series m*
+posterior_margin_tolerance_pp: 4.0
+outcome_event_date: "2018-04-22"

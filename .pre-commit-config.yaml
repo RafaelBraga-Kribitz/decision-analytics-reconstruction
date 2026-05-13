@@ -1,0 +1,38 @@
+# Mirrors Makefile targets: lint (ruff + black), typecheck (pyright), fast pytest smoke.
+# Install: `poetry run pre-commit install`  |  Run all: `make precommit` or `pre-commit run --all-files`
+repos:
+  - repo: https://github.com/psf/black
+    rev: 26.3.1
+    hooks:
+      - id: black
+        language_version: python3.11
+        args: ["--line-length=100", "--exclude", "tests/test_eda.py"]
+        files: ^(module_a_population_segmentation|module_b_resource_allocation|module_c_forecasting_scenarios|tests|scripts)/.*\.py$
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.15.12
+    hooks:
+      - id: ruff
+        args: ["--extend-exclude", "tests/test_eda.py"]
+        files: ^(module_a_population_segmentation|module_b_resource_allocation|module_c_forecasting_scenarios|tests|scripts)/.*\.py$
+
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.8.1
+    hooks:
+      - id: nbstripout
+        files: ^(module_a_population_segmentation|module_b_resource_allocation|module_c_forecasting_scenarios)/.*\.ipynb$
+
+  - repo: local
+    hooks:
+      - id: pyright
+        name: pyright (Module A + B src)
+        entry: poetry run pyright module_a_population_segmentation/src module_b_resource_allocation/src
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: pytest-smoke
+        name: pytest smoke (architecture contracts + portfolio e2e)
+        entry: poetry run pytest tests/test_architecture_ruff_black_contract.py tests/test_architecture_noqa_justification_contract.py tests/test_architecture_ruff_configuration.py tests/test_architecture_pyright_basic_contract.py tests/test_architecture_pre_commit_contract.py module_a_population_segmentation/tests/test_architecture_generator_rural_anchor_contract.py module_a_population_segmentation/tests/test_architecture_generator_synthetic_rates_contract.py module_a_population_segmentation/tests/test_architecture_generator_dept_media_yaml_contract.py tests/test_portfolio_e2e_smoke.py -q --tb=line
+        language: system
+        pass_filenames: false

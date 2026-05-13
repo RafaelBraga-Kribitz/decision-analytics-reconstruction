@@ -1,0 +1,10 @@
+# Demobilisation shock score s = lambda1 * abs(m_poll - m_star) + lambda2 * (1 - phi) + lambda3 * rho_herd
+# Clipped by proximity to outcome_event_date (2018-04-22).
+lambda1: 0.08
+lambda2: 0.35
+lambda3: 0.12
+m_star_extreme_pp: 12.0
+outcome_event_date: "2018-04-22"
+clip_days_before_outcome: 45
+shock_multiplier: 1.0
+baseline_shock_zero: false

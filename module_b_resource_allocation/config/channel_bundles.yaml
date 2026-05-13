@@ -1,0 +1,28 @@
+_meta:
+  description: |
+    Conglomerate bundle constraints — when a vendor controls multiple channels,
+    they MUST be bought as a fixed-ratio MILP bundle.  ratios are weights on
+    each channel's per-week contact volume; "min_ratio" / "max_ratio" gives
+    the LP/MILP its enforceable corridor.
+
+bundles:
+  conglomerate_x:
+    members:
+      tv_spots: 0.50
+      radio_spots: 0.30
+      billboards: 0.20
+    cardinality: ge_2_of_3
+    binding: hard
+  conglomerate_y:
+    members:
+      facebook_ads: 0.60
+      whatsapp_chatbot: 0.40
+    cardinality: equality
+    binding: hard
+  field_ops_bundle:
+    members:
+      canvassing: 0.55
+      rallies_events: 0.30
+      sound_cars: 0.15
+    cardinality: ge_2_of_3
+    binding: soft

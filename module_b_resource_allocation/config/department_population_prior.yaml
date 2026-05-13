@@ -1,0 +1,29 @@
+_meta:
+  description: |
+    2018-anchored department population prior (rounded thousands).  Provenance
+    is PRIOR for the synthetic reconstruction; harden against DGEEC 2012 census
+    + projection before any portfolio release.  Numbers are total population,
+    NOT enrolled voters; LP-side reach caps reference the entity-level
+    aggregates coming out of Module A and use this only as a fallback.
+  provenance: PRIOR
+  fx_anchor_year: 2018
+
+population:
+  Asuncion: 525_000
+  Concepcion: 247_000
+  San Pedro: 412_000
+  Cordillera: 304_000
+  Guaira: 226_000
+  Caaguazu: 553_000
+  Caazapa: 184_000
+  Itapua: 581_000
+  Misiones: 124_000
+  Paraguari: 247_000
+  Alto Parana: 853_000
+  Central: 2_135_000
+  Neembucu: 89_000
+  Amambay: 167_000
+  Canindeyu: 222_000
+  Presidente Hayes: 124_000
+  Boqueron: 67_000
+  Alto Paraguay: 17_000

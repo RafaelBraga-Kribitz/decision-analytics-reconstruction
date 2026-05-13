@@ -1,0 +1,43 @@
+_meta:
+  description: |
+    Per-channel unit cost in PYG (per reachable contact unit, before scaling).
+    Provenance is PRIOR until hardened to verified 2018 vendor rate cards.
+    Default FX tier matches the dominant settlement currency for the line item
+    (REF for institutional contracts, RETAIL for street-vendor PYG billings).
+  provenance: PRIOR
+  fx_anchor_year: 2018
+
+channels:
+  whatsapp_chatbot:
+    unit_cost_pyg: 65.0      # cents-per-message at ~USD 0.012 * 5500 PYG/USD
+    fx_tier_default: REF
+  messenger_chatbot:
+    unit_cost_pyg: 75.0
+    fx_tier_default: REF
+  facebook_ads:
+    unit_cost_pyg: 28.0      # CPM-equivalent normalized to per-contact
+    fx_tier_default: REF
+  sms:
+    unit_cost_pyg: 180.0
+    fx_tier_default: RETAIL
+  email:
+    unit_cost_pyg: 15.0
+    fx_tier_default: REF
+  tv_spots:
+    unit_cost_pyg: 320.0     # per estimated household-contact, FTA mass
+    fx_tier_default: REF
+  radio_spots:
+    unit_cost_pyg: 140.0
+    fx_tier_default: RETAIL
+  billboards:
+    unit_cost_pyg: 95.0
+    fx_tier_default: RETAIL
+  rallies_events:
+    unit_cost_pyg: 850.0     # per attendee-equivalent contact
+    fx_tier_default: RETAIL
+  canvassing:
+    unit_cost_pyg: 620.0
+    fx_tier_default: RETAIL
+  sound_cars:
+    unit_cost_pyg: 210.0
+    fx_tier_default: RETAIL

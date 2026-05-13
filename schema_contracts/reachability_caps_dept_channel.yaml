@@ -1,0 +1,133 @@
+schema_name: reachability_caps_dept_channel
+schema_version: "1.0.0"
+description: >
+  Per-(department, channel) reachability ceiling table used by Module B LP/MILP.
+  Fuses the 2018 digital divide, FTA TV penetration anchors, mobile saturation,
+  radio/TV salience scalars, and tier-eligibility flags into a single artifact.
+  Produced by: module_b_resource_allocation/features/reach_caps.py
+  Consumed by: module_b_resource_allocation/models/allocation.py (LP/MILP).
+
+unique_key:
+  - department
+  - channel
+
+row_count:
+  exact: 198    # 18 departments * 11 channels
+
+fields:
+  department:
+    type: string
+    nullable: false
+    allowed_values:
+      - Asuncion
+      - Concepcion
+      - San Pedro
+      - Cordillera
+      - Guaira
+      - Caaguazu
+      - Caazapa
+      - Itapua
+      - Misiones
+      - Paraguari
+      - Alto Parana
+      - Central
+      - Neembucu
+      - Amambay
+      - Canindeyu
+      - Presidente Hayes
+      - Boqueron
+      - Alto Paraguay
+  channel:
+    type: string
+    nullable: false
+    allowed_values:
+      - whatsapp_chatbot
+      - messenger_chatbot
+      - facebook_ads
+      - sms
+      - email
+      - tv_spots
+      - radio_spots
+      - billboards
+      - rallies_events
+      - canvassing
+      - sound_cars
+  region:
+    type: string
+    nullable: false
+    allowed_values: [ORIENTAL, CHACO]
+  reach_cap_share:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+    description: >
+      Hard upper bound on the share of the department population that can be
+      reached by this channel before diminishing returns dominate.
+  reachable_audience:
+    type: int64
+    nullable: false
+    min: 0
+    description: reach_cap_share * dept_population (rounded).
+  salience_multiplier:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 2.0
+    description: >
+      Channel salience scalar (psi_radio / psi_tv / mobile-friction factor)
+      applied to effective audience.
+  attention_multiplier:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+    description: Conversion attention factor (e.g. alpha_radio_ad = 0.57).
+  network_hostility:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+    description: zeta_network in (0, 1]; lower means hostile editorial stance.
+  tier_eligibility:
+    type: string
+    nullable: false
+    allowed_values: [mass, pay_tv_eligible, mobile_first, in_person_only, restricted]
+  unit_cost_pyg:
+    type: float64
+    nullable: false
+    min: 0.0
+    description: PYG-denominated price per reachable contact unit at this row.
+  fx_tier_default:
+    type: string
+    nullable: false
+    allowed_values: [REF, RETAIL]
+  diminishing_returns_k:
+    type: float32
+    nullable: false
+    min: 0.0
+    description: Log-linear response shape parameter for this channel-department.
+  diminishing_returns_inflection_pct:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+    description: Saturation inflection share of reach_cap_share.
+  provenance:
+    type: string
+    nullable: false
+    allowed_values: [VERIFIED, PRIOR, ESTIMATED]
+    description: >
+      Each row must carry its anchoring provenance.  PRIOR/ESTIMATED rows MUST
+      be hardened to VERIFIED sources before any portfolio release.
+
+quality_gates:
+  required_columns:
+    - department
+    - channel
+    - reach_cap_share
+    - reachable_audience
+    - unit_cost_pyg
+    - provenance
+  prior_share_max: 0.50
+  region_chaco_departments: [Presidente Hayes, Boqueron, Alto Paraguay]

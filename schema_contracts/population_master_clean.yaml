@@ -148,6 +148,10 @@ fields:
     type: string
     nullable: false
     allowed_values: [windows1252, utf8, unknown]
+    description: >
+      Clean-layer encoding provenance after `clean_population()`. Populated from
+      raw-layer `enc_source_raw` (generator / raw injector); the cleaner promotes
+      that column here and removes `enc_source_raw` from the output frame.
 
 calibration_anchors:
   national_participation_rate:

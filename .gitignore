@@ -22,9 +22,12 @@ venv/
 ENV/
 
 # ─── Data (DVC-tracked — never commit raw data) ──────────────────────────────
-data/raw/
-data/interim/
-data/processed/
+data/raw/*
+!data/raw/.gitkeep
+data/interim/*
+!data/interim/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
 *.parquet
 *.csv
 !schema_contracts/
@@ -34,7 +37,6 @@ mlflow/mlruns/
 
 # ─── Reports (generated artifacts) ──────────────────────────────────────────
 module_a_population_segmentation/reports/qa_report_*.md
-module_a_population_segmentation/reports/shap_summary.png
 module_a_population_segmentation/reports/model_evaluation.md
 
 # ─── Notebooks (checkpoints only — sources committed) ────────────────────────
@@ -50,8 +52,26 @@ module_a_population_segmentation/reports/model_evaluation.md
 .vscode/
 *.swp
 *.swo
-.cursor/
-.claude/
+# .cursor — keep local IDE/agent state private except files we intentionally ship
+.cursor/*
+!.cursor/rules/
+.cursor/rules/*
+!.cursor/rules/07-pre-public-cleanup-manifest.mdc
+!.cursor/rules/08-controlled-workflow-playbook.mdc
+!.cursor/skills/
+.cursor/skills/*
+!.cursor/skills/project-orchestrator/
+.cursor/skills/project-orchestrator/*
+!.cursor/skills/project-orchestrator/SKILL.md
+
+# .claude — same: ship only mirrored orchestrator skill cue for Claude Code parity
+.claude/*
+!.claude/skills/
+.claude/skills/*
+!.claude/skills/project-orchestrator/
+.claude/skills/project-orchestrator/*
+!.claude/skills/project-orchestrator/SKILL.md
+
 .obsidian/
 
 # ─── Coverage ────────────────────────────────────────────────────────────────
@@ -67,7 +87,26 @@ AGENTS.md
 CLAUDE.md
 GEMINI.md
 project_scope/
-docs/ai_harness/
+
+# Harness docs — keep folder private except operator README pre-public section
+docs/ai_harness/*
+!docs/ai_harness/README.md
+!docs/ai_harness/CONTROLLED_WORKFLOW_PLAYBOOK.md
 
 # ─── Local graph context artifacts ───────────────────────────────────────────
 graphify-out/
+
+# ─── Local agent/memory stores ───────────────────────────────────────────────
+ruvector.db
+.claude-flow/
+*.ruvector.db
+
+# ─── Maintainer-only docs (not for public clone) ─────────────────────────────
+maintainer/
+reports/task_verify_*.md
+
+# ─── Project Scope Documents ───────────────────────────────────────────────────
+Project_Action_list.md
+Project_Evaluation.md
+reports/integration_audit_2026-05-12.md
+reports/verification_session_proof_2026-05-12.md

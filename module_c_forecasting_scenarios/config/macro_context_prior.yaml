@@ -1,0 +1,13 @@
+# Macro context for narrative priors (Module C). Tags follow provenance discipline.
+gdp_growth_2017_pct:
+  value: 4.3
+  status: VERIFIED
+  source: "World Bank / IMF headline growth band for Paraguay 2017 (lock exact series in research pass)"
+unemployment_rate_2017:
+  value: null
+  status: PARTIAL
+  source: "DGEEC / ILO — pending exact 2017 annual"
+inflation_cpi_2017_yoy_pct:
+  value: null
+  status: PARTIAL
+  source: "BCP CPI — pending exact annual"

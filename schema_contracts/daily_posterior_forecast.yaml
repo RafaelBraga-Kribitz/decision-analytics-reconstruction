@@ -1,0 +1,35 @@
+schema_name: daily_posterior_forecast
+schema_version: "1.0.0"
+description: >
+  Daily posterior summaries for latent preference-proxy margin (tracking stage).
+  Dates span the tracking window through day before outcome_event_date.
+
+unique_key:
+  - date
+  - calibration_series
+
+fields:
+  date:
+    type: date
+    nullable: false
+  calibration_series:
+    type: string
+    nullable: false
+    allowed_values: [A, B]
+  series_tag:
+    type: string
+    nullable: false
+    allowed_values: [A, B]
+    description: Echo of active series for QA joins (must match calibration_series row).
+  posterior_mean_preference_margin_pp:
+    type: float64
+    nullable: false
+  posterior_hdi_low_pp:
+    type: float64
+    nullable: false
+  posterior_hdi_high_pp:
+    type: float64
+    nullable: false
+  model_version:
+    type: string
+    nullable: false

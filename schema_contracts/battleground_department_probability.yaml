@@ -1,0 +1,26 @@
+schema_name: battleground_department_probability
+schema_version: "1.0.0"
+description: >
+  Department-level posterior win probability for Candidate A preference proxy
+  (synthetic reconstruction). Keys align with allocation_output department names.
+
+unique_key:
+  - department
+  - calibration_series
+
+fields:
+  department:
+    type: string
+    nullable: false
+  calibration_series:
+    type: string
+    nullable: false
+    allowed_values: [A, B]
+  win_probability_a:
+    type: float64
+    nullable: false
+    min: 0.0
+    max: 1.0
+  model_version:
+    type: string
+    nullable: false

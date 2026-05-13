@@ -1,0 +1,32 @@
+schema_name: posterior_house_effects
+schema_version: "1.0.0"
+description: >
+  Posterior summaries for pollster-level house offsets (tracking stage).
+
+unique_key:
+  - pollster_id
+  - calibration_series
+
+fields:
+  pollster_id:
+    type: string
+    nullable: false
+  calibration_series:
+    type: string
+    nullable: false
+    allowed_values: [A, B]
+  house_effect_posterior_mean:
+    type: float64
+    nullable: false
+  house_effect_hdi_low:
+    type: float64
+    nullable: false
+  house_effect_hdi_high:
+    type: float64
+    nullable: false
+  pollster_bias_family:
+    type: string
+    nullable: false
+  model_version:
+    type: string
+    nullable: false

@@ -1,0 +1,29 @@
+schema_name: monte_carlo_shock_catalog
+schema_version: "1.0.0"
+description: >
+  Catalog of demobilisation / bandwagon instrument shocks for Monte Carlo
+  scenarios. Links poll identifiers to shock scores and scenario buckets.
+  shock_id is globally unique; poll_wave_id may repeat across buckets only
+  if shock_id differs.
+
+unique_key:
+  - shock_id
+
+fields:
+  shock_id:
+    type: string
+    nullable: false
+  poll_wave_id:
+    type: string
+    nullable: true
+  shock_score_s:
+    type: float64
+    nullable: false
+  scenario_bucket:
+    type: string
+    nullable: false
+    allowed_values: [baseline, extreme_tracker, compounded_herd]
+  shock_timestamp_utc:
+    type: string
+    nullable: false
+    description: ISO-8601 timestamp for ordering with TREP cadence (synthetic OK).
