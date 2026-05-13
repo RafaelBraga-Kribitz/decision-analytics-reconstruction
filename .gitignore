@@ -33,7 +33,9 @@ data/processed/*
 !schema_contracts/
 
 # ─── MLflow ──────────────────────────────────────────────────────────────────
-mlflow/mlruns/
+mlruns/
+mlruns.db
+mlflow.db
 
 # ─── Reports (generated artifacts) ──────────────────────────────────────────
 module_a_population_segmentation/reports/qa_report_*.md

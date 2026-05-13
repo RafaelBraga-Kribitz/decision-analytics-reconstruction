@@ -52,3 +52,41 @@ def test_get_distribution_version_returns_string() -> None:
     v = get_distribution_version()
     assert isinstance(v, str)
     assert len(v) > 0
+
+
+def test_maybe_log_mlflow_local_store_logs_metrics(tmp_path: Path) -> None:
+    """maybe_log_mlflow_export writes run with metrics to local mlruns/ store."""
+    from population_segmentation.pipeline.model_run_manifest import maybe_log_mlflow_export
+
+    manifest: dict[str, object] = {
+        "model_type": "module_a_export_bundle",
+        "version": "0.1.0",
+        "git_commit": "abc123",
+        "train_date": "2026-05-13T10:00:00+00:00",
+        "random_seeds": {"segmentation": 42},
+        "artifacts": {},
+    }
+    metrics = {
+        "segmentation_silhouette": 0.52,
+        "propensity_auc_roc": 0.81,
+        "propensity_brier_score": 0.12,
+    }
+
+    local_root = tmp_path / "run_out"
+    local_root.mkdir()
+    maybe_log_mlflow_export(manifest, metrics=metrics, local_tracking_root=local_root)
+
+    db_path = local_root / "mlruns.db"
+    assert db_path.exists(), "mlruns.db not created — maybe_log_mlflow_export must write local store"
+
+    import mlflow
+
+    client = mlflow.MlflowClient(tracking_uri=f"sqlite:///{db_path}")
+    experiments = client.search_experiments()
+    assert len(experiments) >= 1, "at least one MLflow experiment expected"
+    runs = client.search_runs([e.experiment_id for e in experiments])
+    assert len(runs) >= 1, "at least one MLflow run expected"
+    logged_keys = {m.key for r in runs for m in client.get_metric_history(r.info.run_id, "segmentation_silhouette")}
+    assert "segmentation_silhouette" in logged_keys or any(
+        r.data.metrics.get("segmentation_silhouette") for r in runs
+    ), "segmentation_silhouette metric not logged"

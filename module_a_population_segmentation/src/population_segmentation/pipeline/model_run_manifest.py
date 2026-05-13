@@ -142,16 +142,23 @@ def write_model_run_manifest(path: Path, manifest: dict[str, object]) -> None:
     path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
 
-def maybe_log_mlflow_export(manifest: dict[str, object]) -> None:
-    """Optionally log export metadata to MLflow when tracking is configured.
+def maybe_log_mlflow_export(
+    manifest: dict[str, object],
+    *,
+    metrics: dict[str, float] | None = None,
+    local_tracking_root: Path | None = None,
+) -> None:
+    """Log export metadata and ML metrics to MLflow local file store.
 
-    No-ops unless ``MLFLOW_TRACKING_URI`` is set. Mirrors the opt-in pattern
-    used elsewhere in the reconstruction stack.
+    Defaults to a local ``mlruns/`` store beside ``local_tracking_root`` when
+    ``MLFLOW_TRACKING_URI`` is not set. Swallows all MLflow failures at warning level.
 
     Args:
-        manifest: Dict from :func:`build_model_run_manifest` (keys such as
-            ``model_type``, ``version``, ``git_commit``, ``train_date``,
-            ``random_seeds``, ``artifacts``).
+        manifest: Dict from :func:`build_model_run_manifest`.
+        metrics: Optional scalar metrics to log (e.g. silhouette, auc_roc, brier_score).
+        local_tracking_root: Directory under which ``mlruns/`` is created when no
+            ``MLFLOW_TRACKING_URI`` env var is present. When ``None`` and no env var
+            is set, MLflow defaults to ``mlruns/`` in the current working directory.
 
     Returns:
         ``None``
@@ -160,11 +167,12 @@ def maybe_log_mlflow_export(manifest: dict[str, object]) -> None:
         None: MLflow failures are caught and logged at warning level.
 
     Example:
-        Called at the end of ``run_export`` when operators enable remote tracking.
+        Called at the end of ``run_export`` to persist a reproducible run record.
     """
-    uri = os.environ.get("MLFLOW_TRACKING_URI")
-    if not uri:
-        return
+    if local_tracking_root is not None:
+        uri = f"sqlite:///{local_tracking_root.resolve() / 'mlruns.db'}"
+    else:
+        uri = os.environ.get("MLFLOW_TRACKING_URI") or "sqlite:///mlruns.db"
     try:
         import mlflow
 
@@ -184,5 +192,7 @@ def maybe_log_mlflow_export(manifest: dict[str, object]) -> None:
             if isinstance(raw_arts, dict):
                 for name, pth in raw_arts.items():
                     mlflow.log_param(f"artifact_{name}", str(pth))
+            if metrics:
+                mlflow.log_metrics(metrics)
     except Exception as exc:  # pragma: no cover - optional path
         logger.warning("MLflow logging skipped: %s", exc)

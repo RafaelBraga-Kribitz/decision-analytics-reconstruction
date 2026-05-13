@@ -101,7 +101,7 @@ def run_export(
     )
 
     print("[export] Segmentation ...", flush=True)
-    labels_df, _seg_metrics = build_segmentation_frame(feat_df, k=6, random_state=42)
+    labels_df, seg_metrics = build_segmentation_frame(feat_df, k=6, random_state=42)
 
     # Use positional alignment (same row order guaranteed by build_segmentation_frame).
     # Merge-by-entity_id is unsafe when inject_flaws creates duplicate entity_ids.
@@ -116,6 +116,7 @@ def run_export(
     )
     prop_out = cast(dict[str, Any], prop_raw)  # structured propensity bundle from ``fit_predict``
 
+    prop_metrics = cast(dict[str, float], prop_out.get("metrics", {}))
     prop_df = pd.DataFrame(
         {
             "entity_id": merged_feat["entity_id"].to_numpy(),
@@ -186,7 +187,14 @@ def run_export(
         },
     )
     write_model_run_manifest(manifest_path, manifest_payload)
-    maybe_log_mlflow_export(manifest_payload)
+    mlflow_metrics: dict[str, float] = {
+        "segmentation_silhouette": float(seg_metrics.get("silhouette", 0.0)),
+        "segmentation_bootstrap_ari": float(seg_metrics.get("bootstrap_ari", 0.0)),
+        "segmentation_noise_rate": float(seg_metrics.get("noise_rate", 0.0)),
+        "propensity_auc_roc": float(prop_metrics.get("auc_roc", 0.0)),
+        "propensity_brier_score": float(prop_metrics.get("brier_score", 0.0)),
+    }
+    maybe_log_mlflow_export(manifest_payload, metrics=mlflow_metrics, local_tracking_root=out_dir)
     artifacts["model_run_manifest"] = manifest_path
     print(f"[export] Written {manifest_path}", flush=True)
 
