@@ -1,3 +1,39 @@
+## 2026-05-12 — Project Action List line 79 Path A (deferred helper tests without waiver)
+
+**Decision:** Chose **Path A** from the scope-reality plan: extend unit tests without inventing a human waiver. Add [`test_export_helpers_unit.py`](../module_a_population_segmentation/tests/test_export_helpers_unit.py) for [`_validate_export_contracts`](../module_a_population_segmentation/src/population_segmentation/pipeline/export.py) (happy path, row-count mismatch, propensity range, bad segment label, reach row count). Extend Module B [`test_private_helpers_unit.py`](../module_b_resource_allocation/tests/test_private_helpers_unit.py) with [`_unit_cost_usd`](../module_b_resource_allocation/src/module_b_resource_allocation/models/allocation.py) (synthetic [`FxLayer`](../module_b_resource_allocation/src/module_b_resource_allocation/data/fx.py)) and [`_load_bundles`](../module_b_resource_allocation/src/module_b_resource_allocation/models/allocation.py) (reads repo `channel_bundles.yaml`). Line 79 remains open for remaining deferred helpers.
+
+**Source:** `.cursor/plans/action_list_reality_bounds_*.plan.md` Path A (2026-05-12).
+
+---
+
+## 2026-05-12 — Project Action List §4: Tests — line 79 second tranche (Module A/B/C `_*` helpers)
+
+**Decision:** Broaden unit/parametrized coverage: Module C [`test_private_helpers_unit.py`](../module_c_forecasting_scenarios/tests/test_private_helpers_unit.py) (`_redistribute_ab`, `_load_m_star`, `_mc_n`, `_sampler_kwargs`). Module A helper modules [`test_cleaner_helpers_unit.py`](../module_a_population_segmentation/tests/test_cleaner_helpers_unit.py), [`test_reachability_helpers_unit.py`](../module_a_population_segmentation/tests/test_reachability_helpers_unit.py), [`test_demographic_helpers_unit.py`](../module_a_population_segmentation/tests/test_demographic_helpers_unit.py), [`test_raw_injector_helpers_unit.py`](../module_a_population_segmentation/tests/test_raw_injector_helpers_unit.py), [`test_segmentation_helpers_unit.py`](../module_a_population_segmentation/tests/test_segmentation_helpers_unit.py), [`test_pipeline_main_helpers_unit.py`](../module_a_population_segmentation/tests/test_pipeline_main_helpers_unit.py). Extend Module B [`test_private_helpers_unit.py`](../module_b_resource_allocation/tests/test_private_helpers_unit.py) for routing, cleaner, diminishing returns, reach caps, allocation LP facade, dirty generator, API `_frame_to_records`, counterfactual routing feasibility. Subsequent Path A tranche added [`test_export_helpers_unit.py`](../module_a_population_segmentation/tests/test_export_helpers_unit.py) and `_unit_cost_usd` / `_load_bundles` tests (see newer decision_log entry).
+
+**Source:** Project Action List §4 Code quality — tests row (2026-05-12).
+
+---
+
+## 2026-05-12 — Project Action List §4: Tests — Module B private helpers slice (line 79 continuation)
+
+**Decision:** Add [`test_private_helpers_unit.py`](../module_b_resource_allocation/tests/test_private_helpers_unit.py) covering pure Module B helpers: `_great_circle_km`, `_water_fill`, `_monthly_to_weekly` (including `KeyError` on missing month), `_tier_penalty`, `_tour_length` (nearest-insertion), `_expected_contacts` (linear edge + saturation branch). Line 79 remains open until Module C and remaining `_*` inventory are covered or waived.
+
+**Source:** Project Action List §4 Code quality — tests row (2026-05-12).
+
+---
+
+## 2026-05-12 — Project Action List §4: Tests — Module A generator `_*` helpers (line 79 partial)
+
+**Decision:** Add [`test_generator_helpers_unit.py`](../module_a_population_segmentation/tests/test_generator_helpers_unit.py) with unit and `@pytest.mark.parametrize` coverage for `_nbi_urban_stress_from_rural`, `_elevated_departments_frozenset`, `_enc_source_labels_and_probs`, `_generator_dept_media_nbi_tables` (KeyError + minimal happy path), `_rake_binary`, `_rake_categorical`, `_assign_municipalities`, `_assign_language`. Reuse [`make_rng`](../module_a_population_segmentation/src/population_segmentation/utils/seeds.py) for stochastic helpers. Leave Project Action List §4 line 79 checkbox open until Module B/C and other packages get the same sweep or scope is waived.
+
+**Alternatives considered:** Expanding every private helper repo-wide in one pass — deferred to keep the tranche Module A–scoped.
+
+**Reason:** Closes the first actionable slice of line 79 (unit + parametrized edges for `generator.py` helpers) without claiming full-repo completion.
+
+**Source:** Project Action List §4 Code quality — tests row (2026-05-12).
+
+---
+
 ## 2026-05-12 — Project Action List §4: Magic numbers — generator structural / ballot / enc
 
 **Decision:** Add [`generator_structural_dependency`](../module_a_population_segmentation/config/generation.yaml), [`generator_ballot_blank_rates`](../module_a_population_segmentation/config/generation.yaml), and [`generator_enc_source_raw_distribution`](../module_a_population_segmentation/config/generation.yaml) (elevated departments as YAML list). [`generator.py`](../module_a_population_segmentation/src/population_segmentation/data/generator.py) reads them in `generate_population` with module-level defaults matching prior literals when keys are absent. Add [`test_architecture_generator_synthetic_rates_contract.py`](../module_a_population_segmentation/tests/test_architecture_generator_synthetic_rates_contract.py) and behavioural tests in [`test_generator.py`](../module_a_population_segmentation/tests/test_generator.py). Extend **pytest-smoke** in [`.pre-commit-config.yaml`](../.pre-commit-config.yaml).
