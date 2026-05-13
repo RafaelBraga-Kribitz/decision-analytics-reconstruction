@@ -42,15 +42,15 @@ The project underwent substantial systemic improvement. The initial 5.5 was genu
 
 These solve the most critical perception and functionality gaps that hiring managers and technical reviewers will notice first.
 
-| # | Task | Dimension | Why Critical | Est. effort | Next step |
-|---|------|-----------|--------------|-------------|-----------|
-| **T1-1** | Module C: Add CI lint/typecheck job (Pyright strict Module C `src/`) | Architecture Quality | Module C is visibly unvetted by toolchain. Austrian tech culture values tooling discipline. **Single job addition unlocks 0.3 points on all 4 dimensions.** | 0.5h | See §3.c below |
-| **T1-2** | Module C: Confirm slow pipeline acceptance test (`test_architecture_pipeline_dev_contract.py` passes with full `make pipeline-dev`) | Architecture Quality | This is the final architecture gate in the action plan. It's struck but unconfirmed in CI. | 0.25h | Verify test runs; add to slow CI job if missing |
-| **T1-3** | Data Science: Replace JSON manifest with actual MLflow local file store (runs, params, metrics, artifacts) | Data Science Framing | JSON manifest is a workaround. MLflow is the standard. A DS reviewer will ask "where's the MLflow?" immediately. | 2.0h | See §2.d below |
-| **T1-4** | Data Science: Create `notebooks/01_end_to_end_walkthrough.ipynb` — one entity row traced to segment + propensity score | Data Science Framing | The action plan explicitly called for this. It's missing. Reviewers will notice the gap between "we have model cards" and "here's how it works on real data." | 1.5h | See §2.c below |
-| **T1-5** | Business Framing: Add CFO-friendly executive summary to `reports/business_case.md` (no jargon preamble, explicit "what is preference proxy?" in first paragraph) | Business Framing | Current business case assumes domain knowledge. A real CFO will bounce off "entities" and "preference proxy" without context. | 1.0h | See §1.b below |
+| # | Task | Dimension | Why Critical | Est. effort | Status |
+|---|------|-----------|--------------|-------------|--------|
+| **T1-1** | Module C: Add CI lint/typecheck job (Pyright strict Module C `src/`) | Architecture Quality | Module C is visibly unvetted by toolchain. Austrian tech culture values tooling discipline. **Single job addition unlocks 0.3 points on all 4 dimensions.** | 0.5h | ✓ DONE (2026-05-13) |
+| **T1-2** | Module C: Confirm slow pipeline acceptance test (`test_architecture_pipeline_dev_contract.py` passes with full `make pipeline-dev`) | Architecture Quality | This is the final architecture gate in the action plan. It's struck but unconfirmed in CI. | 0.25h | ✓ DONE (2026-05-13) |
+| **T1-3** | Data Science: Replace JSON manifest with actual MLflow local file store (runs, params, metrics, artifacts) | Data Science Framing | JSON manifest is a workaround. MLflow is the standard. A DS reviewer will ask "where's the MLflow?" immediately. | 2.0h | ✓ DONE (2026-05-13) |
+| **T1-4** | Data Science: Create `notebooks/01_end_to_end_walkthrough.ipynb` — one entity row traced to segment + propensity score | Data Science Framing | The action plan explicitly called for this. It's missing. Reviewers will notice the gap between "we have model cards" and "here's how it works on real data." | 1.5h | ✓ DONE (2026-05-13) |
+| **T1-5** | Business Framing: Add CFO-friendly executive summary to `reports/business_case.md` (no jargon preamble, explicit "what is preference proxy?" in first paragraph) | Business Framing | Current business case assumes domain knowledge. A real CFO will bounce off "entities" and "preference proxy" without context. | 1.0h | ✓ DONE (2026-05-13) |
 
-**T1 effort: ~5.25h. Impact: +0.35–0.40 points per dimension (ceiling unlock).**
+**T1 effort: ~5.25h. Impact: +0.35–0.40 points per dimension (ceiling unlock). Status: ALL COMPLETE.**
 
 ---
 
@@ -58,15 +58,15 @@ These solve the most critical perception and functionality gaps that hiring mana
 
 High-impact items that move the project from 9.5 (credible, well-engineered) to 10.0 (defensible, complete, peer-reviewed).
 
-| # | Task | Dimension | Why Important | Est. effort | Next step |
-|---|------|-----------|--------------|-------------|-----------|
-| **T2-1** | Codebase Maturity: Peer code review — have a senior engineer (or hiring manager) review src/population_segmentation/models/propensity.py and module_b_resource_allocation/models/allocation.py. Document feedback as testimonial or code review comment link. | Codebase Maturity | "No human code review" is the only remaining gap preventing 10.0 on codebase maturity. Hiring managers see this as lack of external validation. | 3.0h (async) | Reach out to target reviewer; add link to README |
-| **T2-2** | Architecture: Fix CI badge URL case (`rafaelbk` → `RafaelBraga-Kribitz`) and verify it resolves | Architecture Quality | Signals attention to detail. Broken badge = first impression of sloppiness. | 0.25h | Edit README, test badge load |
-| **T2-3** | Module C: Achieve 80%+ coverage on Module C `src/` (currently ~60% estimated from overall 83%) | Codebase Maturity | Module C is thinner than A/B. Coverage signals completeness to reviewers. | 2.0h | Add tests for Module C helpers, calibration logic |
-| **T2-4** | Type hints: Add justification tails to all `type: ignore` comments in Module B/C `src/` (policy parity with `noqa`) | Codebase Maturity | Current action says "optional follow-up." It's the last polish item for 10.0 strict. | 1.0h | Grep `type: ignore` in src/; add comment tails |
-| **T2-5** | Business Framing: Add quantified comparison to typical DS portfolio (churn model, rec engine) in `reports/competitive_positioning.md` | Business Framing | Rare but high-value artifact. Shows you understand your market position. | 1.0h | See §1.d below |
+| # | Task | Dimension | Why Important | Est. effort | Status |
+|---|------|-----------|--------------|-------------|--------|
+| **T2-1** | Codebase Maturity: Peer code review — have a senior engineer (or hiring manager) review src/population_segmentation/models/propensity.py and module_b_resource_allocation/models/allocation.py. Document feedback as testimonial or code review comment link. | Codebase Maturity | "No human code review" is the only remaining gap preventing 10.0 on codebase maturity. Hiring managers see this as lack of external validation. | 3.0h (async) | ⏳ PENDING (human-only) |
+| **T2-2** | Architecture: Fix CI badge URL case (`rafaelbk` → `RafaelBraga-Kribitz`) and verify it resolves | Architecture Quality | Signals attention to detail. Broken badge = first impression of sloppiness. | 0.25h | ✓ DONE (2026-05-13) |
+| **T2-3** | Module C: Achieve 80%+ coverage on Module C `src/` (currently ~60% estimated from overall 83%) | Codebase Maturity | Module C is thinner than A/B. Coverage signals completeness to reviewers. | 2.0h | ✓ DONE (2026-05-13, 81%) |
+| **T2-4** | Type hints: Add justification tails to all `type: ignore` comments in Module B/C `src/` (policy parity with `noqa`) | Codebase Maturity | Current action says "optional follow-up." It's the last polish item for 10.0 strict. | 1.0h | ✓ DONE (2026-05-13) |
+| **T2-5** | Business Framing: Add quantified comparison to typical DS portfolio (churn model, rec engine) in `reports/competitive_positioning.md` | Business Framing | Rare but high-value artifact. Shows you understand your market position. | 1.0h | ✓ DONE (2026-05-13) |
 
-**T2 effort: ~7.25h. Impact: +0.20–0.25 points per dimension (10.0 unlock).**
+**T2 effort: ~7.25h. Impact: +0.20–0.25 points per dimension (10.0 unlock). Status: 4/5 COMPLETE (T2-1 pending human review).**
 
 ---
 
@@ -74,14 +74,14 @@ High-impact items that move the project from 9.5 (credible, well-engineered) to 
 
 These do not block 10.0 but prevent regression and ensure the project ages well.
 
-| # | Task | Dimension | Why Valuable | Est. effort | Next step |
-|---|------|-----------|--------------|-------------|-----------|
-| **T3-1** | Data Science: Add Module C methodology writeup (`METHODOLOGY.md` or equivalent bundling Bayesian spec, MCMC diagnostics, validation) | Data Science Framing | Module C exists but methodological prose is scattered. A coherent METHODOLOGY.md is the bridge between code and peer credibility. | 1.5h | Distill Module C + Quarto post-mortem into prose |
-| **T3-2** | Data Science: Add SHAP feature importance chart to Streamlit dashboard (stretch: post-mortem plot to reports/) | Data Science Framing | ROADMAP lists this as "Medium priority." It's genuine value-add for reviewers. | 1.5h | See §2.e below |
-| **T3-3** | Reproducibility: Validate hash-reproducibility on fresh clone — document reference hashes and verify on second machine | Reproducibility | DVC would be full solution; this is a pragmatic checkpoint for now. | 1.0h | Run `make pipeline-dev` on clean checkout; compare artifact hashes |
-| **T3-4** | Documentation: Create `HIRING_CONTEXT.md` section in README mapping project to 3 actual open roles at DACH companies (Knapp AG, TGW, Roche, etc.) | Hiring Signal | This project is for a specific job market. Making that explicit is powerful. | 1.0h | Find 3 real JDs; map skills to project artifacts |
+| # | Task | Dimension | Why Valuable | Est. effort | Status |
+|---|------|-----------|--------------|-------------|--------|
+| **T3-1** | Data Science: Add Module C methodology writeup (`METHODOLOGY.md` or equivalent bundling Bayesian spec, MCMC diagnostics, validation) | Data Science Framing | Module C exists but methodological prose is scattered. A coherent METHODOLOGY.md is the bridge between code and peer credibility. | 1.5h | ✓ DONE (2026-05-13) |
+| **T3-2** | Data Science: Add SHAP feature importance chart to Streamlit dashboard (stretch: post-mortem plot to reports/) | Data Science Framing | ROADMAP lists this as "Medium priority." It's genuine value-add for reviewers. | 1.5h | ✓ DONE (2026-05-13) |
+| **T3-3** | Reproducibility: Validate hash-reproducibility on fresh clone — document reference hashes and verify on second machine | Reproducibility | DVC would be full solution; this is a pragmatic checkpoint for now. | 1.0h | ✓ DONE (2026-05-13) |
+| **T3-4** | Documentation: Create `HIRING_CONTEXT.md` section in README mapping project to 3 actual open roles at DACH companies (Knapp AG, TGW, Roche, etc.) | Hiring Signal | This project is for a specific job market. Making that explicit is powerful. | 1.0h | ✓ DONE (2026-05-13) |
 
-**T3 effort: ~5.0h. Impact: Polish and market positioning.**
+**T3 effort: ~5.0h. Impact: Polish and market positioning. Status: ALL COMPLETE.**
 
 ---
 
