@@ -310,7 +310,7 @@ def convert_budget_lines_to_usd(budget_lines: pd.DataFrame, layer: FxLayer) -> p
             float(row["amount_native"]),
             str(row["currency"]),
             str(row["iso_week"]),
-            str(row["fx_tier"]),  # type: ignore[arg-type]
+            str(row["fx_tier"]),  # type: ignore[arg-type]  # iterrows yields object; str() cast; to_usd expects FxTier Literal; data contract enforces valid values
         )
 
     out = budget_lines.copy()

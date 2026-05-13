@@ -105,7 +105,7 @@ def export_daily_posterior_table(
     days: pd.DatetimeIndex,
     calibration_series: str,
 ) -> pd.DataFrame:
-    post = idata.posterior["mu_margin"]  # type: ignore[union-attr]
+    post = idata.posterior["mu_margin"]  # type: ignore[union-attr]  # arviz stubs omit InferenceData.posterior; runtime is xarray.Dataset
     mean_m = post.mean(dim=("chain", "draw")).values
     low = post.quantile(0.05, dim=("chain", "draw")).values
     high = post.quantile(0.95, dim=("chain", "draw")).values
@@ -134,7 +134,7 @@ def export_house_effects_table(
     calibration_series: str,
     tracking: pd.DataFrame,
 ) -> pd.DataFrame:
-    post = idata.posterior["house_offset"]  # type: ignore[union-attr]
+    post = idata.posterior["house_offset"]  # type: ignore[union-attr]  # arviz stubs omit InferenceData.posterior; runtime is xarray.Dataset
     mean_m = post.mean(dim=("chain", "draw")).values.flatten()
     low = post.quantile(0.05, dim=("chain", "draw")).values.flatten()
     high = post.quantile(0.95, dim=("chain", "draw")).values.flatten()

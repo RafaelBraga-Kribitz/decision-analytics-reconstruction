@@ -41,7 +41,7 @@ def compute_budget_expansion_curve(
     for m in BUDGET_EXPANSION_MULTIPLIERS:
         problem = build_problem(
             scenario_id=scenario_id,
-            fx_series_id=fx_series_id,  # type: ignore[arg-type]
+            fx_series_id=fx_series_id,  # type: ignore[arg-type]  # str passed to build_problem→load_fx_layer(SeriesId Literal); runtime-validated
             solver_seed=int(solver_seed),
             budget_usd=base * float(m),
         )

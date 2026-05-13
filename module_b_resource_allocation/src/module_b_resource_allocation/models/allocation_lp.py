@@ -82,7 +82,7 @@ def run_allocation(
     scenario_id = _scenario_id_from_fx_path(fx_path)
     problem = build_problem(
         scenario_id=scenario_id,
-        fx_series_id=fx_series_id,  # type: ignore[arg-type]
+        fx_series_id=fx_series_id,  # type: ignore[arg-type]  # str passed to build_problem→load_fx_layer(SeriesId Literal); runtime-validated
         solver_seed=seed,
         budget_usd=float(total_budget_usd),
     )

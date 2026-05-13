@@ -89,7 +89,7 @@ def apply_retail_spread(
 
     weekly_pct: dict[str, float] = spread_cfg.get("series_b_weekly", {})
 
-    def _spread_for_row(row: pd.Series) -> float:  # type: ignore[type-arg]
+    def _spread_for_row(row: pd.Series) -> float:  # type: ignore[type-arg]  # pandas stubs require type param; apply callback uses unparameterized Series
         if spread_pct_override is not None:
             return float(spread_pct_override)
         pct = weekly_pct.get(str(row["iso_week"]))

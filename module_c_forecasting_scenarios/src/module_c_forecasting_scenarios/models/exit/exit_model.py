@@ -50,7 +50,7 @@ def fit_exit_quickcount(
             random_seed=42,
             progressbar=False,
         )
-    post = idata.posterior  # type: ignore[union-attr]
+    post = idata.posterior  # type: ignore[union-attr]  # arviz stubs omit InferenceData.posterior; runtime is xarray.Dataset
     rows = []
     for v in ("intercept", "beta_oea", "beta_eu", "sigma"):
         s = post[v].stack(sample=("chain", "draw"))

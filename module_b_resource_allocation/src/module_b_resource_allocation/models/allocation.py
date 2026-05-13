@@ -181,7 +181,7 @@ def build_problem(
     return AllocationProblem(
         budget_usd=float(budget_usd),
         budget_tolerance=float(budget_tolerance),
-        fx_layer=load_fx_layer(fx_series_id),  # type: ignore[arg-type]
+        fx_layer=load_fx_layer(fx_series_id),  # type: ignore[arg-type]  # fx_series_id is str; load_fx_layer expects SeriesId Literal; caller controls valid values
         reach_caps=reach_caps if reach_caps is not None else build_allocation_features(),
         bundles=_load_bundles(),
         scenario_id=scenario_id,
@@ -191,7 +191,7 @@ def build_problem(
 
 def _unit_cost_usd(row: pd.Series, layer: FxLayer, iso_week: str) -> float:
     tier = str(row["fx_tier_default"])
-    return float(row["unit_cost_pyg"]) / layer.rate(iso_week, tier)  # type: ignore[arg-type]
+    return float(row["unit_cost_pyg"]) / layer.rate(iso_week, tier)  # type: ignore[arg-type]  # tier is str; layer.rate expects FxTier Literal; str(row[...]) ensures valid value
 
 
 def _scenario_week_weight(scenario_id: str, week_idx: int) -> float:
@@ -449,9 +449,9 @@ def solve(problem: AllocationProblem) -> AllocationResult:
                 "department_tier": str(cap_row["department_tier"]),
                 "region": str(cap_row["region"]),
                 "budget_allocation_usd": val_usd,
-                "budget_allocation_pyg": round(val_usd * layer.rate(w, tier_default), 2),  # type: ignore[arg-type]
+                "budget_allocation_pyg": round(val_usd * layer.rate(w, tier_default), 2),  # type: ignore[arg-type]  # w/tier_default are str; layer.rate expects Literal types; loop controls valid values
                 "fx_tier": tier_default,
-                "tc_rate_pyg_per_usd": layer.rate(w, tier_default),  # type: ignore[arg-type]
+                "tc_rate_pyg_per_usd": layer.rate(w, tier_default),  # type: ignore[arg-type]  # same as above
                 "expected_contacts": round(contacts, 4),
                 "persuasion_adjusted_contacts": round(persuasion, 4),
                 "reach_cap_population_proxy": audience,

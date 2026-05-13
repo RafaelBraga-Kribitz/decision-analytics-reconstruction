@@ -108,7 +108,7 @@ def main(argv: list[str] | None = None) -> int:
     try:
         problem = build_problem(
             scenario_id=args.scenario,
-            fx_series_id=args.fx_series,  # type: ignore[arg-type]
+            fx_series_id=args.fx_series,  # type: ignore[arg-type]  # argparse Namespace types str | None; build_problem expects str
             solver_seed=args.seed,
         )
         result = solve(problem)
@@ -137,7 +137,7 @@ def main(argv: list[str] | None = None) -> int:
         reach_csv = args.out_dir / f"reach_caps_{args.scenario}.csv"
         reach_caps.to_csv(reach_csv, index=False)
 
-        fx_df = fx_layer_to_frame(load_fx_layer(args.fx_series))  # type: ignore[arg-type]
+        fx_df = fx_layer_to_frame(load_fx_layer(args.fx_series))  # type: ignore[arg-type]  # argparse str | None; load_fx_layer expects str
         fx_csv = args.out_dir / f"fx_layer_{args.fx_series}.csv"
         fx_df.to_csv(fx_csv, index=False)
 

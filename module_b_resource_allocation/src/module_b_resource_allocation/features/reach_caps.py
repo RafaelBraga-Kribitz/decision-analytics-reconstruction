@@ -150,7 +150,7 @@ def build_reach_caps() -> pd.DataFrame:
     for dept in DEPARTMENTS:
         for channel in CHANNEL_NAMES:
             cap_fn = _CHANNEL_CAP_FUNC[channel]
-            cap = float(cap_fn(dept))  # type: ignore[operator]
+            cap = float(cap_fn(dept))  # type: ignore[operator]  # _CHANNEL_CAP_FUNC typed dict[str, object]; values are callables at runtime
 
             rows.append(
                 {
