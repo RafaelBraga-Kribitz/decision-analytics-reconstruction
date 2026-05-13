@@ -90,3 +90,23 @@ def test_reference_labels_different_seeds_differ() -> None:
     a = _make_national_reference_labels(200, 0.5, seed=7)
     b = _make_national_reference_labels(200, 0.5, seed=8)
     assert not (a == b).all()
+
+
+# ---------------------------------------------------------------------------
+# SHAP feature importance fields
+# ---------------------------------------------------------------------------
+
+
+def test_build_sample_prop_includes_shap_artifacts() -> None:
+    """_build_sample prop dict must include fitted_model, scaler, feature_names, x_all_scaled."""
+    _, _, _, prop, _ = _build_sample(3000)
+    for key in ("fitted_model", "scaler", "feature_names", "x_all_scaled"):
+        assert key in prop, f"prop missing SHAP artifact key: {key}"
+
+
+def test_build_sample_feature_names_count() -> None:
+    """feature_names must have 11 elements (9 base + 2 derived)."""
+    _, _, _, prop, _ = _build_sample(3000)
+    assert len(prop["feature_names"]) == 11, (
+        f"Expected 11 feature names, got {len(prop['feature_names'])}"
+    )

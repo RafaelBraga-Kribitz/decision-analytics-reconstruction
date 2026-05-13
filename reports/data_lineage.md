@@ -1,7 +1,7 @@
 # Population dataset — lineage (Module A)
 
 ```mermaid
-flowchart LR
+flowchart TD
   subgraph verified [Verified_inputs]
     TSJE[TSJE_anchors]
     DGEEC[DGEEC_anchors]

@@ -125,12 +125,18 @@ class PropensityModel:
         pred = pd.Series(prob_raked, index=df.index, name="participation_propensity")
         calibration = self._calibration_report(pred, df, a)
 
+        feature_names = list(FEATURES) + ["department_logit_offset", "gender_youth_interaction"]
+
         return {
             "predictions": pred,
             "raw_logit_score": pd.Series(raw_all, index=df.index),
             "department_rake_multiplier": dept_multipliers,
             "metrics": {"auc_roc": auc, "brier_score": brier},
             "calibration": calibration,
+            "fitted_model": base,
+            "scaler": scaler,
+            "feature_names": feature_names,
+            "x_all_scaled": x_all_s,
         }
 
     def _feature_matrix(self, df: pd.DataFrame, anchors: dict[str, Any]) -> np.ndarray:

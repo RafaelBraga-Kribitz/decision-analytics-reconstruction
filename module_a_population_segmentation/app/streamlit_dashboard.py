@@ -1,10 +1,12 @@
-"""Module A Streamlit dashboard (three tabs)."""
+"""Module A Streamlit dashboard (four tabs: segments, propensity, QA, SHAP)."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
+import shap
 import streamlit as st
 import yaml
 from population_segmentation.data.cleaner import clean_population
@@ -99,8 +101,8 @@ def main() -> None:
     )
     raw, feat, seg, prop, anc = _build_sample(sample_size)
 
-    tab1, tab2, tab3 = st.tabs(
-        ["Segment Explorer", "Propensity Calibration", "Data Quality Report"]
+    tab1, tab2, tab3, tab4 = st.tabs(
+        ["Segment Explorer", "Propensity Calibration", "Data Quality Report", "SHAP Feature Importance"]
     )
 
     with tab1:
@@ -138,6 +140,72 @@ def main() -> None:
             st.info("QA report not found yet. Run cleaning pipeline first.")
         st.write(f"Raw rows: {len(raw)}")
         st.write(f"Clean rows: {len(feat)}")
+
+    with tab4:
+        st.subheader("SHAP Feature Importance — Propensity Model")
+        st.caption(
+            "Feature importance for the underlying logistic regression (before raking). "
+            "SHAP explains model predictions via Shapley values."
+        )
+
+        model = prop["fitted_model"]
+        scaler = prop["scaler"]
+        feature_names = prop["feature_names"]
+        x_scaled = prop["x_all_scaled"]
+
+        col1, col2 = st.columns(2)
+        with col1:
+            importance_type = st.radio(
+                "Importance metric",
+                ["Summary (mean |SHAP|)", "Individual entity force plot"]
+            )
+
+        if importance_type == "Summary (mean |SHAP|)":
+            with st.spinner("Computing SHAP values..."):
+                explainer = shap.LinearExplainer(
+                    model, x_scaled, feature_names=feature_names
+                )
+                shap_values = explainer.shap_values(x_scaled)
+                # For binary classification, take class 1 (participation)
+                if isinstance(shap_values, list):
+                    shap_vals = shap_values[1]
+                else:
+                    shap_vals = shap_values
+
+            fig = shap.summary_plot(
+                shap_vals, x_scaled, feature_names=feature_names, plot_type="bar", show=False
+            )
+            st.pyplot(fig, use_container_width=True)
+            st.write("**Interpretation:** Features ordered by mean |SHAP value|. "
+                    "Higher = more important for model predictions.")
+
+        else:  # Individual force plot
+            entity_idx = st.slider("Select entity", 0, len(feat) - 1, 0)
+            with st.spinner("Computing SHAP values..."):
+                explainer = shap.LinearExplainer(
+                    model, x_scaled, feature_names=feature_names
+                )
+                shap_values = explainer.shap_values(x_scaled[[entity_idx]])
+                if isinstance(shap_values, list):
+                    shap_vals = shap_values[1][0]
+                else:
+                    shap_vals = shap_values[0]
+
+            entity_id = feat.index[entity_idx]
+            pred_prob = feat.iloc[entity_idx]["participation_propensity"]
+
+            st.write(f"**Entity ID:** {entity_id}")
+            st.write(f"**Predicted participation propensity:** {pred_prob:.3f}")
+
+            # Force plot (bar chart approximation for Streamlit)
+            shap_df = pd.DataFrame({
+                "Feature": feature_names,
+                "SHAP value": shap_vals,
+                "|SHAP|": np.abs(shap_vals)
+            }).sort_values("|SHAP|", ascending=True)
+
+            st.bar_chart(shap_df.set_index("Feature")["SHAP value"])
+            st.write("Red (positive) = increases propensity. Blue (negative) = decreases propensity.")
 
 
 if __name__ == "__main__":
