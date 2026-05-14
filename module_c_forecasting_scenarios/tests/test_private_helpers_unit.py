@@ -43,7 +43,7 @@ def test_mc_n_respects_mc_fast_env(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("MC_FAST", raising=False)
     assert _mc_n() == 10_000
     monkeypatch.setenv("MC_FAST", "1")
-    assert _mc_n() == 200
+    assert _mc_n() == 600
 
 
 def test_sampler_kwargs_fast_branch(monkeypatch: pytest.MonkeyPatch) -> None:

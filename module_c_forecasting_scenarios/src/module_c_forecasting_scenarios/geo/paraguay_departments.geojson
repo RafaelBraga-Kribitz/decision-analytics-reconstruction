@@ -1,0 +1,186 @@
+{
+  "type": "FeatureCollection",
+  "_note": "Approximate polygon boundaries for Paraguay's 18 departments. Simplified rectangles for portfolio choropleth visualization — not official GIS boundaries.",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {"department": "Asuncion"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-57.70, -25.20], [-57.55, -25.20], [-57.55, -25.35], [-57.70, -25.35], [-57.70, -25.20]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"department": "Concepcion"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-57.50, -22.00], [-60.00, -22.00], [-60.00, -24.00], [-57.50, -24.00], [-57.50, -22.00]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"department": "San Pedro"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-56.00, -23.50], [-59.50, -23.50], [-59.50, -25.80], [-56.00, -25.80], [-56.00, -23.50]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"department": "Cordillera"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-57.30, -24.90], [-58.30, -24.90], [-58.30, -25.80], [-57.30, -25.80], [-57.30, -24.90]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"department": "Guaira"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-56.00, -25.70], [-57.30, -25.70], [-57.30, -26.60], [-56.00, -26.60], [-56.00, -25.70]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"department": "Caaguazu"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-55.50, -24.80], [-57.50, -24.80], [-57.50, -26.20], [-55.50, -26.20], [-55.50, -24.80]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"department": "Caazapa"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-55.50, -26.00], [-57.30, -26.00], [-57.30, -27.30], [-55.50, -27.30], [-55.50, -26.00]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"department": "Itapua"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-54.70, -26.50], [-57.30, -26.50], [-57.30, -27.50], [-54.70, -27.50], [-54.70, -26.50]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"department": "Misiones"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-56.70, -26.50], [-58.20, -26.50], [-58.20, -27.50], [-56.70, -27.50], [-56.70, -26.50]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"department": "Paraguari"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-57.20, -25.50], [-58.70, -25.50], [-58.70, -26.60], [-57.20, -26.60], [-57.20, -25.50]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"department": "Alto Parana"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-54.20, -25.00], [-55.80, -25.00], [-55.80, -27.30], [-54.20, -27.30], [-54.20, -25.00]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"department": "Central"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-57.20, -25.00], [-58.20, -25.00], [-58.20, -25.70], [-57.20, -25.70], [-57.20, -25.00]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"department": "Neembucu"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-57.70, -26.20], [-59.30, -26.20], [-59.30, -27.50], [-57.70, -27.50], [-57.70, -26.20]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"department": "Amambay"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-55.50, -21.50], [-57.50, -21.50], [-57.50, -23.50], [-55.50, -23.50], [-55.50, -21.50]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"department": "Canindeyu"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-54.20, -23.50], [-56.00, -23.50], [-56.00, -25.20], [-54.20, -25.20], [-54.20, -23.50]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"department": "Presidente Hayes"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-57.80, -22.80], [-62.00, -22.80], [-62.00, -25.50], [-57.80, -25.50], [-57.80, -22.80]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"department": "Boqueron"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-58.50, -20.50], [-62.50, -20.50], [-62.50, -23.50], [-58.50, -23.50], [-58.50, -20.50]
+        ]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {"department": "Alto Paraguay"},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[
+          [-57.80, -19.30], [-62.50, -19.30], [-62.50, -21.00], [-57.80, -21.00], [-57.80, -19.30]
+        ]]
+      }
+    }
+  ]
+}

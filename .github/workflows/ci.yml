@@ -226,5 +226,7 @@ jobs:
         run: poetry install --extras tracking
       - name: DVC version
         run: poetry run dvc version
+      - name: DVC pipeline dry-run (validates dvc.yaml syntax)
+        run: poetry run dvc repro --dry
       - name: Terminology sample check
         run: poetry run python scripts/check_terminology.py

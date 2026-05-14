@@ -1,0 +1,51 @@
+stages:
+  module_a:
+    cmd: >-
+      poetry run python -m population_segmentation.pipeline
+      --sample-size 10000
+      --out-dir data/processed
+    deps:
+      - module_a_population_segmentation/config/generation.yaml
+      - module_a_population_segmentation/config/calibration_anchors.yaml
+      - module_a_population_segmentation/config/model_params.yaml
+      - module_a_population_segmentation/src/population_segmentation
+    outs:
+      - data/processed/population_master_clean.parquet
+      - data/processed/segment_labels.parquet
+      - data/processed/participation_propensity.parquet
+      - data/processed/media_reachability_by_segment.csv
+      - data/processed/media_reachability_by_segment_department.csv
+    metrics:
+      - data/processed/model_run_manifest.json:
+          cache: false
+
+  module_b:
+    cmd: >-
+      poetry run python -m module_b_resource_allocation.pipeline.run_allocation
+      --scenario baseline
+      --out-dir data/processed/module_b
+      --seed 20180422
+    deps:
+      - module_b_resource_allocation/src/module_b_resource_allocation
+    outs:
+      - data/processed/module_b/allocation_baseline.parquet
+      - data/processed/module_b/reach_caps_baseline.csv
+    metrics:
+      - data/processed/module_b/run_manifest_baseline.json:
+          cache: false
+
+  module_c:
+    cmd: >-
+      MC_FAST=1
+      poetry run python -m module_c_forecasting_scenarios.pipeline.run_all
+      --raw-csv module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv
+      --out-dir data/processed/module_c/run_all
+    deps:
+      - module_c_forecasting_scenarios/src/module_c_forecasting_scenarios
+      - module_c_forecasting_scenarios/config/calibration.yaml
+      - module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv
+    outs:
+      - data/processed/module_c/run_all/tracking/daily_posterior_forecast.parquet
+      - data/processed/module_c/run_all/tracking/posterior_house_effects.parquet
+      - data/processed/module_c/run_all/mc/monte_carlo_draws.parquet
+      - data/processed/module_c/run_all/battleground/battleground_department_probability.parquet

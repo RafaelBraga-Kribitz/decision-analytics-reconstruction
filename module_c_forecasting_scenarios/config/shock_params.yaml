@@ -8,3 +8,18 @@ outcome_event_date: "2018-04-22"
 clip_days_before_outcome: 45
 shock_multiplier: 1.0
 baseline_shock_zero: false
+
+# Per-bucket shock-score priors (used when tracking has no rows for a canonical
+# bucket — guarantees stratified MC draws cover the full canonical space).
+# Priors are LogNormal(mu, sigma) on shock_score_s, calibrated so the bucket
+# means roughly track empirical observed scores when tracking is dense.
+bucket_priors:
+  baseline:
+    log_mean: -1.20
+    log_sd: 0.40
+  extreme_tracker:
+    log_mean: 0.10
+    log_sd: 0.50
+  compounded_herd:
+    log_mean: 0.60
+    log_sd: 0.45

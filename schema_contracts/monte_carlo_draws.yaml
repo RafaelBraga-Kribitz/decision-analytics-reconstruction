@@ -1,0 +1,42 @@
+schema_name: monte_carlo_draws
+schema_version: "1.0.0"
+description: >
+  Stratified Monte Carlo draws over the three canonical scenario buckets.
+  Each row is one draw (draw_id is unique); shock_scale is the engagement
+  shock magnitude propagated to allocation outcomes. Stratification
+  guarantees every canonical bucket is represented even when the tracking
+  fixture is sparse.
+
+unique_key:
+  - draw_id
+
+fields:
+  draw_id:
+    type: int64
+    nullable: false
+    description: Monotone draw index 0..n-1.
+  poll_wave_id:
+    type: string
+    nullable: true
+    description: >
+      Source poll wave for the draw when sampled from tracking; null when the
+      draw was synthesized for a bucket with no tracking rows.
+  scenario_bucket:
+    type: string
+    nullable: false
+    allowed_values: [baseline, extreme_tracker, compounded_herd]
+  shock_scale:
+    type: float64
+    nullable: false
+    description: Engagement shock magnitude (post-multiplier).
+  alloc_mean_persuasion_contacts:
+    type: float64
+    nullable: false
+    description: >
+      Mean persuasion-adjusted contacts from the allocation_baseline
+      handshake (0.0 when no allocation parquet supplied).
+  draw_source:
+    type: string
+    nullable: false
+    allowed_values: [tracking_sample, synthetic_prior]
+    description: Whether the draw was sampled from tracking or synthesized.

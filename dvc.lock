@@ -1,0 +1,110 @@
+schema: '2.0'
+stages:
+  module_a:
+    cmd: poetry run python -m population_segmentation.pipeline --sample-size 
+      10000 --out-dir data/processed
+    deps:
+    - path: module_a_population_segmentation/config/calibration_anchors.yaml
+      hash: md5
+      md5: 1e26a0a2e54120750fe672cc0f9a5f94
+      size: 5312
+    - path: module_a_population_segmentation/config/generation.yaml
+      hash: md5
+      md5: e0c706e14674b438ab7cdf669f2ee827
+      size: 7618
+    - path: module_a_population_segmentation/config/model_params.yaml
+      hash: md5
+      md5: 38fb130422ce37d4816b7c9c8e0674e2
+      size: 6503
+    - path: module_a_population_segmentation/src/population_segmentation
+      hash: md5
+      md5: 6027ba6998669ba3dfdca727289cf982.dir
+      size: 364195
+      nfiles: 64
+    outs:
+    - path: data/processed/media_reachability_by_segment.csv
+      hash: md5
+      md5: 80c25900c0737fb0a3f08e75b10bb6cb
+      size: 1027
+    - path: data/processed/media_reachability_by_segment_department.csv
+      hash: md5
+      md5: 96bb8d26e07321001c4a281096cb34fc
+      size: 12797
+    - path: data/processed/model_run_manifest.json
+      hash: md5
+      md5: 455a3941330316411eb3054fb9bc843b
+      size: 957
+    - path: data/processed/participation_propensity.parquet
+      hash: md5
+      md5: 386ebb7945f58acefdf8872f55d86d27
+      size: 256915
+    - path: data/processed/population_master_clean.parquet
+      hash: md5
+      md5: 2087d0715865e7bec5f3efbbabe358c8
+      size: 747294
+    - path: data/processed/segment_labels.parquet
+      hash: md5
+      md5: 95f522acf7292ac51cf79dc2d48e3629
+      size: 68276
+  module_b:
+    cmd: poetry run python -m 
+      module_b_resource_allocation.pipeline.run_allocation --scenario baseline 
+      --out-dir data/processed/module_b --seed 20180422
+    deps:
+    - path: module_b_resource_allocation/src/module_b_resource_allocation
+      hash: md5
+      md5: 9ddea957fba2f36de884b6dfd2eb5102.dir
+      size: 391887
+      nfiles: 79
+    outs:
+    - path: data/processed/module_b/allocation_baseline.parquet
+      hash: md5
+      md5: 43171625ce6b7adfce0eeba6d756b97b
+      size: 61191
+    - path: data/processed/module_b/reach_caps_baseline.csv
+      hash: md5
+      md5: 12421f3a280718d70598d13b4d4f2d81
+      size: 23360
+    - path: data/processed/module_b/run_manifest_baseline.json
+      hash: md5
+      md5: fdc8a9478499e69a24f25363e047ef5f
+      size: 3149
+  module_c:
+    cmd: MC_FAST=1 poetry run python -m 
+      module_c_forecasting_scenarios.pipeline.run_all --raw-csv 
+      module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv 
+      --out-dir data/processed/module_c/run_all
+    deps:
+    - path: module_c_forecasting_scenarios/config/calibration.yaml
+      hash: md5
+      md5: 627082c2e32679af09dd6fc3bf9c49ce
+      size: 662
+    - path: module_c_forecasting_scenarios/src/module_c_forecasting_scenarios
+      hash: md5
+      md5: 8ee2da081d41923c25e9207de3d24f22.dir
+      size: 128033
+      nfiles: 62
+    - path: module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv
+      hash: md5
+      md5: ad3d5f9233cb4f39b15829a921425786
+      size: 1173
+    outs:
+    - path: 
+        data/processed/module_c/run_all/battleground/battleground_department_probability.parquet
+      hash: md5
+      md5: 4433e27b9c72d175133124a33d2a65d9
+      size: 3430
+    - path: data/processed/module_c/run_all/mc/monte_carlo_draws.parquet
+      hash: md5
+      md5: a4da21a04324e15b91cc089dc2e00830
+      size: 5002
+    - path: 
+        data/processed/module_c/run_all/tracking/daily_posterior_forecast.parquet
+      hash: md5
+      md5: 9cf3cac1360961a3cef3d396ae4328c5
+      size: 9616
+    - path: 
+        data/processed/module_c/run_all/tracking/posterior_house_effects.parquet
+      hash: md5
+      md5: 88a3fd5b90c8c0e941a24bcd6c091e15
+      size: 5211

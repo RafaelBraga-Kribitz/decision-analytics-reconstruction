@@ -146,5 +146,8 @@ module-b-allocate-sensitivity:
 module-b-routing:
 	poetry run python -c "from pathlib import Path; from module_b_resource_allocation.routing.cost_matrix import build_cost_matrix; rs='$(or $(ROUTING_SCENARIO),dry_standard)'; seed=$(or $(SEED),20180422); p=Path('data/processed/module_b'); p.mkdir(parents=True, exist_ok=True); build_cost_matrix(scenario=rs, seed=seed).to_csv(p / f'routing_cost_matrix_{rs}.csv', index=False); print('wrote', p / f'routing_cost_matrix_{rs}.csv')"
 
+module-b-routing-schedules:
+	poetry run python -c "from pathlib import Path; from module_b_resource_allocation.routing.tsp_router import write_routing_schedules; out=write_routing_schedules(Path('data/processed/module_b'), seed=$(or $(SEED),20180422)); print('wrote', out)"
+
 module-b-api:
 	poetry run uvicorn module_b_resource_allocation.api.app:app --host 127.0.0.1 --port 8088
