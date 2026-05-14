@@ -1,3 +1,6 @@
+# pyright: reportUnknownMemberType=false, reportUnknownVariableType=false, reportUnknownArgumentType=false, reportUnknownLambdaType=false
+# pandas-stubs 2.x does not provide complete return-type annotations for
+# chained Series operations (.str.*, .fillna, .astype, .groupby().agg) in strict mode.
 """Cleaning pipeline for Module A raw population data."""
 
 from __future__ import annotations
@@ -74,7 +77,7 @@ _LANGUAGE_IMPUTATION_KEYS = (
 
 def _language_imputation_labels_and_probs(config: dict[str, Any]) -> tuple[list[str], np.ndarray]:
     """Canonical labels and a normalised probability vector for language bucket imputation."""
-    lp = config.get("language_priors") or {}
+    lp: dict[str, Any] = config.get("language_priors") or {}
     probs = np.array(
         [float(lp.get(k, 0.0)) for k in _LANGUAGE_IMPUTATION_KEYS],
         dtype=np.float64,
@@ -183,7 +186,7 @@ def clean_population(
 
     # Step 10: ensure rural flag exists and complete
     if "rural_flag" not in df.columns:
-        csd = config.get("cleaner_synthetic_defaults") or {}
+        csd: dict[str, Any] = config.get("cleaner_synthetic_defaults") or {}
         rural_p = float(csd.get("rural_flag_true_rate", 0.383))
         df["rural_flag"] = rng.random(len(df)) < rural_p
     df["rural_flag"] = df["rural_flag"].fillna(False).astype(bool)
@@ -196,7 +199,7 @@ def clean_population(
 
     # Step 12: structural dependency proxy ensure bool
     if "structural_dependency_proxy" not in df.columns:
-        csd = config.get("cleaner_synthetic_defaults") or {}
+        csd: dict[str, Any] = config.get("cleaner_synthetic_defaults") or {}
         sdp = float(csd.get("structural_dependency_true_rate", 0.25))
         df["structural_dependency_proxy"] = rng.random(len(df)) < sdp
     df["structural_dependency_proxy"] = df["structural_dependency_proxy"].astype(bool)
@@ -224,8 +227,9 @@ def clean_population(
 
 def _normalize_dob(dob: pd.Series) -> pd.Series:
     out: list[str] = []
-    for raw in dob:
-        parts = str(raw).split("/")
+    for raw_item in dob:
+        raw: str = str(raw_item)
+        parts = raw.split("/")
         if len(parts) != 3:
             out.append("01/01/1980")
             continue

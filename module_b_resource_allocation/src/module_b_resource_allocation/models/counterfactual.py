@@ -34,7 +34,7 @@ from module_b_resource_allocation.constants import (
 )
 from module_b_resource_allocation.models.allocation import (
     AllocationResult,
-    _expected_contacts,
+    _expected_contacts,  # pyright: ignore[reportPrivateUsage]
 )
 
 _BROADCAST_DONORS: frozenset[str] = frozenset({"tv_spots", "radio_spots", "billboards"})

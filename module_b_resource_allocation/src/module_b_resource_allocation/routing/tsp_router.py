@@ -114,6 +114,20 @@ def build_routing_schedule_for_scenario(scenario: str, seed: int = 42) -> pd.Dat
     Each ISO week starts from a rotating department (week index mod 18) so
     that downstream LP constraints see realistic week-to-week variation in
     the binding logistics ceiling.
+
+    Args:
+        scenario: Weather scenario name; must be in ``WEATHER_SCENARIOS``.
+        seed: RNG seed forwarded to :func:`build_cost_matrix` for reproducibility.
+
+    Returns:
+        DataFrame with one row per (week, department) tour position.
+
+    Raises:
+        KeyError: If ``scenario`` is not a valid weather scenario.
+
+    Example:
+        ``build_routing_schedule_for_scenario("dry_standard", seed=42)`` returns
+        a 252-row DataFrame (18 departments × 14 weeks).
     """
     cost_matrix = build_cost_matrix(scenario=scenario, seed=seed)
     pivot_time = cost_matrix.pivot(
@@ -156,16 +170,42 @@ def build_routing_schedule_for_scenario(scenario: str, seed: int = 42) -> pd.Dat
 
 
 def build_routing_schedules(seed: int = 42) -> pd.DataFrame:
-    """Concatenate routing schedules across all three weather scenarios."""
-    parts = [
-        build_routing_schedule_for_scenario(scenario=s, seed=seed)
-        for s in WEATHER_SCENARIOS
-    ]
+    """Concatenate routing schedules across all three weather scenarios.
+
+    Args:
+        seed: RNG seed forwarded to each scenario build for reproducibility.
+
+    Returns:
+        DataFrame combining all three weather-scenario schedules.
+
+    Raises:
+        KeyError: Propagated from :func:`build_routing_schedule_for_scenario`
+            if a scenario is invalid.
+
+    Example:
+        ``build_routing_schedules(seed=42)`` returns a 756-row DataFrame (3 scenarios × 18 × 14).
+    """
+    parts = [build_routing_schedule_for_scenario(scenario=s, seed=seed) for s in WEATHER_SCENARIOS]
     return pd.concat(parts, ignore_index=True)
 
 
 def write_routing_schedules(out_dir: Path, seed: int = 42) -> Path:
-    """Run and persist ``routing_schedules.parquet`` under ``out_dir``."""
+    """Run and persist ``routing_schedules.parquet`` under ``out_dir``.
+
+    Args:
+        out_dir: Directory to write the output parquet file into.
+        seed: RNG seed for reproducible route generation.
+
+    Returns:
+        Path to the written ``routing_schedules.parquet`` file.
+
+    Raises:
+        OSError: If ``out_dir`` cannot be created or the parquet write fails.
+
+    Example:
+        ``write_routing_schedules(Path("data/processed/module_b"))`` writes
+        ``routing_schedules.parquet`` and returns its path.
+    """
     out_dir.mkdir(parents=True, exist_ok=True)
     df = build_routing_schedules(seed=seed)
     out_path = out_dir / "routing_schedules.parquet"

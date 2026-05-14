@@ -1,3 +1,4 @@
+# pyright: reportUnknownMemberType=false, reportUnknownVariableType=false, reportUnknownArgumentType=false, reportUnknownLambdaType=false
 """Pandera DataFrame schema contracts for Module A pipeline step exits.
 
 Two schema gates are enforced:

@@ -23,7 +23,7 @@ COPY tests /app/tests
 
 RUN poetry config virtualenvs.create false && \
     if [ "$INSTALL_DEV" = "1" ]; then \
-        poetry install; \
+        poetry install --extras all; \
     else \
         poetry install --only main; \
     fi

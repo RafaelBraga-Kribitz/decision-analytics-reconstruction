@@ -42,8 +42,8 @@ def _strip_accents(text: str) -> str:
     return "".join(c for c in nkfd if not unicodedata.combining(c))
 
 
-def _canonical_channel(raw: str | None) -> str | None:
-    if raw is None or not isinstance(raw, str) or not raw.strip():
+def _canonical_channel(raw: object) -> str | None:
+    if not isinstance(raw, str) or not raw.strip():
         return None
     key = raw.strip()
     if key in CHANNEL_ALIASES:
@@ -58,8 +58,8 @@ def _canonical_channel(raw: str | None) -> str | None:
     return None
 
 
-def _canonical_department(raw: str | None) -> str | None:
-    if raw is None or not isinstance(raw, str) or not raw.strip():
+def _canonical_department(raw: object) -> str | None:
+    if not isinstance(raw, str) or not raw.strip():
         return None
     key = raw.strip()
     if key in DEPARTMENT_ALIASES:
@@ -73,8 +73,8 @@ def _canonical_department(raw: str | None) -> str | None:
     return None
 
 
-def _canonical_currency(raw: str | None) -> str | None:
-    if raw is None or not isinstance(raw, str) or not raw.strip():
+def _canonical_currency(raw: object) -> str | None:
+    if not isinstance(raw, str) or not raw.strip():
         return None
     folded = raw.strip().casefold()
     if folded in _USD_TOKENS:
@@ -87,7 +87,7 @@ def _canonical_currency(raw: str | None) -> str | None:
 _NUMBER_RE = re.compile(r"\d[\d.,]*")
 
 
-def _parse_locale_number(raw: str | None) -> float | None:
+def _parse_locale_number(raw: object) -> float | None:
     """Parse '1.234,56' (es) or '1,234.56' (en) or '1234.56' to float.
 
     Strips currency prefixes/markers ('Gs.', 'US$', '₲') before parsing.
@@ -95,7 +95,7 @@ def _parse_locale_number(raw: str | None) -> float | None:
     interpretation (1.234) — locale heuristic kicks in only when both
     separators or pure-comma-with-leading-3-digit-groups appear.
     """
-    if raw is None or not isinstance(raw, str):
+    if not isinstance(raw, str):
         return None
     cleaned = raw.strip()
     if not cleaned or cleaned.upper() in {"NULL", "NAN"}:
@@ -129,7 +129,7 @@ def _parse_locale_number(raw: str | None) -> float | None:
 
 
 def _valid_week(label: str | None) -> str | None:
-    if label is None or not isinstance(label, str):
+    if label is None:
         return None
     if label in WEEK_LABELS:
         return label

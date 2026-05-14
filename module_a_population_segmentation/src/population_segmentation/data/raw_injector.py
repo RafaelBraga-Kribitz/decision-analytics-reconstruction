@@ -1,3 +1,4 @@
+# pyright: reportUnknownMemberType=false, reportUnknownVariableType=false, reportUnknownArgumentType=false, reportUnknownLambdaType=false
 """Deterministic flaw injection layer.
 
 Injects all 13 flaw types from scope §4.2 into a clean synthetic population
@@ -333,7 +334,7 @@ def _generate_names(
     return [pool[i] for i in idx]
 
 
-def _garble_encoding(name: str) -> str:
+def _garble_encoding(name: object) -> object:
     """Replace first matching accented char with mojibake; for-else appends '?' if needed."""
     if not isinstance(name, str):
         return name
@@ -348,8 +349,6 @@ def _garble_encoding(name: str) -> str:
 
 def _randomize_phone_format(phone: str, rng: np.random.Generator) -> str:
     """Convert a +595XXXXXXXXX number to one of 3 observed formats."""
-    if not isinstance(phone, str):
-        return phone
     # Strip to 9 digits
     digits = re.sub(r"\D", "", phone)[-9:]
     fmt_choice = int(rng.integers(0, 3))

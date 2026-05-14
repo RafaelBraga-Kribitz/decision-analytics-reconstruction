@@ -1,3 +1,4 @@
+# pyright: reportUnknownMemberType=false, reportUnknownVariableType=false, reportUnknownArgumentType=false, reportUnknownLambdaType=false
 """Re-export: implementation lives in ``pipeline.models.segmentation``."""
 
 from population_segmentation.pipeline.models.segmentation import (
@@ -5,7 +6,7 @@ from population_segmentation.pipeline.models.segmentation import (
     SEGMENT_LABEL_MAP,
     DBSCANNoiseFilter,
     KMeansSegmenter,
-    _matrix,
+    _matrix,  # pyright: ignore[reportPrivateUsage]
     build_segmentation_frame,
 )
 

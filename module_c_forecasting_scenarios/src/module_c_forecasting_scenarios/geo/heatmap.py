@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -66,7 +66,7 @@ def export_battleground_department_table(
 
     # Parquet: contract fields only.
     contract_cols = ["department", "calibration_series", "win_probability_a", "model_version"]
-    out = full[contract_cols].copy()
+    out = cast(pd.DataFrame, full[contract_cols].copy())
     out.to_parquet(out_path, index=False)
 
     # Null-geometry GeoJSON (backward compat).

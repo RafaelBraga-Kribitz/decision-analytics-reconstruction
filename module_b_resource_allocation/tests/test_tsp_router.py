@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import pandas as pd
 import pytest
-
 from module_b_resource_allocation.constants import DEPARTMENTS, WEEK_LABELS
 from module_b_resource_allocation.routing.tsp_router import (
     WEATHER_SCENARIOS,
@@ -64,9 +63,7 @@ def test_cumulative_columns_monotonic() -> None:
     df = build_routing_schedule_for_scenario("dry_standard", seed=20180422)
     for _, grp in df.groupby("week_label"):
         cum_km = grp.sort_values("tour_position")["cumulative_km"].to_numpy()
-        cum_min = grp.sort_values("tour_position")[
-            "cumulative_travel_time_minutes"
-        ].to_numpy()
+        cum_min = grp.sort_values("tour_position")["cumulative_travel_time_minutes"].to_numpy()
         # Cumulative must be non-decreasing.
         assert (cum_km[1:] - cum_km[:-1] >= -1e-9).all()
         assert (cum_min[1:] - cum_min[:-1] >= -1e-9).all()

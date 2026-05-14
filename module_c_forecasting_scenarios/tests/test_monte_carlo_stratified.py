@@ -15,9 +15,7 @@ from module_c_forecasting_scenarios.scenarios.monte_carlo import (
 )
 
 
-def test_mc_draws_cover_all_canonical_buckets(
-    fixture_raw_polls_csv: Path, tmp_path: Path
-) -> None:
+def test_mc_draws_cover_all_canonical_buckets(fixture_raw_polls_csv: Path, tmp_path: Path) -> None:
     raw = load_raw_polls_csv(fixture_raw_polls_csv)
     tracking, _ = clean_raw_polls(raw, "A")
     run_monte_carlo_scenarios(tracking, None, out_dir=tmp_path, n_draws=900)
@@ -29,9 +27,7 @@ def test_mc_draws_cover_all_canonical_buckets(
         assert counts[b] == 300
 
 
-def test_mc_draws_size_default_is_10000(
-    fixture_raw_polls_csv: Path, tmp_path: Path
-) -> None:
+def test_mc_draws_size_default_is_10000(fixture_raw_polls_csv: Path, tmp_path: Path) -> None:
     raw = load_raw_polls_csv(fixture_raw_polls_csv)
     tracking, _ = clean_raw_polls(raw, "A")
     run_monte_carlo_scenarios(tracking, None, out_dir=tmp_path, n_draws=10_000)
@@ -39,9 +35,7 @@ def test_mc_draws_size_default_is_10000(
     assert len(draws) == 10_000
 
 
-def test_mc_draws_synthetic_prior_marks_source(
-    fixture_raw_polls_csv: Path, tmp_path: Path
-) -> None:
+def test_mc_draws_synthetic_prior_marks_source(fixture_raw_polls_csv: Path, tmp_path: Path) -> None:
     raw = load_raw_polls_csv(fixture_raw_polls_csv)
     tracking, _ = clean_raw_polls(raw, "A")
     # Drop one bucket from tracking to force prior synthesis.
@@ -54,26 +48,20 @@ def test_mc_draws_synthetic_prior_marks_source(
     assert missing_bucket in manifest["buckets_synthesised_from_prior"]
 
 
-def test_mc_draws_schema_fields_match_contract(
-    fixture_raw_polls_csv: Path, tmp_path: Path
-) -> None:
+def test_mc_draws_schema_fields_match_contract(fixture_raw_polls_csv: Path, tmp_path: Path) -> None:
     raw = load_raw_polls_csv(fixture_raw_polls_csv)
     tracking, _ = clean_raw_polls(raw, "A")
     run_monte_carlo_scenarios(tracking, None, out_dir=tmp_path, n_draws=300)
     draws = pd.read_parquet(tmp_path / "monte_carlo_draws.parquet")
     contract_path = (
-        Path(__file__).resolve().parents[2]
-        / "schema_contracts"
-        / "monte_carlo_draws.yaml"
+        Path(__file__).resolve().parents[2] / "schema_contracts" / "monte_carlo_draws.yaml"
     )
     contract = yaml.safe_load(contract_path.read_text())
     expected_fields = set(contract["fields"].keys())
     assert set(draws.columns) == expected_fields
 
 
-def test_mc_manifest_records_quotas(
-    fixture_raw_polls_csv: Path, tmp_path: Path
-) -> None:
+def test_mc_manifest_records_quotas(fixture_raw_polls_csv: Path, tmp_path: Path) -> None:
     raw = load_raw_polls_csv(fixture_raw_polls_csv)
     tracking, _ = clean_raw_polls(raw, "A")
     manifest = run_monte_carlo_scenarios(tracking, None, out_dir=tmp_path, n_draws=900)
@@ -82,9 +70,7 @@ def test_mc_manifest_records_quotas(
     assert manifest["canonical_buckets"] == list(CANONICAL_BUCKETS)
 
 
-def test_mc_deterministic_with_fixed_seed(
-    fixture_raw_polls_csv: Path, tmp_path: Path
-) -> None:
+def test_mc_deterministic_with_fixed_seed(fixture_raw_polls_csv: Path, tmp_path: Path) -> None:
     raw = load_raw_polls_csv(fixture_raw_polls_csv)
     tracking, _ = clean_raw_polls(raw, "A")
     out_a = tmp_path / "a"

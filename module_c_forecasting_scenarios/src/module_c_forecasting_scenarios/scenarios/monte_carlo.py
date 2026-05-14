@@ -127,9 +127,7 @@ def run_monte_carlo_scenarios(
         pub_ts = pd.Timestamp(cast(object, row.at["publication_date"]))  # type: ignore[arg-type]
         if pd.isna(pub_ts):
             raise ValueError("invalid publication_date in tracking row")
-        ts = datetime.combine(
-            pub_ts.date(), datetime.min.time(), tzinfo=UTC
-        ).isoformat()
+        ts = datetime.combine(pub_ts.date(), datetime.min.time(), tzinfo=UTC).isoformat()
         score = float(row["shock_score_s"]) * mult
         if baseline_zero:
             score = 0.0
@@ -161,7 +159,7 @@ def run_monte_carlo_scenarios(
     all_draws: list[dict[str, object]] = []
     cursor = 0
     for bucket, quota in zip(CANONICAL_BUCKETS, bucket_quota, strict=True):
-        bucket_rows = tracking[tracking["scenario_bucket"] == bucket]
+        bucket_rows = cast(pd.DataFrame, tracking[tracking["scenario_bucket"] == bucket])
         if len(bucket_rows) > 0:
             chunk = _draw_from_tracking(
                 bucket_rows,
@@ -210,4 +208,4 @@ def run_monte_carlo_scenarios(
     # Math sanity: each bucket quota sums to n.
     assert sum(bucket_quota) == n
     assert math.isclose(sum(bucket_quota), n)
-    return manifest
+    return cast(dict[str, object], manifest)

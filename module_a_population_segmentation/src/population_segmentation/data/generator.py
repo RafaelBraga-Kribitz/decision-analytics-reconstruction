@@ -1,3 +1,4 @@
+# pyright: reportUnknownMemberType=false, reportUnknownVariableType=false, reportUnknownArgumentType=false, reportUnknownLambdaType=false
 """Synthetic population generator.
 
 Produces a DataFrame of N synthetic entities calibrated to TSJE/DGEEC
@@ -9,7 +10,7 @@ from __future__ import annotations
 
 from decimal import ROUND_HALF_EVEN, Decimal
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -80,31 +81,36 @@ def _generator_dept_media_nbi_tables(
             "(department TV/radio/NBI tables; see generation.yaml)"
         )
     for key in ("tv_by_department", "radio_by_department", "nbi_rural_stress_by_department"):
-        sub = gdm.get(key)
+        sub: Any = gdm.get(key)
         if not isinstance(sub, dict) or not sub:
             raise KeyError(f"generator_dept_media_nbi.{key} must be a non-empty mapping")
-    tv_by = {str(k): float(v) for k, v in gdm["tv_by_department"].items()}
-    radio_by = {str(k): float(v) for k, v in gdm["radio_by_department"].items()}
-    nbi_rural = {str(k): float(v) for k, v in gdm["nbi_rural_stress_by_department"].items()}
-    urb_raw = gdm.get("nbi_urban_from_rural") or {}
+    tv_by = {str(k): float(v) for k, v in cast(dict[str, Any], gdm["tv_by_department"]).items()}
+    radio_by = {
+        str(k): float(v) for k, v in cast(dict[str, Any], gdm["radio_by_department"]).items()
+    }
+    nbi_rural = {
+        str(k): float(v)
+        for k, v in cast(dict[str, Any], gdm["nbi_rural_stress_by_department"]).items()
+    }
+    urb_raw: dict[str, Any] = gdm.get("nbi_urban_from_rural") or {}
     nbi_floor = float(urb_raw.get("floor", 0.10))
     nbi_scale = float(urb_raw.get("scale", 0.35))
     nbi_urban = _nbi_urban_stress_from_rural(nbi_rural, nbi_floor, nbi_scale)
-    nbi_noise_std = float(gdm.get("nbi_noise_std", 0.03))
-    nbi_rural_fb = float(gdm.get("nbi_rural_unknown_department", 0.659))
-    nbi_urban_fb = float(gdm.get("nbi_urban_unknown_department", 0.252))
+    nbi_noise_std = float(cast(Any, gdm.get("nbi_noise_std", 0.03)))
+    nbi_rural_fb = float(cast(Any, gdm.get("nbi_rural_unknown_department", 0.659)))
+    nbi_urban_fb = float(cast(Any, gdm.get("nbi_urban_unknown_department", 0.252)))
     return tv_by, radio_by, nbi_rural, nbi_urban, nbi_noise_std, nbi_rural_fb, nbi_urban_fb
 
 
 def _elevated_departments_frozenset(gsd: dict[str, Any]) -> frozenset[str]:
-    raw = gsd.get("elevated_departments")
+    raw: Any = gsd.get("elevated_departments")
     if isinstance(raw, list) and len(raw) > 0:
-        return frozenset(str(x) for x in raw)
+        return frozenset(str(x) for x in cast(list[object], raw))
     return _DEFAULT_STRUCT_ELEVATED_DEPTS
 
 
 def _enc_source_labels_and_probs(config: dict[str, Any]) -> tuple[list[str], np.ndarray]:
-    dist = config.get("generator_enc_source_raw_distribution") or {}
+    dist: dict[str, Any] = config.get("generator_enc_source_raw_distribution") or {}
     labels = list(_ENC_SOURCE_LABELS)
     probs = np.array([float(dist.get(k, 0.0)) for k in labels], dtype=np.float64)
     if float(probs.sum()) <= 0.0:

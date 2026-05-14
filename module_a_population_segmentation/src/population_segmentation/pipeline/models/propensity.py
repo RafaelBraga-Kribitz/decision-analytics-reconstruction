@@ -1,3 +1,4 @@
+# pyright: reportUnknownMemberType=false, reportUnknownVariableType=false, reportUnknownArgumentType=false, reportUnknownLambdaType=false
 """Participation propensity model with calibration gates."""
 
 from __future__ import annotations
@@ -84,6 +85,8 @@ class PropensityModel:
             strat_series = df[list(strat_cols)].astype(str).agg("_".join, axis=1)
         elif len(strat_cols) == 1:
             strat_series = df[strat_cols[0]]
+        else:
+            raise ValueError("stratify_by must name at least one column")
         try:
             x_train, x_tmp, y_train, y_tmp = train_test_split(
                 x, y, test_size=0.4, random_state=self.random_state, stratify=strat_series

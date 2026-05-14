@@ -1,8 +1,10 @@
+# pyright: reportUnknownMemberType=false, reportUnknownVariableType=false, reportUnknownArgumentType=false, reportUnknownLambdaType=false
 """Segmentation models: DBSCAN noise filter + KMeans segmenter."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -154,7 +156,7 @@ def build_segmentation_frame(
     df: pd.DataFrame,
     k: int = 6,
     random_state: int = 42,
-) -> tuple[pd.DataFrame, dict]:
+) -> tuple[pd.DataFrame, dict[str, Any]]:
     """Run DBSCAN plus KMeans and return per-entity labels and summary metrics.
 
     Args:
@@ -198,7 +200,7 @@ def build_segmentation_frame(
         }
     )
 
-    metrics_dict: dict = {
+    metrics_dict: dict[str, Any] = {
         "silhouette": seg_out["silhouette"],
         "bootstrap_ari": seg_out["bootstrap_ari"],
         "noise_rate": float(noise_result["noise_rate"]),

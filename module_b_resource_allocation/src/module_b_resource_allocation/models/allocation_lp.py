@@ -12,7 +12,7 @@ from typing import Any, cast
 import pandas as pd
 
 from module_b_resource_allocation.bundle_definitions import (
-    _CHANNEL_TO_BUNDLE,
+    _CHANNEL_TO_BUNDLE,  # pyright: ignore[reportPrivateUsage]
     BUNDLE_MIN_USD,
     CHANNEL_TO_BUNDLE,
 )

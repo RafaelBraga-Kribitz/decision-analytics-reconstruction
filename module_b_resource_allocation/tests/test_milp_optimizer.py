@@ -45,9 +45,9 @@ def test_milp_bundle_min_spend_floors_satisfied(milp_result) -> None:
         floor = BUNDLE_MIN_USD[bundle_id]
         members = [c for c, b in CHANNEL_TO_BUNDLE.items() if b == bundle_id]
         bundle_spend = float(alloc[alloc["channel"].isin(members)]["budget_allocation_usd"].sum())
-        assert bundle_spend >= floor - 1.0, (
-            f"{bundle_id}: spent {bundle_spend:.2f} < floor {floor:.2f}"
-        )
+        assert (
+            bundle_spend >= floor - 1.0
+        ), f"{bundle_id}: spent {bundle_spend:.2f} < floor {floor:.2f}"
 
 
 def test_milp_bundle_id_column_populated(milp_result) -> None:
@@ -70,9 +70,9 @@ def test_milp_solution_differs_from_relaxation(milp_result, relaxation_result) -
     milp_total = milp_result.total_persuasion_adjusted_contacts
     relax_total = relaxation_result.total_persuasion_adjusted_contacts
     # Relaxation must be ≥ MILP (or essentially equal within solver tolerance).
-    assert relax_total >= milp_total - 1.0, (
-        f"relaxation {relax_total:.2f} unexpectedly < MILP {milp_total:.2f}"
-    )
+    assert (
+        relax_total >= milp_total - 1.0
+    ), f"relaxation {relax_total:.2f} unexpectedly < MILP {milp_total:.2f}"
     # The two allocations must differ in at least one cell.
     milp_alloc = milp_result.allocation.set_index(["department", "channel", "week_index"])[
         "budget_allocation_usd"

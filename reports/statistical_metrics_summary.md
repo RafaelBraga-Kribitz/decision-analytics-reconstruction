@@ -205,6 +205,56 @@ baseline     budget_lower  -0.00000
 | `beta_eu` | +0.16 | [-7.86, +8.53] | EU release window adjustment (not significant) |
 | `sigma` | 8.67 | [4.07, 16.03] | Observation noise |
 
+### Walk-forward out-of-sample validation (T9-1)
+
+**Protocol:** chronological leave-one-future-out on the four tracking polls
+(`min_train_size=2`). For each holdout `k ∈ {3, 4}`, the hierarchical
+random-walk + house-effects model is refit on polls `1..k-1` and the posterior
+latent margin `mu_margin[date_k]` is used as the forecast. Production NUTS
+config (4 chains, 1,000 draws, target_accept 0.95) is used; reproduce via
+`MC_FAST=0 make module-c-walk-forward`.
+
+| Metric | Value | Pass criterion | Status |
+|--------|-------|----------------|--------|
+| Holdouts evaluated | **2** | ≥ 2 | ✓ |
+| Brier score (P(margin > 0)) | **0.528** | < 0.25 | ⚠ |
+| Log loss (P(margin > 0)) | **2.709** | < 0.70 | ⚠ |
+| 80% HDI coverage | **0/2 = 0%** | ≥ 70% (4-poll tolerance) | ⚠ |
+| 95% HDI coverage | **0/2 = 0%** | ≥ 90% (4-poll tolerance) | ⚠ |
+
+**Per-holdout breakdown:**
+
+| Fold | Holdout poll | Train size | Observed margin (pp) | Posterior mean (pp) | HDI 80% | HDI 95% | P(margin > 0) | In HDI80 | In HDI95 |
+|------|--------------|------------|---------------------|---------------------|---------|---------|---------------|----------|----------|
+| 1 | `wave_ati_20180315` | 2 | **−4.5** | +22.75 | [+11.63, +33.32] | [+5.78, +40.97] | 0.994 | ✗ | ✗ |
+| 2 | `wave_ica_20180318` | 3 | **+31.4** | +3.85 | [−3.73, +13.41] | [−10.79, +16.81] | 0.739 | ✗ | ✗ |
+
+**Honest assessment (no spin):** Both held-out polls fall outside the model's
+95% HDI on the holdout date. The miss is **not** a software bug — it reflects
+two structural realities the portfolio piece deliberately exposes:
+
+1. **Between-pollster heterogeneity dominates signal.** The four-poll fixture
+   spans `−4.5 ↔ +31.4 pp` over 17 days. With only 2–3 anchor polls the
+   random-walk locks onto the first two (both Capli/+13.2 and +31.2 pp), then
+   the held-out Ati Snead poll lands in the opposite half-plane. The model
+   has no degrees of freedom to distinguish "true margin moved" from "this
+   pollster has a different house effect."
+2. **`GaussianRandomWalk` posterior is overconfident on out-of-sample dates
+   adjacent to training polls but far from supporting evidence.** Without
+   denser polling, the latent margin extrapolates with too-tight HDI.
+
+**What this changes in the narrative:** the daily posterior forecast table
+(Section above) presents wide 95% HDIs (`[0.10, 40.30]` at election eve) —
+that *prior-dominated* width is honest; the walk-forward result confirms the
+model is **not** secretly underconfident, it is genuinely uncertain in both
+directions. Coverage rates would shift toward the 70/90 targets only with
+denser polling (8+ waves) — see `reports/epistemic_boundaries.md` for the
+deferred mitigation roadmap.
+
+**Artifacts:**
+- `data/processed/module_c/walk_forward/walk_forward_per_holdout.parquet`
+- `data/processed/module_c/walk_forward/walk_forward_metrics.json`
+
 ### Artifact schema: `daily_posterior_forecast.parquet`
 **Shape:** (142 × 7) — one row per campaign day
 

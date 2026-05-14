@@ -1,3 +1,4 @@
+# pyright: reportUnknownMemberType=false, reportUnknownVariableType=false, reportUnknownArgumentType=false, reportUnknownLambdaType=false
 """Reproducibility manifest written beside Module A export artifacts."""
 
 from __future__ import annotations

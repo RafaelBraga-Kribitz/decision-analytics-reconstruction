@@ -68,10 +68,15 @@ def _linear_cell_specs(
             avg_residual = max(min(avg_residual, 1.0), 0.0)
 
             for wi, w in enumerate(WEEK_LABELS, start=1):
-                uc_usd = _alloc._unit_cost_usd(cap_row, layer, w)
+                uc_usd = _alloc._unit_cost_usd(  # pyright: ignore[reportPrivateUsage]
+                    cap_row, layer, w
+                )
                 if uc_usd <= 0:
                     continue
-                if c == "tv_spots" and d not in _alloc._PAY_TV_ELIGIBLE:
+                if (
+                    c == "tv_spots"
+                    and d not in _alloc._PAY_TV_ELIGIBLE  # pyright: ignore[reportPrivateUsage]
+                ):
                     continue
                 max_spend = audience * uc_usd
                 contacts_per_unit_below = 1.0 / uc_usd
@@ -80,8 +85,10 @@ def _linear_cell_specs(
                     inflection * contacts_per_unit_below
                     + (1.0 - inflection) * contacts_per_unit_above
                 )
-                scenario_w = _alloc._scenario_week_weight(problem.scenario_id, wi)
-                tier_w = _alloc._tier_penalty(tier)
+                scenario_w = _alloc._scenario_week_weight(  # pyright: ignore[reportPrivateUsage]
+                    problem.scenario_id, wi
+                )
+                tier_w = _alloc._tier_penalty(tier)  # pyright: ignore[reportPrivateUsage]
                 persuasion_per_unit = (
                     contacts_per_unit_eff * attention * salience * hostility * scenario_w * tier_w
                 )

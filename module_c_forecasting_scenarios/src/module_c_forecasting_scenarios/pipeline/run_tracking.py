@@ -7,6 +7,7 @@ import json
 import logging
 from datetime import date
 from pathlib import Path
+from typing import cast
 
 import yaml
 
@@ -65,7 +66,7 @@ def main(argv: list[str] | None = None) -> None:
         "n_tracking_waves": len(tracking),
     }
     (args.out_dir / "run_tracking_manifest.json").write_text(json.dumps(manifest, indent=2))
-    log_run_params(manifest)
+    log_run_params(cast(dict[str, object], manifest))
     logger.info("wrote outputs under %s", args.out_dir)
 
 

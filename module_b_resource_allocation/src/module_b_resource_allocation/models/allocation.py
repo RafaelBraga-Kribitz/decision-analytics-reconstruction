@@ -326,8 +326,8 @@ def solve(problem: AllocationProblem) -> AllocationResult:
             members = list(bundle["members"].keys())
             ratios = bundle["members"]
             cardinality = bundle.get("cardinality")
-            binding = bundle.get("binding", "hard")
-            if binding != "hard":
+            bundle_binding: str = bundle.get("binding", "hard")
+            if bundle_binding != "hard":
                 continue
             for d in DEPARTMENTS:
                 for wi in WEEK_INDEX:

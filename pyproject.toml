@@ -100,7 +100,7 @@ ignore = []
 
 [tool.pyright]
 pythonVersion = "3.11"
-typeCheckingMode = "basic"
+typeCheckingMode = "strict"
 include = [
     "module_a_population_segmentation/src",
     "module_b_resource_allocation/src",
@@ -119,6 +119,30 @@ ignore = [
     "reports/**",
 ]
 reportMissingTypeStubs = false
+reportMissingParameterType = false
+
+# Modules B and C are being upgraded to strict mode in T8-2/T8-3.
+# Until then, suppress the same pandas/sklearn/MLflow stub-limitation rules
+# at the per-execution-environment level so the global strict baseline holds.
+[[tool.pyright.executionEnvironments]]
+root = "module_b_resource_allocation/src"
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
+reportUnknownLambdaType = false
+reportUnknownParameterType = false
+reportMissingTypeArgument = false
+reportMissingParameterType = false
+
+[[tool.pyright.executionEnvironments]]
+root = "module_c_forecasting_scenarios/src"
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
+reportUnknownLambdaType = false
+reportUnknownParameterType = false
+reportMissingTypeArgument = false
+reportMissingParameterType = false
 
 [tool.pytest.ini_options]
 testpaths = [
