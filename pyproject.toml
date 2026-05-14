@@ -34,6 +34,8 @@ arviz = ">=0.19"
 shap = {version = ">=0.44", optional = true}
 streamlit = {version = ">=1.32", optional = true}
 plotly = {version = ">=5.20", optional = true}
+seaborn = "^0.13.2"
+adjusttext = "^1.3.0"
 
 [tool.poetry.extras]
 dashboard = ["streamlit", "plotly"]
@@ -51,6 +53,8 @@ graphifyy = ">=0.7,<0.8"
 httpx = ">=0.27"
 pre-commit = ">=4.0"
 matplotlib = ">=3.8"
+ipykernel = "^7.2.0"
+matplotlib-inline = "^0.2.2"
 
 [build-system]
 requires = ["poetry-core"]
