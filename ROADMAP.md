@@ -90,7 +90,7 @@ Honest status of each module and the next concrete milestones.
 | Schema contracts (Module A → B) | Published |
 | Schema contracts (Module B → C) | Stub; pending Module B finalization |
 | End-to-end pipeline smoke test | `tests/test_portfolio_e2e_smoke.py` (fixture-level) |
-| DVC artifact tracking | `tier3-smoke` CI job runs `dvc version` with `--extras tracking` |
+| DVC artifact tracking | Repo is `dvc init`'d (`.dvc/`, `.dvcignore` committed); default remote `local-cache` → `../../decision-analytics-dvc-cache` sibling dir. No artifacts tracked yet — `dvc add` opt-in per contributor. See README "Data versioning" section. |
 | Docker Compose full-stack | Module A + MLflow import smoke in CI; Module B FastAPI remains local (`make module-b-api`) |
 | `01_synthetic_data_validation.ipynb` (marginal + joint correlation audit, nbval) | **Deferred** — marginal and contract checks are covered by pandera gates, CI config integrity, and exploratory notebooks under `module_a_population_segmentation/notebooks/` (e.g. segmentation analysis). A dedicated validation notebook remains optional follow-up. |
 

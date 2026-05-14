@@ -1,0 +1,4 @@
+[core]
+    remote = local-cache
+['remote "local-cache"']
+    url = ../../decision-analytics-dvc-cache
