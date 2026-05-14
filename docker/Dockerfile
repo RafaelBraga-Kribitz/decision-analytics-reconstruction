@@ -8,9 +8,11 @@ ARG INSTALL_DEV=0
 
 WORKDIR /app
 
+RUN apt-get update && apt-get install -y --no-install-recommends make && rm -rf /var/lib/apt/lists/*
+
 RUN pip install --no-cache-dir poetry==2.4.0
 
-COPY pyproject.toml poetry.lock* README.md /app/
+COPY pyproject.toml poetry.lock* README.md .pre-commit-config.yaml /app/
 COPY Makefile /app/
 COPY module_a_population_segmentation /app/module_a_population_segmentation
 COPY module_b_resource_allocation /app/module_b_resource_allocation

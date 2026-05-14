@@ -210,7 +210,7 @@ jobs:
           docker run --rm
           -e MC_FAST=1
           decision-analytics-ci:smoke
-          sh -c "cd /app && poetry run pytest module_a_population_segmentation/tests module_b_resource_allocation/tests module_c_forecasting_scenarios/tests -v --tb=short -m 'not slow'"
+          make test
 
   tier3-smoke:
     name: Tier 3 — DVC + terminology scripts
