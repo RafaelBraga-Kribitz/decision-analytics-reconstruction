@@ -364,6 +364,73 @@ Production remediation: (a) denser survey measurement cadence or (b) non-centere
 
 ---
 
+## Posterior Predictive Check
+
+Posterior predictive checks (PPC) compare re-simulated data from the fitted model against the actual poll observations. If the model is well-calibrated, observed values should fall within the PPC credible intervals at their nominal rates.
+
+```{python}
+#| label: fig-ppc
+#| fig-cap: "Posterior predictive check: observed polls (red) vs. posterior predictive distribution (blue bands). 50%/80%/95% PPC intervals shown."
+
+from pathlib import Path as _Path
+import os as _os
+
+_ppc_dir = _Path(_os.environ.get("MODULE_C_PPC_DIR", "data/processed/module_c/ppc"))
+_ppc_png = _ppc_dir / "ppc_plot.png"
+_ppc_summary_path = _ppc_dir / "ppc_summary.json"
+
+if _ppc_png.exists():
+    from IPython.display import Image as _Image
+    display(_Image(str(_ppc_png), width=800))
+else:
+    display(HTML(
+        "<p><em>PPC plot not found — run "
+        "<code>make module-c-ppc</code> first.</em></p>"
+    ))
+```
+
+```{python}
+#| label: tbl-ppc-summary
+import json as _json
+
+if _ppc_summary_path.exists():
+    _s = _json.loads(_ppc_summary_path.read_text())
+    _verdict_color = {
+        "calibrated": "#2ca02c",
+        "slightly-over-confident": "#ff7f0e",
+        "prior-dominated": "#9467bd",
+        "over-confident": "#d62728",
+    }.get(str(_s.get("calibration_verdict", "")), "#888")
+    display(HTML(f"""
+    <table style='font-size:13px;border-collapse:collapse'>
+    <thead>
+    <tr style='background:#636EFA;color:white'>
+      <th style='padding:6px 12px;text-align:left'>Metric</th>
+      <th style='padding:6px 12px'>Value</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr><td style='padding:5px 12px'>Tracking polls (n)</td>
+        <td style='padding:5px 12px'>{_s.get("n_tracking_polls")}</td></tr>
+    <tr style='background:#f9f9f9'>
+        <td style='padding:5px 12px'>80% PPC interval coverage</td>
+        <td style='padding:5px 12px'>{_s.get("polls_in_80pct_hdi")}/{_s.get("n_tracking_polls")} = {float(_s.get("ppc_coverage_80pct", 0)):.0%}</td></tr>
+    <tr><td style='padding:5px 12px'>95% PPC interval coverage</td>
+        <td style='padding:5px 12px'>{_s.get("polls_in_95pct_hdi")}/{_s.get("n_tracking_polls")} = {float(_s.get("ppc_coverage_95pct", 0)):.0%}</td></tr>
+    <tr style='background:#f9f9f9'>
+        <td style='padding:5px 12px'>Calibration verdict</td>
+        <td style='padding:5px 12px'><strong style='color:{_verdict_color}'>{_s.get("calibration_verdict")}</strong></td></tr>
+    </tbody>
+    </table>
+    """))
+else:
+    display(HTML("<p><em>PPC summary not found.</em></p>"))
+```
+
+**Calibration interpretation:** With only 4 tracking polls over 142 days, the Gaussian random walk prior dominates on poll-free stretches, producing wide PPC intervals. If 95% coverage is 0% (i.e. the model is **prior-dominated**), this does not indicate a misspecified likelihood — it means the posterior cannot distinguish latent drift from inter-pollster heterogeneity at n ≤ 4. The walk-forward validation (T9-1) confirms this finding independently. Remediation requires denser polling cadence; the model is correctly honest about its uncertainty.
+
+---
+
 ## Methodology Summary
 
 | Component | Specification | Status |

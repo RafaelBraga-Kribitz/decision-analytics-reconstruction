@@ -1,7 +1,7 @@
 .PHONY: install lint format typecheck test coverage all clean module-a-export module-a-pipeline graphify \
 	module-b-allocate module-b-allocate-sensitivity module-b-routing module-b-api \
 	test-module-a test-module-b test-module-c \
-	module-c-tracking module-c-exit module-c-mc module-c-all module-c-walk-forward \
+	module-c-tracking module-c-exit module-c-mc module-c-all module-c-walk-forward module-c-ppc \
 	precommit validate doc-path-verify portfolio-verify tier3-smoke e2e-smoke
 
 MODULE_A_SRC := module_a_population_segmentation/src
@@ -90,6 +90,12 @@ module-c-walk-forward:
 	poetry run python -m module_c_forecasting_scenarios.pipeline.run_walk_forward \
 		--raw-csv module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv \
 		--out-dir data/processed/module_c/walk_forward
+
+module-c-ppc:
+	MLFLOW_TRACKING_URI=$(or $(MLFLOW_TRACKING_URI),file:./mlruns) \
+	poetry run python -m module_c_forecasting_scenarios.pipeline.run_ppc \
+		--raw-csv module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv \
+		--out-dir data/processed/module_c/ppc
 
 coverage:
 	poetry run pytest $(MODULE_TEST_ARGS) $(COV_FLAGS)

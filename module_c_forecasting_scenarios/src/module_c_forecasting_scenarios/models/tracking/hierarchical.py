@@ -74,6 +74,7 @@ def fit_tracking_hierarchical(
     *,
     outcome_event_date: date,
     calibration_series: str,
+    sample_ppc: bool = False,
 ) -> az.InferenceData:
     if tracking.empty:
         raise ValueError("tracking dataframe is empty")
@@ -88,7 +89,7 @@ def fit_tracking_hierarchical(
     day_labels = [d.strftime("%Y-%m-%d") for d in days]
 
     coords = {"day": day_labels, "pollster": pollsters}
-    with pm.Model(coords=coords):
+    with pm.Model(coords=coords) as model:
         sigma_rw = pm.HalfNormal("sigma_rw", 1.5)
         mu_margin = pm.GaussianRandomWalk("mu_margin", sigma=sigma_rw, dims="day")
         sigma_h = pm.HalfNormal("sigma_house", 2.5)
@@ -97,6 +98,10 @@ def fit_tracking_hierarchical(
         pm.Normal("obs", mu=mu_poll, sigma=sigma_obs, observed=y)
         sk = _sampler_kwargs()
         idata = pm.sample(**sk, progressbar=False)
+        if sample_ppc:
+            pm.sample_posterior_predictive(
+                idata, model=model, extend_inferencedata=True, progressbar=False
+            )
     idata.attrs["calibration_series"] = calibration_series
     idata.attrs["model_version"] = MODEL_VERSION
     return idata

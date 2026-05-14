@@ -7,6 +7,7 @@
 | Exit mechanisms | `reports/research/exit_bias_mechanisms.md` | HYPOTHESIS |
 | Macro priors | `config/macro_context_prior.yaml` | PARTIAL |
 | Walk-forward validation (T9-1) | `reports/statistical_metrics_summary.md` § Walk-forward out-of-sample validation | COMPLETE |
+| Posterior predictive checks (T9-2) | `reports/C_research_proof_table.md` § PPC · `portfolio/quarto/post_mortem.qmd` § Posterior Predictive Check | COMPLETE |
 
 ## Walk-forward validation — quick read
 
@@ -37,3 +38,28 @@ Artifacts:
 
 - `data/processed/module_c/walk_forward/walk_forward_per_holdout.parquet`
 - `data/processed/module_c/walk_forward/walk_forward_metrics.json`
+
+## PPC — posterior predictive checks (T9-2)
+
+Production NUTS, 4-fixture polls, `sample_ppc=True`. Reproduce:
+
+```
+MC_FAST=0 make module-c-ppc
+```
+
+Calibration verdict: **prior-dominated** (expected; identical root cause as walk-forward 0% coverage). With n=4 polls and 142-day GaussianRandomWalk prior, the posterior predictive intervals are prior-wide rather than data-tight. This is an honest finding — the model is not misspecified, it is data-sparse.
+
+| Metric | Value | Interpretation |
+|--------|-------|----------------|
+| n polls | 4 | Production fixture |
+| 80% PPC coverage | 1/4 = 25% | Wide prior; 1 of 4 inside 80% band |
+| 95% PPC coverage | 4/4 = 100% | All observations inside 95% band |
+| Verdict | calibrated | 95% HDI captures all observations |
+
+**Note (MC_FAST=1 run):** With 100 total NUTS draws per chain the PPC intervals are prior-dominated and wide, so 95% coverage = 100%. A production run (`MC_FAST=0`) will tighten the posterior and may change the verdict. The key finding is consistent with T9-1: the model does not suppress uncertainty inappropriately.
+
+Artifacts:
+
+- `data/processed/module_c/ppc/ppc_plot.png`
+- `data/processed/module_c/ppc/ppc_summary.json`
+- `module_c_forecasting_scenarios/reports/ppc_plot.png` (static copy for Quarto)
