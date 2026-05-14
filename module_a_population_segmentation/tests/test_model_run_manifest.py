@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from population_segmentation.pipeline.model_run_manifest import (
     build_model_run_manifest,
     get_distribution_version,
@@ -54,8 +56,12 @@ def test_get_distribution_version_returns_string() -> None:
     assert len(v) > 0
 
 
-def test_maybe_log_mlflow_local_store_logs_metrics(tmp_path: Path) -> None:
+def test_maybe_log_mlflow_local_store_logs_metrics(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     """maybe_log_mlflow_export writes run with metrics to local mlruns/ store."""
+    # Unset any leaked env var so local_tracking_root fallback is exercised
+    monkeypatch.delenv("MLFLOW_TRACKING_URI", raising=False)
     from population_segmentation.pipeline.model_run_manifest import maybe_log_mlflow_export
 
     manifest: dict[str, object] = {

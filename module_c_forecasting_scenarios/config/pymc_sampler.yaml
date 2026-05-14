@@ -1,7 +1,8 @@
-chains: 2
-draws: 400
-tune: 400
-target_accept: 0.9
+chains: 4
+draws: 1000
+tune: 1000
+target_accept: 0.95
+max_treedepth: 15
 random_seed: 42
 # CI / fast path: set env MC_FAST=1 to use draws_fast / tune_fast
 draws_fast: 50

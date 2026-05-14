@@ -7,8 +7,33 @@ import os
 import numpy as np
 import pandas as pd
 import pymc as pm
+import yaml
+
+from module_c_forecasting_scenarios.paths import module_config_dir
 
 MODEL_VERSION = "c_exit_bias_v0.1"
+
+
+def _exit_sampler_kwargs() -> dict:
+    path = module_config_dir() / "pymc_sampler.yaml"
+    with open(path) as f:
+        cfg = yaml.safe_load(f)
+    if os.environ.get("MC_FAST"):
+        return {
+            "chains": 2,
+            "draws": int(cfg["draws_fast"]),
+            "tune": int(cfg["tune_fast"]),
+            "target_accept": 0.90,
+            "random_seed": int(cfg.get("random_seed", 42)),
+        }
+    return {
+        "chains": int(cfg.get("chains", 4)),
+        "draws": int(cfg.get("draws", 1000)),
+        "tune": int(cfg.get("tune", 1000)),
+        "target_accept": float(cfg.get("target_accept", 0.95)),
+        "random_seed": int(cfg.get("random_seed", 42)),
+        "nuts_sampler_kwargs": {"max_treedepth": int(cfg.get("max_treedepth", 10))},
+    }
 
 
 def fit_exit_quickcount(
@@ -32,9 +57,6 @@ def fit_exit_quickcount(
     y = exit_df["m_poll_pp"].to_numpy(dtype=np.float64)
     oea = exit_df["oea_timing_compliant"].fillna(False).astype(float).to_numpy()
     eu = exit_df["eu_release_window_flag"].fillna(False).astype(float).to_numpy()
-    chains, draws, tune = (2, 200, 200)
-    if os.environ.get("MC_FAST"):
-        draws, tune = 80, 80
     with pm.Model():
         intercept = pm.Normal("intercept", mu=60.0, sigma=15.0)
         beta_oea = pm.Normal("beta_oea", mu=0.0, sigma=5.0)
@@ -42,14 +64,7 @@ def fit_exit_quickcount(
         sigma = pm.HalfNormal("sigma", 8.0)
         mu = intercept + beta_oea * oea + beta_eu * eu
         pm.Normal("obs", mu=mu, sigma=sigma, observed=y)
-        idata = pm.sample(
-            chains=chains,
-            draws=draws,
-            tune=tune,
-            target_accept=0.85,
-            random_seed=42,
-            progressbar=False,
-        )
+        idata = pm.sample(**_exit_sampler_kwargs(), progressbar=False)
     post = idata.posterior  # type: ignore[union-attr]  # arviz stubs omit InferenceData.posterior; runtime is xarray.Dataset
     rows = []
     for v in ("intercept", "beta_oea", "beta_eu", "sigma"):

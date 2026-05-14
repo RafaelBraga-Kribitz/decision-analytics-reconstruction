@@ -62,21 +62,25 @@ test-module-c:
 	MC_FAST=1 poetry run pytest $(MODULE_C_TESTS) -v --tb=short
 
 module-c-tracking:
+	MLFLOW_TRACKING_URI=$(or $(MLFLOW_TRACKING_URI),file:./mlruns) \
 	poetry run python -m module_c_forecasting_scenarios.pipeline.run_tracking \
 		--raw-csv module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv \
 		--out-dir data/processed/module_c/tracking
 
 module-c-exit:
+	MLFLOW_TRACKING_URI=$(or $(MLFLOW_TRACKING_URI),file:./mlruns) \
 	poetry run python -m module_c_forecasting_scenarios.pipeline.run_exit \
 		--raw-csv module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv \
 		--out-dir data/processed/module_c/exit
 
 module-c-mc:
+	MLFLOW_TRACKING_URI=$(or $(MLFLOW_TRACKING_URI),file:./mlruns) \
 	poetry run python -m module_c_forecasting_scenarios.pipeline.run_monte_carlo \
 		--raw-csv module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv \
 		--out-dir data/processed/module_c/mc
 
 module-c-all:
+	MLFLOW_TRACKING_URI=$(or $(MLFLOW_TRACKING_URI),file:./mlruns) \
 	poetry run python -m module_c_forecasting_scenarios.pipeline.run_all \
 		--raw-csv module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv \
 		--out-dir data/processed/module_c/run_all
@@ -111,6 +115,7 @@ graphify:
 	poetry run python -m graphify update .
 
 module-a-export:
+	MLFLOW_TRACKING_URI=$(or $(MLFLOW_TRACKING_URI),file:./mlruns) \
 	poetry run python -m population_segmentation.pipeline.export \
 		--config module_a_population_segmentation/config/generation.yaml \
 		--anchors module_a_population_segmentation/config/calibration_anchors.yaml \
@@ -118,6 +123,7 @@ module-a-export:
 		--sample-size $(or $(SAMPLE),50000)
 
 module-a-pipeline:
+	MLFLOW_TRACKING_URI=$(or $(MLFLOW_TRACKING_URI),file:./mlruns) \
 	poetry run python -m population_segmentation.pipeline \
 		--config module_a_population_segmentation/config/generation.yaml \
 		--anchors module_a_population_segmentation/config/calibration_anchors.yaml \

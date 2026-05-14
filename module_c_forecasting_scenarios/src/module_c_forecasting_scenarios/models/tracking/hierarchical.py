@@ -30,12 +30,14 @@ def _sampler_kwargs() -> dict[str, Any]:
             "target_accept": float(cfg.get("target_accept", 0.9)),
             "random_seed": int(cfg.get("random_seed", 42)),
         }
+    max_treedepth = int(cfg.get("max_treedepth", 10))
     return {
-        "chains": int(cfg.get("chains", 2)),
-        "draws": int(cfg.get("draws", 400)),
-        "tune": int(cfg.get("tune", 400)),
-        "target_accept": float(cfg.get("target_accept", 0.9)),
+        "chains": int(cfg.get("chains", 4)),
+        "draws": int(cfg.get("draws", 1000)),
+        "tune": int(cfg.get("tune", 1000)),
+        "target_accept": float(cfg.get("target_accept", 0.95)),
         "random_seed": int(cfg.get("random_seed", 42)),
+        "nuts_sampler_kwargs": {"max_treedepth": max_treedepth},
     }
 
 

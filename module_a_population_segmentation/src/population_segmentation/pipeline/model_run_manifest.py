@@ -169,10 +169,14 @@ def maybe_log_mlflow_export(
     Example:
         Called at the end of ``run_export`` to persist a reproducible run record.
     """
-    if local_tracking_root is not None:
+    # Env var always wins; local_tracking_root only used as fallback default
+    env_uri = os.environ.get("MLFLOW_TRACKING_URI")
+    if env_uri:
+        uri = env_uri
+    elif local_tracking_root is not None:
         uri = f"sqlite:///{local_tracking_root.resolve() / 'mlruns.db'}"
     else:
-        uri = os.environ.get("MLFLOW_TRACKING_URI") or "sqlite:///mlruns.db"
+        uri = "sqlite:///mlruns.db"
     try:
         import mlflow
 
