@@ -197,6 +197,27 @@ Run: `make typecheck` — **Zero errors** (Modules A/B/C all strict). Docker: `d
 **Quality Gate:** Gate 5 (statistician can verify all claims with evidence)  
 **Dependencies:** Phase 8 ✓
 
+---
+
+## Phase 10: Scope Enhancement — Digital Advertising Channels
+
+**Duration:** ~2h | **Status:** ⏳ IN PROGRESS (T10-1 code ✅, docs pending)  
+**Quality Gate:** Module A reachability model expanded to include 4 digital ad channels with Q1 2018 Latin America benchmarks  
+**Dependencies:** None (orthogonal enhancement, no breaking changes)
+
+### Deliverables
+
+- **T10-1:** ✅ Digital ad channel implementation (1.5h) — Added facebook_ads, instagram_ads, google_ads, linkedin_ads to Module A
+  - Updated `generation.yaml` with Q1 2018 LATAM penetration rates (Paraguay case: 88% lower cost than US)
+  - Extended `_VALID_REACH_CHANNELS` in export.py; updated reachability index weights
+  - Reachability features: 25% WhatsApp, 25% TV, 15% radio, 15% Facebook, 10% Instagram, 10% Google
+  - Tests passing: `test_build_reachability_features_adds_expected_columns` ✅
+- **T10-2:** ⏳ Documentation updates (0.5h) — Update data dictionary + decision log with channel expansion rationale
+
+### Verification
+
+Run: `poetry run pytest module_a_population_segmentation/tests/test_reachability.py -v` — All tests pass ✅
+
 ### Deliverables
 
 - **T9-1:** ✅ Walk-forward validation (2h) — 2 holdouts on 4-poll fixture; Brier 0.528, log loss 2.709, 80%/95% coverage 0%/0%; honest result documented (data sparsity, not model failure)
@@ -286,3 +307,4 @@ Phase 9 (Statistics) ← requires Phase 8
 - **Reproducibility:** `dvc.yaml` pipeline captures all module stages; `dvc repro --dry` confirms; Git + DVC enable `git clone && dvc pull && make all` reproducibility.
 - **Quality assurance:** 476+ non-slow tests pass; Pyright strict on all `src/` (zero errors); ruff/black green; MLflow tracking all runs.
 - **Honest assessment:** Walk-forward 0% coverage and PPC 25% 80%-coverage are not bugs — they reflect honest modeling of 4-poll data sparsity over 142-day window. See `reports/epistemic_boundaries.md` for mitigation roadmap (denser polling required for higher coverage).
+- **Phase 10 enhancement:** Scope expansion adds digital advertising channel support to Module A reachability model. Q1 2018 Latin America benchmarks (Paraguay case study) justify 4 new channels: Facebook Ads (45% urban reach), Instagram Ads (42% urban), Google Ads Search+Display (38% urban), LinkedIn Ads (12% professional). Source: `Analysis_of_Digital_Advertising_Performance_Metrics_in_Latin_America_Q1_2018.md` documents Paraguay CPC 88% lower than US baseline. Benchmarks integrated into `generation.yaml` penetration rates; reachability index reweighted to balance 8 channels (traditional + digital).

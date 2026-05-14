@@ -38,6 +38,7 @@
 | **T9-1** | Walk-forward validation | 2.0h | ✅ DONE | G5 | — |
 | **T9-2** | Posterior predictive checks | 1.0h | ✅ DONE | G5 | — |
 | **T9-3** | Interval coverage rates | 0.5h | ✅ DONE | G5 | — |
+| **T10-1** | Digital ad channels Module A | 2.0h | ⏳ IN PROGRESS | — | Data dict + decision log |
 
 ---
 
@@ -64,8 +65,9 @@ Phase 9 (Statistics) ← T9-1/2/3 ✅
 | Category | Count | Status |
 |----------|-------|--------|
 | Completed | 26 | ✅ T1-5, T5-1→3, T6-1→4, T7-1→5, T8-1→4, T9-1→3 |
+| In progress | 1 | ⏳ T10-1 Digital channels (Phase 10: scope enhancement) |
 | Pending (ready) | 4 | ⏳ T2-1 (async review), T4-1/2/3 (deployment) |
-| Effort invested | 54.5h | 91% of original ~49h scope (T6 reverified) |
+| Effort invested | 56.5h | 93% of expanded scope (~60.5h: T1-9 49h + T10 1.5h est) |
 | Gates closed | 10 | G2, G4, G5, G7, G9, G10, G11, G12, G13 (+ G1, G3, G6 structural) |
 | Tests passing | 476+ | Non-slow suite; Pyright strict clean |
 
