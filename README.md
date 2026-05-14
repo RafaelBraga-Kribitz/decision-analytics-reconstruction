@@ -128,13 +128,14 @@ make tier3-smoke   # terminology sample + mlflow import (local mirror of part of
 make portfolio-verify  # git-index hygiene for portfolio exports
 make dashboard     # launch Streamlit dashboard (Module A)
 make module-a-pipeline  # Module A end-to-end (alias for `poetry run python -m population_segmentation.pipeline`)
+make pipeline-dev  # Module A dev pipeline (n=10k, ~3–5 min; override: SAMPLE=50000 for ~15–20 min)
 ```
 
 **Module A batch pipeline:** From the repo root, `poetry run python -m population_segmentation.pipeline` runs generation → injection → cleaning → features → segmentation → propensity with defaults pointing at `module_a_population_segmentation/config/` and `data/processed/`. Override with `--config`, `--anchors`, `--out-dir`, `--sample-size`. Writes parquet/CSV outputs plus `model_run_manifest.json` (package version, UTC timestamp, git commit, RNG seeds). Data-science framing docs: [`reports/model_hierarchy.md`](reports/model_hierarchy.md), [`reports/module_a_model_io_spec.md`](reports/module_a_model_io_spec.md), [`reports/feature_engineering_justification.md`](reports/feature_engineering_justification.md). Notebook walkthrough: [`module_a_population_segmentation/notebooks/01_end_to_end_walkthrough.ipynb`](module_a_population_segmentation/notebooks/01_end_to_end_walkthrough.ipynb).
 
 **Requirements:** Python 3.11, Poetry. Docker optional (see `docker-compose.yml`). On legacy Mac workstations (Mac Pro with unreliable Metal stacks), prefer **Colima + `docker compose`** instead of Docker Desktop.
 
-**Module A / Module C observability (optional):** MLflow logging is **opt-in**. Set `MLFLOW_TRACKING_URI` (and optionally `MLFLOW_EXPERIMENT_NAME`) when you want runs recorded; Module C entry points such as `python -m module_c_forecasting_scenarios.pipeline.run_tracking` and Module A export (`run_export` / `population_segmentation.pipeline`) log only when that environment is present.
+**Module A / Module C observability (optional):** MLflow logging is **opt-in**. Set `MLFLOW_TRACKING_URI` (and optionally `MLFLOW_EXPERIMENT_NAME`) when you want runs recorded; Module C entry points such as `python -m module_c_forecasting_scenarios.pipeline.run_tracking` and Module A export (`run_export` / `population_segmentation.pipeline`) log only when that environment is present. To view runs locally: `poetry run mlflow ui` (opens http://localhost:5000).
 
 ---
 

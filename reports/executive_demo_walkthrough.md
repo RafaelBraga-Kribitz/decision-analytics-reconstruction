@@ -4,7 +4,7 @@ Audience: a senior decision-maker (boss, campaign principal, head of analytics)
 arriving cold at the repository. The goal is a clear, ordered tour of what to
 open, what each artifact represents, and how to talk about it.
 
-Repository: `/Users/rbk/Desktop/PARAGUAY_ELLECTION`
+Repository: Clone the repo and navigate to its root directory (all paths below are relative to that)
 Walkthrough generated: 2026-05-11 (post end-to-end smoke run, see verification
 section at the bottom).
 

@@ -6,7 +6,7 @@ Records every cleaning step: what it does, why it exists, QA checkpoint.
 
 ## Module A — 14-step cleaning pipeline
 
-**Implementation status:** All 14 steps fully coded and passing tests.
+**Implementation status:** Steps 1–11, 13–14 fully coded and passing tests. Step 12 uses synthetic defaults (not actual NBI table data).
 Source: `module_a_population_segmentation/src/population_segmentation/data/cleaner.py`
 
 Verification: `poetry run pytest module_a_population_segmentation/tests/ -q` → 116 passed (2026-05-12).

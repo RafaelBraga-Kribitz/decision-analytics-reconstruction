@@ -1881,7 +1881,7 @@ nb.metadata["language_info"] = {
     "version": "3.11.7",
 }
 
-OUT_PATH = Path("/Users/rbk/Desktop/PARAGUAY_ELLECTION/reports/eda/paraguay_election_eda.ipynb")
+OUT_PATH = Path(__file__).parent / "paraguay_election_eda.ipynb"
 OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
 
 with open(OUT_PATH, "w", encoding="utf-8") as f:
