@@ -1,0 +1,73 @@
+name: Deploy Module C → GitHub Pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - module_c_forecasting_scenarios/**
+      - .github/workflows/deploy-module-c-pages.yml
+  workflow_dispatch:
+
+# One concurrent deploy; cancel in-progress if new push arrives.
+concurrency:
+  group: pages-deploy
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    name: Render Quarto + deploy gh-pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          version: 1.5.57
+
+      - name: Install Jupyter kernel
+        run: poetry run python -m ipykernel install --user --name python3
+
+      - name: Run Module C pipeline (fast mode — fixture data)
+        env:
+          MC_FAST: "1"
+          MLFLOW_TRACKING_URI: ""
+        run: |
+          poetry run python -m module_c_forecasting_scenarios.pipeline.run_all \
+            --raw-csv module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv \
+            --out-dir data/processed/module_c/run_all
+
+      - name: Render Quarto report
+        env:
+          MODULE_C_OUT_DIR: data/processed/module_c/run_all
+        run: |
+          quarto render \
+            module_c_forecasting_scenarios/portfolio/quarto/post_mortem.qmd \
+            --to html \
+            --output-dir _site
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: _site
+          publish_branch: gh-pages
+          force_orphan: true
+          commit_message: "deploy: Module C Quarto report [${{ github.sha }}]"

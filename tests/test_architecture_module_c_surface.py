@@ -9,16 +9,17 @@ _MOD_C = _REPO_ROOT / "module_c_forecasting_scenarios"
 _SRC = _MOD_C / "src" / "module_c_forecasting_scenarios"
 
 _LEGACY_NOT_SHIPPED = [
-    _MOD_C / "METHODOLOGY.md",
     _MOD_C / "src" / "forecast_model.py",
 ]
 
 _REQUIRED = [
     _MOD_C / "reports" / "C_research_proof_table.md",
+    _MOD_C / "METHODOLOGY.md",
     _SRC / "models" / "tracking" / "hierarchical.py",
     _SRC / "pipeline" / "run_all.py",
     _SRC / "data" / "contract_validate.py",
     _MOD_C / "config" / "calibration.yaml",
+    _MOD_C / "portfolio" / "quarto" / "post_mortem.qmd",
 ]
 
 

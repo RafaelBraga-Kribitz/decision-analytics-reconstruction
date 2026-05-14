@@ -107,6 +107,6 @@ def test_build_sample_prop_includes_shap_artifacts() -> None:
 def test_build_sample_feature_names_count() -> None:
     """feature_names must have 11 elements (9 base + 2 derived)."""
     _, _, _, prop, _ = _build_sample(3000)
-    assert len(prop["feature_names"]) == 11, (
-        f"Expected 11 feature names, got {len(prop['feature_names'])}"
-    )
+    assert (
+        len(prop["feature_names"]) == 11
+    ), f"Expected 11 feature names, got {len(prop['feature_names'])}"

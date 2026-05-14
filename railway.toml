@@ -1,0 +1,16 @@
+# Railway.app service configuration — Module B Resource Allocation API
+# Service: decision-analytics-module-b
+# URL: https://decision-analytics-module-b.up.railway.app  (set after first deploy)
+# Plan: Starter ($5 credit / month — sufficient for portfolio traffic)
+# Docs: https://docs.railway.app/reference/config-as-code
+
+[build]
+builder = "nixpacks"
+
+[deploy]
+# Railway injects $PORT; bind 0.0.0.0 to accept external connections.
+startCommand = "poetry run uvicorn module_b_resource_allocation.api.app:app --host 0.0.0.0 --port $PORT --workers 1"
+healthcheckPath = "/healthz"
+healthcheckTimeout = 300
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10

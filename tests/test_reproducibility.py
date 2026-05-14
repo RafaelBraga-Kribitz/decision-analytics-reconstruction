@@ -10,8 +10,6 @@ import json
 from pathlib import Path
 
 import pandas as pd
-import pytest
-
 
 # ============================================================================
 # Module A reproducibility
@@ -104,9 +102,9 @@ def test_module_b_allocation_spend_within_tolerance() -> None:
     total_spend = float(df["budget_allocation_usd"].sum())
     envelope = 6_000_000.0
     tolerance = envelope * 0.01  # 1%
-    assert abs(total_spend - envelope) < tolerance, (
-        f"Total spend {total_spend:.0f} deviates > 1% from envelope {envelope:.0f}"
-    )
+    assert (
+        abs(total_spend - envelope) < tolerance
+    ), f"Total spend {total_spend:.0f} deviates > 1% from envelope {envelope:.0f}"
 
 
 # ============================================================================
@@ -184,9 +182,9 @@ def test_cross_module_entity_count_consistency() -> None:
     n_seg = len(seg_a)
     n_prop = len(prop_a)
 
-    assert n_pop == n_seg == n_prop, (
-        f"Entity count mismatch: population={n_pop}, segments={n_seg}, propensity={n_prop}"
-    )
+    assert (
+        n_pop == n_seg == n_prop
+    ), f"Entity count mismatch: population={n_pop}, segments={n_seg}, propensity={n_prop}"
 
 
 def test_cross_module_segment_id_valid() -> None:

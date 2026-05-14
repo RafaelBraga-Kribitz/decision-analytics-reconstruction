@@ -6,7 +6,6 @@ import json
 from pathlib import Path
 
 import pytest
-
 from population_segmentation.pipeline.model_run_manifest import (
     build_model_run_manifest,
     get_distribution_version,
@@ -83,7 +82,9 @@ def test_maybe_log_mlflow_local_store_logs_metrics(
     maybe_log_mlflow_export(manifest, metrics=metrics, local_tracking_root=local_root)
 
     db_path = local_root / "mlruns.db"
-    assert db_path.exists(), "mlruns.db not created — maybe_log_mlflow_export must write local store"
+    assert (
+        db_path.exists()
+    ), "mlruns.db not created — maybe_log_mlflow_export must write local store"
 
     import mlflow
 
@@ -92,7 +93,11 @@ def test_maybe_log_mlflow_local_store_logs_metrics(
     assert len(experiments) >= 1, "at least one MLflow experiment expected"
     runs = client.search_runs([e.experiment_id for e in experiments])
     assert len(runs) >= 1, "at least one MLflow run expected"
-    logged_keys = {m.key for r in runs for m in client.get_metric_history(r.info.run_id, "segmentation_silhouette")}
+    logged_keys = {
+        m.key
+        for r in runs
+        for m in client.get_metric_history(r.info.run_id, "segmentation_silhouette")
+    }
     assert "segmentation_silhouette" in logged_keys or any(
         r.data.metrics.get("segmentation_silhouette") for r in runs
     ), "segmentation_silhouette metric not logged"

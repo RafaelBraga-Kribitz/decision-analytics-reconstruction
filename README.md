@@ -3,7 +3,9 @@
 **Retrospective Reconstruction of a National-Scale Marketing and Resource Allocation Decision System**
 
 [![CI](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/ci.yml/badge.svg)](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/ci.yml)
-[![Module A Dashboard](https://img.shields.io/badge/dashboard-live-blue)](https://decision-analytics-module-a.onrender.com)
+[![Module A Dashboard](https://img.shields.io/badge/Module_A-Streamlit_Dashboard-blue)](https://decision-analytics-module-a.onrender.com)
+[![Module B API](https://img.shields.io/badge/Module_B-FastAPI_Docs-blue)](https://decision-analytics-module-b.up.railway.app/docs)
+[![Module C Report](https://img.shields.io/badge/Module_C-Quarto_Report-blue)](https://RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction/)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue)](.python-version)
 
 ---
@@ -115,8 +117,8 @@ See `ARCHITECTURE.md` for the full component breakdown, and `schema_contracts/` 
 | Module | Status | Artifact | Description |
 |---|---|---|---|
 | **A: Population Modeling** | CI-complete — see Module A job in `.github/workflows/ci.yml` | [Streamlit dashboard](https://decision-analytics-module-a.onrender.com) | Synthetic population dataset + segmentation + propensity |
-| **B: Resource Allocation** | CI job + dual/budget expansion reports (`--sensitivity`) | `make module-b-allocate` / `make module-b-allocate-sensitivity` / FastAPI (`make module-b-api`) | Constrained weekly allocation + FX + broadcast_to_direct |
-| **C: Probabilistic Forecasting** | Fast pytest in CI; slow NUTS diagnostics optional | `make test-module-c` / `make module-c-all` (fixture CSV) | Calibration series gate, shock catalog, scenario HTML |
+| **B: Resource Allocation** | CI job + dual/budget expansion reports (`--sensitivity`) | [FastAPI docs](https://decision-analytics-module-b.up.railway.app/docs) · `make module-b-api` (local) | Constrained weekly allocation + FX + broadcast_to_direct counterfactual |
+| **C: Probabilistic Forecasting** | Fast pytest in CI; slow NUTS diagnostics optional | [Quarto report](https://RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction/) · `make module-c-all` (local) | Bayesian posterior track, house effects, MC scenarios, battleground probabilities |
 
 ---
 

@@ -1,0 +1,22 @@
+# Render.com Infrastructure-as-Code — Module A Streamlit Dashboard
+# Service: decision-analytics-module-a
+# URL: https://decision-analytics-module-a.onrender.com
+# Plan: free (sleeps after 15 min inactivity; first request cold-starts ~30s)
+# Docs: https://render.com/docs/yaml-spec
+
+services:
+  - type: web
+    name: decision-analytics-module-a
+    runtime: docker
+    dockerfilePath: ./docker/Dockerfile
+    dockerContext: .
+    plan: free
+    envVars:
+      - key: RANDOM_SEED
+        value: "42"
+      - key: PYTHONDONTWRITEBYTECODE
+        value: "1"
+      - key: PYTHONUNBUFFERED
+        value: "1"
+    healthCheckPath: /_stcore/health
+    autoDeploy: true

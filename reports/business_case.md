@@ -13,7 +13,7 @@ The following terms appear throughout this document and the codebase. A reader u
 | Term | Plain-language definition | Where it appears in code |
 |------|--------------------------|--------------------------|
 | **Entity** | One individual in the target population (a citizen eligible to participate in the outcome event). No real PII; all data is synthetically generated from census-weight distributions. | `entity_id` column; `population_segmentation/` module |
-| **Population dataset** | The full synthetic roster of entities, generated to match regional demographic weights. Analogous to a CRM or voter file in commercial programs. | `population_master_clean.parquet` |
+| **Population dataset** | The full synthetic roster of entities, generated to match regional demographic weights. Analogous to a CRM or participation registry in commercial programs. | `population_master_clean.parquet` |
 | **Preference proxy** | The poll-derived percentage-point lead for Candidate A over Candidate B. Equivalent to "net promoter score" or "brand preference margin" in commercial contexts. Range: typically −15 pp to +15 pp. | `m_poll_pp`, `preference_proxy_a_pct` |
 | **Outcome event** | The election — the final, hard-deadline measurement that all forecasting targets. In a commercial analogy: the launch date, the deal close, or the campaign end date. | `outcome_event_date` in calibration YAML |
 | **Survey measurement** | A single poll wave collected by a polling firm (analogous to a market-research survey). Each wave reports preference proxy values plus metadata (field window, sample size, transparency score). | `polls_clean_tracking_wave` contract |
