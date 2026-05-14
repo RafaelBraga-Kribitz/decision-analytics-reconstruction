@@ -34,6 +34,12 @@ The outcome event margin was verifiable: **+3.70 percentage points** against a f
 
 ---
 
+## What makes this portfolio different
+
+Most analytics portfolios are either **predictive** (build a classifier or regression model) or **descriptive** (produce dashboards and reports). This one is **prescriptive**: it combines three interoperable systems to answer "**where should we spend, how confident are we, and what happens if constraints shift?**" rather than "what will happen?" This requires decision-layer engineering — not just modeling. That means exposing dual values (marginal costs of constraints), validating contracts between modules, and shipping manifests so that 6 months later a CFO can trace a budget decision back to the RNG seeds that powered it. Most portfolios use "reproducibility" to mean "code runs again." Here it means the numbers provably match down to floating-point precision given the same seeds and dependency versions. The shift from "model accuracy" to "decision traceability" is structural; it reshapes how you validate (test shadow prices, not just AUC), how you hand off code (schema contracts, not just function signatures), and how you position hiring value (operations research + statistical rigor, not machine learning).
+
+---
+
 ## Why this matters beyond the electoral context
 
 The three analytical systems in this project are domain-agnostic. The same combination of behavioral
