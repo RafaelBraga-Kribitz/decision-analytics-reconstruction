@@ -16,16 +16,16 @@
 | **T1-4** | E2E walkthrough notebook | 1.5h | ✅ DONE | G1 | — |
 | **T1-5** | Business case CFO summary | 1.0h | ✅ DONE | G12 | — |
 | **T2-1** | Peer code review | 3.0h | ⏳ ASYNC | G4 | Ready (code stable) |
-| **T4-1** | Deploy Module A Streamlit | 1.5h | ❌ TODO | G8 | Blocked on heatmap |
-| **T4-2** | Deploy Module B FastAPI | 1.5h | ❌ TODO | G8 | Blocked on heatmap |
-| **T4-3** | Deploy Module C Quarto | 0.5h | ❌ TODO | G8 | Blocked on T6-3 |
+| **T4-1** | Deploy Module A Streamlit | 1.5h | ❌ TODO | G8 | Ready (T6 unblocked) |
+| **T4-2** | Deploy Module B FastAPI | 1.5h | ❌ TODO | G8 | Ready (T6 unblocked) |
+| **T4-3** | Deploy Module C Quarto | 0.5h | ❌ TODO | G8 | Ready (T6 unblocked) |
 | **T5-1** | DVC init + remote | 1.5h | ✅ DONE | G13 | — |
 | **T5-2** | dvc.yaml pipeline | 1.0h | ✅ DONE | G13 | — |
 | **T5-3** | CI dvc status job | 1.0h | ✅ DONE | G13 | — |
-| **T6-1** | TSP/VRP routing | 4.0h | ❌ TODO | — | Ready (unblocked) |
-| **T6-2** | Monte Carlo 10k draws | 3.0h | ❌ TODO | — | Ready (unblocked) |
-| **T6-3** | Battleground heatmap | 2.0h | ❌ TODO | — | Blocked on T6-2 |
-| **T6-4** | MILP bundle constraints | 2.0h | ❌ TODO | — | Blocked on T6-1 |
+| **T6-1** | TSP/VRP routing | 4.0h | ✅ DONE | — | 8 tests pass; routing_schedules.parquet |
+| **T6-2** | Monte Carlo 10k draws | 3.0h | ✅ DONE | — | monte_carlo_draws.parquet |
+| **T6-3** | Battleground heatmap | 2.0h | ✅ DONE | — | battleground_*.geojson |
+| **T6-4** | MILP bundle constraints | 2.0h | ✅ DONE | — | 20 MILP tests pass |
 | **T7-1** | IMPLEMENTATION_PLAN.md | 1.0h | ✅ DONE | G11 | — |
 | **T7-2** | Data dictionary complete | 2.0h | ✅ DONE | G11 | — |
 | **T7-3** | Decision log 8+ entries | 1.5h | ✅ DONE | G11 | — |
@@ -63,9 +63,9 @@ Phase 9 (Statistics) ← T9-1/2/3 ✅
 
 | Category | Count | Status |
 |----------|-------|--------|
-| Completed | 22 | ✅ T1-5, T5-1→3, T7-1→5, T8-1→4, T9-1→3 |
-| Pending (ready) | 4 | ⏳ T2-1, T6-1, T6-2, T4-1→3 (blocked on T6-3) |
-| Effort invested | 43.5h | 89% of ~49h total scope |
+| Completed | 26 | ✅ T1-5, T5-1→3, T6-1→4, T7-1→5, T8-1→4, T9-1→3 |
+| Pending (ready) | 4 | ⏳ T2-1 (async review), T4-1/2/3 (deployment) |
+| Effort invested | 54.5h | 91% of original ~49h scope (T6 reverified) |
 | Gates closed | 10 | G2, G4, G5, G7, G9, G10, G11, G12, G13 (+ G1, G3, G6 structural) |
 | Tests passing | 476+ | Non-slow suite; Pyright strict clean |
 
