@@ -702,3 +702,89 @@ Bootstrap ARI (> 0.77, enforced) validates stability across random seeds — a c
 **Great Expectations vs Pandera:** Runtime validation for the clean population dataset remains **Pandera-first** (`population_segmentation.evaluation.schema_validator` and related gates). Great Expectations remains an optional future layer if portfolio consumers require GE-native checkpoints; no GE dependency is pinned in `pyproject.toml` for this pass.
 
 **Source:** docs/ai_harness/routing-matrix.md; docs/ai_harness/professional-grade-rubrics.md; portfolio 360° audit plan (2026-05-12)
+
+---
+
+## 2026-05-14 — Module B: PuLP vs CVXPY for LP/MILP solver
+
+**Decision:** Use PuLP with the CBC open-source solver backend for Module B's resource allocation model, not CVXPY.
+
+**Alternatives considered:**
+- CVXPY (Convex Optimization for Python): expressive DSL for convex programs; strong academic adoption; supports SCS, OSQP, and Gurobi backends. Would make the objective and constraint definitions more readable as matrix expressions. However, CVXPY has no built-in binary integer support through free solvers with the same robustness as CBC; its GLPK_MI backend is slower and less battle-tested at 2,772-variable MILPs.
+- Gurobi via CVXPY: commercially licensed; free academic only. Portfolio repo must reproduce without a license key.
+- scipy.optimize.linprog: LP only, no MILP. Would require separate branching logic for the binary bundle variables.
+
+**Reason:** PuLP + CBC is the established open-source MILP stack for Python operational research problems of this scale (2,772 continuous + 2,772+ binary variables). CBC solves the baseline model in under 5 seconds with no license dependency. PuLP's `LpVariable(cat="Binary")` integrates naturally with the bundle-cardinality and min-spend linking constraints added in T6-4. The model syntax (per-variable, per-constraint) is more verbose than CVXPY but more transparent for debugging individual constraint bindings.
+
+**Outcome:** `module_b_resource_allocation/models/allocation.py` uses PuLP/CBC; `bundle_constraints=True` MILP solves to OPTIMAL in <5 seconds; all 221 Module B tests pass. CVXPY remains a recommended upgrade path if the model expands to second-order cone or semidefinite objectives.
+
+**Source:** `module_b_resource_allocation/SPECIFICATION.md §7 Solver stack`; Project_Action_list.md T6-4
+
+---
+
+## 2026-05-14 — Module A: Pandera vs Cerberus for runtime schema validation
+
+**Decision:** Use Pandera for runtime DataFrame contract enforcement on Module A's clean population frames, not Cerberus.
+
+**Alternatives considered:**
+- Cerberus: lightweight document/dict validation library; excellent for YAML config and JSON payloads; native `allow_unknown`, coercion rules, and rule chaining. However, Cerberus has no native pandas DataFrame integration — validating each row individually requires a conversion loop and loses vectorized type-inference benefits. DataFrame-oriented contracts (nullable checks, range assertions, unique-key validation) require boilerplate that Pandera handles declaratively.
+- Great Expectations: enterprise-grade; excellent for data pipelines with versioned expectation suites and HTML reports. Overhead (expectation suites as JSON, GE Data Docs, backend connections) is disproportionate for a 4-artifact module with deterministic synthetic data. GE remains the recommended layer if portfolio consumers require checkpoint-native validation.
+- Manual assertions in pytest fixtures: zero-dependency but brittle; duplicates validation logic between test and production paths.
+
+**Reason:** Pandera is the right tool for tabular DataFrame contracts at this scale. Its `DataFrameSchema` and `check_dtypes` decorators integrate directly with the existing `schema_validator.py` and `QAGateFailure` raises. Cerberus would require a bespoke row-iterator wrapper and loses pandas type-system integration (e.g., `pd.NA` vs `None` coercion).
+
+**Outcome:** `population_segmentation.evaluation.schema_validator` uses Pandera; `test_architecture_module_a_surface.py` validates the schema at contract layer; Cerberus is not a dependency; Great Expectations is explicitly deferred. Module A's 4-artifact export gate enforced by Pandera + YAML contracts.
+
+**Source:** `reports/decision_log.md` (2026-05-12 Portfolio 360° entry); `pyproject.toml` dependencies
+
+---
+
+## 2026-05-14 — Module C: NUTS 4 chains rationale
+
+**Decision:** Use 4 chains × 1,000 draws with `target_accept=0.95` and `max_treedepth=15` for the PyMC NUTS sampler in the Module C hierarchical tracking model, not 1–2 chains or a VI approximation.
+
+**Alternatives considered:**
+- 1 chain × 4,000 draws: same total post-warmup draws but no R̂ convergence diagnostic possible. R̂ requires ≥ 2 independent chains to detect non-mixing; 1 chain is never acceptable for publishable Bayesian inference.
+- 2 chains × 2,000 draws: R̂ computable; standard minimum. Rejected because 2-chain R̂ estimates have higher variance on small-data posteriors (only 4 poll waves); 4 chains provide more stable between-chain variance estimates.
+- ADVI (mean-field variational inference): 10–100× faster; no divergence diagnostics; mean-field approximation underestimates posterior variance on correlated parameters (house offsets are correlated with the latent margin track). Posterior uncertainty would be systematically too narrow.
+- 8 chains × 500 draws: parallelism gains marginal given 4-poll fixture; solve time increases; CI budget does not justify it.
+
+**Reason:** 4 chains is the standard for serious applied Bayesian work (Gelman et al., BDA3). R̂ < 1.01 requires stable between-chain variance estimates; 4 chains achieve this faster than 2. `target_accept=0.95` is appropriate for the stiff geometry induced by the GaussianRandomWalk on sparse data (only 4 observations over 142 days). The 14 NUTS divergences observed in the fixture run are documented as a structural limitation of data sparsity, not a configuration error.
+
+**Outcome:** `module_c_forecasting_scenarios/config/pymc_sampler.yaml` specifies `chains: 4`, `draws: 1000`, `target_accept: 0.95`. Sampling diagnostics table in `post_mortem.qmd` documents R̂, ESS, divergences with the sparsity explanation. `MC_FAST=1` reduces to 2 chains × 200 draws for CI smoke.
+
+**Source:** `module_c_forecasting_scenarios/config/pymc_sampler.yaml`; `post_mortem.qmd §Sampling Diagnostics`; Gelman et al. BDA3 §11.4
+
+---
+
+## 2026-05-14 — Engineering: Pyright basic vs strict mode
+
+**Decision:** Begin in Pyright `basic` mode across all three module `src/` directories, with `strict` mode as the planned upgrade (T8-1 through T8-3).
+
+**Alternatives considered:**
+- Pyright strict from the start: catches more latent errors (missing return types on lambdas, `object` vs `Any` narrowing, overload stubs for third-party libraries). However, strict mode on pandas + PyMC + PuLP requires stub packages (`pandas-stubs`, `pymc`-stubs) that were either unavailable or incomplete at project start. Forcing strict upfront would have blocked CI until stubs were authored.
+- mypy in strict mode: well-established alternative; slower than Pyright; less IDE integration in VS Code; `--strict` flag triggers the same stub-completeness issues for PyMC/ArviZ.
+- No static type checking: rejected immediately — typed code is a hiring-signal requirement (§4 Architecture Quality).
+
+**Reason:** `basic` mode enforces all the type safety that third-party stubs support without failing on stub gaps in PyMC/ArviZ/xarray. `basic` + zero errors across all three modules is a stronger signal than `strict` + many `# type: ignore` suppressions. The upgrade path to `strict` is explicitly tracked as T8-1/T8-2/T8-3 in the action plan.
+
+**Outcome:** `pyproject.toml` `[tool.pyright]` → `typeCheckingMode = "basic"`; `make typecheck` passes with zero errors and zero warnings; T8-1 through T8-3 track the `basic` → `strict` migration. All three module `src/` directories fully typed at `basic` level.
+
+**Source:** `pyproject.toml [tool.pyright]`; Project_Action_list.md T8-1 through T8-3; §4 Architecture Quality
+
+---
+
+## 2026-05-14 — Module B: MILP vs pure LP for resource allocation
+
+**Decision:** Use a Mixed Integer Linear Program (MILP) with binary activation variables `y[d,c,w]` and bundle-level `z[bundle_id]`, not a pure LP relaxation.
+
+**Alternatives considered:**
+- Pure LP (relaxed binaries): CBC solves faster; all decision variables continuous; gradients available for sensitivity analysis. However, the bundle constraints require discrete activation indicators: "channel c is active in week w" is not meaningful as a fractional value. A fractional y=0.4 for `tv_spots` in week 3 has no operational interpretation and would produce nonsensical allocation recommendations.
+- LP with post-hoc rounding: solve LP, then round y to {0,1}. Rounding can violate bundle cardinality (ge_2_of_3) and minimum-spend floor constraints; the rounded solution is not guaranteed optimal or even feasible.
+- Heuristic greedy allocation: assign budget to highest-persuasion channels per department per week. Ignores cross-department budget envelope; cannot enforce bundle ratio constraints.
+
+**Reason:** The bundle cardinality rules (`ge_2_of_3` for conglomerate_x, `equality` for conglomerate_y) and the minimum-spend floors require discrete activation decisions. The T6-4 `z[bundle_id]` binary linking variables (`sum_y ≤ big_M·z`, `bundle_total ≥ floor·z`) are mathematically inexpressible in a pure LP. CBC solves the 5,544-variable MILP (2,772 x + 2,772 y + 2 z) in under 5 seconds — the integer programming overhead is entirely acceptable.
+
+**Outcome:** `allocation.py` unconditionally declares `y[d,c,w]` as `cat="Binary"`; `build_problem(bundle_constraints=True)` adds `z[bundle_id]` linking constraints; `test_milp_optimizer.py` verifies OPTIMAL status and bundle floor satisfaction; `test_milp_solution_differs_from_relaxation` confirms the constrained MILP solution differs from the LP-relaxation (bundle_constraints=False) comparator by Σ|Δ| > 1 USD.
+
+**Source:** `module_b_resource_allocation/models/allocation.py`; `tests/test_milp_optimizer.py`; Project_Action_list.md T6-4
