@@ -192,6 +192,26 @@ jobs:
       - name: MLflow image import smoke
         run: docker compose run --rm mlflow python -c "import mlflow; print(mlflow.__version__)"
 
+  repo-docker-smoke:
+    name: Repo — Docker smoke (make test inside container)
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image with dev deps
+        run: docker build -f docker/Dockerfile --build-arg INSTALL_DEV=1 -t decision-analytics-ci:smoke .
+
+      - name: Run make test inside container
+        run: >
+          docker run --rm
+          -e MC_FAST=1
+          decision-analytics-ci:smoke
+          sh -c "cd /app && poetry run pytest module_a_population_segmentation/tests module_b_resource_allocation/tests module_c_forecasting_scenarios/tests -v --tb=short -m 'not slow'"
+
   tier3-smoke:
     name: Tier 3 — DVC + terminology scripts
     runs-on: ubuntu-latest
