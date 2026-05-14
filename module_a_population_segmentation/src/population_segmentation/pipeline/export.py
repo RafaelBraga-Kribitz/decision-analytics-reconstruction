@@ -202,7 +202,10 @@ def run_export(
     return artifacts
 
 
-_VALID_REACH_CHANNELS: frozenset[str] = frozenset({"tv", "radio", "whatsapp", "direct"})
+_VALID_REACH_CHANNELS: frozenset[str] = frozenset({
+    "tv", "radio", "whatsapp", "direct",
+    "facebook_ads", "instagram_ads", "google_ads", "linkedin_ads",
+})
 
 _MEDIA_REQUIRED_COLUMNS: tuple[str, ...] = (
     "segment_label",

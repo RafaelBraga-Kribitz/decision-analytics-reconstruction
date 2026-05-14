@@ -32,10 +32,24 @@ def build_reachability_features(df: pd.DataFrame) -> pd.DataFrame:
     out["reachability_broadcast_tv"] = out["media_penetration_tv"].astype(float)
     out["reachability_broadcast_radio"] = out["media_penetration_radio"].astype(float)
 
+    # Q1 2018 Latin America digital advertising channels
+    for ad_channel in ["facebook_ads", "instagram_ads", "google_ads", "linkedin_ads"]:
+        col_name = f"media_penetration_{ad_channel}"
+        if col_name in out.columns:
+            out[f"reachability_{ad_channel}"] = (
+                out["internet_access_flag"].astype(float)
+                * out[col_name].astype(float)
+            )
+        else:
+            out[f"reachability_{ad_channel}"] = 0.0
+
     out["reachability_index"] = (
-        0.40 * out["reachability_digital"]
-        + 0.35 * out["reachability_broadcast_tv"]
-        + 0.25 * out["reachability_broadcast_radio"]
+        0.25 * out["reachability_digital"]
+        + 0.25 * out["reachability_broadcast_tv"]
+        + 0.15 * out["reachability_broadcast_radio"]
+        + 0.15 * out["reachability_facebook_ads"]
+        + 0.10 * out["reachability_instagram_ads"]
+        + 0.10 * out["reachability_google_ads"]
     ).clip(0.0, 1.0)
 
     q_low = out["reachability_index"].quantile(0.33)

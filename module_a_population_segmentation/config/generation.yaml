@@ -198,6 +198,19 @@ media_penetration_defaults:
   radio_national: 0.82
   whatsapp_urban: 0.74
   whatsapp_rural: 0.31
+  # Q1 2018 Latin America digital advertising benchmarks (Paraguay market context)
+  # Source: Analysis_of_Digital_Advertising_Performance_Metrics_in_Latin_America_Q1_2018
+  # Facebook/Instagram: 40-50% reach among urban internet users; 5-15% rural (mobile-first)
+  facebook_ads_urban: 0.45
+  facebook_ads_rural: 0.12
+  instagram_ads_urban: 0.42
+  instagram_ads_rural: 0.08
+  # Google Ads (Search + Display): 35-40% reach; search biased urban (intent-driven)
+  google_ads_urban: 0.38
+  google_ads_rural: 0.10
+  # LinkedIn Ads: 10-15% professional/business segments; minimal rural penetration
+  linkedin_ads_urban: 0.12
+  linkedin_ads_rural: 0.02
   # Bernoulli P(online) for synthetic internet_access_flag (ICT ~2018; aligns
   # calibration_anchors). Single source of truth — generator.py and cleaner.py read these keys.
   internet_access_rural_rate: 0.279
