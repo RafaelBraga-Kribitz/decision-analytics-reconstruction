@@ -85,4 +85,79 @@ Every field across all modules: type, source, validation rule, business meaning.
 | `dominant_department`           | string  | Mode       | Modal department for this segment                                |
 | `primary_reach_channel`         | string  | Derived    | Channel with highest mean penetration (tv/radio/whatsapp/direct) |
 
+---
+
+## Module B — `allocation_output.parquet`
+
+Resource allocation per (department, channel, week) cell. 2,772 rows (18 deps × 11 channels × 14 weeks). Solver output from PuLP/CBC MILP.
+
+| Field | Type | Nullable | Example | Derivation Rule | Business Meaning |
+|-------|------|----------|---------|-----------------|------------------|
+| `department` | string | false | Asuncion | 18-item canonical list | Administrative region; geographic stratification |
+| `channel` | string | false | tv_spots | 11 allowed values | Media/engagement channel |
+| `channel_type` | string | false | broadcast | bilateral / broadcast / broadcast_to_bilateral / in_person | Channel communication mode |
+| `week_index` | int8 | false | 1 | [1, 14] | 1-based week ordinal in Jan-Apr 2018 window |
+| `iso_week` | string | false | 2018-W01 | Pattern ^2018-W[0-1][0-9]$ | ISO week label |
+| `department_tier` | string | false | stronghold | {stronghold, swing, opposition, negligible} | Electoral tier classification |
+| `region` | string | false | ORIENTAL | {ORIENTAL, CHACO} | Geographic region (east or west of Rio Paraguay) |
+| `budget_allocation_usd` | float64 | false | 12500.00 | CBC solver, truncated to cents | Weekly USD spend for this cell |
+| `budget_allocation_pyg` | float64 | false | 62500000.00 | USD × fx_rate | PYG equivalent of spend |
+| `fx_tier` | string | false | REF | {REF, RETAIL} | Exchange rate tier applied (reference or retail) |
+| `tc_rate_pyg_per_usd` | float32 | false | 5000.0 | BCP daily rate or prior | Exchange rate used for USD→PYG conversion |
+| `expected_contacts` | float64 | false | 125000.0 | Population × reach_cap × unit_cost | Raw contacts from spend at face value |
+| `persuasion_adjusted_contacts` | float64 | false | 102500.0 | contacts × attention × salience × hostility × scenario_weight × tier_penalty | Persuasion-weighted contacts (objective term) |
+| `reach_cap_population_proxy` | float64 | false | 500000.0 | Population × channel reach cap | Reachable audience ceiling for this cell |
+| `reach_utilization` | float32 | false | 0.25 | expected_contacts / reach_cap; capped at 1.5 | Proportion of audience reached (0–1.5 when saturation active) |
+| `binding_constraint` | string | true | budget_upper | Constraint name or null | Which LP constraint is binding at this row (if any) |
+| `bundle_id` | string | true | conglomerate_x | CHANNEL_TO_BUNDLE lookup or null | Conglomerate bundle membership if applicable |
+| `scenario_id` | string | false | baseline | {baseline, early_lock, late_flex, broadcast_to_direct} | Scenario tag |
+| `solver_status` | string | false | OPTIMAL | {OPTIMAL, FEASIBLE} | CBC solver termination status |
+| `solver_seed` | int32 | false | 20180422 | RandomSeed(seed) in CBC call | Deterministic seed for reproducibility |
+| `schema_version_used` | string | false | 1.0.0 | Constant | Schema version identifier |
+
+---
+
+## Module C — `daily_posterior_forecast.parquet`
+
+Daily posterior preference-margin distribution from Bayesian hierarchical tracking model. One row per (date, calibration_series). 142 rows (Jan 1 – Apr 22, 2018).
+
+| Field | Type | Nullable | Example | Derivation Rule | Business Meaning |
+|-------|------|----------|---------|-----------------|------------------|
+| `date` | timestamp | false | 2018-04-22 | Campaign date range | Calendar date |
+| `calibration_series` | string | false | A | {A, B} | Calibration series; A = valid-preference-proxy convention |
+| `series_tag` | string | false | A | Echo of calibration_series | Series label |
+| `posterior_mean_preference_margin_pp` | float64 | false | 3.70 | PyMC posterior samples, mean | Daily posterior mean margin (percentage points) |
+| `posterior_hdi_low_pp` | float64 | false | 2.10 | PyMC posterior quantile(0.025) | 95% HDI lower bound (pp) |
+| `posterior_hdi_high_pp` | float64 | false | 5.30 | PyMC posterior quantile(0.975) | 95% HDI upper bound (pp) |
+| `model_version` | string | false | c_tracking_hierarchical_v0.1 | Constant versioning string | Tracking model version tag |
+
+---
+
+## Module C — `monte_carlo_draws.parquet`
+
+Stratified Monte Carlo scenario draws. 10,000 rows (default; 600 when MC_FAST=1). One row per draw. All 3 canonical scenario buckets represented.
+
+| Field | Type | Nullable | Example | Derivation Rule | Business Meaning |
+|-------|------|----------|---------|-----------------|------------------|
+| `draw_id` | int64 | false | 0 | Sequential 0..n-1 | Draw ordinal index |
+| `poll_wave_id` | string | true | wave_20180410 | Source row from tracking or null | Poll wave identifier (null if synthesized) |
+| `scenario_bucket` | string | false | baseline | {baseline, extreme_tracker, compounded_herd} | Canonical scenario bucket |
+| `shock_scale` | float64 | false | 1.25 | expit(logit_transform) × multiplier | Engagement shock magnitude (post-multiplier) |
+| `alloc_mean_persuasion_contacts` | float64 | false | 500000.0 | allocation_output.mean() or 0.0 | Mean persuasion-adjusted contacts from allocation (handshake) |
+| `draw_source` | string | false | tracking_sample | {tracking_sample, synthetic_prior} | Whether draw is from tracking data or synthesized |
+
+---
+
+## Module C — `battleground_probability_heatmap.geojson`
+
+Department-level posterior win probability with geometric boundaries. 18 features (one per Paraguay department). GeoJSON FeatureCollection with Polygon geometries.
+
+| Property | Type | Example | Derivation Rule | Business Meaning |
+|----------|------|---------|-----------------|------------------|
+| `department` | string | Asuncion | 18-item canonical list | Department name |
+| `posterior_win_prob` | float64 | 0.724 | expit(logit transform of national posterior + dept-level jitter) | Posterior win probability [0, 1] |
+| `hdi_low` | float64 | 0.689 | expit(logit(HDI_low) + jitter) | 95% HDI lower bound on win probability |
+| `hdi_high` | float64 | 0.756 | expit(logit(HDI_high) + jitter) | 95% HDI upper bound on win probability |
+| `calibration_series` | string | A | Constant | Calibration series |
+| `geometry` | Polygon | [...] | Approximate rectangular bounds per department | Department geographic boundary (simplified) |
 

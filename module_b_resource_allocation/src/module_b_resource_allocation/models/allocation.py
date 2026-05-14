@@ -41,7 +41,7 @@ import pandas as pd
 import pulp
 import yaml
 
-from module_b_resource_allocation.bundle_definitions import CHANNEL_TO_BUNDLE
+from module_b_resource_allocation.bundle_definitions import BUNDLE_MIN_USD, CHANNEL_TO_BUNDLE
 from module_b_resource_allocation.constants import (
     CAMPAIGN_BUDGET_TOLERANCE,
     CAMPAIGN_BUDGET_USD,
@@ -91,6 +91,10 @@ class AllocationProblem:
     bundles: dict[str, dict[str, Any]]
     scenario_id: str
     solver_seed: int
+    bundle_constraints: bool = True
+    """If True (default), enforce bundle ratios, ge_2_of_3 cardinality, AND
+    global per-bundle minimum-spend floors via bundle-level binary linking
+    variables. If False, skip every bundle constraint (LP-relaxation style)."""
 
 
 @dataclass
@@ -154,6 +158,7 @@ def build_problem(
     budget_usd: float = CAMPAIGN_BUDGET_USD,
     budget_tolerance: float = CAMPAIGN_BUDGET_TOLERANCE,
     solver_seed: int = 20180422,
+    bundle_constraints: bool = True,
 ) -> AllocationProblem:
     """Assemble frozen inputs for the Module B MILP without global side effects.
 
@@ -186,6 +191,7 @@ def build_problem(
         bundles=_load_bundles(),
         scenario_id=scenario_id,
         solver_seed=int(solver_seed),
+        bundle_constraints=bool(bundle_constraints),
     )
 
 
@@ -311,38 +317,72 @@ def solve(problem: AllocationProblem) -> AllocationResult:
     prob += total_spend <= problem.budget_usd * (1.0 + problem.budget_tolerance), "budget_upper"
     prob += total_spend >= problem.budget_usd * (1.0 - problem.budget_tolerance), "budget_lower"
 
-    # Channel-bundle constraints.
-    for bundle_id, bundle in problem.bundles.items():
-        members = list(bundle["members"].keys())
-        ratios = bundle["members"]
-        cardinality = bundle.get("cardinality")
-        binding = bundle.get("binding", "hard")
-        if binding != "hard":
-            continue
-        for d in DEPARTMENTS:
-            for wi in WEEK_INDEX:
-                active_count = pulp.lpSum(y[(d, c, wi)] for c in members if (d, c, wi) in y)
-                if cardinality == "equality":
-                    base = members[0]
-                    if (d, base, wi) not in x:
-                        continue
-                    base_x = x[(d, base, wi)]
-                    base_ratio = float(ratios[base])
-                    for c in members[1:]:
-                        if (d, c, wi) not in x:
+    # Channel-bundle constraints (cardinality + ratio + global minimum-spend
+    # floor gated on a bundle-level binary z[bundle_id]). Skipped entirely when
+    # ``problem.bundle_constraints`` is False (LP-relaxation comparator).
+    z_bundle: dict[str, pulp.LpVariable] = {}
+    if problem.bundle_constraints:
+        for bundle_id, bundle in problem.bundles.items():
+            members = list(bundle["members"].keys())
+            ratios = bundle["members"]
+            cardinality = bundle.get("cardinality")
+            binding = bundle.get("binding", "hard")
+            if binding != "hard":
+                continue
+            for d in DEPARTMENTS:
+                for wi in WEEK_INDEX:
+                    active_count = pulp.lpSum(y[(d, c, wi)] for c in members if (d, c, wi) in y)
+                    if cardinality == "equality":
+                        base = members[0]
+                        if (d, base, wi) not in x:
                             continue
-                        c_x = x[(d, c, wi)]
-                        c_ratio = float(ratios[c])
-                        if base_ratio > 0 and c_ratio > 0:
-                            prob += (
-                                c_x * base_ratio == base_x * c_ratio,
-                                f"bundle_eq_{bundle_id}_{d}_{c}_w{wi}",
-                            )
-                elif cardinality == "ge_2_of_3":
-                    prob += (
-                        active_count >= 2,
-                        f"bundle_card_{bundle_id}_{d}_w{wi}",
-                    )
+                        base_x = x[(d, base, wi)]
+                        base_ratio = float(ratios[base])
+                        for c in members[1:]:
+                            if (d, c, wi) not in x:
+                                continue
+                            c_x = x[(d, c, wi)]
+                            c_ratio = float(ratios[c])
+                            if base_ratio > 0 and c_ratio > 0:
+                                prob += (
+                                    c_x * base_ratio == base_x * c_ratio,
+                                    f"bundle_eq_{bundle_id}_{d}_{c}_w{wi}",
+                                )
+                    elif cardinality == "ge_2_of_3":
+                        prob += (
+                            active_count >= 2,
+                            f"bundle_card_{bundle_id}_{d}_w{wi}",
+                        )
+
+            # Bundle-level activation binary z ∈ {0,1} with two linking edges:
+            # - sum_y_bundle <= big_M * z  → z = 0 forces every member inactive
+            # - bundle_total >= floor * z  → z = 1 enforces global minimum spend
+            # The ge_2_of_3 / equality constraints above already force at least
+            # one member active per (d, w), so z = 0 is infeasible in practice
+            # and the floor binds. The binary is real — relaxing it (LP) would
+            # let z take a fractional value and weaken the floor.
+            floor = float(BUNDLE_MIN_USD.get(bundle_id, 0.0))
+            if floor <= 0:
+                continue
+            z = pulp.LpVariable(f"z_{bundle_id}", cat="Binary")
+            z_bundle[bundle_id] = z
+            big_m = len(members) * len(DEPARTMENTS) * len(WEEK_INDEX)
+            sum_y_bundle = pulp.lpSum(
+                y[(d, c, wi)]
+                for d in DEPARTMENTS
+                for c in members
+                for wi in WEEK_INDEX
+                if (d, c, wi) in y
+            )
+            prob += sum_y_bundle <= big_m * z, f"bundle_link_{bundle_id}"
+            bundle_total = pulp.lpSum(
+                x[(d, c, wi)]
+                for d in DEPARTMENTS
+                for c in members
+                for wi in WEEK_INDEX
+                if (d, c, wi) in x
+            )
+            prob += bundle_total >= floor * z, f"bundle_min_spend_{bundle_id}"
 
     # In-person channels in 'negligible' tier capped at 5% of dept audience.
     in_person = {c for c, t in CHANNEL_TYPES.items() if t == "in_person"}
