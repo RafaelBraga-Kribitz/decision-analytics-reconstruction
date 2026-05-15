@@ -163,3 +163,57 @@ module-b-routing-schedules:
 
 module-b-api:
 	poetry run uvicorn module_b_resource_allocation.api.app:app --host 127.0.0.1 --port 8088
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Cloud Run Deployment (T4)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+.PHONY: setup-artifact-registry deploy-module-a deploy-module-b smoke-test rollback-module-a rollback-module-b
+
+setup-artifact-registry:
+	@if [ -z "$(GCP_PROJECT)" ]; then \
+		echo "❌ GCP_PROJECT required. Usage: make setup-artifact-registry GCP_PROJECT=<project-id>"; \
+		exit 1; \
+	fi
+	@chmod +x scripts/setup_artifact_registry.sh
+	@./scripts/setup_artifact_registry.sh "$(GCP_PROJECT)" "$(or $(REGION),europe-west3)"
+
+deploy-module-a:
+	@if [ -z "$(GCP_PROJECT)" ]; then \
+		echo "❌ GCP_PROJECT required. Usage: make deploy-module-a GCP_PROJECT=<project-id>"; \
+		exit 1; \
+	fi
+	@chmod +x scripts/deploy_module_a_cloudrun.sh
+	@./scripts/deploy_module_a_cloudrun.sh "$(GCP_PROJECT)" "$(or $(REGION),europe-west3)" "$(or $(IMAGE_TAG),latest)"
+
+deploy-module-b:
+	@if [ -z "$(GCP_PROJECT)" ]; then \
+		echo "❌ GCP_PROJECT required. Usage: make deploy-module-b GCP_PROJECT=<project-id>"; \
+		exit 1; \
+	fi
+	@chmod +x scripts/deploy_module_b_cloudrun.sh
+	@./scripts/deploy_module_b_cloudrun.sh "$(GCP_PROJECT)" "$(or $(REGION),europe-west3)" "$(or $(IMAGE_TAG),latest)"
+
+smoke-test:
+	@if [ -z "$(MODULE_A_URL)" ] || [ -z "$(MODULE_B_URL)" ]; then \
+		echo "❌ MODULE_A_URL and MODULE_B_URL required."; \
+		echo "Usage: make smoke-test MODULE_A_URL=<url> MODULE_B_URL=<url>"; \
+		exit 1; \
+	fi
+	@chmod +x scripts/smoke_test_cloudrun.sh
+	@./scripts/smoke_test_cloudrun.sh "$(MODULE_A_URL)" "$(MODULE_B_URL)"
+
+rollback-module-a:
+	@if [ -z "$(GCP_PROJECT)" ]; then \
+		echo "❌ GCP_PROJECT required. Usage: make rollback-module-a GCP_PROJECT=<project-id>"; \
+		exit 1; \
+	fi
+	@chmod +x scripts/rollback_cloudrun.sh
+	@./scripts/rollback_cloudrun.sh "$(GCP_PROJECT)" "module-a-streamlit" "$(or $(REGION),europe-west3)"
+
+rollback-module-b:
+	@if [ -z "$(GCP_PROJECT)" ]; then \
+		echo "❌ GCP_PROJECT required. Usage: make rollback-module-b GCP_PROJECT=<project-id>"; \
+		exit 1; \
+	fi
+	@chmod +x scripts/rollback_cloudrun.sh
+	@./scripts/rollback_cloudrun.sh "$(GCP_PROJECT)" "module-b-fastapi" "$(or $(REGION),europe-west3)"

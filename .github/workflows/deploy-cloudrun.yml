@@ -1,0 +1,230 @@
+name: Deploy to Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'module_a_population_segmentation/**'
+      - 'module_b_resource_allocation/**'
+      - 'docker/**'
+      - 'pyproject.toml'
+      - '.github/workflows/deploy-cloudrun.yml'
+  workflow_dispatch:
+    inputs:
+      module:
+        description: 'Module to deploy'
+        required: true
+        default: 'both'
+        type: choice
+        options:
+          - module-a
+          - module-b
+          - both
+
+env:
+  REGION: europe-west3
+  REPOSITORY: decision-analytics
+
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    outputs:
+      module-a-deploy: ${{ steps.check-files.outputs.module-a }}
+      module-b-deploy: ${{ steps.check-files.outputs.module-b }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check which modules changed
+        id: check-files
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            if [[ "${{ inputs.module }}" == "module-a" || "${{ inputs.module }}" == "both" ]]; then
+              echo "module-a=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "module-a=false" >> "$GITHUB_OUTPUT"
+            fi
+            if [[ "${{ inputs.module }}" == "module-b" || "${{ inputs.module }}" == "both" ]]; then
+              echo "module-b=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "module-b=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            if git diff --name-only HEAD~1 | grep -E 'module_a_population_segmentation|docker/Dockerfile$|pyproject.toml'; then
+              echo "module-a=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "module-a=false" >> "$GITHUB_OUTPUT"
+            fi
+            if git diff --name-only HEAD~1 | grep -E 'module_b_resource_allocation|docker/Dockerfile.module-b|pyproject.toml'; then
+              echo "module-b=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "module-b=false" >> "$GITHUB_OUTPUT"
+            fi
+          fi
+
+  deploy-module-a:
+    needs: setup
+    if: needs.setup.outputs.module-a-deploy == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and push Module A image
+        run: |
+          IMAGE_URI="${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/${{ env.REPOSITORY }}/module-a:${{ github.sha }}"
+          docker build -f docker/Dockerfile -t "$IMAGE_URI" --build-arg INSTALL_DEV=0 .
+          docker push "$IMAGE_URI"
+          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+
+      - name: Deploy Module A to Cloud Run
+        run: |
+          gcloud run deploy module-a-streamlit \
+            --image=${{ env.IMAGE_URI }} \
+            --region=${{ env.REGION }} \
+            --project=${{ secrets.GCP_PROJECT }} \
+            --platform=managed \
+            --allow-unauthenticated \
+            --memory=2Gi \
+            --cpu=2 \
+            --timeout=3600 \
+            --labels="module=a,component=streamlit,deployment=cloud-run"
+
+      - name: Output Module A URL
+        run: |
+          URL=$(gcloud run services describe module-a-streamlit \
+            --region=${{ env.REGION }} \
+            --project=${{ secrets.GCP_PROJECT }} \
+            --format='value(status.url)')
+          echo "Module A URL: $URL"
+          echo "MODULE_A_URL=$URL" >> $GITHUB_ENV
+
+      - name: Comment PR with deployment info
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `✅ Module A deployed to Cloud Run\n**URL:** ${{ env.MODULE_A_URL }}`
+            })
+
+  deploy-module-b:
+    needs: setup
+    if: needs.setup.outputs.module-b-deploy == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: |
+          gcloud auth configure-docker ${{ env.REGION }}-docker.pkg.dev --quiet
+
+      - name: Build and push Module B image
+        run: |
+          IMAGE_URI="${{ env.REGION }}-docker.pkg.dev/${{ secrets.GCP_PROJECT }}/${{ env.REPOSITORY }}/module-b:${{ github.sha }}"
+          docker build -f docker/Dockerfile.module-b -t "$IMAGE_URI" .
+          docker push "$IMAGE_URI"
+          echo "IMAGE_URI=$IMAGE_URI" >> $GITHUB_ENV
+
+      - name: Deploy Module B to Cloud Run
+        run: |
+          gcloud run deploy module-b-fastapi \
+            --image=${{ env.IMAGE_URI }} \
+            --region=${{ env.REGION }} \
+            --project=${{ secrets.GCP_PROJECT }} \
+            --platform=managed \
+            --allow-unauthenticated \
+            --memory=1Gi \
+            --cpu=1 \
+            --timeout=300 \
+            --health-check-path="/healthz" \
+            --labels="module=b,component=fastapi,deployment=cloud-run"
+
+      - name: Output Module B URL
+        run: |
+          URL=$(gcloud run services describe module-b-fastapi \
+            --region=${{ env.REGION }} \
+            --project=${{ secrets.GCP_PROJECT }} \
+            --format='value(status.url)')
+          echo "Module B URL: $URL"
+          echo "MODULE_B_URL=$URL" >> $GITHUB_ENV
+
+      - name: Comment PR with deployment info
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `✅ Module B deployed to Cloud Run\n**URL:** ${{ env.MODULE_B_URL }}\n**API Docs:** ${{ env.MODULE_B_URL }}/docs`
+            })
+
+  smoke-test:
+    needs: [deploy-module-a, deploy-module-b]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Get deployment URLs
+        run: |
+          if [ "${{ needs.deploy-module-a.result }}" == "success" ]; then
+            MODULE_A_URL=$(gcloud run services describe module-a-streamlit \
+              --region=${{ env.REGION }} \
+              --project=${{ secrets.GCP_PROJECT }} \
+              --format='value(status.url)')
+            echo "MODULE_A_URL=$MODULE_A_URL" >> $GITHUB_ENV
+          fi
+          if [ "${{ needs.deploy-module-b.result }}" == "success" ]; then
+            MODULE_B_URL=$(gcloud run services describe module-b-fastapi \
+              --region=${{ env.REGION }} \
+              --project=${{ secrets.GCP_PROJECT }} \
+              --format='value(status.url)')
+            echo "MODULE_B_URL=$MODULE_B_URL" >> $GITHUB_ENV
+          fi
+
+      - name: Run smoke tests
+        if: env.MODULE_A_URL && env.MODULE_B_URL
+        run: |
+          chmod +x scripts/smoke_test_cloudrun.sh
+          ./scripts/smoke_test_cloudrun.sh "${{ env.MODULE_A_URL }}" "${{ env.MODULE_B_URL }}"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-test-results
+          path: |
+            .github/workflows/deploy-cloudrun.yml
