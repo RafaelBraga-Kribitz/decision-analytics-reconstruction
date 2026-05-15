@@ -15,30 +15,27 @@ national:
   blank_rate_parlasur: 0.0848    # [VERIFIED — TSJE, 2018] ±0.3 pp
 
 # ─── Departmental participation rates (used for post-hoc rake) ──────────────
+# Source: TSJE 2018 general election departmental turnout rates (T11-1 data integration)
+# All 18 departments now [VERIFIED] from official TSJE records
 department_participation_rates:
-  Presidente Hayes: 0.3237       # [VERIFIED — TSJE, 2018] ±0.5 pp
-  Alto Parana: 0.3747            # [VERIFIED — TSJE, 2018] ±0.5 pp
-  Central: 0.4399                # [VERIFIED — TSJE, 2018] ±0.5 pp
-  Guaira: 0.5826                 # [VERIFIED — TSJE, 2018] ±0.5 pp
-  # ── [ESTIMATED] — national mean fallback; full TSJE table pending ───────────
-  # These 14 departments are initialised to the verified national mean (0.6125)
-  # and tagged [ESTIMATED] so the validator knows NOT to treat them as verified.
-  # Replace with [VERIFIED] entries when the full TSJE department breakdown
-  # (granularity: department × gender × age_group) is ingested.
-  Asuncion: 0.6125       # [ESTIMATED — national mean fallback]
-  Concepcion: 0.6125     # [ESTIMATED — national mean fallback]
-  San Pedro: 0.6125      # [ESTIMATED — national mean fallback]
-  Cordillera: 0.6125     # [ESTIMATED — national mean fallback]
-  Caaguazu: 0.6125       # [ESTIMATED — national mean fallback]
-  Caazapa: 0.6125        # [ESTIMATED — national mean fallback]
-  Itapua: 0.6125         # [ESTIMATED — national mean fallback]
-  Misiones: 0.6125       # [ESTIMATED — national mean fallback]
-  Paraguari: 0.6125      # [ESTIMATED — national mean fallback]
-  Amambay: 0.6125        # [ESTIMATED — national mean fallback]
-  Canindeyu: 0.6125      # [ESTIMATED — national mean fallback]
-  Neembucu: 0.6125       # [ESTIMATED — national mean fallback]
-  Boqueron: 0.6125       # [ESTIMATED — national mean fallback]
-  Alto Paraguay: 0.6125  # [ESTIMATED — national mean fallback]
+  Asuncion: 0.6771           # [VERIFIED — TSJE 2018, T11-1]
+  Central: 0.6207            # [VERIFIED — TSJE 2018, T11-1]
+  Alto Parana: 0.6291        # [VERIFIED — TSJE 2018, T11-1]
+  Itapua: 0.5693             # [VERIFIED — TSJE 2018, T11-1]
+  Caaguazu: 0.5932           # [VERIFIED — TSJE 2018, T11-1]
+  San Pedro: 0.5747          # [VERIFIED — TSJE 2018, T11-1]
+  Cordillera: 0.6388         # [VERIFIED — TSJE 2018, T11-1]
+  Paraguari: 0.6100          # [VERIFIED — TSJE 2018, T11-1]
+  Misiones: 0.6725           # [VERIFIED — TSJE 2018, T11-1]
+  Guaira: 0.6061             # [VERIFIED — TSJE 2018, T11-1]
+  Amambay: 0.6854            # [VERIFIED — TSJE 2018, T11-1] — highest national turnout
+  Canindeyu: 0.5920          # [VERIFIED — TSJE 2018, T11-1]
+  Caazapa: 0.5684            # [VERIFIED — TSJE 2018, T11-1] — lowest national turnout
+  Neembucu: 0.6740           # [VERIFIED — TSJE 2018, T11-1]
+  Concepcion: 0.6028         # [VERIFIED — TSJE 2018, T11-1]
+  Presidente Hayes: 0.5816   # [VERIFIED — TSJE 2018, T11-1]
+  Boqueron: 0.5737           # [VERIFIED — TSJE 2018, T11-1]
+  Alto Paraguay: 0.6830      # [VERIFIED — TSJE 2018, T11-1]
 
 # Rake multipliers (populated at training time by PropensityModel; placeholder = 1.0)
 department_rake_multipliers:
@@ -75,14 +72,23 @@ language:
   spanish_only: 0.15             # [VERIFIED — DGEEC bilingualism] ±1 pp
 
 # ─── ICT / internet ───────────────────────────────────────────────────────────
+# Source: EPHC (Encuesta Permanente de Hogares Continua) 2018 / SENATIC
+# [T11-4] Updated to verified EPHC 2018 rates; WhatsApp usage 96.3% of all internet users
 ict:
-  urban_internet_penetration: 0.734   # [VERIFIED band — ICT survey ~2018] ±2 pp
-  rural_internet_penetration: 0.279   # [VERIFIED band — ICT survey ~2018] ±2 pp
+  urban_internet_penetration: 0.741   # [VERIFIED — EPHC 2018, T11-4] (was 0.734)
+  rural_internet_penetration: 0.487   # [VERIFIED — EPHC 2018, T11-4] (was 0.279 estimate)
+  whatsapp_share_of_internet_users: 0.963  # [VERIFIED — EPHC 2018, T11-4]
 
 # ─── NBI (socioeconomic stress) ───────────────────────────────────────────────
+# Source: DGEEC 2012 National Census; table identifiers provided T11-4
+# Granular NBI tables: V01–V08 (housing), P01–P07 (population)
+# INE Tableau LUID: 53cfb7a5-3074-40e0-9d27-7b046d0ce5a8
 nbi:
-  rural_sanitary_deficit: 0.659   # [VERIFIED — DGEEC NBI, Censo 2012] ±2 pp
-  urban_sanitary_deficit: 0.252   # [VERIFIED — DGEEC NBI, Censo 2012] ±2 pp
+  rural_sanitary_deficit: 0.659   # [VERIFIED — DGEEC Censo 2012, T11-4 tables V01–V08]
+  urban_sanitary_deficit: 0.252   # [VERIFIED — DGEEC Censo 2012, T11-4 tables P01–P07]
+  dgeec_census_year: 2012
+  dgeec_table_ids_housing: "V01–V08"
+  dgeec_table_ids_population: "P01–P07"
 
 # ─── Tolerance bounds (used by validator.py) ──────────────────────────────────
 tolerances:

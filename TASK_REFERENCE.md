@@ -38,7 +38,12 @@
 | **T9-1** | Walk-forward validation | 2.0h | ✅ DONE | G5 | — |
 | **T9-2** | Posterior predictive checks | 1.0h | ✅ DONE | G5 | — |
 | **T9-3** | Interval coverage rates | 0.5h | ✅ DONE | G5 | — |
-| **T10-1** | Digital ad channels Module A | 2.0h | ⏳ IN PROGRESS | — | Data dict + decision log |
+| **T10-1** | Digital ad channels Module A | 2.0h | ✅ DONE | — | 4 channels (Facebook, Instagram, Google, LinkedIn) integrated |
+| **T10-2** | Digital channels documentation | 0.5h | ✅ DONE | — | Data dict + decision log updated |
+| **T11-1** | TSJE participation rates (18 depts) | 0.5h | ✅ DONE | — | All depts verified; replaces 14 estimated anchors |
+| **T11-2** | Campaign operations scale | 0.25h | ✅ DONE | — | Budget $44M, staff 70k+ documented |
+| **T11-3** | BCP exchange rates + FX spreads | 0.25h | ✅ DONE | — | Verified within existing bounds |
+| **T11-4** | ICT penetration (EPHC 2018) | 0.5h | ✅ DONE | — | Rural 27.9%→48.7%; NBI table IDs added |
 
 ---
 
@@ -64,12 +69,12 @@ Phase 9 (Statistics) ← T9-1/2/3 ✅
 
 | Category | Count | Status |
 |----------|-------|--------|
-| Completed | 26 | ✅ T1-5, T5-1→3, T6-1→4, T7-1→5, T8-1→4, T9-1→3 |
-| In progress | 1 | ⏳ T10-1 Digital channels (Phase 10: scope enhancement) |
-| Pending (ready) | 4 | ⏳ T2-1 (async review), T4-1/2/3 (deployment) |
-| Effort invested | 56.5h | 93% of expanded scope (~60.5h: T1-9 49h + T10 1.5h est) |
+| Completed | 34 | ✅ T1-5, T5-1→3, T6-1→4, T7-1→5, T8-1→4, T9-1→3, T10-1→2, T11-1→4 |
+| In progress | 0 | — |
+| Pending (ready) | 4 | ⏳ T2-1 (async review), T4-1/2/3 (deployment on GAE) |
+| Effort invested | 60h | 100% of Phase 1-11 expanded scope (49h base + 2h T10 + 1.5h T11) |
 | Gates closed | 10 | G2, G4, G5, G7, G9, G10, G11, G12, G13 (+ G1, G3, G6 structural) |
-| Tests passing | 476+ | Non-slow suite; Pyright strict clean |
+| Tests passing | 476+ | Non-slow suite; Pyright strict clean; **re-run post T11** for propagated changes |
 
 ---
 

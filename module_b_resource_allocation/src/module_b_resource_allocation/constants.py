@@ -116,6 +116,10 @@ ALLOCATION_ROWS: Final[int] = N_DEPARTMENTS * N_CHANNELS * WEEK_COUNT  # 18 * 11
 
 # ---------------------------------------------------------------------------
 # Campaign envelope (Jan–Apr 2018 reconstruction): USD 6,000,000 ± 0.5%.
+# NOTE [T11-2]: Real ANR 2018 advertising budget was ~USD 44,000,000 (verified
+# from investigative audits); current $6M is methodological reconstruction scale.
+# Field staff scale: real deployment was 70,000+ (36k mesarios, 12k veedores,
+# 1k apoderados + thousands operadores), not 5,000 estimate.
 # ---------------------------------------------------------------------------
 CAMPAIGN_BUDGET_USD: Final[float] = 6_000_000.0
 CAMPAIGN_BUDGET_TOLERANCE: Final[float] = 0.005

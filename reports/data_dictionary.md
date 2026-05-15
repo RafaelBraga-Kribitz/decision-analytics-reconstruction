@@ -31,6 +31,10 @@ Every field across all modules: type, source, validation rule, business meaning.
 | `media_penetration_tv`        | float32 | Department-level lookup      | [0.0, 1.0], non-null                                            | Household TV penetration by department (~0.89 national)                                     |
 | `media_penetration_radio`     | float32 | Department-level lookup      | [0.0, 1.0], non-null                                            | Household radio penetration by department                                                   |
 | `media_penetration_whatsapp`  | float32 | Dept × urban/rural lookup    | [0.0, 1.0], non-null                                            | WhatsApp penetration (urban higher, rural lower)                                            |
+| `media_penetration_facebook_ads` | float32 | Q1 2018 LATAM benchmark, dept × urban/rural | [0.0, 1.0], non-null | Facebook News Feed reach (urban 0.45, rural 0.12); digital advertising channel |
+| `media_penetration_instagram_ads` | float32 | Q1 2018 LATAM benchmark, dept × urban/rural | [0.0, 1.0], non-null | Instagram reach (urban 0.42, rural 0.08); digital advertising channel |
+| `media_penetration_google_ads` | float32 | Q1 2018 LATAM benchmark, dept × urban/rural | [0.0, 1.0], non-null | Google Search + Display reach (urban 0.38, rural 0.10); digital advertising channel |
+| `media_penetration_linkedin_ads` | float32 | Q1 2018 LATAM benchmark, dept × urban/rural | [0.0, 1.0], non-null | LinkedIn professional targeting (urban 0.12, rural 0.02); digital advertising channel |
 | `nbi_stress_prior`            | float32 | NBI module, DGEEC 2012       | [0.0, 1.0]; **ESTIMATED**                                       | Socioeconomic stress prior; rural ~0.659 sanitary anchor; ESTIMATED until granular NBI mesh |
 | `segment_label`               | string  | K-Means output               | Member of 6-label set, nullable                                 | Population segment assignment; null until segmentation step runs                            |
 | `ballot_blank_president`      | bool    | Participation model          | Non-null; rate ~2.41%                                           | Synthetic blank/null ballot indicator for presidential race                                 |
@@ -79,11 +83,15 @@ Every field across all modules: type, source, validation rule, business meaning.
 | `mean_tv_penetration`           | float32 | Aggregated | Mean media_penetration_tv for this segment                       |
 | `mean_radio_penetration`        | float32 | Aggregated | Mean media_penetration_radio for this segment                    |
 | `mean_whatsapp_penetration`     | float32 | Aggregated | Mean media_penetration_whatsapp for this segment                 |
+| `mean_facebook_ads_penetration` | float32 | Aggregated | Mean media_penetration_facebook_ads for this segment (T10 digital channels) |
+| `mean_instagram_ads_penetration` | float32 | Aggregated | Mean media_penetration_instagram_ads for this segment (T10 digital channels) |
+| `mean_google_ads_penetration`   | float32 | Aggregated | Mean media_penetration_google_ads for this segment (T10 digital channels) |
+| `mean_linkedin_ads_penetration` | float32 | Aggregated | Mean media_penetration_linkedin_ads for this segment (T10 digital channels) |
 | `pct_rural`                     | float32 | Aggregated | Share with rural_flag = True                                     |
 | `pct_jopara`                    | float32 | Aggregated | Share with jopara_flag = True                                    |
 | `pct_structural_dependency`     | float32 | Aggregated | Share with structural_dependency_proxy = True                    |
 | `dominant_department`           | string  | Mode       | Modal department for this segment                                |
-| `primary_reach_channel`         | string  | Derived    | Channel with highest mean penetration (tv/radio/whatsapp/direct) |
+| `primary_reach_channel`         | string  | Derived    | Channel with highest mean penetration (tv/radio/whatsapp/facebook_ads/instagram_ads/google_ads/linkedin_ads) |
 
 ---
 

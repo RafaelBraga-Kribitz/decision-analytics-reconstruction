@@ -211,10 +211,11 @@ media_penetration_defaults:
   # LinkedIn Ads: 10-15% professional/business segments; minimal rural penetration
   linkedin_ads_urban: 0.12
   linkedin_ads_rural: 0.02
-  # Bernoulli P(online) for synthetic internet_access_flag (ICT ~2018; aligns
-  # calibration_anchors). Single source of truth — generator.py and cleaner.py read these keys.
-  internet_access_rural_rate: 0.279
-  internet_access_urban_rate: 0.734
+  # Bernoulli P(online) for synthetic internet_access_flag (ICT 2018 EPHC verified, T11-4)
+  # Updated from 2018 EPHC (Encuesta Permanente de Hogares Continua) SENATIC survey.
+  # Aligns with calibration_anchors. Single source of truth — generator.py and cleaner.py read these keys.
+  internet_access_rural_rate: 0.487  # [VERIFIED — EPHC 2018, T11-4]; was 0.279 estimate
+  internet_access_urban_rate: 0.741  # [VERIFIED — EPHC 2018, T11-4]; was 0.734
 
 # ─── Preference proxy priors (calibrated to dept × urban/rural historical share)
 preference_proxy_priors:
