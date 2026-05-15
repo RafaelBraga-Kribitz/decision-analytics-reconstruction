@@ -115,11 +115,14 @@ ALLOCATION_ROWS: Final[int] = N_DEPARTMENTS * N_CHANNELS * WEEK_COUNT  # 18 * 11
 
 
 # ---------------------------------------------------------------------------
-# Campaign envelope (Jan–Apr 2018): USD 44,000,000 [VERIFIED — T11-2]
+# Campaign envelope (Jan–Apr 2018): USD 6,000,000 (methodological reconstruction).
+# NOTE [T11-2]: Real ANR 2018 advertising budget was ~USD 44,000,000 [VERIFIED].
+# Reconstruction uses $6M scale to match reach-cap calibration (synthetic population
+# segments). To model full-scale replication, reach_caps_*.csv must be scaled 7.3×.
 # Source: TSJE campaign finance declarations + investigative audits
 # Field staff scale: 70,000+ (36k mesarios, 12k veedores, 1k apoderados + operadores)
 # ---------------------------------------------------------------------------
-CAMPAIGN_BUDGET_USD: Final[float] = 44_000_000.0
+CAMPAIGN_BUDGET_USD: Final[float] = 6_000_000.0
 CAMPAIGN_BUDGET_TOLERANCE: Final[float] = 0.005
 COVERAGE_LOWER_BOUND_PCT: Final[float] = 0.80
 BCP_CORRIDOR_MAX_PCT: Final[float] = 0.10

@@ -93,29 +93,29 @@ entity_id  participation_propensity  raw_logit_score  department_rake_multiplier
 | Metric | Value | Notes |
 |--------|-------|-------|
 | Solver status | **OPTIMAL** | PuLP/CBC; MILP solved to optimality |
-| Total budget allocated | **$44,209,945.27** | Within ±0.5% of $44M nominal envelope [VERIFIED — T11-2] |
-| Total persuasion-adjusted contacts | **1,769,048,127** | Nonlinear sum across 18 depts × 11 channels × 14 weeks (scaled from $6M baseline) |
-| Budget envelope shadow price (π) | **23.51** | Marginal persuasion gain per additional $1 (constant at all scales) |
+| Total budget allocated | **$6,029,992.61** | Within ±0.5% of $6M nominal envelope (reconstruction scale; real 2018 budget $44M [VERIFIED — T11-2]) |
+| Total persuasion-adjusted contacts | **252,721,161** | Nonlinear sum across 18 depts × 11 channels × 14 weeks |
+| Budget envelope shadow price (π) | **23.51** | Marginal persuasion gain per additional $1 |
 | Allocation rows | 2,772 | 18 departments × 11 channels × 14 ISO weeks |
 
 ### Scenario comparison (all OPTIMAL)
 
 | Scenario | Budget (USD) | Persuasion contacts | Notes |
 |----------|--------------|---------------------|-------|
-| `baseline` | 44,209,945 | 1,769,048,127 | Standard calendar [VERIFIED budget — T11-2] |
-| `early_lock` | 44,209,945 | 1,814,068,900 | Earlier week-1 locking; +2.5% contacts |
-| `late_flex` | 44,209,945 | 1,886,951,500 | Late-campaign flexibility; +6.7% contacts |
+| `baseline` | 6,029,993 | 252,721,161 | Standard calendar; reconstruction scale (real 2018 budget $44M [T11-2]) |
+| `early_lock` | 6,029,993 | 259,152,700 | Earlier week-1 locking; +2.5% contacts |
+| `late_flex` | 6,029,993 | 269,564,500 | Late-campaign flexibility; +6.7% contacts |
 
 ### Budget expansion sensitivity (0.25–2.0× nominal)
 
 | Budget mult. | Target | Allocated (USD) | Persuasion contacts | Contact/$ efficiency |
 |---|---|---|---|---|
-| 0.25× | $11.0M | $10,552,486 | 945,286,089 | 89.6 |
-| 0.50× | $22.0M | $21,104,973 | 1,311,146,127 | 62.1 |
-| 0.75× | $33.0M | $31,657,460 | 1,557,071,594 | 49.2 |
-| **1.00×** | **$44.0M** | **$44,209,945** | **1,769,048,127** | **41.9** |
-| 1.50× | $66.0M | $66,314,918 | 2,028,149,210 | 30.6 |
-| 2.00× | $88.0M | $88,419,890 | 2,170,128,700 | 24.5 |
+| 0.25× | $1.5M | $1,507,495 | 135,498,852 | 89.9 |
+| 0.50× | $3.0M | $3,014,994 | 187,621,161 | 62.3 |
+| 0.75× | $4.5M | $4,522,494 | 222,438,851 | 49.2 |
+| **1.00×** | **$6.0M** | **$6,029,993** | **252,721,161** | **41.9** |
+| 1.50× | $9.0M | $9,044,991 | 289,878,300 | 32.1 |
+| 2.00× | $12.0M | $12,059,991 | 310,304,100 | 25.7 |
 
 *Diminishing returns: doubling budget (1.0→2.0×) yields only +23% additional contacts.*
 

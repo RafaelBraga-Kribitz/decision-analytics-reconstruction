@@ -58,7 +58,7 @@ A candidate whose portfolio demonstrates all three — segmentation that feeds a
 - **Module C's Monte Carlo scenario catalog** maps to demand uncertainty propagation.
 
 **What to say in an interview:**
-> "I built a constrained allocation system with $44M [verified 2018 campaign spend] across 18 regions × 11 channels × 14 weeks. The MILP returns shadow prices for every binding constraint, so a planner can read off the marginal value of relaxing a reach cap. The structural pattern — bundle coupling, capacity constraints, dual certificates — is the same one you face when assigning picks across cells. I have a working solver, a budget sensitivity curve at 0.25×–2.0× nominal, and a transparent naive baseline that documents 58% lift on the linearized objective."
+> "I built a constrained allocation system with $6M across 18 regions × 11 channels × 14 weeks (reconstruction scale; real 2018 budget $44M [verified]). The MILP returns shadow prices for every binding constraint, so a planner can read off the marginal value of relaxing a reach cap. The structural pattern — bundle coupling, capacity constraints, dual certificates — is the same one you face when assigning picks across cells. I have a working solver, a budget sensitivity curve at 0.25×–2.0× nominal, and a transparent naive baseline that documents 58% lift on the linearized objective."
 
 ---
 

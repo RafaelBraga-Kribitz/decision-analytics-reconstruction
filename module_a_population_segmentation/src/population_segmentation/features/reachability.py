@@ -36,10 +36,9 @@ def build_reachability_features(df: pd.DataFrame) -> pd.DataFrame:
     for ad_channel in ["facebook_ads", "instagram_ads", "google_ads", "linkedin_ads"]:
         col_name = f"media_penetration_{ad_channel}"
         if col_name in out.columns:
-            out[f"reachability_{ad_channel}"] = (
-                out["internet_access_flag"].astype(float)
-                * out[col_name].astype(float)
-            )
+            out[f"reachability_{ad_channel}"] = out["internet_access_flag"].astype(float) * out[
+                col_name
+            ].astype(float)
         else:
             out[f"reachability_{ad_channel}"] = 0.0
 

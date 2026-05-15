@@ -46,7 +46,7 @@ Canonical Module B reconstruction envelope (national grid, fourteen ISO weeks an
 
 | Item | Authoritative constant / artifact |
 |------|-------------------------------------|
-| Nominal envelope | `CAMPAIGN_BUDGET_USD = 44_000_000.0` [VERIFIED — TSJE 2018, T11-2], tolerance `±0.5%` — `module_b_resource_allocation/src/module_b_resource_allocation/constants.py` |
+| Nominal envelope | `CAMPAIGN_BUDGET_USD = 6_000_000.0` (reconstruction scale; real 2018 budget $44M [VERIFIED — T11-2]), tolerance `±0.5%` — `module_b_resource_allocation/src/module_b_resource_allocation/constants.py` |
 | Geographic units | eighteen entries in `DEPARTMENTS` (same module) |
 | Reach channels | eleven entries in `CHANNEL_NAMES` |
 | Solver seed (example) | `--seed 20180422` (matches examples in `Makefile`) |

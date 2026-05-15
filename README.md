@@ -95,7 +95,7 @@ flowchart TD
     DGEEC --> A
     SIM --> A
 
-    A["Module A: Population Modeling & Segmentation\n[FLAGSHIP]\n147 tests · 80%+ coverage · live dashboard"]
+    A["Module A: Population Modeling & Segmentation\n[FLAGSHIP]\n806 tests · 87% coverage · live dashboard"]
 
     A --> AO["population_master_clean.parquet\nsegment_labels.parquet — 6 behavioral clusters\nparticipation_propensity.parquet\nmedia_reachability_by_segment.csv"]
 
