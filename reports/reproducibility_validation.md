@@ -107,7 +107,7 @@ Module A:
   model_run_manifest.json: (git SHA from seed 43 run)
 
 Module B:
-  allocation_baseline.parquet: (seed=20180422, budget=$6M, 18 depts, 11 channels)
+  allocation_baseline.parquet: (seed=20180422, budget=$44M [VERIFIED — T11-2], 18 depts, 11 channels)
   run_manifest_baseline.json: (linearized lift 58% vs naive, timestamp)
 
 Module C (tracking):

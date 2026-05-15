@@ -58,7 +58,7 @@ A candidate whose portfolio demonstrates all three — segmentation that feeds a
 - **Module C's Monte Carlo scenario catalog** maps to demand uncertainty propagation.
 
 **What to say in an interview:**
-> "I built a constrained allocation system with $6M across 18 regions × 11 channels × 14 weeks. The MILP returns shadow prices for every binding constraint, so a planner can read off the marginal value of relaxing a reach cap. The structural pattern — bundle coupling, capacity constraints, dual certificates — is the same one you face when assigning picks across cells. I have a working solver, a budget sensitivity curve at 0.25×–2.0× nominal, and a transparent naive baseline that documents 58% lift on the linearized objective."
+> "I built a constrained allocation system with $44M [verified 2018 campaign spend] across 18 regions × 11 channels × 14 weeks. The MILP returns shadow prices for every binding constraint, so a planner can read off the marginal value of relaxing a reach cap. The structural pattern — bundle coupling, capacity constraints, dual certificates — is the same one you face when assigning picks across cells. I have a working solver, a budget sensitivity curve at 0.25×–2.0× nominal, and a transparent naive baseline that documents 58% lift on the linearized objective."
 
 ---
 
@@ -229,7 +229,7 @@ The vocabulary is different but the structure is identical. A candidate who can 
 When a hiring manager asks "tell me about a project you're proud of," the answer should be structured:
 
 ### 1. The problem framing (30 seconds)
-> "I reconstructed a national-scale resource-allocation decision system: 18 regions, 11 channels, 14 weeks, $6M envelope, polling-based outcome uncertainty. The decision question was 'where does each marginal dollar buy the most persuasion, subject to hard feasibility?' — not 'who will convert?'"
+> "I reconstructed a national-scale resource-allocation decision system: 18 regions, 11 channels, 14 weeks, $44M envelope [verified 2018 campaign budget], polling-based outcome uncertainty. The decision question was 'where does each marginal dollar buy the most persuasion, subject to hard feasibility?' — not 'who will convert?'"
 
 ### 2. The architecture (60 seconds)
 > "Three modules with contracts: Module A segments 15-50k entities into six behaviorally coherent groups and produces per-entity participation propensity. Module B is a MILP with bundle binaries, FX corridor constraints, and dual exports — it allocates the envelope and tells me which constraints are binding. Module C is a Bayesian hierarchical model with GaussianRandomWalk latent margin and per-pollster Normal offsets — it propagates measurement uncertainty into a scenario catalog. The modules hand off verified parquet artifacts; each artifact has a Pandera contract enforced at every pipeline exit."

@@ -46,7 +46,7 @@ Canonical Module B reconstruction envelope (national grid, fourteen ISO weeks an
 
 | Item | Authoritative constant / artifact |
 |------|-------------------------------------|
-| Nominal envelope | `CAMPAIGN_BUDGET_USD = 6_000_000.0`, tolerance `±0.5%` — `module_b_resource_allocation/src/module_b_resource_allocation/constants.py` |
+| Nominal envelope | `CAMPAIGN_BUDGET_USD = 44_000_000.0` [VERIFIED — TSJE 2018, T11-2], tolerance `±0.5%` — `module_b_resource_allocation/src/module_b_resource_allocation/constants.py` |
 | Geographic units | eighteen entries in `DEPARTMENTS` (same module) |
 | Reach channels | eleven entries in `CHANNEL_NAMES` |
 | Solver seed (example) | `--seed 20180422` (matches examples in `Makefile`) |
@@ -127,7 +127,7 @@ Illustrative, reconstruction-internal (see epistemic file for scope):
 
 | Stress | Mechanism illustrated | Numeric read (this repo) |
 |--------|-----------------------|----------------------------|
-| **Budget −20 % nominal** | MILP rebuild at `0.8 × CAMPAIGN_BUDGET_USD`, seed unchanged | Solver output (one-off invocation, seed 20180422): total nonlinear contacts drops to **229 200 627.9** from **252 721 160.7** at ~1× envelope — roughly **−9.3 %** on summed nonlinear contacts (~**4.824 M** USD booked vs ~**6.030 M** at baseline). Command: build `AllocationProblem(..., budget_usd=6_000_000*0.8)` + `solve`. |
+| **Budget −20 % nominal** | MILP rebuild at `0.8 × CAMPAIGN_BUDGET_USD`, seed unchanged | Solver output (one-off invocation, seed 20180422): total nonlinear contacts drops to **229 200 627.9** from **252 721 160.7** at ~1× envelope — roughly **−9.3 %** on summed nonlinear contacts (~**4.824 M** USD booked vs ~**6.030 M** at baseline). Command: build `AllocationProblem(..., budget_usd=44_000_000*0.8)` + `solve`. |
 | **FX band** | BCP-aligned corridor enforced in formulation | Corridor parameters `FX_BAND_MAX_PCT_VS_BCP = 0.005`, `CAMPAIGN_BUDGET_TOLERANCE` `0.005` — constants file above. Operational translation: shocks outside modeled FX tiers require new rate tables (`fx_layer_<series>.csv`) before reallocating; manifest duals quantify binding pressure on envelopes when sensitivity CSVs flag it. |
 | **Participation rate −10 % (scenario)** | Participation rate enters Module A segmentation / propensity story | No single closed-form national shock is merged into Module B in this reconstruction; directional impact: lowered expected eligible reach lowers effective caps downstream and tightens persuasive headroom — re-run Module A exports before trusting historic Module B parquet inputs. Tie to empirical bounds in [`reports/epistemic_boundaries.md`](epistemic_boundaries.md). |
 

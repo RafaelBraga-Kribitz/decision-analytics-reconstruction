@@ -18,7 +18,7 @@ campaign_window:
     - 2018-W13
     - 2018-W14
 budget:
-  total_envelope_usd: 6_000_000.0
+  total_envelope_usd: 44_000_000.0  # [VERIFIED — TSJE 2018 advertising pautas, T11-2]
   tolerance_pct: 0.005
   coverage_lower_bound_pct: 0.80
   bcp_corridor_max_pct: 0.10

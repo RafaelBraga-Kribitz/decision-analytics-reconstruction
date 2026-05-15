@@ -44,7 +44,7 @@ The logistic regression + Platt calibration + department rake produces near-perf
 
 ### Context
 
-Campaign budget allocation: $6M USD across 18 departments × 11 channels × 14 weeks. Objective: maximize persuasion-adjusted contacts subject to reach caps and departmental tier constraints.
+Campaign budget allocation: $44M USD [VERIFIED — TSJE 2018 advertising pautas, T11-2] across 18 departments × 11 channels × 14 weeks. Objective: maximize persuasion-adjusted contacts subject to reach caps and departmental tier constraints.
 
 Two naive baselines:
 

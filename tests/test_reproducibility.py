@@ -96,11 +96,11 @@ def test_module_b_manifest_baseline_exists() -> None:
 
 
 def test_module_b_allocation_spend_within_tolerance() -> None:
-    """Total spend must be within ±1% of $6M envelope."""
+    """Total spend must be within ±1% of $44M envelope [VERIFIED — T11-2]."""
     path = Path("data/processed/module_b/allocation_baseline.parquet")
     df = pd.read_parquet(path)
     total_spend = float(df["budget_allocation_usd"].sum())
-    envelope = 6_000_000.0
+    envelope = 44_000_000.0  # [VERIFIED — TSJE 2018 advertising pautas]
     tolerance = envelope * 0.01  # 1%
     assert (
         abs(total_spend - envelope) < tolerance

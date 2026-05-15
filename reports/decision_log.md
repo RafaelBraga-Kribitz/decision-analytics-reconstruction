@@ -9,12 +9,12 @@
 - **Impact:** Eliminates placeholder rake multipliers; participation propensity now anchored to exact departmental electorates.
 - **Status:** ✅ COMPLETE — `calibration_anchors.yaml` updated; tests expect no regression (rake multipliers will recompute on next Module A export).
 
-**T11-2: Campaign Operations Scale (DOCUMENTATION + CONSTANTS)**
+**T11-2: Campaign Operations Scale (CONSTANTS + DOCUMENTATION UPDATED)**
 - **Source:** TSJE campaign finance declarations + investigative audits
-- **Previous:** Budget $2M USD, field staff 5,000
+- **Previous:** Budget placeholder $2M USD, field staff 5,000
 - **Verified:** Budget ~$44M USD (advertising pautas), field staff 70,000+ (36k mesarios, 12k veedores, 1k apoderados, thousands operadores)
-- **Changes:** Added explanatory comment to `constants.py` CAMPAIGN_BUDGET_USD noting reconstruction uses $6M (scaled scenario) while real 2018 budget was $44M. Reconstruction budget unchanged ($6M) to preserve existing solver calibration; upgrade path for full-scale replication documented.
-- **Status:** ✅ COMPLETE — constants documented; no code changes required (budget scaling is methodological, not a bug).
+- **Changes:** Updated `constants.py` CAMPAIGN_BUDGET_USD from 6_000_000 to 44_000_000 (verified actual); updated `budget_envelope.yaml` total_envelope_usd; updated test_reproducibility.py envelope to $44M; updated all documentation (epistemic_boundaries.md, baseline_comparison.md, business_case.md, reproducibility_validation.md, statistical_metrics_summary.md, HIRING_CONTEXT.md) to reflect verified $44M budget.
+- **Status:** ✅ COMPLETE — CAMPAIGN_BUDGET_USD = $44M [VERIFIED]; all references updated.
 
 **T11-3: BCP Exchange Rates + Retail FX Spreads (VERIFIED BAND)**
 - **Source:** Banco Central del Paraguay (BCP) official daily TC_Ref rates; retail exchange houses (casas de cambio) data
