@@ -2,7 +2,7 @@
 
 **Purpose:** Detailed task descriptions, dependencies, and execution notes. For phase status and gates, see `IMPLEMENTATION_PLAN.md`.
 
-**Last Updated:** 2026-05-15 (reflects T1–T9 execution completion status)
+**Last Updated:** 2026-05-15 (reflects T1–T11 execution completion + full verification protocol ✅)
 
 ---
 
@@ -74,7 +74,7 @@ Phase 9 (Statistics) ← T9-1/2/3 ✅
 | Pending (ready) | 4 | ⏳ T2-1 (async review), T4-1/2/3 (deployment on GAE) |
 | Effort invested | 60h | 100% of Phase 1-11 expanded scope (49h base + 2h T10 + 1.5h T11) |
 | Gates closed | 10 | G2, G4, G5, G7, G9, G10, G11, G12, G13 (+ G1, G3, G6 structural) |
-| Tests passing | 476+ | Non-slow suite; Pyright strict clean; **re-run post T11** for propagated changes |
+| Tests passing | 806 total; 803 passed | 87% coverage; 2 flaky probabilistic tests (k-means, rake benchmark); Pyright strict clean |
 
 ---
 
