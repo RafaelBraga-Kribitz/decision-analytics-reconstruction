@@ -1,0 +1,89 @@
+frontmatter_required_fields:
+  - doc_id
+  - doc_type
+  - doc_role
+  - visibility
+  - status
+  - owner
+  - last_reviewed
+
+optional_frontmatter_fields:
+  - canonical_source
+  - derived_from
+  - supersedes
+  - tags
+
+doc_role_values:
+  - canonical
+  - derived
+  - registry         # META — registry/guide documents
+  - evidence          # TASK_PROOF / qa verdicts — never canonical SSOT doc_role elsewhere
+  - reference         # External / research inputs — not SSOT; no canonical_source required
+
+authority_values:
+  - canonical       # Allowed to originate truth for prose domain
+  - derived
+  - evidence
+  - reference_only  # Research / glossary — cannot be SSOT
+  - registry        # Describes other docs only
+
+visibility_values:
+  - public           # Intended for exported portfolio README tree
+  - private          # Maintainer / local clone only when published
+  - internal          # Harness and operator-only
+
+doc_types:
+  specification:
+    description: Interfaces, MILP formulations, schemas, parity with code
+    forbidden_content_prose:
+      - roadmap_task_trackers_without_execution_doc_tag
+      - novel_budget_numeric_not_in_yaml_or_constants
+
+  narrative:
+    description: Stakeholder and portfolio prose
+    allowed_content_keywords:
+      - positioning
+      - interpretation_when_derived
+    forbidden_derived_patterns:
+      - novel_metric_values_outside_registered_numeric_allowlist
+
+  evidence:
+    description: Command logs and proof rows (DoD, QA verdicts)
+    forbidden_content_keywords:
+      - roadmap_product_decisions_without_execution_doc_anchor
+
+  execution:
+    description: Gates, phases, task tables, status trackers
+    forbidden_content_keywords:
+      - evergreen_business_story_as_only_source
+
+  research:
+    description: Imported NotebookLM or external summaries
+    forbidden_as_ssot:
+      always: true
+
+  policy:
+    description: Harness, terminology routing, playbook rules
+
+  methodology:
+    description: Model assumptions, inference design, diagnostics references
+
+  registry:
+    description: Machine-readable manifests and taxonomy
+
+  walkthrough:
+    description: Guided paths and click-by-click evaluation
+    forbidden_content_patterns:
+      - introducing_new_canonical_KPI_definitions
+
+sensitivity_values:
+  - public
+  - internal
+  - restricted
+
+tier_shorthand_values:
+  - T0
+  - T1
+  - T2
+  - T3
+  - T4

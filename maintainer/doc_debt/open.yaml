@@ -1,0 +1,19 @@
+debts:
+  - debt_id: DEBT-001
+    doc_id: DOC-DLOG-001
+    issue: numeric_drift
+    namespace: campaign_budget_usd
+    detail: >-
+      Decision log describes a verified $44M operations scale narrative while reconstruction
+      code may intentionally retain a compressed $6M envelope for downstream modeling.
+      Numeric authority remains constants.py plus budget contracts until reconciled.
+    status: open
+    detected: "2026-05-20"
+    canonical_updated_after: null
+
+  - debt_id: DEBT-003
+    doc_id: DOC-GLOBAL-SCOPE
+    issue: orphaned_scope_clone
+    namespace: terminology
+    detail: "Scope master expected under project_scope/ (typically gitignored) — clones must hydrate terminology gates locally."
+    status: open

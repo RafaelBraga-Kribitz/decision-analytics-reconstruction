@@ -1,0 +1,38 @@
+audiences:
+  portfolio:
+    description: Peer reviewers and hiring-facing readers without harness context
+    retrieval_order_weight: 1
+    prefer_authority:
+      - canonical
+  hiring:
+    description: DACH / employer positioning copy
+    retrieval_order_weight: 2
+    prefer_authority:
+      - canonical
+  maintainer:
+    description: Author and long-running operators
+    retrieval_order_weight: 3
+    prefer_authority:
+      - canonical
+      - derived
+  agent:
+    description: AI agents and harness automation
+    retrieval_order_weight: 4
+    prefer_authority:
+      - canonical
+      - registry
+      - derived
+      - evidence
+  technical:
+    description: Implementation and engineering depth
+    retrieval_order_weight: 2
+    prefer_authority:
+      - canonical
+
+# Agent-safe default retrieval order (short form; see AGENTS.md for narrative)
+retrieval_order:
+  - registry
+  - canonical
+  - derived
+  - evidence
+  - archive

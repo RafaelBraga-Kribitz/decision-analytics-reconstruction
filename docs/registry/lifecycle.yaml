@@ -1,0 +1,17 @@
+# Lifecycle status names (orthogonal to visibility, tier, authority)
+statuses:
+  - draft
+  - active
+  - deprecated
+  - archived
+  - generated
+  - experimental
+
+# Optional transition hints for tooling hints only (non-exhaustive)
+transitions_allow:
+  draft: [active, archived]
+  active: [deprecated, archived, draft]
+  deprecated: [archived]
+  archived: []
+  generated: []
+  experimental: [draft, active, archived]
