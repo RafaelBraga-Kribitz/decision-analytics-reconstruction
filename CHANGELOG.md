@@ -1,3 +1,17 @@
+---
+doc_id: DOC-ROOT-002
+doc_type: narrative
+doc_role: canonical
+visibility: public
+status: active
+owner: maintainer
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
+---
+
 # Changelog
 
 All notable changes to this project are documented here. This file follows [Keep a Changelog](https://keepachangelog.com/) format.
@@ -28,6 +42,7 @@ All notable changes to this project are documented here. This file follows [Keep
 - **NBI Tableau identifiers:** Added DGEEC 2012 Census (V01–V08, P01–P07) and INE tableau LUID references for infrastructure poverty mapping
 
 #### Documentation & Transparency
+- **Documentation registry hardening:** `docs_registry.yaml` validated with Pydantic (`scripts/doc_registry_schema.py`); `authority_precedence.yaml` permutes taxonomy authorities; path overrides live in `docs/registry/path_overrides.yaml` with `override_guard.max_paths`; `make doc-registry-schema-export` writes `doc_registry.schema.json`. Bump `docs_registry.yaml` `schema_version` only for breaking structural registry changes (record in this file and decision log).
 - Updated `reports/epistemic_boundaries.md` with verified data anchors and reconstruction methodology notes
 - Updated `reports/business_case.md` with real $44M budget context and reconstruction scale caveat
 - Updated `reports/HIRING_CONTEXT.md` with verified budget reference for interview talking points

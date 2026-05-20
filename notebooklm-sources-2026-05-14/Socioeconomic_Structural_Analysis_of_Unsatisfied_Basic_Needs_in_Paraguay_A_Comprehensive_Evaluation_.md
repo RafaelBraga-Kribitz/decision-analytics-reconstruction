@@ -1,13 +1,17 @@
 ---
-title: "Note Taking & Research Assistant Powered by AI"
-source: "https://notebooklm.google.com/notebook/8934f2a4-4471-4fe3-bb9a-a49f5f8950a6"
-author:
-published:
-created: 2026-05-14
-description: "This comprehensive report evaluates structural poverty in Paraguay by examining the 2012 National Census through the lens of Unsatisfied Basic Needs (NBI). The text explores four critical pillars of human welfare—housing quality, sanitary infrastructure, education access, and subsistence capacity—to provide a multidimensional alternative to simple income-based metrics. By detailing regional disparities, the analysis highlights a significant urban-rural divide, noting that while physical housing has improved, systemic gaps in sanitation and extreme deprivation in the Chaco region and indigenous communities remain major challenges. Ultimately, the document serves as a technical and sociopolitical roadmap, offering granular data and longitudinal trends to help policymakers transition toward more modern frameworks like the Multidimensional Poverty Index."
-tags:
-  - "clippings"
+doc_id: DOC-RES-007
+doc_type: research
+doc_role: reference
+visibility: public
+status: active
+owner: research
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
 ---
+
 Socioeconomic Structural Analysis of Unsatisfied Basic Needs in Paraguay: A Comprehensive Evaluation of the 2012 National Census Data
 
 The assessment of structural poverty in the Republic of Paraguay represents a critical undertaking for the determination of public policy, the allocation of fiscal resources, and the evaluation of long-term developmental trajectories. At the heart of this analytical framework is the index of Unsatisfied Basic Needs (Necesidades Básicas Insatisfechas, or NBI), a multidimensional metric that transcends simple income-based measurements to identify persistent deficiencies in the living conditions of the population.\[1, 2\] The 2012 National Population and Housing Census (Censo Nacional de Población y Viviendas 2012), conducted by the Dirección General de Estadística, Encuestas y Censos (DGEEC)—subsequently reorganized as the Instituto Nacional de Estadística (INE)—stands as a pivotal data collection event that captured the socioeconomic landscape of a nation in the midst of significant structural transformation.\[2, 3\] This report provides an exhaustive examination of the NBI data derived from the 2012 Census, detailing the technical identifiers, granular departmental statistics, and the broader sociopolitical implications of the findings.

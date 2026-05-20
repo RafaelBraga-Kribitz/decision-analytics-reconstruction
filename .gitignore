@@ -60,6 +60,20 @@ module_a_population_segmentation/reports/model_evaluation.md
 .cursor/rules/*
 !.cursor/rules/07-pre-public-cleanup-manifest.mdc
 !.cursor/rules/08-controlled-workflow-playbook.mdc
+!.cursor/rules/09-documentation-registry-governance.mdc
+!.cursor/rules/10-transaction-boundaries.mdc
+!.cursor/commands/
+.cursor/commands/*
+!.cursor/commands/task-complete.md
+!.cursor/commands/task-dispatch.md
+!.cursor/commands/task-execute.md
+!.cursor/commands/task-intake.md
+!.cursor/commands/task-plan.md
+!.cursor/commands/task-transaction.md
+!.cursor/commands/task-verify.md
+!.cursor/runtime/
+.cursor/runtime/*
+!.cursor/runtime/README.md
 !.cursor/skills/
 .cursor/skills/*
 !.cursor/skills/project-orchestrator/
@@ -94,6 +108,7 @@ project_scope/
 docs/ai_harness/*
 !docs/ai_harness/README.md
 !docs/ai_harness/CONTROLLED_WORKFLOW_PLAYBOOK.md
+!docs/ai_harness/simulation-tests.md
 
 # ─── Local graph context artifacts ───────────────────────────────────────────
 graphify-out/
@@ -104,11 +119,20 @@ ruvector.db
 *.ruvector.db
 
 # ─── Maintainer-only docs (not for public clone) ─────────────────────────────
-maintainer/
+maintainer/*
+!maintainer/pre_public_cleanup_manifest.md
+!maintainer/agent_transaction_backlog.md
+!maintainer/doc_debt/
+!maintainer/doc_debt/**
+!maintainer/evidence/
+!maintainer/evidence/**
+!maintainer/archive/
+!maintainer/archive/**
+
 reports/task_verify_*.md
 
 # ─── Project Scope Documents ───────────────────────────────────────────────────
-Project_Action_list.md
+# Project_Action_list.md — tracked stub (DOC-PLAN-002); full backlog archived under maintainer/archive/
 Project_Evaluation.md
 reports/integration_audit_2026-05-12.md
 reports/verification_session_proof_2026-05-12.md

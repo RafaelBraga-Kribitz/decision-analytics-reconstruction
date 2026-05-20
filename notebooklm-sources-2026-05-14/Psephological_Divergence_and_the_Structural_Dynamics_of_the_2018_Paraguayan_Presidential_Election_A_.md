@@ -1,13 +1,17 @@
 ---
-title: "Note Taking & Research Assistant Powered by AI"
-source: "https://notebooklm.google.com/notebook/8934f2a4-4471-4fe3-bb9a-a49f5f8950a6"
-author:
-published:
-created: 2026-05-14
-description: "The provided text examines the 2018 Paraguayan presidential election as a primary example of how statistical manipulation and a 'war of polls' can be used to influence a democratic outcome. By comparing the vastly different projections from various polling firms, the analysis reveals a systemic schism between accurate, competitive data and a 'dominant cluster' of firms that incorrectly predicted a landslide victory for the incumbent party. These exaggerated figures are described as performative tools of psychological influence designed to discourage opposition voters through a 'spiral of silence.' Ultimately, the source argues that the massive discrepancy between these biased projections and the narrow 3.88% actual margin of victory exposes a deep-seated collusion between media conglomerates, pollsters, and the political establishment."
-tags:
-  - "clippings"
+doc_id: DOC-RES-006
+doc_type: research
+doc_role: reference
+visibility: public
+status: active
+owner: research
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
 ---
+
 Psephological Divergence and the Structural Dynamics of the 2018 Paraguayan Presidential Election: A Comparative Analysis of Polling Methodologies and Outcomes
 
 The general elections held in Paraguay on April 22, 2018, serve as a seminal case study in the intersection of electoral sociology, political communication, and the weaponization of data within a transitional democracy. This report provides a granular examination of the polling environment during the critical window of March and April 2018, focusing specifically on the activities, methodologies, and publicized findings of four prominent polling entities: Ati Snead Consultores, ProLogo, the Instituto de Comunicación y Arte (ICA), and the Consultoría de Alternativas Políticas y Laborales Independientes (CAPLI). The period in question was defined by a profound statistical schism—popularly termed the "guerra de encuestas" (war of polls)—which fundamentally altered the national discourse and raised systemic questions regarding the integrity of pre-electoral data in the Southern Cone.\[1, 2\]

@@ -1,8 +1,15 @@
 ---
-exported: 2026-05-14T20:51:22.272Z
-source: NotebookLM
-type: chat
-title: "Currently, Facebook Ads (ch_facebook_ads) is alrea..."
+doc_id: DOC-RES-011
+doc_type: research
+doc_role: reference
+visibility: public
+status: active
+owner: research
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
 ---
 
 # Currently, Facebook Ads (ch_facebook_ads) is alrea...

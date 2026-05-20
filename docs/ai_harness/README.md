@@ -1,19 +1,36 @@
+---
+doc_id: DOC-HARNESS-002
+doc_type: policy
+doc_role: canonical
+visibility: internal
+status: active
+owner: harness
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
+---
+
 # AI orchestration harness — operator guide
 
-This folder plus `.cursor/rules`, `.cursor/commands`, `.cursor/agents`, and `.cursor/skills` implement the **plan-first, evidence-complete** workflow for the decision-analytics reconstruction project.
 
-**Always-on in Cursor:** [`.cursor/rules/08-controlled-workflow-playbook.mdc`](../../.cursor/rules/08-controlled-workflow-playbook.mdc) (`alwaysApply: true`) requires following the playbook below for non-trivial work.
+This repository also ships **`docs/registry/docs_registry.yaml`**: authoritative, machine-readable documentation inventory (immutable `doc_id` → path). Humans navigate via generated [`docs/INDEX.md`](../../docs/INDEX.md). Agents MUST follow retrieval order **`registry → canonical → derived → evidence → archive`** documented in `.cursor/rules/09-documentation-registry-governance.mdc`.
+
+--- [`.cursor/rules/08-controlled-workflow-playbook.mdc`](../../.cursor/rules/08-controlled-workflow-playbook.mdc) (`alwaysApply: true`) requires following the playbook below for non-trivial work.
 
 **Full controlled workflow (single narrative):** [`CONTROLLED_WORKFLOW_PLAYBOOK.md`](CONTROLLED_WORKFLOW_PLAYBOOK.md) — lifecycle, guardrails, coordination precedence, and appendices (git, CRISP-DM map, optional external tools).
 
 ## Quick start
 
 1. `**/task-intake`** — classify and recommend routing.
-2. `**/task-plan`** — lock objective, must-do/must-not, success criteria, tests, impact map, todos.
+2. `**/task-plan`** — lock **`UNIT_ID`**, `unit_impact_set`, must-do/must-not, success criteria, tests, impact map §A–N, runtime lock.
 3. `**/task-dispatch**` — confirm agent + skills (`docs/ai_harness/routing-matrix.md`).
-4. `**/task-execute**` — implement with gates.
-5. `**/task-verify**` — attach command evidence.
-6. `**/task-complete**` — move Cursor todos to **completed** only if verification is green.
+4. `**/task-execute**` — implement **one unit per session** with gates.
+5. `**/task-verify**` — attach command evidence (header names **`unit_id`**).
+6. `**/task-transaction**` — `make transaction-verify`, commit (**message contains `unit_id`**), **close unit; stop session**.
+7. `**/task-complete**` — when **all** planned units are closed and verification is green.
+8. `poetry run graphify update .` — session end (graphify rule).
 
 ## Dynamic workflow
 
@@ -23,7 +40,10 @@ flowchart LR
     plan --> dispatch[task-dispatch]
     dispatch --> exec[task-execute]
     exec --> verify[task-verify]
-    verify --> complete[task-complete]
+    verify --> txn[task-transaction]
+    txn --> await{more_units?}
+    await -->|explicit task-execute| exec
+    await -->|no| complete[task-complete]
 ```
 
 

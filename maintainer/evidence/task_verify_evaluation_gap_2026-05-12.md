@@ -1,3 +1,17 @@
+---
+doc_id: DOC-EVID-015
+doc_type: evidence
+doc_role: evidence
+visibility: internal
+status: archived
+owner: harness
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
+---
+
 # Task verify — evaluation gap remediation (2026-05-12)
 
 Session evidence for the evaluation-gap plan (CI Poetry install, rural WhatsApp anchor, doc path guard, MLflow opt-in documentation, decision log errata).

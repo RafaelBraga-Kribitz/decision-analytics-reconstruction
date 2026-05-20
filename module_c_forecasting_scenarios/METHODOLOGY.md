@@ -1,3 +1,17 @@
+---
+doc_id: DOC-MODC-001
+doc_type: methodology
+doc_role: canonical
+visibility: public
+status: active
+owner: module_c
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
+---
+
 # Module C Methodology — Probabilistic Tracking & Exit Bias
 
 ## Overview

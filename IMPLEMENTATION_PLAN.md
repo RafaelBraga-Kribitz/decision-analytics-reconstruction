@@ -1,3 +1,19 @@
+---
+doc_id: DOC-PLAN-001
+doc_type: execution
+doc_role: canonical
+visibility: public
+status: active
+owner: maintainer
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes:
+- DOC-PLAN-002
+- DOC-PLAN-003
+tags: []
+---
+
 # Implementation Plan
 
 **Project:** Paraguay 2018 Election Forecasting Reconstruction (A+ Portfolio Edition)  
@@ -20,8 +36,7 @@
 | 9 (Interval coverage) | 0.5h | ✅ COMPLETE (T9-3) |
 | **Total complete** | **43.5h** | **~89%** |
 
-**Session 2026-05-14 deliverables:** T8-1, T8-2, T8-3, T9-1, T9-2, T9-3 (11.5h)  
-**Next priority:** T8-4 (Docker smoke CI, Haiku, 1.5h) → unblocks §3 Architecture 9.5
+**Session 2026-05-14 deliverables:** T8-1, T8-2, T8-3, T9-1, T9-2, T9-3 (11.5h)
 
 ---
 
@@ -36,7 +51,7 @@
 | **5** | DVC pipeline + reproducibility (dvc.yaml, dvc.lock, .dvc/) | ~3h | ✅ COMPLETE | Gate 13 (dvc pipeline runs, outputs hash to manifest) |
 | **6** | Tier 3 components (T6-1→4: TSP/VRP, MC engine, heatmap, MILP bundles) | ~11h | ✅ COMPLETE | All Tier 3 artifacts present, tests pass |
 | **7** | Documentation (data dict, decision log, epistemic boundaries, baseline comparison) | 6h | ✅ COMPLETE (T7-1→5) | Gate 11 (all 5 docs complete; verify_doc_code_paths ✓) |
-| **8** | Pyright strict mode (all modules) + Docker smoke test CI | 8.5h | 7.0h ✅ / 1.5h ⏳ | Gate 7 (T8-1/2/3 done; T8-4 pending) |
+| **8** | Pyright strict mode (all modules) + Docker smoke test CI | 8.5h | ✅ COMPLETE (T8-1→4) | Gate 7 closed for strict typing + Docker smoke CI |
 | **9** | Statistical rigor (walk-forward, PPC, interval coverage) | 3.5h | ✅ COMPLETE (T9-1/2/3) | Gate 5 (all claims verified with evidence) |
 
 ---

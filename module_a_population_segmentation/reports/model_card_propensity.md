@@ -1,3 +1,17 @@
+---
+doc_id: DOC-MODA-003
+doc_type: narrative
+doc_role: canonical
+visibility: public
+status: active
+owner: project
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
+---
+
 # Model Card — PropensityModel
 
 - **Model**: Logistic Regression + Platt scaling + department rake (iterative correction for clipping)

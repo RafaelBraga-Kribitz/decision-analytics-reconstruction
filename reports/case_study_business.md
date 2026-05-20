@@ -1,13 +1,23 @@
 ---
-title: "Decision Analytics at Scale"
-subtitle: "How behavioral segmentation, constrained optimization, and probabilistic forecasting turned a 4.26-million-entity program into a verifiable +3.70 pp outcome"
-author: "Rafael Bragá-Kribitz · Data Science Portfolio"
-date: "2026"
-geometry: margin=2.5cm
-fontsize: 11pt
-linestretch: 1.4
-colorlinks: true
-linkcolor: "NavyBlue"
+doc_id: DOC-BIZ-002
+doc_type: narrative
+doc_role: derived
+visibility: public
+status: active
+owner: project
+last_reviewed: '2026-05-20'
+canonical_source:
+- DOC-BIZ-001
+derived_from:
+- DOC-BIZ-001
+supersedes: null
+tags: []
+allowed_content:
+- interpretation
+- summarization
+forbidden_content:
+- novel_metrics
+- novel_claims
 ---
 
 \newpage

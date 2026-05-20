@@ -1,3 +1,17 @@
+---
+doc_id: DOC-DOCS-003
+doc_type: narrative
+doc_role: canonical
+visibility: public
+status: active
+owner: project
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
+---
+
 # GitHub Actions & Workload Identity Setup
 
 Configure GitHub Actions for automatic Cloud Run deployment.

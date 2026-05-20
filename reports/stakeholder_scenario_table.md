@@ -1,3 +1,17 @@
+---
+doc_id: DOC-REP-010
+doc_type: narrative
+doc_role: canonical
+visibility: public
+status: active
+owner: project
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
+---
+
 # Stakeholder scenario table — who asks what?
 
 Maps three decision-maker archetypes (field operations, analytics leadership, finance) to the concerns they probe and **where this repository answers** them. Roles are illustrative; terminology follows project scope (**entity**, **population dataset**, **participation rate**, **preference proxy**, **outcome event**, **survey measurement** / measurement firm).

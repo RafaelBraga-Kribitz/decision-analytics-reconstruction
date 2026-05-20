@@ -1,3 +1,17 @@
+---
+doc_id: DOC-EVID-014
+doc_type: evidence
+doc_role: evidence
+visibility: internal
+status: archived
+owner: harness
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
+---
+
 # Task verify — Data Science Framing (Project_Action_list §2)
 
 **Session:** 2026-05-12 (Mac Pro workspace). Commands run from repo root after fixing export artifact key test for `model_run_manifest`.

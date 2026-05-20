@@ -2,7 +2,7 @@
 	module-b-allocate module-b-allocate-sensitivity module-b-routing module-b-api \
 	test-module-a test-module-b test-module-c \
 	module-c-tracking module-c-exit module-c-mc module-c-all module-c-walk-forward module-c-ppc \
-	precommit validate doc-path-verify portfolio-verify tier3-smoke e2e-smoke
+	precommit transaction-verify validate doc-path-verify doc-registry-verify doc-registry-schema-export portfolio-verify tier3-smoke e2e-smoke
 
 MODULE_A_SRC := module_a_population_segmentation/src
 MODULE_A_TESTS := module_a_population_segmentation/tests
@@ -33,13 +33,27 @@ test:
 	poetry run pytest $(MODULE_TEST_ARGS) -v --tb=short -m "not slow" $(COV_FLAGS)
 
 precommit:
-	poetry run pre-commit install
+	poetry run pre-commit install --hook-type pre-commit --hook-type commit-msg
 	poetry run pre-commit run --all-files
 
-validate: lint typecheck test doc-path-verify
+transaction-verify:
+	poetry run python scripts/transaction_commit_gate.py --repo . --unit-lock .cursor/runtime/current_unit.json --check-staged
+
+validate: lint typecheck test doc-path-verify doc-registry-verify
 
 doc-path-verify:
 	poetry run python scripts/verify_doc_code_paths.py
+
+doc-registry-verify:
+	poetry run python scripts/build_docs_registry.py
+	poetry run python scripts/generate_doc_index.py --write
+	poetry run python scripts/verify_doc_registry.py
+	poetry run python scripts/check_doc_frontmatter.py
+	poetry run python scripts/check_doc_drift.py
+	poetry run python scripts/generate_doc_index.py --check
+
+doc-registry-schema-export:
+	poetry run python scripts/export_doc_registry_schema.py
 
 portfolio-verify:
 	poetry run python scripts/portfolio_verify.py

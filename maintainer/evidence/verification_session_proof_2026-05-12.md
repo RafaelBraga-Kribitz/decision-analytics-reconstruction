@@ -1,3 +1,17 @@
+---
+doc_id: DOC-EVID-017
+doc_type: evidence
+doc_role: evidence
+visibility: internal
+status: archived
+owner: harness
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
+---
+
 # Verification session — task plan and proof table
 
 **Task ID:** full-stack-verification-2026-05-12  

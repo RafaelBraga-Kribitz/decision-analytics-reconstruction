@@ -1,3 +1,25 @@
+---
+doc_id: DOC-RPT-011
+doc_type: specification
+doc_role: derived
+visibility: public
+status: active
+owner: project
+last_reviewed: '2026-05-20'
+canonical_source:
+- DOC-SCH-001
+- DOC-ARCH-001
+derived_from:
+- DOC-SCH-001
+supersedes: null
+tags: []
+allowed_content:
+- interpretation
+- summarization
+forbidden_content:
+- novel_metrics
+---
+
 # Module A model and stage I/O specification
 
 Column names in **Constant** refer to `module_a_population_segmentation/src/population_segmentation/utils/schema.py` where the symbol exists. Dtypes follow `schema_contracts/*.yaml` and export code; this is a human-facing index, not a substitute for Pandera checks.

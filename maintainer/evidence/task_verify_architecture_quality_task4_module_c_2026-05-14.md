@@ -1,3 +1,17 @@
+---
+doc_id: DOC-EVID-007
+doc_type: evidence
+doc_role: evidence
+visibility: internal
+status: archived
+owner: harness
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
+---
+
 # Task verify — Architecture Quality (Project_Action_list §3, Module C surface)
 
 **Task ID:** TASK-20260514-ARCH-Q4-MODULE-C-SURFACE  

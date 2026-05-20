@@ -1,0 +1,31 @@
+---
+alwaysApply: true
+description: Navigate and edit documentation via the machine-readable registry (registry-as-data).
+---
+
+# Documentation registry governance (always on)
+
+## Retrieval order
+
+Follow this order for documentation truth and provenance:
+
+`docs/registry/docs_registry.yaml` → canonical paths (`authority: canonical`) → derived views → evidence (`maintainer/evidence/`) → archived lineage only.
+
+## Hard guardrails
+
+- Do **not** create a new canonical prose document without updating `scripts/build_docs_registry.py` (then regenerating `docs/registry/docs_registry.yaml`) and assigning a unique immutable `doc_id`.
+- Do **not** introduce new numeric claims into `doc_role: derived` files; bind numbers to YAML or `constants.py` and cite the owning `doc_id`.
+- Do **not** treat `doc_type: research` or `maintainer/evidence/*` as authoritative for product scope.
+- Do **not** rename a tracked document without preserving its `doc_id` in the registry entry (update `path` only).
+- Keep **`.cursor/skills/project-orchestrator/SKILL.md`** and **`.claude/skills/project-orchestrator/SKILL.md`** in sync when doc-governance wording changes.
+
+## Tooling
+
+After changing tracked documentation inventory or classification:
+
+1. `poetry run python scripts/build_docs_registry.py`
+2. `poetry run python scripts/generate_doc_index.py --write`
+3. `poetry run python scripts/sync_doc_frontmatter.py`
+4. `make doc-registry-verify`
+
+`make validate` runs the full documentation governance chain.

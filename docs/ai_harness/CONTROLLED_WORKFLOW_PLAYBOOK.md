@@ -1,3 +1,17 @@
+---
+doc_id: DOC-HARNESS-001
+doc_type: policy
+doc_role: canonical
+visibility: internal
+status: active
+owner: harness
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
+---
+
 # Controlled workflow playbook
 
 **Audience:** Operators and AI agents working in this repository.
@@ -12,14 +26,16 @@
 
 | Step | Command / artifact | Canonical detail |
 |------|---------------------|------------------|
-| 0 | Rules + entrypoints | [`AGENTS.md`](../../AGENTS.md), [`.cursor/rules/08-controlled-workflow-playbook.mdc`](../../.cursor/rules/08-controlled-workflow-playbook.mdc) (`alwaysApply: true`), [`.cursor/rules/00-plan-first-governance.mdc`](../../.cursor/rules/00-plan-first-governance.mdc), [`.cursor/rules/02-definition-of-done.mdc`](../../.cursor/rules/02-definition-of-done.mdc) |
+| 0 | Rules + entrypoints | [`AGENTS.md`](../../AGENTS.md), [`.cursor/rules/08-controlled-workflow-playbook.mdc`](../../.cursor/rules/08-controlled-workflow-playbook.mdc) (`alwaysApply: true`), [`.cursor/rules/10-transaction-boundaries.mdc`](../../.cursor/rules/10-transaction-boundaries.mdc), [`.cursor/rules/00-plan-first-governance.mdc`](../../.cursor/rules/00-plan-first-governance.mdc), [`.cursor/rules/02-definition-of-done.mdc`](../../.cursor/rules/02-definition-of-done.mdc) |
+| 0a | Machine-readable docs inventory | [`docs/registry/docs_registry.yaml`](../../docs/registry/docs_registry.yaml), generated navigational [`docs/INDEX.md`](../../docs/INDEX.md), retrieval order in `.cursor/rules/09-documentation-registry-governance.mdc`; **membership:** `git ls-files '*.md'` gates what the builder may emit — **semantic conformance** is [`scripts/verify_doc_registry.py`](../../scripts/verify_doc_registry.py) on the emitted YAML (`doc_registry.schema.json` is the exported structural contract); **CI** runs on committed snapshots only (`make doc-registry-verify` after `checkout`) |
 | 1 | `/task-intake` | [`.cursor/commands/task-intake.md`](../../.cursor/commands/task-intake.md), [`task-taxonomy.md`](task-taxonomy.md) |
-| 2 | `/task-plan` | [`.cursor/commands/task-plan.md`](../../.cursor/commands/task-plan.md) — sections A–J mandatory |
+| 2 | `/task-plan` | [`.cursor/commands/task-plan.md`](../../.cursor/commands/task-plan.md) — sections A–N mandatory; write [`.cursor/runtime/current_unit.json`](../../.cursor/runtime/current_unit.json) |
 | 3 | `/task-dispatch` | [`.cursor/commands/task-dispatch.md`](../../.cursor/commands/task-dispatch.md), [`routing-matrix.md`](routing-matrix.md) |
-| 4 | `/task-execute` | [`.cursor/commands/task-execute.md`](../../.cursor/commands/task-execute.md), checklist B in [`checklists.md`](checklists.md) |
+| 4 | `/task-execute` | [`.cursor/commands/task-execute.md`](../../.cursor/commands/task-execute.md), checklist B in [`checklists.md`](checklists.md) — **one `UNIT_ID` per session** |
 | 5 | `/task-verify` | [`.cursor/commands/task-verify.md`](../../.cursor/commands/task-verify.md), checklist C in [`checklists.md`](checklists.md) |
-| 6 | `/task-complete` | [`.cursor/commands/task-complete.md`](../../.cursor/commands/task-complete.md), checklist D in [`checklists.md`](checklists.md) |
-| 7 | Graph refresh | `poetry run graphify update .` (session end; see [`.cursor/rules/graphify.mdc`](../../.cursor/rules/graphify.mdc), [`CLAUDE.md`](../../CLAUDE.md)) |
+| 6 | `/task-transaction` | [`.cursor/commands/task-transaction.md`](../../.cursor/commands/task-transaction.md), `make transaction-verify`, then commit — **unit closes; session stops** |
+| 7 | `/task-complete` | [`.cursor/commands/task-complete.md`](../../.cursor/commands/task-complete.md), checklist D in [`checklists.md`](checklists.md) — when **all** planned units are closed |
+| 8 | Graph refresh | `poetry run graphify update .` (session end; see [`.cursor/rules/graphify.mdc`](../../.cursor/rules/graphify.mdc), [`CLAUDE.md`](../../CLAUDE.md)) |
 
 ```mermaid
 flowchart LR
@@ -27,9 +43,14 @@ flowchart LR
   plan --> dispatch[task-dispatch]
   dispatch --> exec[task-execute]
   exec --> verify[task-verify]
-  verify --> complete[task-complete]
+  verify --> txn[task-transaction]
+  txn --> await{more_units?}
+  await -->|explicit task-execute| exec
+  await -->|no| complete[task-complete]
   complete --> graphify[graphify_update]
 ```
+
+**Session rule:** after `task-transaction`, do **not** auto-continue — next unit needs a new `task-execute` turn.
 
 ---
 
@@ -59,22 +80,23 @@ These layers correspond to “validate before execute” patterns for agent-assi
 | Typed handoffs | Rows and structs consumed downstream | e.g. Module B→C handshake types under `module_b_resource_allocation/` |
 | Cross-module edits | Producer/consumer audit before merge | [`.cursor/rules/03-cross-module-impact-gate.mdc`](../../.cursor/rules/03-cross-module-impact-gate.mdc), `reports/decision_log.md` when behavior changes |
 | Module C series | Single calibration series per model; no mixed numerators | Scope + Module C config; see terminology rule for `outcome_event_date` vs mixed series |
+| Transaction boundary | `UNIT_ID`, runtime lock, plan-reconciled commits | [`.cursor/rules/10-transaction-boundaries.mdc`](../../.cursor/rules/10-transaction-boundaries.mdc), `scripts/transaction_commit_gate.py`, `.cursor/runtime/README.md` |
 
 ---
 
-## 4. Coordination: slash commands, Cursor todos, and `Project_Action_list.md`
+## 4. Coordination: slash commands, Cursor todos, and transaction backlog
 
 **Order of precedence (highest first):**
 
-1. **Approved `/task-plan`** (sections A–J) — defines must-do, must-not, verification commands, and impact map for the **current** work item.
-2. **Harness checklists** — especially [`checklists.md`](checklists.md) § D: Cursor todo states mirror plan todos; nothing moves to `completed` without verification evidence.
-3. **`Project_Action_list.md`** — **optional backlog and multi-session coordination overlay**: topics and checkboxes for long-range improvement; another operator may add a “currently working” marker next to a line to avoid duplicate assignment.
+1. **Approved `/task-plan`** (sections A–N) — defines `UNIT_ID`, `unit_impact_set`, verification, and branch for the **active** change unit.
+2. **Harness checklists** — especially [`checklists.md`](checklists.md) § D: Cursor todo states mirror plan todos; nothing moves to `completed` without verification evidence and **closed units** when multi-unit.
+3. **[`maintainer/agent_transaction_backlog.md`](../../maintainer/agent_transaction_backlog.md)** — append-only discoveries that must **not** expand the current `UNIT_ID`; process in a later unit.
 
 **Rules:**
 
-- A line in `Project_Action_list.md` does **not** replace `/task-plan` or the proof table for that task.
-- **Parallel work** (two unrelated tasks): follow [`routing-matrix.md`](routing-matrix.md) — separate `/task-plan` (and typically separate branches or worktrees) per track; confirm **no shared** `schema_contracts/**`, `config/**`, or contract outputs in flux between tracks.
-- When using a “working” flag in `Project_Action_list.md`, only one active task per agent; skip lines already flagged by another session.
+- **`Project_Action_list.md`** is an archived stub; do **not** use it as active backlog (see file header).
+- **Parallel work** (two unrelated tasks): follow [`routing-matrix.md`](routing-matrix.md) — separate `/task-plan`, branch, and typically **`.cursor/runtime/current_unit.json`** per track; confirm **no shared** `schema_contracts/**`, `config/**`, or contract outputs in flux between tracks.
+- One **active `UNIT_ID`** per agent session; after `/task-transaction`, the session **ends** until explicitly dispatched again.
 
 ---
 
@@ -87,12 +109,27 @@ Do not treat “update graph” as a substitute for `/task-verify` or git histor
 
 ---
 
-## Appendix A — Git discipline (atomic, evidence-aligned)
+## Appendix A — Transaction boundary (atomic units, not “git tips”)
 
-- **One logical change per commit** where possible; keep the tree buildable and tests passing at each commit.
-- **Subject line:** imperative mood, roughly ≤50 characters; **body** optional, wrap near 72 characters for readability.
-- **Conventional Commits** (`type(scope): subject`) are encouraged for changelog clarity.
-- **Push** only when the current task’s **verification commands** have been run in the **same** session and evidence is attached per `/task-verify` — not “should pass from yesterday.”
+This appendix is **binding** for autonomous agents. Full detail: **`.cursor/rules/10-transaction-boundaries.mdc`**.
+
+### Three levels
+
+| Level | Rule |
+|-------|------|
+| **Task** | May queue multiple **`UNIT_ID`** values (plan §N). |
+| **Unit** | One semantic intention; **closed** after `/task-transaction` + commit. |
+| **Session** | Exactly **one** active `UNIT_ID` per `/task-execute` — no auto-dispatch of the next unit. |
+
+### Persistence
+
+- **Runtime lock:** `.cursor/runtime/current_unit.json` (gitignored) holds `unit_impact_set`, `allowed_paths`, `status`.
+- **Commit gate:** `make transaction-verify` / pre-commit — staged files ⊆ `unit_impact_set`, message contains `unit_id`, branch not `main`. If the lock file is **missing**, the gate **skips** (humans); agents **must** keep the lock current.
+- **Push:** **Not** part of the unit boundary. Unit closure = commit + lock `closed` + summary. Push is sync/deploy when the operator chooses.
+
+### Conventional Commits
+
+`type(scope): subject` encouraged; **commit message must contain the literal `unit_id` string.**
 
 ---
 

@@ -34,6 +34,8 @@ def test_pre_commit_config_lists_core_hooks() -> None:
     ids = {h["id"] for h in hooks}
     assert "pyright" in ids
     assert "pytest-smoke" in ids
+    assert "transaction-gate-staged" in ids
+    assert "transaction-gate-commit-msg" in ids
 
     black_hook = _hook(repos, "https://github.com/psf/black", "black")
     assert "tests/test_eda.py" in " ".join(black_hook.get("args", []))

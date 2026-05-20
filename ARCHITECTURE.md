@@ -1,3 +1,17 @@
+---
+doc_id: DOC-ARCH-001
+doc_type: specification
+doc_role: canonical
+visibility: public
+status: active
+owner: architecture
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
+---
+
 # Architecture
 
 Three-module decision analytics system. Each module is an independent deployable unit;

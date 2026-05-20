@@ -1,13 +1,17 @@
 ---
-title: "Note Taking & Research Assistant Powered by AI"
-source: "https://notebooklm.google.com/notebook/8934f2a4-4471-4fe3-bb9a-a49f5f8950a6"
-author:
-published:
-created: 2026-05-14
-description: "This technical assessment examines the modernization of Paraguay’s road infrastructure between 2017 and 2018, a period marked by a comprehensive reclassification of national routes and an updated inventory of over 80,000 kilometers. The text highlights a critical logistical divide where a high-quality primary network supports natural resource exports, yet over 88% of total roads remain unpaved, leaving many rural residents without reliable year-round access. To address these vulnerabilities, the government transitioned to performance-based maintenance models and strategic paving projects designed to lower transport costs and improve social equity through the Rural Access Index. Ultimately, the report illustrates Paraguay's shift from a landlocked nation to a land-linked regional hub, balancing ambitious international corridors with the essential need for domestic territorial integration."
-tags:
-  - "clippings"
+doc_id: DOC-RES-008
+doc_type: research
+doc_role: reference
+visibility: public
+status: active
+owner: research
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
 ---
+
 Technical Assessment of the Paraguayan Road Infrastructure: National Inventory, Departmental Distribution, and Rural Connectivity Metrics (2017-2018)
 
 The landlocked status of the Republic of Paraguay necessitates an internal transport framework that is not merely functional but optimized for international competitiveness and domestic territorial integration. In the period spanning 2017 to 2018, the Ministry of Public Works and Communications (MOPC) undertook a significant institutional and physical modernization of the national road network, a transition fueled by the need to lower logistical costs and fulfill the objectives of the National Development Plan 2030.\[1, 2, 3\] Historically, Paraguay’s infrastructure had suffered from a legacy of underinvestment, where as late as 2010, nearly 90% of the 60,000 kilometers of roads were unpaved, leaving the nation’s agricultural output highly vulnerable to climatic conditions.\[2\] By 2018, the total inventoried network had expanded to 80,127 kilometers, reflecting a concerted effort to map, categorize, and improve the vast rural reaches of the country.\[3\]

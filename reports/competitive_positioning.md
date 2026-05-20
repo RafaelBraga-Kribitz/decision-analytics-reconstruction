@@ -1,3 +1,25 @@
+---
+doc_id: DOC-BIZ-004
+doc_type: narrative
+doc_role: derived
+visibility: public
+status: active
+owner: project
+last_reviewed: '2026-05-20'
+canonical_source:
+- DOC-BIZ-001
+derived_from:
+- DOC-BIZ-001
+supersedes: null
+tags: []
+allowed_content:
+- interpretation
+- summarization
+forbidden_content:
+- novel_metrics
+- novel_claims
+---
+
 # Competitive positioning — why this portfolio stands apart
 
 ## The typical data science portfolio

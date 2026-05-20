@@ -1,3 +1,17 @@
+---
+doc_id: DOC-REP-007
+doc_type: narrative
+doc_role: canonical
+visibility: public
+status: active
+owner: project
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
+---
+
 # Integration audit — portfolio 360° hardening (2026-05-12)
 
 ## Scope

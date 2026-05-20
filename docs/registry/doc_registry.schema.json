@@ -1,0 +1,204 @@
+{
+  "$defs": {
+    "RegistryDocument": {
+      "additionalProperties": false,
+      "description": "Single inventory row — keys must match emitted YAML (no unknown keys).",
+      "properties": {
+        "doc_id": {
+          "title": "Doc Id",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "doc_type": {
+          "title": "Doc Type",
+          "type": "string"
+        },
+        "doc_role": {
+          "title": "Doc Role",
+          "type": "string"
+        },
+        "visibility": {
+          "title": "Visibility",
+          "type": "string"
+        },
+        "authority": {
+          "title": "Authority",
+          "type": "string"
+        },
+        "status": {
+          "default": "active",
+          "title": "Status",
+          "type": "string"
+        },
+        "sensitivity": {
+          "title": "Sensitivity",
+          "type": "string"
+        },
+        "owner": {
+          "title": "Owner",
+          "type": "string"
+        },
+        "last_reviewed": {
+          "title": "Last Reviewed",
+          "type": "string"
+        },
+        "audience": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Audience",
+          "type": "array"
+        },
+        "canonical_source": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Canonical Source",
+          "type": "array"
+        },
+        "derived_from": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Derived From",
+          "type": "array"
+        },
+        "supersedes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Supersedes",
+          "type": "array"
+        },
+        "numeric_authority": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Numeric Authority",
+          "type": "array"
+        },
+        "frontmatter_required": {
+          "default": true,
+          "title": "Frontmatter Required",
+          "type": "boolean"
+        },
+        "tier_shorthand": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tier Shorthand"
+        },
+        "allowed_content": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Allowed Content"
+        },
+        "forbidden_content": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Forbidden Content"
+        },
+        "tags": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tags"
+        },
+        "governance_subject": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Governance Subject"
+        }
+      },
+      "required": [
+        "doc_id",
+        "path",
+        "doc_type",
+        "doc_role",
+        "visibility",
+        "authority",
+        "sensitivity",
+        "owner",
+        "last_reviewed",
+        "audience"
+      ],
+      "title": "RegistryDocument",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Root object written by scripts/build_docs_registry.py.",
+  "properties": {
+    "schema_version": {
+      "title": "Schema Version",
+      "type": "integer"
+    },
+    "numeric_namespaces": {
+      "additionalProperties": {
+        "additionalProperties": true,
+        "type": "object"
+      },
+      "title": "Numeric Namespaces",
+      "type": "object"
+    },
+    "documents": {
+      "items": {
+        "$ref": "#/$defs/RegistryDocument"
+      },
+      "title": "Documents",
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "numeric_namespaces",
+    "documents"
+  ],
+  "title": "RegistryRoot",
+  "type": "object"
+}

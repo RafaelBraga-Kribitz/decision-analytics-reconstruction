@@ -5,14 +5,16 @@ doc_role: registry
 visibility: internal
 status: active
 owner: maintainer
-last_reviewed: "2026-05-20"
+last_reviewed: '2026-05-20'
 canonical_source: null
-derived_from: []
-supersedes: []
+derived_from: null
+supersedes: null
 tags:
-  - doc-debt
+- doc-debt
 ---
 
 # Documentation debt ledger
 
 Open rows live in [`open.yaml`](open.yaml). Closed rows accumulate in [`resolved.yaml`](resolved.yaml).
+
+[`docs/registry/path_overrides.yaml`](../../docs/registry/path_overrides.yaml) caps how many path-level registry overrides may exist (`override_guard.max_paths`). Raising that cap should be recorded in [`../../reports/decision_log.md`](../../reports/decision_log.md) (same bar as other governance changes).

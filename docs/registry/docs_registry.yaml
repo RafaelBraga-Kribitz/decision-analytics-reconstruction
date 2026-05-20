@@ -95,11 +95,32 @@ documents:
   canonical_source: []
   derived_from: []
   supersedes:
+  - DOC-PLAN-002
   - DOC-PLAN-003
   numeric_authority: []
   frontmatter_required: true
   doc_id: DOC-PLAN-001
   path: IMPLEMENTATION_PLAN.md
+  last_reviewed: '2026-05-20'
+- doc_type: execution
+  doc_role: derived
+  visibility: internal
+  audience:
+  - maintainer
+  authority: reference_only
+  status: archived
+  sensitivity: internal
+  owner: maintainer
+  tier_shorthand: T1
+  canonical_source:
+  - DOC-PLAN-001
+  derived_from:
+  - DOC-PLAN-001
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: true
+  doc_id: DOC-PLAN-002
+  path: Project_Action_list.md
   last_reviewed: '2026-05-20'
 - doc_type: narrative
   doc_role: canonical
@@ -249,6 +270,26 @@ documents:
   doc_id: DOC-DOCS-003
   path: docs/GITHUB_ACTIONS_SETUP.md
   last_reviewed: '2026-05-20'
+- doc_type: registry
+  doc_role: registry
+  visibility: public
+  audience:
+  - portfolio
+  - agent
+  - maintainer
+  authority: registry
+  status: generated
+  sensitivity: public
+  owner: architecture
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-DOCS-004
+  path: docs/INDEX.md
+  last_reviewed: '2026-05-20'
 - doc_type: policy
   doc_role: canonical
   visibility: internal
@@ -303,9 +344,29 @@ documents:
   - DOC-PLAN-001
   supersedes: []
   numeric_authority: []
-  frontmatter_required: true
+  frontmatter_required: false
   doc_id: DOC-PLAN-003
   path: maintainer/archive/Project_Action_list_full.md
+  last_reviewed: '2026-05-20'
+- doc_type: registry
+  doc_role: registry
+  visibility: internal
+  audience:
+  - maintainer
+  authority: registry
+  status: active
+  sensitivity: internal
+  owner: maintainer
+  tier_shorthand: T2
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: true
+  tags:
+  - doc-debt
+  doc_id: DOC-DEBT-README
+  path: maintainer/doc_debt/README.md
   last_reviewed: '2026-05-20'
 - doc_type: evidence
   doc_role: evidence

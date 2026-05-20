@@ -5,14 +5,13 @@ doc_role: derived
 visibility: internal
 status: archived
 owner: maintainer
-last_reviewed: "2026-05-20"
+last_reviewed: '2026-05-20'
 canonical_source:
-  - DOC-PLAN-001
+- DOC-PLAN-001
 derived_from:
-  - DOC-PLAN-001
+- DOC-PLAN-001
 supersedes: null
-tags:
-  - archived-backlog
+tags: []
 ---
 
 # Project action list — stub (archived body)

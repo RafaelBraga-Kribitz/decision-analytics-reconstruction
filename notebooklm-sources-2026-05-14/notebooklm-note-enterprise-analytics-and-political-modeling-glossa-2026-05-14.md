@@ -1,8 +1,15 @@
 ---
-exported: 2026-05-14T19:57:14.917Z
-source: NotebookLM
-type: note
-title: "Enterprise Analytics and Political Modeling Glossary"
+doc_id: DOC-RES-012
+doc_type: research
+doc_role: reference
+visibility: public
+status: active
+owner: research
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
 ---
 
 # Enterprise Analytics and Political Modeling Glossary

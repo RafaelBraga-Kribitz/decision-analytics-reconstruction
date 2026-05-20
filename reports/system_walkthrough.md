@@ -1,3 +1,17 @@
+---
+doc_id: DOC-WALK-001
+doc_type: walkthrough
+doc_role: canonical
+visibility: public
+status: active
+owner: portfolio
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
+---
+
 # System walkthrough — one entity row (technical)
 
 This path is the **code-oriented** complement to `reports/executive_demo_walkthrough.md` (stakeholder narrative).

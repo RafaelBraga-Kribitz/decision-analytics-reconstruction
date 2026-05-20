@@ -1,13 +1,17 @@
 ---
-title: "Note Taking & Research Assistant Powered by AI"
-source: "https://notebooklm.google.com/notebook/8934f2a4-4471-4fe3-bb9a-a49f5f8950a6"
-author:
-published:
-created: 2026-05-14
-description: "This macroeconomic report examines the daily exchange rate dynamics between the US Dollar and the Paraguayan Guaraní during the first four months of 2018. It details the institutional framework of the Banco Central del Paraguay, illustrating how the bank utilizes volume-weighted averages and open market operations to maintain monetary stability and transparency. A primary focus of the text is the agricultural export cycle, which historically strengthens the Guaraní in March due to a surge in foreign currency inflows from soybean and beef sales. Ultimately, the analysis highlights Paraguay’s regional resilience, showing how disciplined fiscal policy allowed the nation to remain an 'island of stability' despite the financial volatility affecting its neighbors."
-tags:
-  - "clippings"
+doc_id: DOC-RES-004
+doc_type: research
+doc_role: reference
+visibility: public
+status: active
+owner: research
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
 ---
+
 Macroeconomic Analysis of the Paraguayan Guaraní: Daily Exchange Rate Dynamics and the Institutional Framework of the Banco Central del Paraguay (January–April 2018)
 
 The exchange rate between the United States Dollar (USD) and the Paraguayan Guaraní (PYG) is a fundamental pillar of the Paraguayan economy, serving as a critical indicator for monetary policy, international trade, and financial stability. Within the first four months of 2018, the Guaraní navigated a period of notable resilience and seasonal fluctuations that are emblematic of the Banco Central del Paraguay (BCP) and its managed flexibility regime. The "Cotización de Referencia," or the reference exchange rate, is the official benchmark published by the BCP, representing the weighted average of interbank and exchange house transactions conducted throughout a given business day.\[1, 2\] This report provides an exhaustive analysis of the daily dynamics, institutional mechanisms, and macroeconomic context that defined the USD/PYG relationship between January 1, 2018, and April 30, 2018.

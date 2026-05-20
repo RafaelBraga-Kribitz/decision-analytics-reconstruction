@@ -1,3 +1,17 @@
+---
+doc_id: DOC-DLOG-001
+doc_type: narrative
+doc_role: canonical
+visibility: public
+status: active
+owner: maintainer
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
+---
+
 ## 2026-05-15 — T11-1→4: Data integration — replace 8 estimated anchors with verified 2018 historical sources
 
 **Decision:** Complete T11 data integration backfill across all four modules. Previously marked `[ESTIMATED]` flags are now replaced with `[VERIFIED]` anchors sourced from official 2018 Paraguay historical records. Integration elevates reconstruction from methodological prototype to fully verified, production-ready 2018 replica.
@@ -871,3 +885,30 @@ Bootstrap ARI (> 0.77, enforced) validates stability across random seeds — a c
 **Outcome:** `allocation.py` unconditionally declares `y[d,c,w]` as `cat="Binary"`; `build_problem(bundle_constraints=True)` adds `z[bundle_id]` linking constraints; `test_milp_optimizer.py` verifies OPTIMAL status and bundle floor satisfaction; `test_milp_solution_differs_from_relaxation` confirms the constrained MILP solution differs from the LP-relaxation (bundle_constraints=False) comparator by Σ|Δ| > 1 USD.
 
 **Source:** `module_b_resource_allocation/models/allocation.py`; `tests/test_milp_optimizer.py`; Project_Action_list.md T6-4
+
+---
+
+## 2026-05-20 — Harness: agent transaction boundaries (UNIT_ID, runtime lock, commit gate)
+
+**Decision:** Add a **three-level** runtime model (task / unit / session) so autonomous work closes **atomic change units** with deterministic **plan-reconciliation** commits, not heuristic message parsing alone.
+
+**Primitives:**
+
+- **`UNIT_ID`** — stable suffix on `task_id`; required in commit message, verify headers, and backlog rows when using the harness.
+- **`.cursor/runtime/current_unit.json`** — gitignored SSOT for `unit_impact_set`, `allowed_paths`, and `status` (`declared` | `in_progress` | `closed`).
+- **`scripts/transaction_commit_gate.py`** — validates **staged ⊆ unit_impact_set**, allowlist, branch not `main`/`master`, optional diff budget; **commit-msg** validates **`unit_id` substring** and Conventional Commits first line. If the lock file is **absent**, hooks **skip** so human commits are not blocked.
+- **Commands:** `/task-plan` §A–N (unit fields), **`/task-transaction`**, `/task-execute` restricted to **one unit per session**; session **does not** auto-dispatch the next unit after closure.
+- **Push** is explicitly **outside** the unit boundary (closure = commit + lock + summary).
+
+**Outcome:** `.cursor/rules/10-transaction-boundaries.mdc` (`alwaysApply: true`); pre-commit hooks `transaction-gate-staged`, `transaction-gate-commit-msg`; `make transaction-verify`; `maintainer/agent_transaction_backlog.md`; playbook/README/checklists/DoD updates; `tests/test_architecture_transaction_contract.py`.
+
+**Source:** harness architecture v2; `docs/ai_harness/CONTROLLED_WORKFLOW_PLAYBOOK.md` Appendix A
+
+---
+
+## 2026-05-20 — Documentation registry structural contract and path override guard
+
+**Decision:** Validate emitted `docs/registry/docs_registry.yaml` structure with Pydantic (`scripts/doc_registry_schema.py`) and export JSON Schema (`make doc-registry-schema-export` → `doc_registry.schema.json`). Declare narrative precedence among `authority` labels in `docs/registry/authority_precedence.yaml`; verify it stays a permutation of taxonomy authorities. Consolidate stable per-path metadata in `docs/registry/path_overrides.yaml` guarded by `override_guard.max_paths` (raise only with an entry here). Bump registry `schema_version` only when the YAML manifest shape breaks tooling.
+
+**Outcome:** Precedence checks, supersession status checks on `supersedes` targets, governance_subject taxonomy hook for future uniqueness, CI `doc-registry-verify` plus SHA-256 log of the rebuilt registry artifact on the repo test job.
+

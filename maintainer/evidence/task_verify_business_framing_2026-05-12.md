@@ -1,3 +1,17 @@
+---
+doc_id: DOC-EVID-013
+doc_type: evidence
+doc_role: evidence
+visibility: internal
+status: archived
+owner: harness
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
+---
+
 # Task verify — Business Framing (§1 Project_Action_list)
 
 Evidence for completion of Section **1. Business Framing** only.

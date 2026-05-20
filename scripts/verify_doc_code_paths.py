@@ -17,8 +17,14 @@ ROOT = Path(__file__).resolve().parents[1]
 SCAN_PATHS: tuple[Path, ...] = (
     ROOT / "README.md",
     ROOT / "ARCHITECTURE.md",
+    ROOT / "IMPLEMENTATION_PLAN.md",
+    ROOT / "ROADMAP.md",
+    ROOT / "TASK_REFERENCE.md",
     ROOT / "reports",
+    ROOT / "docs" / "INDEX.md",
     ROOT / "module_a_population_segmentation" / "reports",
+    ROOT / "module_b_resource_allocation",
+    ROOT / "module_c_forecasting_scenarios",
 )
 
 # Only resolve paths that are unambiguously anchored at the repository root.

@@ -15,7 +15,17 @@ ROOT = Path(__file__).resolve().parents[1]
 DENY_PREFIXES: tuple[str, ...] = ("graphify-out/",)
 
 # Other paths under maintainer/ must not be tracked publicly (see manifest M10/M12).
-MAINTAINER_ALLOWED_FILES: frozenset[str] = frozenset({"maintainer/pre_public_cleanup_manifest.md"})
+MAINTAINER_ALLOWED_PREFIXES: tuple[str, ...] = (
+    "maintainer/doc_debt/",
+    "maintainer/evidence/",
+    "maintainer/archive/",
+)
+
+
+def maintainer_path_allowed(path: str) -> bool:
+    if path == "maintainer/pre_public_cleanup_manifest.md":
+        return True
+    return any(path.startswith(p) for p in MAINTAINER_ALLOWED_PREFIXES)
 
 
 def main() -> int:
@@ -31,7 +41,7 @@ def main() -> int:
         if any(f.startswith(p) or f.startswith(p.lstrip("./")) for p in DENY_PREFIXES):
             bad.append(f)
             continue
-        if f.startswith("maintainer/") and f not in MAINTAINER_ALLOWED_FILES:
+        if f.startswith("maintainer/") and not maintainer_path_allowed(f):
             bad.append(f)
     if bad:
         print("portfolio-verify FAILED — forbidden tracked paths:")

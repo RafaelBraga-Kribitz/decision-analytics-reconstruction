@@ -32,6 +32,12 @@ jobs:
           MC_FAST: "1"
         run: make test
 
+      - name: Documentation registry verify (rebuild + conformance)
+        run: make doc-registry-verify
+
+      - name: Documentation registry checksum (committed artifact)
+        run: shasum -a 256 docs/registry/docs_registry.yaml
+
   module-a:
     name: Module A — lint / typecheck / test
     runs-on: ubuntu-latest

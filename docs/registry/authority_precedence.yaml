@@ -1,0 +1,10 @@
+# Ordered prose/conflict precedence among taxonomy authorities (`authority_values`).
+# Earlier entries are stronger when interpreting overlapping documentation claims.
+# Must be a permutation of taxonomy.yaml `authority_values`.
+
+authority_rank:
+  - canonical
+  - registry
+  - derived
+  - evidence
+  - reference_only

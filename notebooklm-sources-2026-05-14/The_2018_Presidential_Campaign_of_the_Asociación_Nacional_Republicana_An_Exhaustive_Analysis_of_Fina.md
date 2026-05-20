@@ -1,3 +1,17 @@
+---
+doc_id: DOC-RES-009
+doc_type: research
+doc_role: reference
+visibility: public
+status: active
+owner: research
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
+---
+
 # The 2018 Presidential Campaign of the Asociación Nacional Republicana: An Exhaustive Analysis of Financial Architecture, Logistical Mobilization, and Electoral Integrity
 
 # The 2018 Presidential Campaign of the Asociación Nacional Republicana: An Exhaustive Analysis of Financial Architecture, Logistical Mobilization, and Electoral Integrity

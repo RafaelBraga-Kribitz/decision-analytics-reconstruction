@@ -1,3 +1,24 @@
+---
+doc_id: DOC-RPT-010
+doc_type: methodology
+doc_role: derived
+visibility: public
+status: active
+owner: project
+last_reviewed: '2026-05-20'
+canonical_source:
+- DOC-ARCH-001
+derived_from:
+- DOC-ARCH-001
+supersedes: null
+tags: []
+allowed_content:
+- interpretation
+- summarization
+forbidden_content:
+- novel_metrics
+---
+
 # Model hierarchy — Module A (population dataset pipeline)
 
 This diagram maps **data and model dependencies** for the synthetic **population dataset** reconstruction: configuration files and schema contracts constrain generation and cleaning; engineered features feed segmentation and participation propensity; exported parquet and CSV artifacts feed Module B reachability assumptions and Module C strata narratives when consumption wiring is enabled.

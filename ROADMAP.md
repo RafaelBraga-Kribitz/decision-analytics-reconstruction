@@ -1,3 +1,25 @@
+---
+doc_id: DOC-PLAN-010
+doc_type: execution
+doc_role: derived
+visibility: public
+status: active
+owner: maintainer
+last_reviewed: '2026-05-20'
+canonical_source:
+- DOC-PLAN-001
+derived_from:
+- DOC-PLAN-001
+supersedes: null
+tags: []
+allowed_content:
+- interpretation
+- summarization
+forbidden_content:
+- novel_metrics
+- novel_claims
+---
+
 # Roadmap
 
 Honest status of each module and the next concrete milestones.
@@ -111,11 +133,11 @@ This section aligns the **original portfolio audit** with what the repository ac
 - **Segment → action bridge:** `module_a_population_segmentation/reports/segment_action_matrix.md`.
 - **README + CI hardening:** Module A workflow includes Black/Ruff/Pyright, coverage floor, department-weights gate, job timeouts, Docker smoke (`compose config`, image build, import smoke, MLflow import).
 - **Module B CI + reporting:** `module_b_resource_allocation.reporting` (budget expansion curve, dual CSVs, scenario benchmark, run Markdown) with `--sensitivity` CLI bundle; dedicated CI job `module-b`.
-- **Portfolio evidence docs:** `reports/epistemic_boundaries.md`, `reports/system_walkthrough.md`, `reports/module_b_optimization_formulation.md`, `reports/module_c_forecast_validation.md`, `reports/cluster_validation.md`, `reports/data_lineage.md`, `reports/integration_audit_2026-05-12.md`, `reports/qa_gatekeeper_verdict_portfolio_360_2026-05-12.md`.
-- **Hygiene scripts:** `scripts/portfolio_verify.py`, `scripts/check_terminology.py`, `scripts/verify_doc_code_paths.py`, `make portfolio-verify`, `make validate`, `.pre-commit-config.yaml`.
+- **Portfolio evidence docs:** `reports/epistemic_boundaries.md`, `reports/system_walkthrough.md`, `reports/module_b_optimization_formulation.md`, `reports/module_c_forecast_validation.md`, `reports/cluster_validation.md`, `reports/data_lineage.md`, `reports/integration_audit_2026-05-12.md`, `maintainer/evidence/qa_gatekeeper_verdict_portfolio_360_2026-05-12.md`.
+- **Hygiene scripts:** `scripts/portfolio_verify.py`, `scripts/check_terminology.py`, `scripts/verify_doc_code_paths.py`, `scripts/verify_doc_registry.py`, `scripts/check_doc_frontmatter.py`, `scripts/check_doc_drift.py`, `scripts/generate_doc_index.py`, `make portfolio-verify`, `make validate`, `.pre-commit-config.yaml`.
 - **Baseline narrative (Module B):** `module_b_resource_allocation.reporting.baselines` (cap-only water-fill vs MILP totals for transparency) + `test_baselines.py`.
 - **Fixture E2E smoke:** `make e2e-smoke` runs `tests/test_portfolio_e2e_smoke.py` (Module A schema import, B solve + handshake row, C fixture CSV).
-- **Task verify packet:** `reports/task_verify_portfolio_360_2026-05-12.md` (command/evidence table for this audit); evaluation-gap follow-up: `reports/task_verify_evaluation_gap_2026-05-12.md`.
+- **Task verify packet:** `maintainer/evidence/task_verify_portfolio_360_2026-05-12.md` (command/evidence table); evaluation-gap follow-up: `maintainer/evidence/task_verify_evaluation_gap_2026-05-12.md`.
 - **Module A metrics:** Davies–Bouldin + Calinski–Harasz + PSI helpers with tests.
 - **Contracts:** Pydantic `AllocationHandshakeRow` + round-trip test.
 - **Module B specification:** `module_b_resource_allocation/SPECIFICATION.md`.

@@ -1,8 +1,23 @@
+---
+doc_id: DOC-MODA-001
+doc_type: narrative
+doc_role: canonical
+visibility: public
+status: active
+owner: project
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
+---
+
 # Module A — Population Modeling and Segmentation
 
 Flagship module of the decision analytics reconstruction project.
 
-**138 tests · 92% coverage · CI-gated · [live dashboard](https://decision-analytics-module-a.onrender.com)**
+
+**QA markdown:** dated pipeline summaries are emitted as `reports/qa_report_*.md` (gitignored filenames). Do **not** mirror them into `data/processed/`; use the canonical `module_a_population_segmentation/reports/` location only.
 
 ---
 

@@ -1,13 +1,17 @@
 ---
-title: "Note Taking & Research Assistant Powered by AI"
-source: "https://notebooklm.google.com/notebook/8934f2a4-4471-4fe3-bb9a-a49f5f8950a6"
-author:
-published:
-created: 2026-05-15
-description: This analytical report provides a historical overview of the digital advertising landscape in Latin America during the first quarter of 2018, documenting a period of rapid mobile-first expansion and shifting content preferences. By evaluating performance benchmarks across Google, Instagram, and LinkedIn, the text illustrates how regional factors—such as lower advertiser density and localized purchasing power—created a strategic cost advantage for brands in markets like Brazil, Mexico, and Paraguay. The study categorizes its findings by platform, highlighting intent-driven search marketing, the rise of visual social commerce, and the high-premium nature of B2B professional networking. Ultimately, the document serves as a guide for understanding the mathematical metrics and optimization strategies that defined regional success during a significant era of structural growth and digital transformation."
-tags:
-  - "clippings"
+doc_id: DOC-RES-001
+doc_type: research
+doc_role: reference
+visibility: public
+status: active
+owner: research
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
 ---
+
 Analysis of Digital Advertising Performance Metrics in Latin America: A Historical Review of Q1 2018 Benchmarks for Google, Instagram, and LinkedIn Ads
 
 The Macro-Economic Context of Digital Advertising in Latin America (Q1 2018)

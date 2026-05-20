@@ -13,6 +13,10 @@ optional_frontmatter_fields:
   - supersedes
   - tags
 
+# Optional slugs for governance_subject on registry rows. When non-empty, each slug may
+# appear on at most one document with authority=canonical and doc_role=canonical.
+governance_subject_values: []
+
 doc_role_values:
   - canonical
   - derived

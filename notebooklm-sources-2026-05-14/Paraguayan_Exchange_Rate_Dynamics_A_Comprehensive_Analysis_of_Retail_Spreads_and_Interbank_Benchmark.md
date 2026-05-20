@@ -1,13 +1,17 @@
 ---
-title: "Note Taking & Research Assistant Powered by AI"
-source: "https://notebooklm.google.com/notebook/8934f2a4-4471-4fe3-bb9a-a49f5f8950a6"
-author:
-published:
-created: 2026-05-14
-description: "This report examines the stability and efficiency of the Paraguayan exchange market during the first four months of 2018, a period defined by a transition from steady equilibrium to emerging regional volatility. The text analyzes how a narrow retail spread was maintained through a combination of high-performing agricultural exports, particularly in the beef sector, and the Central Bank’s strategic oversight. By distinguishing between interbank benchmarks and exchange house rates, the analysis illustrates how the Guaraní resisted neighboring economic crises through robust manufacturing growth and disciplined fiscal policies. Ultimately, the document serves as a case study in market resilience, showing how institutional transparency and sectoral liquidity successfully anchored the national currency against speculative pressures during an election year."
-tags:
-  - "clippings"
+doc_id: DOC-RES-005
+doc_type: research
+doc_role: reference
+visibility: public
+status: active
+owner: research
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
 ---
+
 Paraguayan Exchange Rate Dynamics: A Comprehensive Analysis of Retail Spreads and Interbank Benchmarks (January–April 2018)
 
 The financial architecture of Paraguay during the first quadrimester of 2018 represents a quintessential case study in emerging market currency management, characterized by a transition from the relative equilibrium of 2017 into the burgeoning volatility that would eventually redefine the regional landscape by the year's end. The relationship between the Banco Central del Paraguay (BCP) official interbank rate and the retail rates offered by the local *casas de cambio* serves as a critical indicator of the underlying economic currents, reflecting seasonal agricultural cycles, industrial manufacturing aperture, and the psychological impact of a high-stakes electoral cycle. This report examines the minute fluctuations of the exchange rate spread—defined as the delta between buy and sell prices in the retail market—and evaluates its divergence from the wholesale interbank benchmark during this pivotal four-month window.

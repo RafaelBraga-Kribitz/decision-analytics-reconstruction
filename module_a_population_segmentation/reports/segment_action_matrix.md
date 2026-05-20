@@ -1,3 +1,17 @@
+---
+doc_id: DOC-MODA-005
+doc_type: narrative
+doc_role: canonical
+visibility: public
+status: active
+owner: project
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
+---
+
 # Segment Action Matrix
 
 Maps each behavioral segment to the recommended channel mix, priority tier, and operational rationale.

@@ -1,3 +1,17 @@
+---
+doc_id: DOC-REP-006
+doc_type: narrative
+doc_role: canonical
+visibility: public
+status: active
+owner: project
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
+---
+
 # Feature engineering justification — Module A
 
 Each row explains **why** a column exists, **how** it is built, and **how** it is checked. Participation propensity and segmentation consume overlapping but not identical subsets—see [`reports/module_a_model_io_spec.md`](module_a_model_io_spec.md).

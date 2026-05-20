@@ -1,3 +1,17 @@
+---
+doc_id: DOC-REP-004
+doc_type: narrative
+doc_role: canonical
+visibility: public
+status: active
+owner: project
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
+---
+
 # Paraguay Presidential Campaign — Full EDA Report
 
 **Generated:** April 30, 2026

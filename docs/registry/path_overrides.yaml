@@ -1,0 +1,519 @@
+# Path-level registry metadata overrides (generation policy).
+# Bump override_guard.max_paths only with a row in reports/decision_log.md or maintainer/doc_debt/open.yaml.
+
+override_guard:
+  max_paths: 45
+paths:
+  README.md:
+    doc_id: DOC-ROOT-001
+    doc_type: narrative
+    doc_role: canonical
+    visibility: public
+    audience:
+    - portfolio
+    - technical
+    authority: canonical
+    sensitivity: public
+    owner: portfolio
+    tier_shorthand: T1
+    numeric_authority: []
+  ARCHITECTURE.md:
+    doc_id: DOC-ARCH-001
+    doc_type: specification
+    doc_role: canonical
+    visibility: public
+    audience:
+    - portfolio
+    - technical
+    authority: canonical
+    sensitivity: public
+    owner: architecture
+    tier_shorthand: T1
+    numeric_authority: []
+  IMPLEMENTATION_PLAN.md:
+    doc_id: DOC-PLAN-001
+    doc_type: execution
+    doc_role: canonical
+    visibility: public
+    audience:
+    - maintainer
+    - technical
+    authority: canonical
+    sensitivity: public
+    owner: maintainer
+    tier_shorthand: T2
+    supersedes:
+    - DOC-PLAN-002
+    - DOC-PLAN-003
+    numeric_authority: []
+  ROADMAP.md:
+    doc_id: DOC-PLAN-010
+    doc_type: execution
+    doc_role: derived
+    visibility: public
+    audience:
+    - portfolio
+    - maintainer
+    authority: derived
+    sensitivity: public
+    owner: maintainer
+    tier_shorthand: T2
+    canonical_source:
+    - DOC-PLAN-001
+    derived_from:
+    - DOC-PLAN-001
+    allowed_content:
+    - interpretation
+    - summarization
+    forbidden_content:
+    - novel_metrics
+    - novel_claims
+  TASK_REFERENCE.md:
+    doc_id: DOC-PLAN-011
+    doc_type: execution
+    doc_role: derived
+    visibility: public
+    audience:
+    - maintainer
+    authority: derived
+    sensitivity: public
+    owner: maintainer
+    canonical_source:
+    - DOC-PLAN-001
+    derived_from:
+    - DOC-PLAN-001
+    allowed_content:
+    - interpretation
+    - summarization
+    forbidden_content:
+    - novel_metrics
+  CHANGELOG.md:
+    doc_id: DOC-ROOT-002
+    doc_type: narrative
+    doc_role: canonical
+    visibility: public
+    audience:
+    - portfolio
+    - maintainer
+    authority: canonical
+    sensitivity: public
+    owner: maintainer
+  reports/business_case.md:
+    doc_id: DOC-BIZ-001
+    doc_type: narrative
+    doc_role: canonical
+    visibility: public
+    audience:
+    - portfolio
+    - hiring
+    authority: canonical
+    sensitivity: public
+    owner: portfolio
+    numeric_authority:
+    - module_b_resource_allocation/src/module_b_resource_allocation/constants.py
+    - schema_contracts/budget_envelope.yaml
+  reports/epistemic_boundaries.md:
+    doc_id: DOC-EPI-001
+    doc_type: methodology
+    doc_role: canonical
+    visibility: public
+    audience:
+    - portfolio
+    - technical
+    authority: canonical
+    sensitivity: public
+    owner: portfolio
+    numeric_authority:
+    - module_a_population_segmentation/config/calibration_anchors.yaml
+    - appendix/verified_calibration_anchors_full.md
+  reports/data_dictionary.md:
+    doc_id: DOC-DICT-001
+    doc_type: specification
+    doc_role: derived
+    visibility: public
+    audience:
+    - technical
+    - portfolio
+    authority: derived
+    sensitivity: public
+    owner: portfolio
+    canonical_source:
+    - DOC-SCH-001
+    - DOC-ARCH-001
+    derived_from:
+    - DOC-SCH-001
+    allowed_content:
+    - interpretation
+    - summarization
+    forbidden_content:
+    - novel_metrics
+  reports/decision_log.md:
+    doc_id: DOC-DLOG-001
+    doc_type: narrative
+    doc_role: canonical
+    visibility: public
+    audience:
+    - maintainer
+    - technical
+    authority: canonical
+    sensitivity: public
+    owner: maintainer
+  appendix/verified_calibration_anchors_full.md:
+    doc_id: DOC-CAL-001
+    doc_type: registry
+    doc_role: canonical
+    visibility: public
+    audience:
+    - technical
+    - portfolio
+    authority: canonical
+    sensitivity: public
+    owner: module_a
+    tier_shorthand: T0
+    numeric_authority:
+    - module_a_population_segmentation/config/calibration_anchors.yaml
+  schema_contracts/README.md:
+    doc_id: DOC-SCH-001
+    doc_type: specification
+    doc_role: canonical
+    visibility: public
+    audience:
+    - technical
+    authority: canonical
+    sensitivity: public
+    owner: architecture
+    tier_shorthand: T0
+    numeric_authority:
+    - schema_contracts/*.yaml
+  module_b_resource_allocation/SPECIFICATION.md:
+    doc_id: DOC-MODB-001
+    doc_type: specification
+    doc_role: canonical
+    visibility: public
+    audience:
+    - technical
+    authority: canonical
+    sensitivity: public
+    owner: module_b
+    numeric_authority:
+    - module_b_resource_allocation/src/module_b_resource_allocation/constants.py
+    - module_b_resource_allocation/src/module_b_resource_allocation/data/fx.py
+  module_b_resource_allocation/reports/response_curve_spec.md:
+    doc_id: DOC-MODB-002
+    doc_type: specification
+    doc_role: derived
+    visibility: public
+    audience:
+    - technical
+    authority: derived
+    sensitivity: public
+    owner: module_b
+    canonical_source:
+    - DOC-MODB-001
+    derived_from:
+    - DOC-MODB-001
+    allowed_content:
+    - interpretation
+    - summarization
+    forbidden_content:
+    - novel_metrics
+    - novel_claims
+  module_c_forecasting_scenarios/METHODOLOGY.md:
+    doc_id: DOC-MODC-001
+    doc_type: methodology
+    doc_role: canonical
+    visibility: public
+    audience:
+    - technical
+    - portfolio
+    authority: canonical
+    sensitivity: public
+    owner: module_c
+  module_c_forecasting_scenarios/reports/C_research_proof_table.md:
+    doc_id: DOC-MODC-002
+    doc_type: evidence
+    doc_role: evidence
+    visibility: public
+    audience:
+    - technical
+    - maintainer
+    authority: evidence
+    status: active
+    sensitivity: public
+    owner: module_c
+  reports/system_walkthrough.md:
+    doc_id: DOC-WALK-001
+    doc_type: walkthrough
+    doc_role: canonical
+    visibility: public
+    audience:
+    - portfolio
+    - technical
+    authority: canonical
+    sensitivity: public
+    owner: portfolio
+  reports/executive_demo_walkthrough.md:
+    doc_id: DOC-WALK-002
+    doc_type: walkthrough
+    doc_role: derived
+    visibility: public
+    audience:
+    - portfolio
+    authority: derived
+    sensitivity: public
+    owner: portfolio
+    canonical_source:
+    - DOC-WALK-001
+    derived_from:
+    - DOC-WALK-001
+    allowed_content:
+    - interpretation
+    - summarization
+    forbidden_content:
+    - novel_metrics
+    - novel_claims
+  reports/model_hierarchy.md:
+    doc_id: DOC-RPT-010
+    doc_type: methodology
+    doc_role: derived
+    visibility: public
+    audience:
+    - technical
+    - portfolio
+    authority: derived
+    canonical_source:
+    - DOC-ARCH-001
+    derived_from:
+    - DOC-ARCH-001
+    allowed_content:
+    - interpretation
+    - summarization
+    forbidden_content:
+    - novel_metrics
+  reports/module_a_model_io_spec.md:
+    doc_id: DOC-RPT-011
+    doc_type: specification
+    doc_role: derived
+    visibility: public
+    audience:
+    - technical
+    authority: derived
+    canonical_source:
+    - DOC-SCH-001
+    - DOC-ARCH-001
+    derived_from:
+    - DOC-SCH-001
+    allowed_content:
+    - interpretation
+    - summarization
+    forbidden_content:
+    - novel_metrics
+  reports/module_b_optimization_formulation.md:
+    doc_id: DOC-RPT-012
+    doc_type: methodology
+    doc_role: derived
+    visibility: public
+    audience:
+    - technical
+    authority: derived
+    canonical_source:
+    - DOC-MODB-001
+    derived_from:
+    - DOC-MODB-001
+    allowed_content:
+    - interpretation
+    - summarization
+    forbidden_content:
+    - novel_metrics
+  reports/module_c_forecast_validation.md:
+    doc_id: DOC-RPT-013
+    doc_type: methodology
+    doc_role: derived
+    visibility: public
+    audience:
+    - technical
+    authority: derived
+    canonical_source:
+    - DOC-MODC-001
+    derived_from:
+    - DOC-MODC-001
+    allowed_content:
+    - interpretation
+    - summarization
+    forbidden_content:
+    - novel_metrics
+  reports/case_study_business.md:
+    doc_id: DOC-BIZ-002
+    doc_type: narrative
+    doc_role: derived
+    visibility: public
+    audience:
+    - portfolio
+    - hiring
+    authority: derived
+    canonical_source:
+    - DOC-BIZ-001
+    derived_from:
+    - DOC-BIZ-001
+    allowed_content:
+    - interpretation
+    - summarization
+    forbidden_content:
+    - novel_metrics
+    - novel_claims
+  reports/case_study_technical.md:
+    doc_id: DOC-BIZ-003
+    doc_type: narrative
+    doc_role: derived
+    visibility: public
+    audience:
+    - portfolio
+    - technical
+    authority: derived
+    canonical_source:
+    - DOC-ARCH-001
+    - DOC-EPI-001
+    derived_from:
+    - DOC-ARCH-001
+    - DOC-EPI-001
+    allowed_content:
+    - interpretation
+    - summarization
+    forbidden_content:
+    - novel_metrics
+    - novel_claims
+  reports/competitive_positioning.md:
+    doc_id: DOC-BIZ-004
+    doc_type: narrative
+    doc_role: derived
+    visibility: public
+    audience:
+    - hiring
+    - portfolio
+    authority: derived
+    canonical_source:
+    - DOC-BIZ-001
+    derived_from:
+    - DOC-BIZ-001
+    allowed_content:
+    - interpretation
+    - summarization
+    forbidden_content:
+    - novel_metrics
+    - novel_claims
+  reports/HIRING_CONTEXT.md:
+    doc_id: DOC-BIZ-005
+    doc_type: narrative
+    doc_role: derived
+    visibility: public
+    audience:
+    - hiring
+    authority: derived
+    canonical_source:
+    - DOC-BIZ-001
+    derived_from:
+    - DOC-BIZ-001
+    allowed_content:
+    - interpretation
+    - summarization
+    forbidden_content:
+    - novel_metrics
+    - novel_claims
+  docs/ai_harness/README.md:
+    doc_id: DOC-HARNESS-002
+    doc_type: policy
+    doc_role: canonical
+    visibility: internal
+    audience:
+    - maintainer
+    - agent
+    authority: canonical
+    sensitivity: internal
+    owner: harness
+    tier_shorthand: T3
+  docs/ai_harness/CONTROLLED_WORKFLOW_PLAYBOOK.md:
+    doc_id: DOC-HARNESS-001
+    doc_type: policy
+    doc_role: canonical
+    visibility: internal
+    audience:
+    - agent
+    - maintainer
+    authority: canonical
+    sensitivity: internal
+    owner: harness
+    tier_shorthand: T3
+  docs/registry/README.md:
+    doc_id: DOC-REG-001
+    doc_type: registry
+    doc_role: registry
+    visibility: public
+    audience:
+    - maintainer
+    - agent
+    authority: registry
+    sensitivity: public
+    owner: architecture
+    numeric_authority: []
+  maintainer/pre_public_cleanup_manifest.md:
+    doc_id: DOC-MAINT-001
+    doc_type: policy
+    doc_role: canonical
+    visibility: internal
+    audience:
+    - maintainer
+    - agent
+    authority: canonical
+    status: active
+    sensitivity: restricted
+    owner: maintainer
+    tier_shorthand: T2
+  Project_Action_list.md:
+    doc_id: DOC-PLAN-002
+    doc_type: execution
+    doc_role: derived
+    visibility: internal
+    audience:
+    - maintainer
+    authority: reference_only
+    status: archived
+    sensitivity: internal
+    owner: maintainer
+    canonical_source:
+    - DOC-PLAN-001
+    derived_from:
+    - DOC-PLAN-001
+  maintainer/archive/Project_Action_list_full.md:
+    doc_id: DOC-PLAN-003
+    doc_type: execution
+    doc_role: derived
+    visibility: internal
+    audience:
+    - maintainer
+    authority: reference_only
+    status: archived
+    sensitivity: internal
+    owner: maintainer
+    canonical_source:
+    - DOC-PLAN-001
+    derived_from:
+    - DOC-PLAN-001
+    frontmatter_required: false
+  maintainer/doc_debt/README.md:
+    doc_id: DOC-DEBT-README
+    doc_type: registry
+    doc_role: registry
+    visibility: internal
+    audience:
+    - maintainer
+    authority: registry
+    status: active
+    sensitivity: internal
+    owner: maintainer
+    tier_shorthand: T2
+    canonical_source: []
+    derived_from: []
+    supersedes: []
+    numeric_authority: []
+    tags:
+    - doc-debt

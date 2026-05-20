@@ -1,3 +1,17 @@
+---
+doc_id: DOC-ROOT-001
+doc_type: narrative
+doc_role: canonical
+visibility: public
+status: active
+owner: portfolio
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
+---
+
 # Decision Analytics Reconstruction
 
 **Retrospective Reconstruction of a National-Scale Marketing and Resource Allocation Decision System**
@@ -134,7 +148,7 @@ cd decision-analytics-reconstruction
 poetry install
 cp .env.example .env
 make test              # all modules + portfolio smoke (excludes slow NUTS)
-make validate          # lint + typecheck + tests + doc-path-verify
+make validate          # lint + typecheck + tests + documentation governance (doc paths + registry)
 make e2e-smoke         # fixture-only cross-module smoke (A schema + B solve + C CSV + handshake)
 make tier3-smoke       # terminology sample + mlflow import (local mirror of part of CI tier3 job)
 make portfolio-verify  # git-index hygiene for portfolio exports
@@ -194,6 +208,9 @@ make rollback-module-b GCP_PROJECT=<your-project-id>
 ├── README.md                          <- this file
 ├── ARCHITECTURE.md                    <- component breakdown and cross-module contracts
 ├── ROADMAP.md                         <- honest status and next milestones per module
+├── docs/INDEX.md                      <- generated navigation from docs/registry/docs_registry.yaml
+├── docs/registry/docs_registry.yaml    <- machine-readable doc inventory (SSOT for documentation graph)
+├── IMPLEMENTATION_PLAN.md             <- authoritative phase and gate status (`DOC-PLAN-001`)
 ├── pyproject.toml                     <- Poetry dependencies + tool config (Ruff, Black, Pyright, Pytest)
 ├── schema_contracts/                  <- cross-module data contracts (authoritative)
 ├── reports/                           <- decision log, data dictionary, case studies

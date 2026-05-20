@@ -1,13 +1,17 @@
 ---
-title: "Note Taking & Research Assistant Powered by AI"
-source: "https://notebooklm.google.com/notebook/8934f2a4-4471-4fe3-bb9a-a49f5f8950a6"
-author:
-published:
-created: 2026-05-14
-description: "Between 2017 and 2018, Paraguay experienced a transformative shift toward a mobile-first digital society, marked by an institutional transition from SENATICs to MITIC to better integrate technology into public life. Despite the geographical hurdles of being a landlocked nation, the country saw a significant rise in internet penetration driven primarily by smartphone adoption and the ubiquity of WhatsApp, which effectively serves as a foundational infrastructure for national communication. While a notable 'reverse gender gap' emerged with women utilizing digital tools at higher rates than men, a persistent urban-rural divide continues to limit equitable access to high-speed connectivity and economic opportunity. Ultimately, this analysis illustrates how educational attainment and mobile financial leadership define the Paraguayan digital landscape, highlighting a society that utilizes decentralized technology to overcome traditional structural and logistical barriers."
-tags:
-  - "clippings"
+doc_id: DOC-RES-010
+doc_type: research
+doc_role: reference
+visibility: public
+status: active
+owner: research
+last_reviewed: '2026-05-20'
+canonical_source: null
+derived_from: null
+supersedes: null
+tags: []
 ---
+
 The Digital Architecture of Paraguay: A Multi-Dimensional Analysis of ICT Penetration and Socio-Technical Dynamics (2017-2018)
 
 The evolution of the information society in Paraguay during the period of 2017 to 2018 represents a pivotal era of institutional transformation and infrastructure expansion. This period was characterized by the strategic consolidation of digital policy under the Secretaría Nacional de Tecnologías de la Información y Comunicación (SENATICs), which subsequently transitioned into the Ministerio de Tecnologías de la Información y Comunicación (MITIC). This institutional restructuring was not merely administrative; it reflected a systemic recognition of Information and Communication Technologies (ICT) as fundamental drivers of socio-economic development, transparency, and civic engagement. The statistical foundations of this analysis are primarily derived from the Encuesta Permanente de Hogares Continua (EPHC), administered by the Dirección General de Estadística, Encuestas y Censos (DGEEC), now the Instituto Nacional de Estadística (INE), which provides the most granular view of how the Paraguayan population interacts with the digital ecosystem.\[1\]
