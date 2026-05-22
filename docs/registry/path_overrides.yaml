@@ -517,3 +517,16 @@ paths:
     numeric_authority: []
     tags:
     - doc-debt
+  maintainer/evidence/statistical_audit_2026-05-22.md:
+    doc_id: DOC-EVID-018
+    doc_type: evidence
+    doc_role: evidence
+    visibility: internal
+    audience:
+    - maintainer
+    authority: evidence
+    status: active
+    sensitivity: internal
+    owner: maintainer
+    tier_shorthand: T3
+    last_reviewed: '2026-05-22'
