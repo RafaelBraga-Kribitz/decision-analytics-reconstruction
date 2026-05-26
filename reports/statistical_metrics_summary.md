@@ -31,11 +31,13 @@ tags: []
 
 | Metric | Value | Interpretation |
 |--------|-------|----------------|
-| Propensity AUC-ROC | **0.9679** | Near-perfect discrimination (random = 0.5) |
+| Propensity AUC-ROC | **0.9679** | Near-perfect discrimination on synthetic target (circular — see note below) |
 | Propensity Brier score | **0.0710** | vs. naive baseline 0.245 → 71% improvement |
 | Segmentation silhouette | **0.2566** | Moderate cluster separation (acceptable for behavioral segments) |
 | Segmentation bootstrap ARI | **0.7615** | Strong label stability under resampling |
 | DBSCAN noise rate | **0.00** | No outlier entities flagged as noise |
+
+> **AUC note:** The 0.9679 AUC-ROC is measured on a synthetic target derived from the same TSJE calibration anchors used in feature engineering. It is **not a generalization metric**. Expected AUC on real held-out microdata: 0.70–0.80. The Brier score comparison (0.071 vs 0.245 naive) is the more defensible figure. Full discussion in `module_a_population_segmentation/reports/model_card_propensity.md` § Limitations of reported AUC.
 
 ### Population characteristics
 

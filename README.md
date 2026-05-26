@@ -337,12 +337,14 @@ For full schema details: see `[schema_contracts/README.md](schema_contracts/READ
 
 | Baseline                            | Module | Metric (higher is better unless noted)                                                      | Source                                                                                          |
 | ----------------------------------- | ------ | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
-| Naive participation-rate classifier | A      | Brier ≈ 0.245 vs model 0.088                                                                | `[model_card_propensity.md](module_a_population_segmentation/reports/model_card_propensity.md)` |
+| Naive participation-rate classifier | A      | Brier ≈ 0.245 vs model 0.088 (synthetic target — see note¹)                                | `[model_card_propensity.md](module_a_population_segmentation/reports/model_card_propensity.md)` |
 | Scenario timing variants            | B      | Compare `total_persuasion_adjusted_contacts` across `baseline` / `early_lock` / `late_flex` | `scenario_benchmark_*.csv` from `make module-b-allocate-sensitivity`                            |
 | Fixture-only tracking               | C      | Posterior export row count equals campaign day index                                        | `module_c_forecasting_scenarios/tests/test_tracking_smoke.py`                                   |
 
 
 These deltas quantify **internal reconstruction targets**, not external campaign lift.
+
+¹ **AUC and Brier note:** Module A propensity AUC (≈ 0.97) and Brier score (0.088 vs naive 0.245) are measured on a synthetic target derived from the same TSJE calibration anchors used in feature engineering. This is **not a generalization metric**. With real held-out microdata, AUC would be expected in the 0.70–0.80 range typical of turnout-propensity literature. The Brier comparison against a naive baseline is the more meaningful figure because both share the same circular target. See `[reports/epistemic_boundaries.md](reports/epistemic_boundaries.md)` and `[model_card_propensity.md](module_a_population_segmentation/reports/model_card_propensity.md)` § Limitations.
 
 ---
 
