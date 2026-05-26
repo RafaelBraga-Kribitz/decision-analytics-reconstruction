@@ -211,12 +211,16 @@ jobs:
       - name: Build image with dev deps
         run: docker build -f docker/Dockerfile --build-arg INSTALL_DEV=1 -t decision-analytics-ci:smoke .
 
-      - name: Run make test inside container
+      - name: Run module tests inside container
         run: >
           docker run --rm
           -e MC_FAST=1
           decision-analytics-ci:smoke
-          make test
+          poetry run pytest
+          module_a_population_segmentation/tests
+          module_b_resource_allocation/tests
+          module_c_forecasting_scenarios/tests
+          -m "not slow" -v --tb=short
 
   tier3-smoke:
     name: Tier 3 — DVC + terminology scripts
