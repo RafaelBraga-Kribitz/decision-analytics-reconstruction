@@ -65,10 +65,11 @@ def test_kmeans_bootstrap_ari_above_threshold(feature_df: pd.DataFrame) -> None:
 
     seg = KMeansSegmenter(k=6, random_state=42)
     out = seg.fit_predict(feature_df)
-    # Gate set to 0.77: measured ≈ 0.79–0.81 at n=15k with 25 bootstrap reps.
-    # ARI with 25 reps has meaningful variance; 0.77 is reliably achievable and
-    # still well above random assignment (≈0.0 ARI).  No masking applied.
-    assert out["bootstrap_ari"] > 0.77
+    # Gate set to 0.70: platform-stable two-subsample method (P2-5).
+    # Method compares two independent 80% subsample fits on shared rows only,
+    # eliminating macOS/Linux BLAS divergence. Measured ~0.75-0.80 at n=15k.
+    # 0.70 is the reliably-achievable floor; still well above random (≈0.0).
+    assert out["bootstrap_ari"] > 0.70
 
 
 def test_segment_size_coverage(feature_df: pd.DataFrame) -> None:

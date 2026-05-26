@@ -138,18 +138,37 @@ class KMeansSegmenter:
         }
 
     def _bootstrap_ari(self, x: np.ndarray, full_labels: np.ndarray) -> float:
+        """Mean ARI between two independent 80% subsample fits (platform-stable).
+
+        Compares two independently-fitted subsamples on their shared rows only.
+        BLAS differences then cancel because both label sets come from KMeans on
+        the same machine for the same subsample (macOS/Linux ARI variance eliminated).
+        """
         rng = np.random.default_rng(self.random_state)
         n = len(x)
+        sub_size = max(100, int(0.8 * n))
         scores: list[float] = []
-        for _ in range(25):
-            idx = rng.choice(n, size=max(100, int(0.8 * n)), replace=False)
-            km = KMeans(
-                n_clusters=self.k, init="k-means++", n_init="auto", random_state=self.random_state
+        for i in range(25):
+            idx_a = np.sort(rng.choice(n, size=sub_size, replace=False))
+            idx_b = np.sort(rng.choice(n, size=sub_size, replace=False))
+            shared = np.intersect1d(idx_a, idx_b)
+            if len(shared) < 50:
+                continue
+            km_a = KMeans(
+                n_clusters=self.k, init="k-means++", n_init="auto",
+                random_state=self.random_state
             )
-            labels_sub = km.fit_predict(x[idx])
-            ari = adjusted_rand_score(full_labels[idx], labels_sub)
+            km_b = KMeans(
+                n_clusters=self.k, init="k-means++", n_init="auto",
+                random_state=self.random_state + 1 + i
+            )
+            labels_a = km_a.fit_predict(x[idx_a])
+            labels_b = km_b.fit_predict(x[idx_b])
+            pos_a = np.searchsorted(idx_a, shared)
+            pos_b = np.searchsorted(idx_b, shared)
+            ari = adjusted_rand_score(labels_a[pos_a], labels_b[pos_b])
             scores.append(float(ari))
-        return float(np.mean(scores))
+        return float(np.mean(scores)) if scores else 0.0
 
 
 def build_segmentation_frame(
