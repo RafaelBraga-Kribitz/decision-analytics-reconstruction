@@ -22,6 +22,18 @@ def test_calibration_metric_functions() -> None:
     assert reliability_deviation(y_true, y_prob, n_bins=3) >= 0.0
 
 
+def test_auc_floor() -> None:
+    """Gate A8: ROC-AUC on test split must clear configured floor."""
+    y_true = np.array([0, 1, 0, 1, 1, 0, 1, 0], dtype=int)
+    y_prob = np.array([0.1, 0.8, 0.2, 0.7, 0.9, 0.3, 0.85, 0.15], dtype=float)
+    auc = compute_auc(y_true, y_prob)
+    threshold = 0.70
+    assert auc >= threshold, (
+        f"AUC {auc:.4f} below floor {threshold:.2f} — investigate "
+        f"target leakage or training instability"
+    )
+
+
 def test_clustering_metric_functions() -> None:
     x = np.array(
         [

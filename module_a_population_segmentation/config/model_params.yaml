@@ -85,7 +85,7 @@ propensity:
   # so 0.235 still requires the model to out-perform a constant-rate predictor).
   # The original gate of 0.22 was only satisfied by capping the raw metric.
   brier_threshold: 0.237
-  auc_threshold: 0.70             # Gate (informational)
+  auc_floor: 0.70                 # Gate A8: enforced in CI (see test_auc_floor)
   reliability_max_deviation_pp: 3.0  # Gate: max deviation per reliability decile
   shap_sample_size: 10000         # Entities sampled for SHAP analysis
 
