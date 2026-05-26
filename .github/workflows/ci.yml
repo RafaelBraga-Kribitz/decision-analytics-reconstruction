@@ -137,7 +137,8 @@ jobs:
         run: poetry run pyright module_b_resource_allocation/src
 
       - name: pytest Module B
-        run: poetry run pytest module_b_resource_allocation/tests -v --tb=short -m "not slow"
+        run: poetry run pytest module_b_resource_allocation/tests -v --tb=short -m "not slow" \
+          --cov=module_b_resource_allocation --cov-fail-under=70
 
   module-c:
     name: Module C — lint / test
@@ -175,6 +176,8 @@ jobs:
           poetry run pytest module_c_forecasting_scenarios/tests
           -m "not slow"
           -v
+          --cov=module_c_forecasting_scenarios
+          --cov-fail-under=70
 
   docker-smoke:
     name: Module A — Docker image smoke
