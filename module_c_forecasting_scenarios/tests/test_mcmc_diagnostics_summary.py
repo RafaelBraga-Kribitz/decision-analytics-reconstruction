@@ -64,3 +64,65 @@ def test_arviz_summary_smoke_with_mc_fast(monkeypatch: pytest.MonkeyPatch) -> No
     summary = az.summary(idata, var_names=["sigma_rw", "sigma_house"], round_to=None)
     assert not summary.empty
     assert "r_hat" in summary.columns
+
+
+@pytest.mark.slow
+@pytest.mark.xfail(reason="MC_FAST fixture insufficient for diagnostics; use full NUTS")
+def test_rhat_acceptable_under_mc_fast(monkeypatch: pytest.MonkeyPatch) -> None:
+    """R-hat must be < 1.05 on production data (full NUTS)."""
+    import arviz as az
+
+    monkeypatch.setenv("MC_FAST", "0")
+    from module_c_forecasting_scenarios.models.tracking.hierarchical import (
+        fit_tracking_hierarchical,
+    )
+
+    tr = _tiny_tracking()
+    idata = fit_tracking_hierarchical(
+        tr,
+        outcome_event_date=date(2018, 4, 22),
+        calibration_series="A",
+    )
+    rhat = az.rhat(idata).max().to_array().max().item()
+    assert rhat < 1.05, f"R-hat {rhat:.4f} indicates non-convergence"
+
+
+@pytest.mark.slow
+@pytest.mark.xfail(reason="MC_FAST fixture insufficient for diagnostics; use full NUTS")
+def test_ess_acceptable(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Bulk ESS must be > 200 on production data (full NUTS)."""
+    import arviz as az
+
+    monkeypatch.setenv("MC_FAST", "0")
+    from module_c_forecasting_scenarios.models.tracking.hierarchical import (
+        fit_tracking_hierarchical,
+    )
+
+    tr = _tiny_tracking()
+    idata = fit_tracking_hierarchical(
+        tr,
+        outcome_event_date=date(2018, 4, 22),
+        calibration_series="A",
+    )
+    ess = az.ess(idata, method="bulk").min().to_array().min().item()
+    assert ess > 200, f"ESS {ess:.0f} too low — increase tuning"
+
+
+@pytest.mark.xfail(reason="P2-4 non-centered reparameterization pending")
+def test_no_divergences_under_full_sampling(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Full NUTS (not MC_FAST) must report zero divergences."""
+    import arviz as az
+
+    monkeypatch.setenv("MC_FAST", "0")
+    from module_c_forecasting_scenarios.models.tracking.hierarchical import (
+        fit_tracking_hierarchical,
+    )
+
+    tr = _tiny_tracking()
+    idata = fit_tracking_hierarchical(
+        tr,
+        outcome_event_date=date(2018, 4, 22),
+        calibration_series="A",
+    )
+    n_div = idata.sample_stats["diverging"].sum().item()
+    assert n_div == 0, f"{n_div} divergent transitions — reparameterize"
