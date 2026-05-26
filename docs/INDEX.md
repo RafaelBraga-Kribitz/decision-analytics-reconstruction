@@ -30,7 +30,15 @@ Run `poetry run python scripts/generate_doc_index.py --write` after registry cha
 ## Canonically authoritative (selection)
 
 - **DOC-CLAUDE-001** — `.claude/skills/project-orchestrator/SKILL.md` — *policy* / *canonical*
-- **DOC-CURSOR-001** — `.cursor/skills/project-orchestrator/SKILL.md` — *policy* / *canonical*
+- **DOC-CURSOR-001** — `.cursor/commands/task-complete.md` — *policy* / *canonical*
+- **DOC-CURSOR-002** — `.cursor/commands/task-dispatch.md` — *policy* / *canonical*
+- **DOC-CURSOR-003** — `.cursor/commands/task-execute.md` — *policy* / *canonical*
+- **DOC-CURSOR-004** — `.cursor/commands/task-intake.md` — *policy* / *canonical*
+- **DOC-CURSOR-005** — `.cursor/commands/task-plan.md` — *policy* / *canonical*
+- **DOC-CURSOR-006** — `.cursor/commands/task-transaction.md` — *policy* / *canonical*
+- **DOC-CURSOR-007** — `.cursor/commands/task-verify.md` — *policy* / *canonical*
+- **DOC-CURSOR-008** — `.cursor/runtime/README.md` — *policy* / *canonical*
+- **DOC-CURSOR-009** — `.cursor/skills/project-orchestrator/SKILL.md` — *policy* / *canonical*
 - **DOC-ARCH-001** — `ARCHITECTURE.md` — *specification* / *canonical*
 - **DOC-ROOT-002** — `CHANGELOG.md` — *narrative* / *canonical*
 - **DOC-PLAN-001** — `IMPLEMENTATION_PLAN.md` — *execution* / *canonical*
@@ -41,6 +49,7 @@ Run `poetry run python scripts/generate_doc_index.py --write` after registry cha
 - **DOC-DOCS-003** — `docs/GITHUB_ACTIONS_SETUP.md` — *narrative* / *canonical*
 - **DOC-HARNESS-001** — `docs/ai_harness/CONTROLLED_WORKFLOW_PLAYBOOK.md` — *policy* / *canonical*
 - **DOC-HARNESS-002** — `docs/ai_harness/README.md` — *policy* / *canonical*
+- **DOC-DOCS-005** — `docs/ai_harness/simulation-tests.md` — *narrative* / *canonical*
 - **DOC-MAINT-001** — `maintainer/pre_public_cleanup_manifest.md` — *policy* / *canonical*
 - **DOC-MODA-001** — `module_a_population_segmentation/README.md` — *narrative* / *canonical*
 - **DOC-MODA-002** — `module_a_population_segmentation/reports/audit_report_module_a_2026-05-11.md` — *narrative* / *canonical*
@@ -74,6 +83,7 @@ Run `poetry run python scripts/generate_doc_index.py --write` after registry cha
 
 - **DOC-PLAN-010** — `ROADMAP.md` — canonical: DOC-PLAN-001
 - **DOC-PLAN-011** — `TASK_REFERENCE.md` — canonical: DOC-PLAN-001
+- **DOC-MAINT-TXN-001** — `maintainer/agent_transaction_backlog.md` — canonical: DOC-HARNESS-001
 - **DOC-MODB-002** — `module_b_resource_allocation/reports/response_curve_spec.md` — canonical: DOC-MODB-001
 - **DOC-MODCRS-001** — `module_c_forecasting_scenarios/reports/research/exit_bias_mechanisms.md` — canonical: DOC-MODC-001
 - **DOC-MODCRS-002** — `module_c_forecasting_scenarios/reports/research/oea_eu_survey_release_metadata.md` — canonical: DOC-MODC-001
@@ -93,6 +103,7 @@ Run `poetry run python scripts/generate_doc_index.py --write` after registry cha
 
 - **DOC-EVID-001** — `maintainer/evidence/qa_gatekeeper_verdict_evaluation_gap_2026-05-12.md` — *archived*
 - **DOC-EVID-002** — `maintainer/evidence/qa_gatekeeper_verdict_portfolio_360_2026-05-12.md` — *archived*
+- **DOC-EVID-018** — `maintainer/evidence/statistical_audit_2026-05-22.md` — *active*
 - **DOC-EVID-003** — `maintainer/evidence/task_verify_architecture_quality_pipeline_dev_acceptance_2026-05-12.md` — *archived*
 - **DOC-EVID-004** — `maintainer/evidence/task_verify_architecture_quality_task1_2026-05-12.md` — *archived*
 - **DOC-EVID-005** — `maintainer/evidence/task_verify_architecture_quality_task2_module_a_2026-05-13.md` — *archived*

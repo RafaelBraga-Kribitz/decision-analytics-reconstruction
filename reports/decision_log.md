@@ -813,7 +813,7 @@ Bootstrap ARI (> 0.77, enforced) validates stability across random seeds — a c
 
 **Reason:** PuLP + CBC is the established open-source MILP stack for Python operational research problems of this scale (2,772 continuous + 2,772+ binary variables). CBC solves the baseline model in under 5 seconds with no license dependency. PuLP's `LpVariable(cat="Binary")` integrates naturally with the bundle-cardinality and min-spend linking constraints added in T6-4. The model syntax (per-variable, per-constraint) is more verbose than CVXPY but more transparent for debugging individual constraint bindings.
 
-**Outcome:** `module_b_resource_allocation/models/allocation.py` uses PuLP/CBC; `bundle_constraints=True` MILP solves to OPTIMAL in <5 seconds; all 221 Module B tests pass. CVXPY remains a recommended upgrade path if the model expands to second-order cone or semidefinite objectives.
+**Outcome:** `module_b_resource_allocation/src/module_b_resource_allocation/models/allocation.py` uses PuLP/CBC; `bundle_constraints=True` MILP solves to OPTIMAL in <5 seconds; all 221 Module B tests pass. CVXPY remains a recommended upgrade path if the model expands to second-order cone or semidefinite objectives.
 
 **Source:** `module_b_resource_allocation/SPECIFICATION.md §7 Solver stack`; Project_Action_list.md T6-4
 
@@ -884,7 +884,7 @@ Bootstrap ARI (> 0.77, enforced) validates stability across random seeds — a c
 
 **Outcome:** `allocation.py` unconditionally declares `y[d,c,w]` as `cat="Binary"`; `build_problem(bundle_constraints=True)` adds `z[bundle_id]` linking constraints; `test_milp_optimizer.py` verifies OPTIMAL status and bundle floor satisfaction; `test_milp_solution_differs_from_relaxation` confirms the constrained MILP solution differs from the LP-relaxation (bundle_constraints=False) comparator by Σ|Δ| > 1 USD.
 
-**Source:** `module_b_resource_allocation/models/allocation.py`; `tests/test_milp_optimizer.py`; Project_Action_list.md T6-4
+**Source:** `module_b_resource_allocation/src/module_b_resource_allocation/models/allocation.py`; `module_b_resource_allocation/tests/test_milp_optimizer.py`; Project_Action_list.md T6-4
 
 ---
 

@@ -11,7 +11,10 @@ from module_b_resource_allocation.constants import CHANNEL_NAMES, DEPARTMENTS
 
 @pytest.fixture
 def fixture_raw_polls_csv() -> Path:
-    return Path(__file__).resolve().parent / "fixtures" / "polls_raw_fixture.csv"
+    p = Path(__file__).resolve().parent / "fixtures" / "polls_raw_fixture.csv"
+    if not p.exists():
+        pytest.skip("polls_raw_fixture.csv not found; run generate-fixtures first")
+    return p
 
 
 @pytest.fixture

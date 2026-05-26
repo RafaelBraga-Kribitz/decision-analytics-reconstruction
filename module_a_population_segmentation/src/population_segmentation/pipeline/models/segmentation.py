@@ -121,9 +121,7 @@ class KMeansSegmenter:
         """
         if x is None:
             x = _matrix(df)
-        km = KMeans(
-            n_clusters=self.k, init="k-means++", n_init="auto", random_state=self.random_state
-        )
+        km = KMeans(n_clusters=self.k, init="k-means++", n_init=10, random_state=self.random_state)  # type: ignore[call-overload]  # sklearn stubs infer n_init as str from default "auto"; int is valid at runtime
         labels = km.fit_predict(x)
 
         sil = float(silhouette_score(x, labels))
@@ -144,7 +142,7 @@ class KMeansSegmenter:
         for _ in range(25):
             idx = rng.choice(n, size=max(100, int(0.8 * n)), replace=False)
             km = KMeans(
-                n_clusters=self.k, init="k-means++", n_init="auto", random_state=self.random_state
+                n_clusters=self.k, init="k-means++", n_init=10, random_state=self.random_state  # type: ignore[call-overload]  # sklearn stubs infer n_init as str from default "auto"; int is valid at runtime
             )
             labels_sub = km.fit_predict(x[idx])
             ari = adjusted_rand_score(full_labels[idx], labels_sub)

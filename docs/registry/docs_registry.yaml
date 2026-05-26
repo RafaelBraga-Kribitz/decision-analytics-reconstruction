@@ -39,8 +39,152 @@ documents:
   derived_from: []
   supersedes: []
   numeric_authority: []
-  frontmatter_required: true
+  frontmatter_required: false
   doc_id: DOC-CURSOR-001
+  path: .cursor/commands/task-complete.md
+  last_reviewed: '2026-05-20'
+- doc_type: policy
+  doc_role: canonical
+  visibility: internal
+  audience:
+  - agent
+  authority: canonical
+  status: active
+  sensitivity: internal
+  owner: harness
+  tier_shorthand: T3
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-CURSOR-002
+  path: .cursor/commands/task-dispatch.md
+  last_reviewed: '2026-05-20'
+- doc_type: policy
+  doc_role: canonical
+  visibility: internal
+  audience:
+  - agent
+  authority: canonical
+  status: active
+  sensitivity: internal
+  owner: harness
+  tier_shorthand: T3
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-CURSOR-003
+  path: .cursor/commands/task-execute.md
+  last_reviewed: '2026-05-20'
+- doc_type: policy
+  doc_role: canonical
+  visibility: internal
+  audience:
+  - agent
+  authority: canonical
+  status: active
+  sensitivity: internal
+  owner: harness
+  tier_shorthand: T3
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-CURSOR-004
+  path: .cursor/commands/task-intake.md
+  last_reviewed: '2026-05-20'
+- doc_type: policy
+  doc_role: canonical
+  visibility: internal
+  audience:
+  - agent
+  authority: canonical
+  status: active
+  sensitivity: internal
+  owner: harness
+  tier_shorthand: T3
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-CURSOR-005
+  path: .cursor/commands/task-plan.md
+  last_reviewed: '2026-05-20'
+- doc_type: policy
+  doc_role: canonical
+  visibility: internal
+  audience:
+  - agent
+  authority: canonical
+  status: active
+  sensitivity: internal
+  owner: harness
+  tier_shorthand: T3
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-CURSOR-006
+  path: .cursor/commands/task-transaction.md
+  last_reviewed: '2026-05-20'
+- doc_type: policy
+  doc_role: canonical
+  visibility: internal
+  audience:
+  - agent
+  authority: canonical
+  status: active
+  sensitivity: internal
+  owner: harness
+  tier_shorthand: T3
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-CURSOR-007
+  path: .cursor/commands/task-verify.md
+  last_reviewed: '2026-05-20'
+- doc_type: policy
+  doc_role: canonical
+  visibility: internal
+  audience:
+  - agent
+  authority: canonical
+  status: active
+  sensitivity: internal
+  owner: harness
+  tier_shorthand: T3
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-CURSOR-008
+  path: .cursor/runtime/README.md
+  last_reviewed: '2026-05-20'
+- doc_type: policy
+  doc_role: canonical
+  visibility: internal
+  audience:
+  - agent
+  authority: canonical
+  status: active
+  sensitivity: internal
+  owner: harness
+  tier_shorthand: T3
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-CURSOR-009
   path: .cursor/skills/project-orchestrator/SKILL.md
   last_reviewed: '2026-05-20'
 - doc_type: specification
@@ -328,6 +472,65 @@ documents:
   doc_id: DOC-HARNESS-002
   path: docs/ai_harness/README.md
   last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-DOCS-005
+  path: docs/ai_harness/simulation-tests.md
+  last_reviewed: '2026-05-20'
+- doc_type: registry
+  doc_role: registry
+  visibility: public
+  audience:
+  - maintainer
+  - agent
+  authority: registry
+  status: active
+  sensitivity: public
+  owner: architecture
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: true
+  doc_id: DOC-REG-001
+  path: docs/registry/README.md
+  last_reviewed: '2026-05-20'
+- doc_type: registry
+  doc_role: derived
+  visibility: internal
+  audience:
+  - maintainer
+  - agent
+  authority: derived
+  status: active
+  sensitivity: internal
+  owner: maintainer
+  tier_shorthand: T3
+  canonical_source:
+  - DOC-HARNESS-001
+  derived_from:
+  - DOC-HARNESS-001
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: true
+  last_reviewed: '2026-05-20'
+  doc_id: DOC-MAINT-TXN-001
+  path: maintainer/agent_transaction_backlog.md
 - doc_type: execution
   doc_role: derived
   visibility: internal
@@ -406,6 +609,24 @@ documents:
   doc_id: DOC-EVID-002
   path: maintainer/evidence/qa_gatekeeper_verdict_portfolio_360_2026-05-12.md
   last_reviewed: '2026-05-20'
+- doc_type: evidence
+  doc_role: evidence
+  visibility: internal
+  audience:
+  - maintainer
+  authority: evidence
+  status: active
+  sensitivity: internal
+  owner: maintainer
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: true
+  tier_shorthand: T3
+  last_reviewed: '2026-05-22'
+  doc_id: DOC-EVID-018
+  path: maintainer/evidence/statistical_audit_2026-05-22.md
 - doc_type: evidence
   doc_role: evidence
   visibility: internal

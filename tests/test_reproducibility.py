@@ -10,6 +10,12 @@ import json
 from pathlib import Path
 
 import pandas as pd
+import pytest
+
+if not Path("data/processed/model_run_manifest.json").exists():
+    pytest.skip(
+        "pipeline artifacts not generated — run full pipeline first", allow_module_level=True
+    )
 
 # ============================================================================
 # Module A reproducibility

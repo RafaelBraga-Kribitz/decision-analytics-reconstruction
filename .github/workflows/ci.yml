@@ -56,7 +56,7 @@ jobs:
         run: pip install poetry
 
       - name: Install dependencies
-        run: poetry install
+        run: poetry install --all-extras
 
       - name: Doc markdown path sanity (repo-root .py references)
         run: poetry run python scripts/verify_doc_code_paths.py
@@ -157,7 +157,7 @@ jobs:
         run: pip install poetry
 
       - name: Install dependencies
-        run: poetry install
+        run: poetry install --extras dashboard
 
       - name: Black format check
         run: poetry run black --check module_c_forecasting_scenarios/src module_c_forecasting_scenarios/tests

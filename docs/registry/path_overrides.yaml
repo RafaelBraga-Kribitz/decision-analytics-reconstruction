@@ -2,7 +2,7 @@
 # Bump override_guard.max_paths only with a row in reports/decision_log.md or maintainer/doc_debt/open.yaml.
 
 override_guard:
-  max_paths: 45
+  max_paths: 60
 paths:
   README.md:
     doc_id: DOC-ROOT-001
@@ -517,6 +517,24 @@ paths:
     numeric_authority: []
     tags:
     - doc-debt
+  maintainer/agent_transaction_backlog.md:
+    doc_id: DOC-MAINT-TXN-001
+    doc_type: registry
+    doc_role: derived
+    visibility: internal
+    audience:
+    - maintainer
+    - agent
+    authority: derived
+    status: active
+    sensitivity: internal
+    owner: maintainer
+    tier_shorthand: T3
+    canonical_source:
+    - DOC-HARNESS-001
+    derived_from:
+    - DOC-HARNESS-001
+    last_reviewed: '2026-05-20'
   maintainer/evidence/statistical_audit_2026-05-22.md:
     doc_id: DOC-EVID-018
     doc_type: evidence
@@ -530,3 +548,23 @@ paths:
     owner: maintainer
     tier_shorthand: T3
     last_reviewed: '2026-05-22'
+  .cursor/commands/task-complete.md:
+    frontmatter_required: false
+  .cursor/commands/task-dispatch.md:
+    frontmatter_required: false
+  .cursor/commands/task-execute.md:
+    frontmatter_required: false
+  .cursor/commands/task-intake.md:
+    frontmatter_required: false
+  .cursor/commands/task-plan.md:
+    frontmatter_required: false
+  .cursor/commands/task-transaction.md:
+    frontmatter_required: false
+  .cursor/commands/task-verify.md:
+    frontmatter_required: false
+  .cursor/runtime/README.md:
+    frontmatter_required: false
+  .cursor/skills/project-orchestrator/SKILL.md:
+    frontmatter_required: false
+  docs/ai_harness/simulation-tests.md:
+    frontmatter_required: false

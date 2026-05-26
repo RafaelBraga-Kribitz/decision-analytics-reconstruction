@@ -17,3 +17,17 @@ debts:
     namespace: terminology
     detail: "Scope master expected under project_scope/ (typically gitignored) — clones must hydrate terminology gates locally."
     status: open
+
+  - debt_id: DEBT-004
+    doc_id: DOC-REG-001
+    issue: override_guard_capacity
+    namespace: doc_registry
+    detail: >-
+      override_guard.max_paths bumped 45→60 (2026-05-26) to accommodate 10 new
+      frontmatter_required: false entries for .cursor/commands/*.md,
+      .cursor/runtime/README.md, .cursor/skills/project-orchestrator/SKILL.md,
+      and docs/ai_harness/simulation-tests.md. These are harness-internal template
+      files that must not carry governance frontmatter. Current count: 45/60.
+    status: open
+    detected: "2026-05-26"
+    canonical_updated_after: null

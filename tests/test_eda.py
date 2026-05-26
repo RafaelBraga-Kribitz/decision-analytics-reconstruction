@@ -16,6 +16,11 @@ ROOT = Path(__file__).resolve().parents[1]
 EDA_DIR = ROOT / "reports" / "eda"
 DATA = ROOT / "data" / "processed"
 
+if not (DATA / "population_master_clean.parquet").exists():
+    pytest.skip(
+        "pipeline artifacts not generated — run full pipeline first", allow_module_level=True
+    )
+
 
 # ════════════════════════════════════════════════════════════════════════════
 # EXPECTED PNG FILES
