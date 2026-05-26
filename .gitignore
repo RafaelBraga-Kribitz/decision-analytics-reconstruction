@@ -54,39 +54,9 @@ module_a_population_segmentation/reports/model_evaluation.md
 .vscode/
 *.swp
 *.swo
-# .cursor — keep local IDE/agent state private except files we intentionally ship
-.cursor/*
-!.cursor/rules/
-.cursor/rules/*
-!.cursor/rules/07-pre-public-cleanup-manifest.mdc
-!.cursor/rules/08-controlled-workflow-playbook.mdc
-!.cursor/rules/09-documentation-registry-governance.mdc
-!.cursor/rules/10-transaction-boundaries.mdc
-!.cursor/commands/
-.cursor/commands/*
-!.cursor/commands/task-complete.md
-!.cursor/commands/task-dispatch.md
-!.cursor/commands/task-execute.md
-!.cursor/commands/task-intake.md
-!.cursor/commands/task-plan.md
-!.cursor/commands/task-transaction.md
-!.cursor/commands/task-verify.md
-!.cursor/runtime/
-.cursor/runtime/*
-!.cursor/runtime/README.md
-!.cursor/skills/
-.cursor/skills/*
-!.cursor/skills/project-orchestrator/
-.cursor/skills/project-orchestrator/*
-!.cursor/skills/project-orchestrator/SKILL.md
-
-# .claude — same: ship only mirrored orchestrator skill cue for Claude Code parity
-.claude/*
-!.claude/skills/
-.claude/skills/*
-!.claude/skills/project-orchestrator/
-.claude/skills/project-orchestrator/*
-!.claude/skills/project-orchestrator/SKILL.md
+# .cursor / .claude — private AI-assistant state, fully ignored
+.cursor/
+.claude/
 
 .obsidian/
 
@@ -104,11 +74,9 @@ CLAUDE.md
 GEMINI.md
 project_scope/
 
-# Harness docs — keep folder private except operator README pre-public section
-docs/ai_harness/*
-!docs/ai_harness/README.md
-!docs/ai_harness/CONTROLLED_WORKFLOW_PLAYBOOK.md
-!docs/ai_harness/simulation-tests.md
+# Harness docs — private, fully ignored
+docs/ai_harness/
+notebooklm-sources-*/
 
 # ─── Local graph context artifacts ───────────────────────────────────────────
 graphify-out/
