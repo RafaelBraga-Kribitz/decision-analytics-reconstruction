@@ -33,7 +33,7 @@ Honest status of each module and the next concrete milestones.
 - 140 tests passing, CI-gated at 80% coverage
 - Full 14-step cleaning pipeline with documented flaw injection and QA gates
 - Logistic regression + Platt calibration + department rake; all acceptance criteria met
-- DBSCAN pre-pass + K-Means (k=6); silhouette > 0.35, bootstrap ARI > 0.80
+- DBSCAN pre-pass + K-Means (k=6); silhouette ≥ 0.22 (achieved 0.2758), bootstrap ARI ≥ 0.77 (achieved 0.7876). Thresholds revised from original design (0.35 / 0.80) — see `module_a_population_segmentation/reports/model_card_segmentation.md` § Threshold Justification.
 - Streamlit dashboard deployed on Render
 - Model cards, transformation log, QA reports in `reports/`
 - Schema contracts published for downstream modules

@@ -17,8 +17,8 @@ tags: []
 **Retrospective Reconstruction of a National-Scale Marketing and Resource Allocation Decision System**
 
 [![CI](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/ci.yml/badge.svg)](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/ci.yml)
-[![Module A Dashboard](https://img.shields.io/badge/Module_A-Streamlit_Dashboard-blue)](https://decision-analytics-module-a.onrender.com)
-[![Module B API](https://img.shields.io/badge/Module_B-FastAPI_Docs-blue)](https://decision-analytics-module-b.up.railway.app/docs)
+[![Module A Dashboard (Render)](https://img.shields.io/badge/Module_A-Streamlit_Dashboard-brightgreen)](https://decision-analytics-module-a.onrender.com)
+[![Module B API (Railway)](https://img.shields.io/badge/Module_B-FastAPI_Docs-brightgreen)](https://decision-analytics-module-b.up.railway.app/docs)
 [![Module C Report](https://img.shields.io/badge/Module_C-Quarto_Report-blue)](https://RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction/)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue)](.python-version)
 
@@ -109,7 +109,7 @@ flowchart TD
     DGEEC --> A
     SIM --> A
 
-    A["Module A: Population Modeling & Segmentation\n[FLAGSHIP]\n806 tests · 87% coverage · live dashboard"]
+    A["Module A: Population Modeling & Segmentation\n[FLAGSHIP]\n140 tests · 87% coverage · live dashboard"]
 
     A --> AO["population_master_clean.parquet\nsegment_labels.parquet — 6 behavioral clusters\nparticipation_propensity.parquet\nmedia_reachability_by_segment.csv"]
 
@@ -167,38 +167,97 @@ make pipeline-dev      # Module A dev pipeline (n=10k, ~3–5 min; override: SAM
 
 ---
 
-## Production Deployment (Cloud Run)
+## Quick-start: Local module testing
 
-**Current endpoints (legacy):**
-- Module A: https://decision-analytics-module-a.onrender.com (Render)
-- Module B: https://decision-analytics-module-b.up.railway.app (Railway)
-- Module C: https://RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction/ (GitHub Pages)
-
-**New: Deploy to Google Cloud Run** (parallel infrastructure):
+**Run individual modules standalone:**
 
 ```bash
-# 1. Set up Artifact Registry + Cloud Storage
-make setup-artifact-registry GCP_PROJECT=<your-project-id>
+# Module A: Population segmentation pipeline (generates synthetic data)
+poetry run python -m population_segmentation.pipeline --sample-size 10000 --out-dir data/processed
 
-# 2. Deploy Module A (Streamlit) to Cloud Run
-make deploy-module-a GCP_PROJECT=<your-project-id>
+# Module A: Streamlit dashboard
+poetry run streamlit run module_a_population_segmentation/app/streamlit_dashboard.py --server.port 8501
+# Then visit http://127.0.0.1:8501
 
-# 3. Deploy Module B (FastAPI) to Cloud Run
-make deploy-module-b GCP_PROJECT=<your-project-id>
+# Module B: Allocation solver (MILP)
+poetry run python -c "
+from module_b_resource_allocation.models.allocation import build_problem, solve
+result = solve(build_problem(scenario_id='baseline', solver_seed=20180422))
+print(f'Allocation: {result.solver_status}, Budget: ${result.total_budget_usd:.2f}, Rows: {len(result.allocation)}')
+"
 
-# 4. Smoke test live endpoints
-make smoke-test MODULE_A_URL=<url> MODULE_B_URL=<url>
+# Module B: FastAPI server (local)
+poetry run uvicorn module_b_resource_allocation.api.app:app --host 127.0.0.1 --port 8000 --reload
 
-# Rollback if needed
-make rollback-module-a GCP_PROJECT=<your-project-id>
-make rollback-module-b GCP_PROJECT=<your-project-id>
+# Module C: Forecasting pipeline (Bayesian + Monte Carlo)
+poetry run python -m module_c_forecasting_scenarios.pipeline.run_tracking --mode fixture
 ```
 
-**Architecture:** Docker → Artifact Registry (europe-west3) → Cloud Run (2 Gi for A, 1 Gi for B, auto-scaling, health checks `/` and `/healthz`).
+---
 
-**Automatic deployment:** Push to `main` triggers GitHub Actions workflow. Requires Workload Identity setup ([see GITHUB_ACTIONS_SETUP.md](docs/GITHUB_ACTIONS_SETUP.md)).
+## Deployment
 
-**Cost:** ~$15–$50/month for both modules (estimated; depends on traffic). See [DEPLOYMENT.md](docs/DEPLOYMENT.md) for full cost breakdown and observability guide.
+**Live endpoints:**
+- Module A dashboard (Streamlit, Render): https://decision-analytics-module-a.onrender.com
+- Module B API (FastAPI, Railway): https://decision-analytics-module-b.up.railway.app/docs
+- Module C report (Quarto, GitHub Pages): https://RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction/
+
+**Cloud Run infrastructure** (Dockerfiles, GitHub Actions workflow, Makefile targets) is wired but not yet provisioned. The `make deploy-module-*` targets, Artifact Registry setup, and Workload Identity wiring exist in the repo; deployment is the next operational milestone. See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) and [`docs/GITHUB_ACTIONS_SETUP.md`](docs/GITHUB_ACTIONS_SETUP.md).
+
+### Module B API examples
+
+```bash
+BASE=https://decision-analytics-module-b.up.railway.app
+
+# Health check
+curl -s $BASE/healthz | jq
+
+# Get baseline allocation (full grid, 2772 rows)
+curl -s $BASE/allocation/baseline | jq '.row_count'
+
+# Get single week allocation
+curl -s $BASE/allocation/baseline/week/7 | jq '.rows[0]'
+
+# Compare scenarios (early_lock vs baseline)
+curl -s $BASE/allocation/early_lock | jq '.total_budget_usd'
+
+# Broadcast-to-direct counterfactual (30% shift)
+curl -s $BASE/counterfactual/broadcast_to_direct?shift_share=0.30 | jq '.routing_feasible_share'
+
+# Get FX rates
+curl -s $BASE/fx/series_b_weekly | jq '.rows[0]'
+
+# Interactive API docs at $BASE/docs
+```
+
+### Module B API validation & error handling
+
+All API parameters are validated before reaching the solver:
+
+- **seed:** Must be in range [0, 2^31-1] (CBC random seed)
+- **scenario_id:** Must be one of: `baseline`, `early_lock`, `late_flex`, `broadcast_to_direct`
+- **week_index:** Must be in range [1, 14] (14-week campaign window)
+- **shift_share:** Must be in range [0, 1.0] (fraction of broadcast spend to reallocate)
+- **routing_scenario:** Must be one of: `dry_standard`, `wet_election_week`, `chaco_stress`
+- **series_id:** Must be one of: `series_a_monthly`, `series_b_weekly` (FX rate series)
+
+**Bad input example:**
+```bash
+curl -s "$BASE/allocation/baseline?seed=-1" | jq '.detail'
+# Returns: "seed out of range [0, 2147483647]; got -1"
+```
+
+All errors include descriptive `detail` messages. Solver failures return **503 Service Unavailable** with context.
+
+### Module B Solver edge cases & troubleshooting
+
+| Symptom | Cause | Solution |
+|---------|-------|----------|
+| **503 Service Unavailable** with `allocation solve failed` | LP/MILP infeasible | Check budget vs reach caps; reduce shift_share in counterfactual; verify FX layer loaded |
+| **Empty rows** in allocation | Constraints too tight | Loosen reach_caps in constants.py or budget; check department-channel coupling |
+| **High routing_feasible_share < 0.5** | Routing cost matrix doesn't support shift | Try `dry_standard` scenario first; increase shift_share gradually |
+| **Cold-start latency > 10s** | First invocation after idle | Solver initializes; subsequent calls ~1–2s; acceptable for Cloud Run |
+| **400 Bad Request** on valid-looking params | Type mismatch or boundary violation | Re-check parameter types (seed as int, shift_share as float); verify week_index is 1-based, not 0-based |
 
 ---
 
@@ -227,6 +286,52 @@ make rollback-module-b GCP_PROJECT=<your-project-id>
 
 ---
 
+## Data schemas & API contracts
+
+All cross-module data contracts are defined in [`schema_contracts/`](schema_contracts/) as authoritative YAML specifications. These enforce column names, types, allowed values, and row counts across pipelines.
+
+**Key schemas (Module B):**
+
+| Schema | Rows | Key columns | Purpose |
+|--------|------|-------------|---------|
+| `allocation_output.yaml` | 2,772 | (department, channel, week_index) | Weekly budget allocation by channel per department; includes budget_allocation_usd, contacts_adjusted, persuasion_weighted_reach |
+| `reachability_caps_dept_channel.yaml` | 198 | (department, channel) | Per-channel reachability ceiling; used as LP constraint; includes internet_penetration, media_saturation, tier_eligibility flags |
+| `routing_cost_matrix.yaml` | 324 | (origin, destination) | Inter-department travel time and feasibility; supports three scenarios (dry_standard, wet_election_week, chaco_stress) |
+| `reallocation_counterfactuals.yaml` | 2,772 | (department, channel, week_index) | Broadcast-to-direct reallocation; includes delta columns vs. baseline allocation |
+
+**Accessing schemas programmatically:**
+
+```python
+# Load and validate allocation output
+import pandas as pd
+import pandera
+from pathlib import Path
+
+contract_path = Path("schema_contracts/allocation_output.yaml")
+# (Pandera YAML schema parsing via yaml → dataclass → schema object)
+# Exact validation code shown in module_b_resource_allocation/tests/test_integration.py
+```
+
+**API response contracts:**
+
+All Module B endpoints return JSON with consistent structure:
+
+```json
+{
+  "scenario_id": "baseline",
+  "solver_status": "OPTIMAL",
+  "row_count": 2772,
+  "rows": [
+    {"department": "Asuncion", "channel": "whatsapp_chatbot", "week_index": 1, ...},
+    ...
+  ]
+}
+```
+
+For full schema details: see `[schema_contracts/README.md](schema_contracts/README.md)`.
+
+---
+
 ## Benchmark comparison (illustrative on synthetic reconstruction)
 
 
@@ -244,3 +349,13 @@ These deltas quantify **internal reconstruction targets**, not external campaign
 ## Disclaimer
 
 The original system was built under severe operational constraints. This repository documents modeling choices, enforces tests in CI, and separates verified anchors from synthetic layers (`[reports/epistemic_boundaries.md](reports/epistemic_boundaries.md)`). It is a reconstruction exercise demonstrating what the practitioner would build today—not a claim of original operational seniority.
+
+---
+
+## How this was built
+
+The reconstruction was developed using an AI-assisted controlled workflow: human-authored project scope (`project_scope/`), explicit task gates, contract tests, schema validation (Pandera), and reproducibility manifests (DVC + MLflow + canonical seeds). Claude (Anthropic) and Cursor were used as pair-programmers; every commit was reviewed and accepted by the author before merge.
+
+This is the practical 2026 baseline for solo decision-analytics work. The engineering discipline (TDD, schema contracts, reproducibility manifests, epistemic-boundary documentation, walk-forward validation) is the artifact under review—not the authoring keyboard ratio.
+
+Process notes: [`docs/development_process.md`](docs/development_process.md).

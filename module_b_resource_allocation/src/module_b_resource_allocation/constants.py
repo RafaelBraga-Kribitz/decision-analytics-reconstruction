@@ -142,3 +142,16 @@ VALID_SCENARIOS: Final[frozenset[str]] = frozenset(
 )
 
 VALID_PROVENANCE: Final[frozenset[str]] = frozenset({"VERIFIED", "PRIOR", "ESTIMATED"})
+
+
+# ---------------------------------------------------------------------------
+# API input bounds & enums
+# ---------------------------------------------------------------------------
+VALID_FX_SERIES: Final[frozenset[str]] = frozenset({"series_a_monthly", "series_b_weekly"})
+VALID_ROUTING_SCENARIOS: Final[frozenset[str]] = frozenset(
+    {"dry_standard", "wet_election_week", "chaco_stress"}
+)
+SEED_MIN: Final[int] = 0
+SEED_MAX: Final[int] = 2**31 - 1
+SHIFT_SHARE_MIN: Final[float] = 0.0
+SHIFT_SHARE_MAX: Final[float] = 1.0
