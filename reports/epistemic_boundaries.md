@@ -1,17 +1,3 @@
----
-doc_id: DOC-EPI-001
-doc_type: methodology
-doc_role: canonical
-visibility: public
-status: active
-owner: portfolio
-last_reviewed: '2026-05-20'
-canonical_source: null
-derived_from: null
-supersedes: null
-tags: []
----
-
 # Epistemic Boundaries — Reconstruction Portfolio
 
 This document classifies **what is verified**, **what is calibrated**, **what is simulated**, and **what is illustrative** for every output artifact in the repository. Its purpose is to allow a technical reviewer, a hiring manager, or a domain expert to understand exactly which claims rest on real-world evidence and which rest on plausible synthetic structure — before reading any code.

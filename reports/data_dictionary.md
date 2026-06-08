@@ -1,24 +1,3 @@
----
-doc_id: DOC-DICT-001
-doc_type: specification
-doc_role: derived
-visibility: public
-status: active
-owner: portfolio
-last_reviewed: '2026-05-20'
-canonical_source: &id001
-- DOC-SCH-001
-- DOC-CHARTER-001
-derived_from: *id001
-supersedes: null
-tags: []
-allowed_content:
-- interpretation
-- summarization
-forbidden_content:
-- novel_metrics
----
-
 # Data Dictionary
 
 Every field across all modules: type, source, validation rule, business meaning.

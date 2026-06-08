@@ -54,7 +54,7 @@ If you find yourself drifting toward a "let me first audit everything from scrat
 | Open work queue | `governance/findings/F-*.yaml` |
 | Prior session handoff | `governance/SESSION_END.md` |
 | Methodology / roles | `governance/AUDIT_PROCEDURE.md` |
-| Project SSOT | `PROJECT_CHARTER.md` (≤200 lines; index into specs) |
+| Project SSOT | `PROJECT_CHARTER.md` (≤600 lines; compact project SSOT) |
 | Architecture decisions | `governance/adrs/` (with YAML frontmatter) |
 | Version history | `governance/CHANGELOG.md` |
 | Contributor rules | `CONTRIBUTING.md` |

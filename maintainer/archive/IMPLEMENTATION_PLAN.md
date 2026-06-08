@@ -1,19 +1,3 @@
----
-doc_id: DOC-PLAN-001
-doc_type: execution
-doc_role: canonical
-visibility: public
-status: active
-owner: maintainer
-last_reviewed: '2026-05-20'
-canonical_source: null
-derived_from: null
-supersedes:
-- DOC-PLAN-002
-- DOC-PLAN-003
-tags: []
----
-
 # Implementation Plan
 
 **Project:** Paraguay 2018 Election Forecasting Reconstruction (A+ Portfolio Edition)  

@@ -72,7 +72,7 @@ def main() -> int:
     state = json.loads(STATE_PATH.read_text())
     summary = state["summary"]
     findings = state["findings"]
-    migrations = state["migrations"]
+    state["migrations"]
 
     open_findings = [f for f in findings if f["status"] == "open"]
     in_progress_findings = [f for f in findings if f["status"] == "in_progress"]
@@ -89,13 +89,17 @@ def main() -> int:
     lines.append("")
     lines.append("## Snapshot")
     lines.append("")
-    lines.append(f"- Findings: total={summary['findings_total']}, "
-                 f"open={summary['findings_open']}, "
-                 f"in_progress={summary['findings_in_progress']}, "
-                 f"closed={summary['findings_closed']}, "
-                 f"historical={summary['findings_closed_historical']}")
-    lines.append(f"- Migrations: total={summary['migrations_total']}, "
-                 f"in_progress={summary['migrations_in_progress']}")
+    lines.append(
+        f"- Findings: total={summary['findings_total']}, "
+        f"open={summary['findings_open']}, "
+        f"in_progress={summary['findings_in_progress']}, "
+        f"closed={summary['findings_closed']}, "
+        f"historical={summary['findings_closed_historical']}"
+    )
+    lines.append(
+        f"- Migrations: total={summary['migrations_total']}, "
+        f"in_progress={summary['migrations_in_progress']}"
+    )
     lines.append("")
 
     if summary.get("open_by_category"):
@@ -124,7 +128,7 @@ def main() -> int:
                 lines.append("  - Verification: **TODO — write the script first**")
         lines.append("")
         recommended = open_findings[0]
-        lines.append(f"## Recommended next action")
+        lines.append("## Recommended next action")
         lines.append("")
         lines.append(f"Pick up **{recommended['id']}** — {recommended['title']}.")
         lines.append("")

@@ -1,17 +1,3 @@
----
-doc_id: DOC-EVID-016
-doc_type: evidence
-doc_role: evidence
-visibility: internal
-status: archived
-owner: harness
-last_reviewed: '2026-05-20'
-canonical_source: null
-derived_from: null
-supersedes: null
-tags: []
----
-
 # Task verify — portfolio 360° audit closure (2026-05-12)
 
 Session evidence table for plan success criteria (abbreviated commands; all exit **0** unless noted).

@@ -1,17 +1,3 @@
----
-doc_id: DOC-BIZ-001
-doc_type: narrative
-doc_role: canonical
-visibility: public
-status: active
-owner: portfolio
-last_reviewed: '2026-05-20'
-canonical_source: null
-derived_from: null
-supersedes: null
-tags: []
----
-
 # Business case — resource allocation under uncertainty
 
 **Plain-language summary:** A national program needed to spend several million USD across 18 geographic regions to reach and persuade citizens before a major civic event. This repository reconstructs the decision system: who to reach, through which channels, at what cost, and how confident we should be in the outcome. Three analytical modules — population segmentation, budget allocation, and probabilistic forecasting — are linked by verified data contracts and reproducible code.

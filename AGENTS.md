@@ -19,3 +19,9 @@ Machine and terminology constraints still apply through:
 
 - `.cursor/rules/05-terminology-compliance-gate.mdc`
 - `.cursor/rules/06-developer-machine-macpro-6-1.mdc`
+
+## Graphify (tiered — see `.cursor/rules/graphify.mdc`)
+
+- **Tier 1 (narrow):** grep + read known paths; do not load the graph first.
+- **Tier 2 (cross-module / architecture):** `graphify query` or `GRAPH_REPORT.md` summary sections.
+- **Tier 3 (session end):** `make graphify` after any session that changed code or configs.

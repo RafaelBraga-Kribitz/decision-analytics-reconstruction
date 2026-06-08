@@ -111,7 +111,6 @@ def test_ess_acceptable(monkeypatch: pytest.MonkeyPatch) -> None:
 @pytest.mark.xfail(reason="P2-4 non-centered reparameterization pending")
 def test_no_divergences_under_full_sampling(monkeypatch: pytest.MonkeyPatch) -> None:
     """Full NUTS (not MC_FAST) must report zero divergences."""
-    import arviz as az
 
     monkeypatch.setenv("MC_FAST", "0")
     from module_c_forecasting_scenarios.models.tracking.hierarchical import (

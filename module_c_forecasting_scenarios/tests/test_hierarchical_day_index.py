@@ -5,6 +5,7 @@ from __future__ import annotations
 from datetime import date
 
 import pandas as pd
+
 from module_c_forecasting_scenarios.models.tracking.hierarchical import _build_day_index
 
 

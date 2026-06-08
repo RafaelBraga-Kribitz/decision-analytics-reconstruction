@@ -7,6 +7,7 @@ from datetime import date, timedelta
 import numpy as np
 import pandas as pd
 import pytest
+
 from module_c_forecasting_scenarios.models.tracking.hierarchical import (
     _build_day_index,
     export_daily_posterior_table,

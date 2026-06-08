@@ -1,17 +1,3 @@
----
-doc_id: DOC-MODB-001
-doc_type: specification
-doc_role: canonical
-visibility: public
-status: active
-owner: module_b
-last_reviewed: '2026-05-20'
-canonical_source: null
-derived_from: null
-supersedes: null
-tags: []
----
-
 # Module B — Allocation LP and sensitivity analysis (specification)
 
 This document is the **implementation-facing** specification for the resource allocation layer. It complements the narrative in [`reports/response_curve_spec.md`](reports/response_curve_spec.md), which contrasts this LP with a full media mix model.

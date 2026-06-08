@@ -49,6 +49,7 @@ pytest-cov = ">=5.0"
 black = ">=24.0"
 ruff = ">=0.4"
 pyright = ">=1.1.350"
+plotly = ">=5.20"
 graphifyy = ">=0.7,<0.8"
 httpx = ">=0.27"
 pre-commit = ">=4.0"
@@ -127,6 +128,16 @@ reportMissingParameterType = false
 # Modules B and C are being upgraded to strict mode in T8-2/T8-3.
 # Until then, suppress the same pandas/sklearn/MLflow stub-limitation rules
 # at the per-execution-environment level so the global strict baseline holds.
+[[tool.pyright.executionEnvironments]]
+root = "module_a_population_segmentation/src"
+reportUnknownMemberType = false
+reportUnknownVariableType = false
+reportUnknownArgumentType = false
+reportUnknownLambdaType = false
+reportUnknownParameterType = false
+reportMissingTypeArgument = false
+reportMissingParameterType = false
+
 [[tool.pyright.executionEnvironments]]
 root = "module_b_resource_allocation/src"
 reportUnknownMemberType = false

@@ -1,17 +1,3 @@
----
-doc_id: DOC-REP-002
-doc_type: narrative
-doc_role: canonical
-visibility: public
-status: active
-owner: project
-last_reviewed: '2026-05-20'
-canonical_source: null
-derived_from: null
-supersedes: null
-tags: []
----
-
 # Module A — extended clustering validation
 
 Beyond silhouette and bootstrap ARI (enforced in CI), the reconstruction reports **Davies–Bouldin** (lower is better) and **Calinski–Harasz** (higher is better) on the same PCA-reduced feature matrix used for k-means (`k = 6`).

@@ -1,17 +1,3 @@
----
-doc_id: DOC-REP-005
-doc_type: narrative
-doc_role: canonical
-visibility: public
-status: active
-owner: project
-last_reviewed: '2026-05-20'
-canonical_source: null
-derived_from: null
-supersedes: null
-tags: []
----
-
 # Paraguay Presidential Campaign — Strategic Brief
 **CONFIDENTIAL | For Campaign Director Eyes Only**
 **Date:** April 30, 2026 | **Analyst:** Campaign Data Science Unit

@@ -1,25 +1,3 @@
----
-doc_id: DOC-WALK-002
-doc_type: walkthrough
-doc_role: derived
-visibility: public
-status: active
-owner: portfolio
-last_reviewed: '2026-05-20'
-canonical_source:
-- DOC-WALK-001
-derived_from:
-- DOC-WALK-001
-supersedes: null
-tags: []
-allowed_content:
-- interpretation
-- summarization
-forbidden_content:
-- novel_metrics
-- novel_claims
----
-
 # Executive demo walkthrough
 
 Audience: a senior decision-maker (boss, campaign principal, head of analytics)

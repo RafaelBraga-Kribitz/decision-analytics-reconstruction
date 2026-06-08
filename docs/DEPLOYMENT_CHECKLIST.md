@@ -1,17 +1,3 @@
----
-doc_id: DOC-DOCS-002
-doc_type: narrative
-doc_role: canonical
-visibility: public
-status: active
-owner: project
-last_reviewed: '2026-05-20'
-canonical_source: null
-derived_from: null
-supersedes: null
-tags: []
----
-
 # Cloud Run Deployment Checklist
 
 Complete verification before going live.

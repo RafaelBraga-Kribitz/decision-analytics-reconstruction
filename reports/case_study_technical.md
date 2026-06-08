@@ -1,24 +1,3 @@
----
-doc_id: DOC-BIZ-003
-doc_type: narrative
-doc_role: derived
-visibility: public
-status: active
-owner: project
-last_reviewed: '2026-05-20'
-canonical_source: &id001
-- DOC-CHARTER-001
-- DOC-EPI-001
-derived_from: *id001
-supersedes: null
-tags: []
-allowed_content:
-- interpretation
-- summarization
-forbidden_content:
-- novel_metrics
-- novel_claims
----
 
 \newpage
 

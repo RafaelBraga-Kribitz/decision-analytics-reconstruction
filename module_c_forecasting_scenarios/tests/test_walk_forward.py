@@ -7,6 +7,7 @@ from datetime import date, timedelta
 import numpy as np
 import pandas as pd
 import pytest
+
 from module_c_forecasting_scenarios.validation.walk_forward import (
     summarize_walk_forward,
     walk_forward_tracking_validation,

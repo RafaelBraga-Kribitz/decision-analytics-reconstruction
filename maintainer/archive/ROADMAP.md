@@ -1,25 +1,3 @@
----
-doc_id: DOC-PLAN-010
-doc_type: execution
-doc_role: derived
-visibility: public
-status: active
-owner: maintainer
-last_reviewed: '2026-05-20'
-canonical_source:
-- DOC-PLAN-001
-derived_from:
-- DOC-PLAN-001
-supersedes: null
-tags: []
-allowed_content:
-- interpretation
-- summarization
-forbidden_content:
-- novel_metrics
-- novel_claims
----
-
 # Roadmap
 
 Honest status of each module and the next concrete milestones.

@@ -1,19 +1,3 @@
----
-doc_id: DOC-ARCH-001
-doc_type: specification
-doc_role: derived
-visibility: public
-status: active
-owner: architecture
-last_reviewed: '2026-06-08'
-canonical_source:
-- DOC-CHARTER-001
-derived_from:
-- DOC-CHARTER-001
-supersedes: null
-tags: []
----
-
 # Architecture
 
 Derived reference: `PROJECT_CHARTER.md` is the project SSOT. This document maps the technical architecture and contract surfaces.

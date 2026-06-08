@@ -1,17 +1,3 @@
----
-doc_id: DOC-REP-012
-doc_type: narrative
-doc_role: canonical
-visibility: public
-status: active
-owner: project
-last_reviewed: '2026-05-20'
-canonical_source: null
-derived_from: null
-supersedes: null
-tags: []
----
-
 # Statistical Metrics Summary
 
 **Report generated:** 2026-05-14 (§5 full metric capture, revised with production NUTS)

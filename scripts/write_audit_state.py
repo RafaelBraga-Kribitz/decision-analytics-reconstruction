@@ -51,7 +51,7 @@ def _load_yaml(path: Path) -> dict:
 def _git(*args: str) -> str:
     try:
         return subprocess.check_output(
-            ["git", *args],  # noqa: S607
+            ["git", *args],
             cwd=REPO_ROOT,
             text=True,
             stderr=subprocess.DEVNULL,

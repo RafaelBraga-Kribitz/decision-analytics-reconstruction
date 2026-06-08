@@ -1,17 +1,3 @@
----
-doc_id: DOC-ROOT-002
-doc_type: narrative
-doc_role: canonical
-visibility: public
-status: active
-owner: maintainer
-last_reviewed: '2026-05-20'
-canonical_source: null
-derived_from: null
-supersedes: null
-tags: []
----
-
 # Changelog
 
 All notable changes to this project are documented here. This file follows [Keep a Changelog](https://keepachangelog.com/) format.
@@ -22,6 +8,7 @@ All notable changes to this project are documented here. This file follows [Keep
 
 ### Governance Replacement (2026-06-08)
 
+- Raised the project-specific Charter line budget from 200 to 600 lines via `ADR-0003`, preserving a hard anti-sprawl cap while allowing enough context for the three-module system.
 - Installed governance-bootstrap as the single tracked workflow: `CLAUDE.md`,
   `PROJECT_CHARTER.md`, `CONTRIBUTING.md`, `governance/AUDIT_PROCEDURE.md`,
   generated audit state, session handout, findings queue, and debt ratchet.

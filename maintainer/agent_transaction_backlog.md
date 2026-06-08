@@ -1,19 +1,3 @@
----
-doc_id: DOC-MAINT-TXN-001
-doc_type: registry
-doc_role: derived
-visibility: internal
-status: active
-owner: maintainer
-last_reviewed: '2026-05-20'
-canonical_source:
-  - DOC-HARNESS-001
-derived_from:
-  - DOC-HARNESS-001
-tags:
-  - agent-backlog
----
-
 # Agent transaction backlog
 
 **Audience:** Operators and autonomous agents.

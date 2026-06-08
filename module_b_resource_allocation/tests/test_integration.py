@@ -224,7 +224,7 @@ class TestWeekValidation:
     def test_week_above_max(self, client: TestClient) -> None:
         r = client.get(f"/allocation/baseline/week/{WEEK_COUNT + 1}")
         assert r.status_code == 400
-        assert f"week_index out of range" in r.json()["detail"]
+        assert "week_index out of range" in r.json()["detail"]
 
     def test_week_at_boundaries(self, client: TestClient) -> None:
         # Min boundary
@@ -249,13 +249,9 @@ class TestShiftShareValidation:
         assert "shift_share out of range" in r.json()["detail"]
 
     def test_shift_share_at_boundaries(self, client: TestClient) -> None:
-        r = client.get(
-            f"/counterfactual/broadcast_to_direct?shift_share={SHIFT_SHARE_MIN}"
-        )
+        r = client.get(f"/counterfactual/broadcast_to_direct?shift_share={SHIFT_SHARE_MIN}")
         assert r.status_code == 200
-        r = client.get(
-            f"/counterfactual/broadcast_to_direct?shift_share={SHIFT_SHARE_MAX}"
-        )
+        r = client.get(f"/counterfactual/broadcast_to_direct?shift_share={SHIFT_SHARE_MAX}")
         assert r.status_code == 200
 
     def test_shift_share_in_valid_range(self, client: TestClient) -> None:
@@ -274,9 +270,7 @@ class TestRoutingScenarioValidation:
 
     def test_all_valid_routing_scenarios(self, client: TestClient) -> None:
         for scenario in VALID_ROUTING_SCENARIOS:
-            r = client.get(
-                f"/counterfactual/broadcast_to_direct?routing_scenario={scenario}"
-            )
+            r = client.get(f"/counterfactual/broadcast_to_direct?routing_scenario={scenario}")
             assert r.status_code == 200, f"routing_scenario={scenario} should be valid"
 
     def test_routing_scenario_in_cost_matrix(self, client: TestClient) -> None:

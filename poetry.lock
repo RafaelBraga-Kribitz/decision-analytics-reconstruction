@@ -9,6 +9,7 @@ python-versions = "*"
 groups = ["main"]
 files = [
     {file = "adjustText-1.3.0-py3-none-any.whl", hash = "sha256:da23d7b24b6db5ffa039bb136bfa556207365e32f48ac74b07ad26dd485bc691"},
+    {file = "adjusttext-1.3.0-py3-none-any.whl", hash = "sha256:bc6c118cd9d7caf6ae37f9355e51d840a2d7f64b4fb2956b8401de27c5af803b"},
     {file = "adjusttext-1.3.0.tar.gz", hash = "sha256:4ab75cd4453af4828876ac3e964f2c49be642ea834f0c1f7449558d5f12cbca1"},
 ]
 
@@ -4058,14 +4059,14 @@ files = [
 name = "narwhals"
 version = "2.20.0"
 description = "Extremely lightweight compatibility layer between dataframe libraries"
-optional = true
+optional = false
 python-versions = ">=3.9"
-groups = ["main"]
-markers = "extra == \"dashboard\" or extra == \"all\""
+groups = ["main", "dev"]
 files = [
     {file = "narwhals-2.20.0-py3-none-any.whl", hash = "sha256:16e750ea5507d4ba6e8d03455b5f93a535e0405976561baea235bca5dc9f475d"},
     {file = "narwhals-2.20.0.tar.gz", hash = "sha256:c10994975fa7dc5a68c2cffcddbd5908fc8ebb2d463c5bab085309c0ee1f551e"},
 ]
+markers = {main = "extra == \"dashboard\" or extra == \"all\""}
 
 [package.extras]
 cudf = ["cudf-cu12 (>=24.10.0)"]
@@ -4866,14 +4867,14 @@ markers = {main = "python_version == \"3.11\" or extra == \"tracking\" or extra 
 name = "plotly"
 version = "6.7.0"
 description = "An open-source interactive data visualization library for Python"
-optional = true
+optional = false
 python-versions = ">=3.8"
-groups = ["main"]
-markers = "extra == \"dashboard\" or extra == \"all\""
+groups = ["main", "dev"]
 files = [
     {file = "plotly-6.7.0-py3-none-any.whl", hash = "sha256:ac8aca1c25c663a59b5b9140a549264a5badde2e057d79b8c772ae2920e32ff0"},
     {file = "plotly-6.7.0.tar.gz", hash = "sha256:45eea0ff27e2a23ccd62776f77eb43aa1ca03df4192b76036e380bb479b892c6"},
 ]
+markers = {main = "extra == \"dashboard\" or extra == \"all\""}
 
 [package.dependencies]
 narwhals = ">=1.15.1"
@@ -8371,4 +8372,4 @@ tracking = ["dvc"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.13"
-content-hash = "2dbfb4ee649eaf62848d398f51ef848a97e98af865fa5a7cf176f2604654d1b7"
+content-hash = "92c2709c9a128389f2a5438c0f654596d13c1698d5428c7f22da3ab6b99c0c72"

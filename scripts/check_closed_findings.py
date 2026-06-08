@@ -30,16 +30,14 @@ def _run(script: str) -> tuple[int, str]:
         cmd = [sys.executable, "-m", "pytest", str(path), "-q", "-o", "addopts="]
     else:
         cmd = [sys.executable, str(path)]
-    proc = subprocess.run(  # noqa: S603
-        cmd, cwd=REPO_ROOT, capture_output=True, text=True, check=False
-    )
+    proc = subprocess.run(cmd, cwd=REPO_ROOT, capture_output=True, text=True, check=False)
     return proc.returncode, (proc.stdout + proc.stderr).strip()
 
 
 def main() -> int:
     closed = []
     if not FINDINGS.exists():
-        print(f"[PASS] check_closed_findings.py: no findings directory yet")
+        print("[PASS] check_closed_findings.py: no findings directory yet")
         return 0
     for path in sorted(FINDINGS.glob("F-*.yaml")):
         if path.name == "F-TEMPLATE.yaml":

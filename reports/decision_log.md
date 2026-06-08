@@ -1,17 +1,3 @@
----
-doc_id: DOC-DLOG-001
-doc_type: narrative
-doc_role: canonical
-visibility: public
-status: active
-owner: maintainer
-last_reviewed: '2026-05-20'
-canonical_source: null
-derived_from: null
-supersedes: null
-tags: []
----
-
 ## 2026-05-15 — T11-1→4: Data integration — replace 8 estimated anchors with verified 2018 historical sources
 
 **Decision:** Complete T11 data integration backfill across all four modules. Previously marked `[ESTIMATED]` flags are now replaced with `[VERIFIED]` anchors sourced from official 2018 Paraguay historical records. Integration elevates reconstruction from methodological prototype to fully verified, production-ready 2018 replica.

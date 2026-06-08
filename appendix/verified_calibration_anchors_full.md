@@ -1,17 +1,3 @@
----
-doc_id: DOC-CAL-001
-doc_type: registry
-doc_role: canonical
-visibility: public
-status: active
-owner: module_a
-last_reviewed: '2026-05-20'
-canonical_source: null
-derived_from: null
-supersedes: null
-tags: []
----
-
 # Verified Calibration Anchors — Full Registry
 
 **Source of truth for all calibration values used across Modules A, B, and C.**

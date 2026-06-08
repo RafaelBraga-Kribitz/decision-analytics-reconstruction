@@ -1,19 +1,3 @@
----
-doc_id: DOC-REG-001
-doc_type: registry
-doc_role: registry
-visibility: public
-status: active
-owner: architecture
-last_reviewed: "2026-05-20"
-canonical_source: null
-derived_from: []
-supersedes: []
-tags:
-  - documentation-governance
-  - registry-as-data
----
-
 # Documentation registry (operators)
 
 Authoritative inventory lives in [`docs_registry.yaml`](docs_registry.yaml) (YAML). Human navigation [`../INDEX.md`](../INDEX.md) is **generated**:
@@ -23,7 +7,7 @@ poetry run python scripts/build_docs_registry.py
 poetry run python scripts/generate_doc_index.py --write
 ```
 
-Verification runs under `make validate`: `scripts/verify_doc_registry.py`, `scripts/check_doc_frontmatter.py`, `scripts/check_doc_drift.py`.
+Verification runs under `make validate`: `scripts/verify_doc_registry.py`, `scripts/check_doc_drift.py`. Document metadata (`doc_id`, roles, lineage) lives in `docs_registry.yaml` only — Markdown files do not carry YAML headers. `check_doc_frontmatter.py` remains for repos that opt back in via `frontmatter_required: true`.
 
 ## Authority ordering (operators)
 

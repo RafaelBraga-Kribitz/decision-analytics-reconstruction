@@ -1,5 +1,5 @@
 override_guard:
-  max_paths: 52
+  max_paths: 53
 paths:
   README.md:
     doc_id: DOC-ROOT-001
@@ -794,6 +794,24 @@ paths:
     - agent
     - maintainer
     authority: evidence
+    status: active
+    sensitivity: internal
+    owner: governance
+    tier_shorthand: T0
+    canonical_source: []
+    derived_from: []
+    supersedes: []
+    numeric_authority: []
+    frontmatter_required: false
+  governance/adrs/0003-charter-line-budget.md:
+    doc_id: ADR-0003
+    doc_type: policy
+    doc_role: canonical
+    visibility: internal
+    audience:
+    - agent
+    - maintainer
+    authority: canonical
     status: active
     sensitivity: internal
     owner: governance

@@ -51,9 +51,13 @@ def _have(tool: str) -> bool:
 
 def _run(cmd: list[str]) -> tuple[int, str]:
     try:
-        proc = subprocess.run(  # noqa: S603
-            cmd, cwd=REPO_ROOT, capture_output=True, text=True,
-            check=False, timeout=_TIMEOUT,
+        proc = subprocess.run(
+            cmd,
+            cwd=REPO_ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=_TIMEOUT,
         )
         return proc.returncode, proc.stdout + proc.stderr
     except (subprocess.TimeoutExpired, FileNotFoundError) as exc:
@@ -77,7 +81,7 @@ def _load_config() -> dict:
 
             cfg = yaml.safe_load(CONFIG_PATH.read_text()) or {}
             thresholds.update(cfg.get("thresholds", {}))
-        except Exception:  # noqa: BLE001 — config is best-effort
+        except Exception:
             pass
     return thresholds
 
@@ -100,8 +104,7 @@ def scan_python(thresholds: dict) -> dict[str, dict]:
     # ruff — unused imports (F401), unused vars (F841), redefinition (F811)
     if _have("ruff"):
         rc, out = _run(
-            ["ruff", "check", "--select", "F401,F811,F841",
-             "--output-format", "json", "."]
+            ["ruff", "check", "--select", "F401,F811,F841", "--output-format", "json", "."]
         )
         try:
             n = len(json.loads(out)) if out.strip().startswith("[") else 0
@@ -151,9 +154,7 @@ def scan_ts_js(thresholds: dict) -> dict[str, dict]:
         rc, out = _run(["fallow", "scan", "--json"])
         try:
             data = json.loads(out) if out.strip().startswith("{") else {}
-            m["fallow_dead_code"] = _metric(
-                int(data.get("dead_code_count", 0)), True, "fallow"
-            )
+            m["fallow_dead_code"] = _metric(int(data.get("dead_code_count", 0)), True, "fallow")
             m["fallow_duplication_pct"] = _metric(
                 float(data.get("duplication_pct", 0.0)), True, "fallow"
             )
@@ -168,7 +169,9 @@ def scan_ts_js(thresholds: dict) -> dict[str, dict]:
             data = json.loads(out) if out.strip().startswith("{") else {}
             files = len(data.get("files", []))
             issues = data.get("issues", [])
-            exports = sum(len(i.get("exports", [])) for i in issues) if isinstance(issues, list) else 0
+            exports = (
+                sum(len(i.get("exports", [])) for i in issues) if isinstance(issues, list) else 0
+            )
             m["knip_unused_files"] = _metric(files, True, "knip")
             m["knip_unused_exports"] = _metric(exports, True, "knip")
         except json.JSONDecodeError:
@@ -178,9 +181,7 @@ def scan_ts_js(thresholds: dict) -> dict[str, dict]:
 
     # jscpd — duplication percentage (language-agnostic)
     if _have("jscpd"):
-        rc, out = _run(
-            ["jscpd", "--silent", "--reporters", "json", "--output", "/tmp/jscpd", "."]
-        )
+        rc, out = _run(["jscpd", "--silent", "--reporters", "json", "--output", "/tmp/jscpd", "."])
         report = Path("/tmp/jscpd/jscpd-report.json")
         pct = 0.0
         if report.exists():

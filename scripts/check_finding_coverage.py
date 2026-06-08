@@ -9,10 +9,8 @@ one-time changes (e.g., a deletion) with no recurrence surface.
 from __future__ import annotations
 
 import sys
-from pathlib import Path
 
 import yaml
-
 from _governance_check import REPO_ROOT, gate
 
 FINDINGS = REPO_ROOT / "governance" / "findings"
@@ -21,7 +19,9 @@ FINDINGS = REPO_ROOT / "governance" / "findings"
 def main() -> int:
     if not FINDINGS.exists():
         return gate(
-            "F-COVERAGE", "check_finding_coverage.py", True,
+            "F-COVERAGE",
+            "check_finding_coverage.py",
+            True,
             "no findings directory yet",
         )
 
@@ -44,11 +44,15 @@ def main() -> int:
 
     if missing:
         return gate(
-            "F-COVERAGE", "check_finding_coverage.py", False,
+            "F-COVERAGE",
+            "check_finding_coverage.py",
+            False,
             f"{len(missing)} finding(s) without a usable script: {missing[0]}",
         )
     return gate(
-        "F-COVERAGE", "check_finding_coverage.py", True,
+        "F-COVERAGE",
+        "check_finding_coverage.py",
+        True,
         f"{count} finding(s), each with an existing verification_script",
     )
 

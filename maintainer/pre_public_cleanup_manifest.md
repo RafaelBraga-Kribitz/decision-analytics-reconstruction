@@ -1,17 +1,3 @@
----
-doc_id: DOC-MAINT-001
-doc_type: policy
-doc_role: canonical
-visibility: internal
-status: active
-owner: maintainer
-last_reviewed: '2026-05-20'
-canonical_source: null
-derived_from: null
-supersedes: null
-tags: []
----
-
 # Pre-public cleanup manifest (internal)
 
 **Audience:** Repository author and AI agents only — not peer reviewers, HR, or hiring managers.
@@ -25,7 +11,7 @@ tags: []
 3. **Do not** link this file from the top-level [`README.md`](../README.md) or other candidate-facing copy.
 4. Before the author declares the project “public ready,” an agent or the author must run a **full-repo cleanup pass** using this manifest as the checklist (tick `done`, then remove/redact).
 
-**Last updated:** 2026-05-12
+**Last updated:** 2026-06-08
 
 ---
 

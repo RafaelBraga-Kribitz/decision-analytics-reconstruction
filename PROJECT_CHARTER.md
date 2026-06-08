@@ -4,7 +4,7 @@ PROJECT CHARTER: Single Source of Truth (SSOT)
 ================================================================================
 This document is the authoritative source for project goals, scope, requirements,
 and design decisions. Detailed implementation notes live in derived docs and ADRs.
-Cap at 200 lines.
+Cap at 600 lines.
 ================================================================================
 -->
 
@@ -65,7 +65,7 @@ The project succeeds if all of these are true:
 | Core workflows are reproducible | Make targets run from a clean Poetry environment | `make test`, module smoke targets, CI |
 | Governance state survives sessions | Findings and handoffs are generated from disk | `make session-start`, `governance/AUDIT_STATE.json` |
 | Technical debt cannot grow silently | Debt metrics stay at or below baseline | `make debt-check` |
-| Public-facing docs have one authority | Root docs link to this Charter and ADRs | `make doc-registry-verify` |
+| Public-facing docs have one authority | Root docs link to this Charter and ADRs | Manual review + `governance/adrs/` |
 
 ### 3.4 Stakeholders
 

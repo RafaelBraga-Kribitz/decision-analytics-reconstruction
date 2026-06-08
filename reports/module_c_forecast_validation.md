@@ -1,24 +1,3 @@
----
-doc_id: DOC-RPT-013
-doc_type: methodology
-doc_role: derived
-visibility: public
-status: active
-owner: project
-last_reviewed: '2026-05-20'
-canonical_source:
-- DOC-MODC-001
-derived_from:
-- DOC-MODC-001
-supersedes: null
-tags: []
-allowed_content:
-- interpretation
-- summarization
-forbidden_content:
-- novel_metrics
----
-
 # Module C — forecast validation and diagnostics
 
 ## What CI proves (fast path)

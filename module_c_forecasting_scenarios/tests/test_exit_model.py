@@ -5,6 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+
 from module_c_forecasting_scenarios.data.cleaning_pipeline import clean_raw_polls
 from module_c_forecasting_scenarios.data.raw_loader import load_raw_polls_csv
 from module_c_forecasting_scenarios.models.exit.exit_model import fit_exit_quickcount

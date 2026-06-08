@@ -1,17 +1,3 @@
----
-doc_id: DOC-EVID-002
-doc_type: evidence
-doc_role: evidence
-visibility: internal
-status: archived
-owner: harness
-last_reviewed: '2026-05-20'
-canonical_source: null
-derived_from: null
-supersedes: null
-tags: []
----
-
 # QA gatekeeper verdict — portfolio 360° reconstruction hardening
 
 **Date:** 2026-05-12  

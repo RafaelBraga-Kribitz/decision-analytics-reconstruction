@@ -1,24 +1,3 @@
----
-doc_id: DOC-RPT-012
-doc_type: methodology
-doc_role: derived
-visibility: public
-status: active
-owner: project
-last_reviewed: '2026-05-20'
-canonical_source:
-- DOC-MODB-001
-derived_from:
-- DOC-MODB-001
-supersedes: null
-tags: []
-allowed_content:
-- interpretation
-- summarization
-forbidden_content:
-- novel_metrics
----
-
 # Module B — LP / MILP optimization formulation (portfolio)
 
 Canonical implementation: `module_b_resource_allocation/src/module_b_resource_allocation/models/allocation.py` (`build_problem`, `solve`). Specification context: `module_b_resource_allocation/SPECIFICATION.md` and `module_b_resource_allocation/reports/response_curve_spec.md`.

@@ -1,17 +1,3 @@
----
-doc_id: DOC-TST-001
-doc_type: narrative
-doc_role: canonical
-visibility: public
-status: active
-owner: project
-last_reviewed: '2026-05-20'
-canonical_source: null
-derived_from: null
-supersedes: null
-tags: []
----
-
 # Tests
 
 This directory holds **root-level** pytest modules (cross-cutting contracts, CI, portfolio smoke). Per-module tests live under:

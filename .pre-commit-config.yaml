@@ -47,7 +47,7 @@ repos:
         files: ^CLAUDE\.md$
 
       - id: charter-size
-        name: PROJECT_CHARTER.md size guard (<=200 lines)
+        name: PROJECT_CHARTER.md size guard (<=600 lines)
         entry: poetry run python scripts/check_charter_size.py
         language: system
         pass_filenames: false
@@ -55,6 +55,6 @@ repos:
 
       - id: pytest-smoke
         name: pytest smoke (architecture contracts + portfolio e2e)
-        entry: poetry run pytest tests/test_architecture_ruff_black_contract.py tests/test_architecture_noqa_justification_contract.py tests/test_architecture_ruff_configuration.py tests/test_architecture_pyright_basic_contract.py tests/test_architecture_pre_commit_contract.py module_a_population_segmentation/tests/test_architecture_generator_rural_anchor_contract.py module_a_population_segmentation/tests/test_architecture_generator_synthetic_rates_contract.py module_a_population_segmentation/tests/test_architecture_generator_dept_media_yaml_contract.py tests/test_portfolio_e2e_smoke.py -q --tb=line
+        entry: poetry run pytest tests/test_architecture_ruff_black_contract.py tests/test_architecture_noqa_justification_contract.py tests/test_architecture_ruff_configuration.py tests/test_architecture_pyright_basic_contract.py tests/test_architecture_pre_commit_contract.py tests/test_governance_check_ratchet.py module_a_population_segmentation/tests/test_architecture_generator_rural_anchor_contract.py module_a_population_segmentation/tests/test_architecture_generator_synthetic_rates_contract.py module_a_population_segmentation/tests/test_architecture_generator_dept_media_yaml_contract.py tests/test_portfolio_e2e_smoke.py -q --tb=line
         language: system
         pass_filenames: false

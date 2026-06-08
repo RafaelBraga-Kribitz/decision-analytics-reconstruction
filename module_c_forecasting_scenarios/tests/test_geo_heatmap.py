@@ -7,6 +7,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
+
 from module_c_forecasting_scenarios.data.contract_validate import validate_dataframe_contract
 from module_c_forecasting_scenarios.geo.heatmap import export_battleground_department_table
 

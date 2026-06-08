@@ -1,25 +1,3 @@
----
-doc_id: DOC-MODB-002
-doc_type: specification
-doc_role: derived
-visibility: public
-status: active
-owner: module_b
-last_reviewed: '2026-05-20'
-canonical_source:
-- DOC-MODB-001
-derived_from:
-- DOC-MODB-001
-supersedes: null
-tags: []
-allowed_content:
-- interpretation
-- summarization
-forbidden_content:
-- novel_metrics
-- novel_claims
----
-
 # Response Curve Specification — Module B
 
 **Status:** Design specification. Distinguishes the LP allocation model from a full MMM.

@@ -6,6 +6,13 @@ and the national-rate reference label helper semantics.
 
 from __future__ import annotations
 
+import pytest
+
+pytest.importorskip(
+    "shap",
+    reason="install poetry with --extras explainability for dashboard SHAP tab",
+)
+
 from module_a_population_segmentation.app.streamlit_dashboard import (
     _build_sample,
     _make_national_reference_labels,

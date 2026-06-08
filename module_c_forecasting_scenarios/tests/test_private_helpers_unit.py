@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import pytest
+
 from module_c_forecasting_scenarios.data.cleaning_pipeline import _load_m_star, _redistribute_ab
 from module_c_forecasting_scenarios.models.tracking.hierarchical import _sampler_kwargs
 from module_c_forecasting_scenarios.scenarios.monte_carlo import _mc_n

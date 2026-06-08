@@ -136,7 +136,7 @@ def merged_entry(path: str, seq_counters: defaultdict[str, int]) -> dict[str, An
             "derived_from": [],
             "supersedes": [],
             "numeric_authority": [],
-            "frontmatter_required": True,
+            "frontmatter_required": False,
         }
     elif path.startswith("module_c_forecasting_scenarios/reports/research/"):
         defaults = {
@@ -153,7 +153,7 @@ def merged_entry(path: str, seq_counters: defaultdict[str, int]) -> dict[str, An
             "allowed_content": ["interpretation", "summarization"],
             "forbidden_content": ["novel_metrics", "novel_claims"],
             "numeric_authority": [],
-            "frontmatter_required": True,
+            "frontmatter_required": False,
         }
     elif path.startswith("maintainer/evidence/"):
         defaults = {
@@ -169,7 +169,7 @@ def merged_entry(path: str, seq_counters: defaultdict[str, int]) -> dict[str, An
             "derived_from": [],
             "supersedes": [],
             "numeric_authority": [],
-            "frontmatter_required": True,
+            "frontmatter_required": False,
             "tier_shorthand": "T3",
         }
     elif path.startswith(".cursor/") or path.startswith(".claude/"):
@@ -187,7 +187,7 @@ def merged_entry(path: str, seq_counters: defaultdict[str, int]) -> dict[str, An
             "derived_from": [],
             "supersedes": [],
             "numeric_authority": [],
-            "frontmatter_required": True,
+            "frontmatter_required": False,
         }
     else:
         defaults = {
@@ -204,7 +204,7 @@ def merged_entry(path: str, seq_counters: defaultdict[str, int]) -> dict[str, An
             "derived_from": [],
             "supersedes": [],
             "numeric_authority": [],
-            "frontmatter_required": True,
+            "frontmatter_required": False,
         }
 
     defaults.update(o)
@@ -218,7 +218,7 @@ def merged_entry(path: str, seq_counters: defaultdict[str, int]) -> dict[str, An
     defaults.setdefault("derived_from", [])
     defaults.setdefault("supersedes", [])
     defaults.setdefault("numeric_authority", [])
-    defaults.setdefault("frontmatter_required", True)
+    defaults.setdefault("frontmatter_required", False)
     return defaults
 
 

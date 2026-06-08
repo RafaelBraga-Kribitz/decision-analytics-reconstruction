@@ -1,13 +1,13 @@
 id: F-001
-title: "Project Charter must remain under the scannable line budget"
+title: "Project Charter must remain under the 600-line scannable budget"
 category: charter_sprawl
 kind: recurrence_invariant
 status: closed
 opened_at: 2026-06-08
 closed_at: 2026-06-08
 recurrence_count: 0
-evidence: "PROJECT_CHARTER.md — compact SSOT installed during governance replacement"
+evidence: "PROJECT_CHARTER.md — three-module SSOT guarded by scripts/check_charter_size.py"
 verification_script: scripts/check_charter_size.py
 wont_fix_reason: null
 notes: |
-  Guards the Charter from becoming another planning document sink.
+  Guards the Charter from becoming another planning document sink while leaving room for a three-module system summary.

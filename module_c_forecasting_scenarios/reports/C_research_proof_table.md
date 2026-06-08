@@ -1,17 +1,3 @@
----
-doc_id: DOC-MODC-002
-doc_type: evidence
-doc_role: evidence
-visibility: public
-status: active
-owner: module_c
-last_reviewed: '2026-05-20'
-canonical_source: null
-derived_from: null
-supersedes: null
-tags: []
----
-
 # Module C research proof table (stub)
 
 | Artifact | Path | Status |

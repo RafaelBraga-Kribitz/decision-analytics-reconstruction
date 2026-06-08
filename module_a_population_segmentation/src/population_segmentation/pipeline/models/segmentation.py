@@ -155,12 +155,13 @@ class KMeansSegmenter:
             if len(shared) < 50:
                 continue
             km_a = KMeans(
-                n_clusters=self.k, init="k-means++", n_init="auto",
-                random_state=self.random_state
+                n_clusters=self.k, init="k-means++", n_init="auto", random_state=self.random_state
             )
             km_b = KMeans(
-                n_clusters=self.k, init="k-means++", n_init="auto",
-                random_state=self.random_state + 1 + i
+                n_clusters=self.k,
+                init="k-means++",
+                n_init="auto",
+                random_state=self.random_state + 1 + i,
             )
             labels_a = km_a.fit_predict(x[idx_a])
             labels_b = km_b.fit_predict(x[idx_b])

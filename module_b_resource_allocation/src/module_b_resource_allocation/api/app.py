@@ -21,11 +21,13 @@ from __future__ import annotations
 
 import logging
 import time
+from collections.abc import Awaitable, Callable
 from typing import Literal
 
 import pandas as pd
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import JSONResponse
+from starlette.responses import Response
 
 from module_b_resource_allocation.constants import (
     SCENARIO_BROADCAST_TO_DIRECT,
@@ -61,8 +63,26 @@ app = FastAPI(title="Module B Resource Allocation API", version="0.1.0")
 
 
 @app.middleware("http")
-async def log_requests(request: Request, call_next):
-    """Log incoming requests and responses with timing."""
+async def log_requests(
+    request: Request,
+    call_next: Callable[[Request], Awaitable[Response]],
+) -> Response:
+    """Log incoming requests and responses with timing.
+
+    Args:
+        request: Incoming HTTP request.
+        call_next: ASGI middleware chain callback.
+
+    Returns:
+        HTTP response from downstream handlers.
+
+    Raises:
+        Exception: Re-raises any exception from downstream handlers after logging.
+
+    Example:
+        Middleware runs automatically; no direct call. Inspect logs for
+        ``endpoint=... duration_ms=...`` lines after any API request.
+    """
     start_time = time.time()
     try:
         response = await call_next(request)
@@ -87,6 +107,20 @@ async def runtime_error_handler(request: Request, exc: RuntimeError) -> JSONResp
 
     Returns 503 Service Unavailable with error details to indicate the solver
     encountered constraints that cannot be satisfied simultaneously.
+
+    Args:
+        request: Incoming HTTP request.
+        exc: Raised runtime error (typically solver infeasibility).
+
+    Returns:
+        JSON response with 503 status and structured error payload.
+
+    Raises:
+        None: This handler converts ``RuntimeError`` into an HTTP response.
+
+    Example:
+        When the LP is infeasible, clients receive HTTP 503 with a JSON body
+        containing ``error`` and ``details`` fields.
     """
     return JSONResponse(
         status_code=503,
@@ -137,7 +171,10 @@ def _validate_shift_share(shift_share: float) -> None:
     if not SHIFT_SHARE_MIN <= shift_share <= SHIFT_SHARE_MAX:
         raise HTTPException(
             status_code=400,
-            detail=f"shift_share out of range [{SHIFT_SHARE_MIN}, {SHIFT_SHARE_MAX}]; got {shift_share}",
+            detail=(
+                f"shift_share out of range [{SHIFT_SHARE_MIN}, {SHIFT_SHARE_MAX}]; "
+                f"got {shift_share}"
+            ),
         )
 
 

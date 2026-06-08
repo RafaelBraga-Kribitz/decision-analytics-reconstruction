@@ -1,17 +1,3 @@
----
-doc_id: DOC-EVID-008
-doc_type: evidence
-doc_role: evidence
-visibility: internal
-status: archived
-owner: harness
-last_reviewed: '2026-05-20'
-canonical_source: null
-derived_from: null
-supersedes: null
-tags: []
----
-
 # Task verify — Architecture Quality (Project_Action_list §3, inter-module contracts)
 
 **Task ID:** TASK-20260515-ARCH-Q5-INTER-MODULE-TYPED-CONTRACTS  

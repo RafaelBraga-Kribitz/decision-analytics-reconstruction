@@ -237,50 +237,48 @@ rollback-module-b:
 
 .PHONY: audit verify session-start session-end debt-scan debt-check
 
-PYTHON ?= python
-
 audit:
 	@echo "── make audit ─────────────────────────────────────────────"
-	@$(PYTHON) scripts/check_claude_md.py
-	@$(PYTHON) scripts/check_charter_size.py
-	@$(PYTHON) scripts/check_finding_coverage.py
-	@$(PYTHON) scripts/write_audit_state.py
+	@poetry run python scripts/check_claude_md.py
+	@poetry run python scripts/check_charter_size.py
+	@poetry run python scripts/check_finding_coverage.py
+	@poetry run python scripts/write_audit_state.py
 	@echo "✓ audit complete — see governance/AUDIT_STATE.json"
 
 # verify = audit + tests + closed-finding re-verification + debt ratchet
 verify: audit
 	@echo "── make verify ────────────────────────────────────────────"
 	@$(MAKE) doc-registry-verify
-	@$(PYTHON) scripts/check_terminology.py
+	@poetry run python scripts/check_terminology.py
 	@if ls tests/governance/test_*.py >/dev/null 2>&1; then \
-		$(PYTHON) -m pytest tests/governance/ -q; \
+		poetry run pytest tests/governance/ -q; \
 	else \
 		echo "(no governance tests yet — skipping pytest)"; \
 	fi
-	@$(PYTHON) scripts/check_closed_findings.py
-	@$(PYTHON) scripts/check_debt_ratchet.py
+	@poetry run python scripts/check_closed_findings.py
+	@poetry run python scripts/check_debt_ratchet.py
 	@echo "✓ verify complete"
 
 # Rewrite governance/DEBT_BASELINE.json from a fresh scan. Run this after you
 # have *reduced* debt, to lock the gain so the ratchet can't slide back.
 # Committing a baseline that moves UP requires a dedicated PR that says why.
 debt-scan:
-	@$(PYTHON) scripts/debt_scan.py
+	@poetry run python scripts/debt_scan.py
 
 # Ratchet gate: re-scan and fail if any measured debt metric grew past the
 # baseline. This is the "remediate before it grows" enforcement. Runs in
 # `verify` and in CI; cheap enough to run locally before pushing.
 debt-check:
-	@$(PYTHON) scripts/check_debt_ratchet.py
+	@poetry run python scripts/check_debt_ratchet.py
 
 session-start: audit
-	@$(PYTHON) scripts/session_start.py
+	@poetry run python scripts/session_start.py
 	@echo ""
 	@echo "→ Read governance/SESSION_HANDOUT.md before choosing work."
 
 session-end:
-	@$(PYTHON) scripts/write_audit_state.py
-	@$(PYTHON) scripts/session_end.py
+	@poetry run python scripts/write_audit_state.py
+	@poetry run python scripts/session_end.py
 	@echo ""
 	@echo "→ Edit free-text fields in governance/SESSION_END.md, then commit."
 

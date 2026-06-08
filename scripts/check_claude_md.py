@@ -8,7 +8,6 @@ that drift by requiring the key references stay present.
 from __future__ import annotations
 
 import sys
-from pathlib import Path
 
 from _governance_check import REPO_ROOT, gate
 
@@ -24,16 +23,20 @@ REQUIRED_PHRASES = (
 
 def main() -> int:
     if not CLAUDE_MD.exists():
-        return gate("F-CLAUDE-MD", "check_claude_md.py", False, "CLAUDE.md missing")
+        return gate("F-002", "check_claude_md.py", False, "CLAUDE.md missing")
     text = CLAUDE_MD.read_text()
     missing = [p for p in REQUIRED_PHRASES if p not in text]
     if missing:
         return gate(
-            "F-CLAUDE-MD", "check_claude_md.py", False,
+            "F-002",
+            "check_claude_md.py",
+            False,
             f"CLAUDE.md missing required phrases: {', '.join(missing)}",
         )
     return gate(
-        "F-CLAUDE-MD", "check_claude_md.py", True,
+        "F-002",
+        "check_claude_md.py",
+        True,
         f"CLAUDE.md references all {len(REQUIRED_PHRASES)} required contract phrases",
     )
 

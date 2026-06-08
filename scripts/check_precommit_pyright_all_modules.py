@@ -7,7 +7,6 @@ import sys
 from pathlib import Path
 
 import yaml
-
 from _governance_check import REPO_ROOT, gate
 
 PRE_COMMIT = REPO_ROOT / ".pre-commit-config.yaml"

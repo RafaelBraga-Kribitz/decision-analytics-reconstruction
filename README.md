@@ -1,19 +1,3 @@
----
-doc_id: DOC-ROOT-001
-doc_type: narrative
-doc_role: derived
-visibility: public
-status: active
-owner: portfolio
-last_reviewed: '2026-06-08'
-canonical_source:
-- DOC-CHARTER-001
-derived_from:
-- DOC-CHARTER-001
-supersedes: null
-tags: []
----
-
 # Decision Analytics Reconstruction
 
 Retrospective reconstruction of a national-scale decision analytics system for
@@ -44,7 +28,7 @@ make session-start
 - `module_c_forecasting_scenarios/`: survey measurement aggregation, Bayesian
   tracking, scenario simulation, and Quarto reporting.
 - `schema_contracts/`: versioned artifact contracts for module boundaries.
-- `docs/registry/`: generated documentation inventory and validation rules.
+- `docs/registry/`: machine-readable documentation inventory (internal metadata; no per-file YAML headers).
 
 ## Quick Start
 

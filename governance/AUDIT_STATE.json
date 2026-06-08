@@ -8,7 +8,7 @@
       "opened_at": "2026-06-08",
       "path": "governance/findings/F-001-charter-sprawl.yaml",
       "status": "closed",
-      "title": "Project Charter must remain under the scannable line budget",
+      "title": "Project Charter must remain under the 600-line scannable budget",
       "verification_script": "scripts/check_charter_size.py"
     },
     {
@@ -57,12 +57,12 @@
     },
     {
       "category": "fragmented_standards",
-      "closed_at": null,
+      "closed_at": "2026-06-08",
       "id": "F-006",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-08",
       "path": "governance/findings/F-006-pytest-conftest-collision.yaml",
-      "status": "open",
+      "status": "closed",
       "title": "Default pytest collection fails on duplicate conftest registration",
       "verification_script": "scripts/check_pytest_conftest_collection.py"
     },
@@ -100,22 +100,22 @@
       "verification_script": "scripts/check_vulture_dead_code_zero.py"
     }
   ],
-  "generated_at": "2026-06-08T17:31:58.034675+00:00",
+  "generated_at": "2026-06-08T19:42:05.482732+00:00",
   "git_branch": "chore/governance-bootstrap-replace",
-  "git_head_sha": "fd00b23df8f92a6f7a38cb1f99dbefe40d4dc6ae",
+  "git_head_sha": "2b46aeaed41337a03e344e26297cb666ee02572f",
   "migrations": [],
   "summary": {
-    "findings_closed": 2,
+    "findings_closed": 3,
     "findings_closed_historical": 2,
     "findings_in_progress": 0,
-    "findings_open": 5,
+    "findings_open": 4,
     "findings_total": 9,
     "findings_wont_fix": 0,
     "migrations_in_progress": 0,
     "migrations_total": 0,
     "open_by_category": {
       "dead_artifacts": 2,
-      "fragmented_standards": 3
+      "fragmented_standards": 2
     }
   },
   "validation_errors": [],
