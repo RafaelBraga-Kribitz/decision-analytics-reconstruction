@@ -1,3 +1,11 @@
+<p align="center">
+  <img
+    src="docs/assets/decision-analytics-reconstruction-hero-banner.png"
+    alt="Decision Analytics Reconstruction — evidence, estimation, and uncertainty across population segmentation, resource allocation, and probabilistic scenario analysis"
+    width="100%"
+  />
+</p>
+
 # Decision Analytics Reconstruction
 
 Retrospective reconstruction of a national-scale decision analytics system for
