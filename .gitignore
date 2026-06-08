@@ -31,6 +31,7 @@ data/processed/*
 *.parquet
 *.csv
 !schema_contracts/
+!**/tests/fixtures/*.csv
 
 # ─── MLflow ──────────────────────────────────────────────────────────────────
 mlruns/

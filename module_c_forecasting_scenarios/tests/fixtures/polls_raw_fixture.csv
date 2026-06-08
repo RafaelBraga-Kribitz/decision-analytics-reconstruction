@@ -1,0 +1,9 @@
+poll_raw_id,publication_date,pollster_display_name,outlet_display_name,preference_proxy_a_pct,preference_proxy_b_pct,undecided_pct,sample_size,has_ficha,conglomerate_carrier,wave_type,field_window_candidate_text,sample_size_known,field_window_known,mode_known,oea_timing_compliant,eu_release_window_flag
+raw_capli_20180201,2018-02-01,Capli First Análisis,ABC Color,50.4,37.2,12.4,,true,ABC,tracking,,false,true,false,,
+raw_capli_20180301,2018-03-01,Capli,ABC Color,53.4,22.2,24.4,,false,ABC,tracking,semana pasada,false,false,false,,
+raw_ati_20180315,2018-03-15,Ati Snead,La Nacion,41.0,45.5,13.5,800,true,,tracking,,true,true,true,true,true
+raw_ica_20180318,2018-03-18,Taka Chase ICA,Ultima Hora,58.2,26.8,15.0,600,false,Vierci,tracking,,true,true,false,,
+raw_exit_20180422,2018-04-22,Consortium Exit,TV,65.0,32.0,3.0,1200,true,,exit,,true,true,true,false,false
+raw_exit_20180422b,2018-04-22,Exit Poll B,TV,62.0,35.0,3.0,900,true,,exit,,true,true,true,true,true
+raw_exit_20180421,2018-04-21,Exit Poll C,Radio,58.0,38.0,4.0,700,false,,exit,,false,true,false,false,false
+raw_exit_20180420,2018-04-20,Exit Poll D,Web,61.0,36.0,3.0,500,true,,exit,,true,false,true,true,false

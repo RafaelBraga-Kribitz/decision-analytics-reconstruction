@@ -799,7 +799,7 @@ Bootstrap ARI (> 0.77, enforced) validates stability across random seeds — a c
 
 **Reason:** PuLP + CBC is the established open-source MILP stack for Python operational research problems of this scale (2,772 continuous + 2,772+ binary variables). CBC solves the baseline model in under 5 seconds with no license dependency. PuLP's `LpVariable(cat="Binary")` integrates naturally with the bundle-cardinality and min-spend linking constraints added in T6-4. The model syntax (per-variable, per-constraint) is more verbose than CVXPY but more transparent for debugging individual constraint bindings.
 
-**Outcome:** `module_b_resource_allocation/models/allocation.py` uses PuLP/CBC; `bundle_constraints=True` MILP solves to OPTIMAL in <5 seconds; all 221 Module B tests pass. CVXPY remains a recommended upgrade path if the model expands to second-order cone or semidefinite objectives.
+**Outcome:** `module_b_resource_allocation/src/module_b_resource_allocation/models/allocation.py` uses PuLP/CBC; `bundle_constraints=True` MILP solves to OPTIMAL in <5 seconds; all 221 Module B tests pass. CVXPY remains a recommended upgrade path if the model expands to second-order cone or semidefinite objectives.
 
 **Source:** `module_b_resource_allocation/SPECIFICATION.md §7 Solver stack`; Project_Action_list.md T6-4
 
@@ -870,7 +870,7 @@ Bootstrap ARI (> 0.77, enforced) validates stability across random seeds — a c
 
 **Outcome:** `allocation.py` unconditionally declares `y[d,c,w]` as `cat="Binary"`; `build_problem(bundle_constraints=True)` adds `z[bundle_id]` linking constraints; `test_milp_optimizer.py` verifies OPTIMAL status and bundle floor satisfaction; `test_milp_solution_differs_from_relaxation` confirms the constrained MILP solution differs from the LP-relaxation (bundle_constraints=False) comparator by Σ|Δ| > 1 USD.
 
-**Source:** `module_b_resource_allocation/models/allocation.py`; `tests/test_milp_optimizer.py`; Project_Action_list.md T6-4
+**Source:** `module_b_resource_allocation/src/module_b_resource_allocation/models/allocation.py`; `module_b_resource_allocation/tests/test_milp_optimizer.py`; Project_Action_list.md T6-4
 
 ---
 
@@ -882,11 +882,11 @@ Bootstrap ARI (> 0.77, enforced) validates stability across random seeds — a c
 
 - **`UNIT_ID`** — stable suffix on `task_id`; required in commit message, verify headers, and backlog rows when using the harness.
 - **`.cursor/runtime/current_unit.json`** — gitignored SSOT for `unit_impact_set`, `allowed_paths`, and `status` (`declared` | `in_progress` | `closed`).
-- **`scripts/transaction_commit_gate.py`** — validates **staged ⊆ unit_impact_set**, allowlist, branch not `main`/`master`, optional diff budget; **commit-msg** validates **`unit_id` substring** and Conventional Commits first line. If the lock file is **absent**, hooks **skip** so human commits are not blocked.
+- **transaction_commit_gate.py** (retired 2026-06-08; see F-003) — formerly validated **staged ⊆ unit_impact_set**, allowlist, branch not `main`/`master`, optional diff budget; **commit-msg** validated **`unit_id` substring** and Conventional Commits first line. If the lock file was **absent**, hooks **skipped** so human commits were not blocked.
 - **Commands:** `/task-plan` §A–N (unit fields), **`/task-transaction`**, `/task-execute` restricted to **one unit per session**; session **does not** auto-dispatch the next unit after closure.
 - **Push** is explicitly **outside** the unit boundary (closure = commit + lock + summary).
 
-**Outcome:** `.cursor/rules/10-transaction-boundaries.mdc` (`alwaysApply: true`); pre-commit hooks `transaction-gate-staged`, `transaction-gate-commit-msg`; `make transaction-verify`; `maintainer/agent_transaction_backlog.md`; playbook/README/checklists/DoD updates; `tests/test_architecture_transaction_contract.py`.
+**Outcome:** `.cursor/rules/10-transaction-boundaries.mdc` (`alwaysApply: true`); pre-commit hooks `transaction-gate-staged`, `transaction-gate-commit-msg`; `make transaction-verify`; `maintainer/agent_transaction_backlog.md`; playbook/README/checklists/DoD updates; architecture transaction contract test (retired 2026-06-08; see F-003).
 
 **Source:** harness architecture v2; `docs/ai_harness/CONTROLLED_WORKFLOW_PLAYBOOK.md` Appendix A
 
