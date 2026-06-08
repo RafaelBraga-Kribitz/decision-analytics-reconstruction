@@ -59,3 +59,19 @@ MC_FAST=1 poetry run pytest module_c_forecasting_scenarios/tests -m slow -q
 ```
 
 (or remove `-m "not slow"` for full suite — long-running.)
+
+## Pipeline / EDA integration tests
+
+[`test_reproducibility.py`](test_reproducibility.py) and [`test_eda.py`](test_eda.py) validate `data/processed/` artifacts and `reports/eda/` chart outputs. On a fresh clone (CI), those paths are empty and individual tests **skip** rather than fail.
+
+After a full pipeline run, run them explicitly:
+
+```bash
+make pipeline-dev SAMPLE=10000
+make module-b-allocate SEED=20180422
+MC_FAST=1 make module-c-all
+poetry run python reports/eda/generate_eda.py
+poetry run pytest tests/test_reproducibility.py tests/test_eda.py -v
+```
+
+See also [`REPRODUCIBILITY.md`](REPRODUCIBILITY.md) for DVC workflow.
