@@ -1,0 +1,13 @@
+id: F-009
+title: "High-confidence dead-code findings remain in baseline"
+category: dead_artifacts
+kind: recurrence_invariant
+status: open
+opened_at: 2026-06-08
+closed_at: null
+recurrence_count: 0
+evidence: "governance/DEBT_BASELINE.json — vulture_dead_code=3"
+verification_script: scripts/check_vulture_dead_code_zero.py
+wont_fix_reason: null
+notes: |
+  Use vulture output to scope a later one-finding remediation.

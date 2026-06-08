@@ -8,191 +8,149 @@ numeric_namespaces:
     - DOC-DLOG-001
 documents:
 - doc_type: policy
-  doc_role: canonical
+  doc_role: derived
   visibility: internal
   audience:
   - agent
-  authority: canonical
+  - maintainer
+  authority: derived
   status: active
   sensitivity: internal
-  owner: harness
-  tier_shorthand: T3
-  canonical_source: []
-  derived_from: []
+  owner: governance
+  tier_shorthand: T0
+  canonical_source:
+  - DOC-GOV-AUDIT-001
+  derived_from:
+  - DOC-GOV-AUDIT-001
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-GOV-AGENTS-001
+  path: AGENTS.md
+  last_reviewed: '2026-05-20'
+- doc_type: specification
+  doc_role: derived
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: derived
+  status: active
+  sensitivity: public
+  owner: architecture
+  tier_shorthand: T1
+  canonical_source:
+  - DOC-CHARTER-001
+  derived_from:
+  - DOC-CHARTER-001
   supersedes: []
   numeric_authority: []
   frontmatter_required: true
-  doc_id: DOC-CLAUDE-001
-  path: .claude/skills/project-orchestrator/SKILL.md
-  last_reviewed: '2026-05-20'
+  last_reviewed: '2026-06-08'
+  doc_id: DOC-ARCH-001
+  path: ARCHITECTURE.md
 - doc_type: policy
   doc_role: canonical
   visibility: internal
   audience:
   - agent
+  - maintainer
   authority: canonical
   status: active
   sensitivity: internal
-  owner: harness
-  tier_shorthand: T3
+  owner: governance
+  tier_shorthand: T0
   canonical_source: []
   derived_from: []
   supersedes: []
   numeric_authority: []
-  frontmatter_required: true
-  doc_id: DOC-CURSOR-001
-  path: .cursor/skills/project-orchestrator/SKILL.md
+  frontmatter_required: false
+  doc_id: DOC-GOV-CLAUDE-001
+  path: CLAUDE.md
   last_reviewed: '2026-05-20'
-- doc_type: specification
+- doc_type: policy
   doc_role: canonical
   visibility: public
   audience:
-  - portfolio
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: architecture
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: true
-  doc_id: DOC-ARCH-001
-  path: ARCHITECTURE.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
+  - agent
   - maintainer
   authority: canonical
   status: active
   sensitivity: public
-  owner: maintainer
-  tier_shorthand: T1
+  owner: governance
+  tier_shorthand: T0
   canonical_source: []
   derived_from: []
   supersedes: []
   numeric_authority: []
-  frontmatter_required: true
-  doc_id: DOC-ROOT-002
-  path: CHANGELOG.md
+  frontmatter_required: false
+  doc_id: DOC-GOV-CONTRIB-001
+  path: CONTRIBUTING.md
   last_reviewed: '2026-05-20'
-- doc_type: execution
-  doc_role: canonical
-  visibility: public
-  audience:
-  - maintainer
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: maintainer
-  tier_shorthand: T2
-  canonical_source: []
-  derived_from: []
-  supersedes:
-  - DOC-PLAN-002
-  - DOC-PLAN-003
-  numeric_authority: []
-  frontmatter_required: true
-  doc_id: DOC-PLAN-001
-  path: IMPLEMENTATION_PLAN.md
-  last_reviewed: '2026-05-20'
-- doc_type: execution
+- doc_type: policy
   doc_role: derived
   visibility: internal
   audience:
+  - agent
   - maintainer
-  authority: reference_only
-  status: archived
+  authority: derived
+  status: active
   sensitivity: internal
-  owner: maintainer
-  tier_shorthand: T1
+  owner: governance
+  tier_shorthand: T0
   canonical_source:
-  - DOC-PLAN-001
+  - DOC-GOV-AUDIT-001
   derived_from:
-  - DOC-PLAN-001
+  - DOC-GOV-AUDIT-001
   supersedes: []
   numeric_authority: []
-  frontmatter_required: true
-  doc_id: DOC-PLAN-002
-  path: Project_Action_list.md
+  frontmatter_required: false
+  doc_id: DOC-GOV-GEMINI-001
+  path: GEMINI.md
   last_reviewed: '2026-05-20'
-- doc_type: narrative
+- doc_type: policy
   doc_role: canonical
   visibility: public
   audience:
   - portfolio
   - technical
+  - maintainer
+  - agent
   authority: canonical
+  status: active
+  sensitivity: public
+  owner: governance
+  tier_shorthand: T0
+  canonical_source: []
+  derived_from: []
+  supersedes:
+  - DOC-PLAN-001
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-CHARTER-001
+  path: PROJECT_CHARTER.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: derived
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: derived
   status: active
   sensitivity: public
   owner: portfolio
   tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
+  canonical_source:
+  - DOC-CHARTER-001
+  derived_from:
+  - DOC-CHARTER-001
   supersedes: []
   numeric_authority: []
   frontmatter_required: true
+  last_reviewed: '2026-06-08'
   doc_id: DOC-ROOT-001
   path: README.md
-  last_reviewed: '2026-05-20'
-- doc_type: execution
-  doc_role: derived
-  visibility: public
-  audience:
-  - portfolio
-  - maintainer
-  authority: derived
-  status: active
-  sensitivity: public
-  owner: maintainer
-  tier_shorthand: T2
-  canonical_source:
-  - DOC-PLAN-001
-  derived_from:
-  - DOC-PLAN-001
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: true
-  allowed_content:
-  - interpretation
-  - summarization
-  forbidden_content:
-  - novel_metrics
-  - novel_claims
-  doc_id: DOC-PLAN-010
-  path: ROADMAP.md
-  last_reviewed: '2026-05-20'
-- doc_type: execution
-  doc_role: derived
-  visibility: public
-  audience:
-  - maintainer
-  authority: derived
-  status: active
-  sensitivity: public
-  owner: maintainer
-  tier_shorthand: T1
-  canonical_source:
-  - DOC-PLAN-001
-  derived_from:
-  - DOC-PLAN-001
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: true
-  allowed_content:
-  - interpretation
-  - summarization
-  forbidden_content:
-  - novel_metrics
-  doc_id: DOC-PLAN-011
-  path: TASK_REFERENCE.md
-  last_reviewed: '2026-05-20'
 - doc_type: registry
   doc_role: canonical
   visibility: public
@@ -291,42 +249,196 @@ documents:
   path: docs/INDEX.md
   last_reviewed: '2026-05-20'
 - doc_type: policy
-  doc_role: canonical
+  doc_role: reference
   visibility: internal
   audience:
-  - agent
   - maintainer
-  authority: canonical
-  status: active
+  - agent
+  authority: reference_only
+  status: archived
   sensitivity: internal
-  owner: harness
-  tier_shorthand: T3
+  owner: governance
+  tier_shorthand: T2
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-DEVPROCESS-001
+  path: docs/development_process.md
+  last_reviewed: '2026-05-20'
+- doc_type: registry
+  doc_role: registry
+  visibility: public
+  audience:
+  - maintainer
+  - agent
+  authority: registry
+  status: active
+  sensitivity: public
+  owner: architecture
+  tier_shorthand: T1
   canonical_source: []
   derived_from: []
   supersedes: []
   numeric_authority: []
   frontmatter_required: true
-  doc_id: DOC-HARNESS-001
-  path: docs/ai_harness/CONTROLLED_WORKFLOW_PLAYBOOK.md
+  doc_id: DOC-REG-001
+  path: docs/registry/README.md
   last_reviewed: '2026-05-20'
 - doc_type: policy
   doc_role: canonical
   visibility: internal
   audience:
-  - maintainer
   - agent
+  - maintainer
   authority: canonical
   status: active
   sensitivity: internal
-  owner: harness
-  tier_shorthand: T3
+  owner: governance
+  tier_shorthand: T0
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-GOV-AUDIT-001
+  path: governance/AUDIT_PROCEDURE.md
+  last_reviewed: '2026-05-20'
+- doc_type: policy
+  doc_role: canonical
+  visibility: internal
+  audience:
+  - agent
+  - maintainer
+  authority: canonical
+  status: active
+  sensitivity: internal
+  owner: governance
+  tier_shorthand: T0
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-GOV-CAT-001
+  path: governance/CATEGORIES.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - maintainer
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: maintainer
+  tier_shorthand: T1
   canonical_source: []
   derived_from: []
   supersedes: []
   numeric_authority: []
   frontmatter_required: true
-  doc_id: DOC-HARNESS-002
-  path: docs/ai_harness/README.md
+  doc_id: DOC-ROOT-002
+  path: governance/CHANGELOG.md
+  last_reviewed: '2026-05-20'
+- doc_type: policy
+  doc_role: canonical
+  visibility: internal
+  audience:
+  - agent
+  - maintainer
+  authority: canonical
+  status: active
+  sensitivity: internal
+  owner: governance
+  tier_shorthand: T0
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-GOV-DEBT-001
+  path: governance/DEBT_TOOLS.md
+  last_reviewed: '2026-05-20'
+- doc_type: evidence
+  doc_role: evidence
+  visibility: internal
+  audience:
+  - agent
+  - maintainer
+  authority: evidence
+  status: active
+  sensitivity: internal
+  owner: governance
+  tier_shorthand: T0
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-GOV-SESSION-END-001
+  path: governance/SESSION_END.md
+  last_reviewed: '2026-05-20'
+- doc_type: policy
+  doc_role: derived
+  visibility: internal
+  audience:
+  - agent
+  - maintainer
+  authority: derived
+  status: generated
+  sensitivity: internal
+  owner: governance
+  tier_shorthand: T0
+  canonical_source:
+  - DOC-GOV-AUDIT-001
+  derived_from:
+  - DOC-GOV-AUDIT-001
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-GOV-HANDOUT-001
+  path: governance/SESSION_HANDOUT.md
+  last_reviewed: '2026-05-20'
+- doc_type: policy
+  doc_role: canonical
+  visibility: internal
+  audience:
+  - agent
+  - maintainer
+  authority: canonical
+  status: active
+  sensitivity: internal
+  owner: governance
+  tier_shorthand: T0
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: ADR-0002
+  path: governance/adrs/0002-tech-debt-ratchet.md
+  last_reviewed: '2026-05-20'
+- doc_type: policy
+  doc_role: reference
+  visibility: internal
+  audience:
+  - agent
+  - maintainer
+  authority: reference_only
+  status: active
+  sensitivity: internal
+  owner: governance
+  tier_shorthand: T0
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-GOV-ADR-TEMPLATE
+  path: governance/adrs/ADR-TEMPLATE.md
   last_reviewed: '2026-05-20'
 - doc_type: execution
   doc_role: derived
@@ -337,16 +449,121 @@ documents:
   status: archived
   sensitivity: internal
   owner: maintainer
-  tier_shorthand: T1
+  tier_shorthand: T2
   canonical_source:
-  - DOC-PLAN-001
+  - DOC-GOV-AUDIT-001
   derived_from:
-  - DOC-PLAN-001
+  - DOC-GOV-AUDIT-001
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-MAINT-BACKLOG-001
+  path: maintainer/agent_transaction_backlog.md
+  last_reviewed: '2026-05-20'
+- doc_type: execution
+  doc_role: reference
+  visibility: internal
+  audience:
+  - maintainer
+  - technical
+  authority: reference_only
+  status: archived
+  sensitivity: internal
+  owner: maintainer
+  tier_shorthand: T2
+  canonical_source: []
+  derived_from: []
+  supersedes:
+  - DOC-PLAN-002
+  - DOC-PLAN-003
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-PLAN-001
+  path: maintainer/archive/IMPLEMENTATION_PLAN.md
+  last_reviewed: '2026-05-20'
+- doc_type: execution
+  doc_role: reference
+  visibility: internal
+  audience:
+  - maintainer
+  authority: reference_only
+  status: archived
+  sensitivity: internal
+  owner: maintainer
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-PLAN-002
+  path: maintainer/archive/Project_Action_list.md
+  last_reviewed: '2026-05-20'
+- doc_type: execution
+  doc_role: reference
+  visibility: internal
+  audience:
+  - maintainer
+  authority: reference_only
+  status: archived
+  sensitivity: internal
+  owner: maintainer
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
   supersedes: []
   numeric_authority: []
   frontmatter_required: false
   doc_id: DOC-PLAN-003
   path: maintainer/archive/Project_Action_list_full.md
+  last_reviewed: '2026-05-20'
+- doc_type: execution
+  doc_role: reference
+  visibility: internal
+  audience:
+  - portfolio
+  - maintainer
+  authority: reference_only
+  status: archived
+  sensitivity: internal
+  owner: maintainer
+  tier_shorthand: T2
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  allowed_content:
+  - interpretation
+  - summarization
+  forbidden_content:
+  - novel_metrics
+  - novel_claims
+  doc_id: DOC-PLAN-010
+  path: maintainer/archive/ROADMAP.md
+  last_reviewed: '2026-05-20'
+- doc_type: execution
+  doc_role: reference
+  visibility: internal
+  audience:
+  - maintainer
+  authority: reference_only
+  status: archived
+  sensitivity: internal
+  owner: maintainer
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  allowed_content:
+  - interpretation
+  - summarization
+  forbidden_content:
+  - novel_metrics
+  doc_id: DOC-PLAN-011
+  path: maintainer/archive/TASK_REFERENCE.md
   last_reviewed: '2026-05-20'
 - doc_type: registry
   doc_role: registry
@@ -805,6 +1022,27 @@ documents:
   doc_id: DOC-MODA-005
   path: module_a_population_segmentation/reports/segment_action_matrix.md
   last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: derived
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: derived
+  status: active
+  sensitivity: public
+  owner: module_b
+  tier_shorthand: T1
+  canonical_source:
+  - DOC-MODB-001
+  derived_from:
+  - DOC-MODB-001
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-MODB-README-001
+  path: module_b_resource_allocation/README.md
+  last_reviewed: '2026-05-20'
 - doc_type: specification
   doc_role: canonical
   visibility: public
@@ -869,6 +1107,27 @@ documents:
   frontmatter_required: true
   doc_id: DOC-MODC-001
   path: module_c_forecasting_scenarios/METHODOLOGY.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: derived
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: derived
+  status: active
+  sensitivity: public
+  owner: module_c
+  tier_shorthand: T1
+  canonical_source:
+  - DOC-MODC-001
+  derived_from:
+  - DOC-MODC-001
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-MODC-README-001
+  path: module_c_forecasting_scenarios/README.md
   last_reviewed: '2026-05-20'
 - doc_type: evidence
   doc_role: evidence
@@ -964,240 +1223,6 @@ documents:
   path: module_c_forecasting_scenarios/reports/research/tsje_calibration_sources.md
   last_reviewed: '2026-05-20'
   supersedes: []
-- doc_type: research
-  doc_role: reference
-  visibility: public
-  audience:
-  - portfolio
-  authority: reference_only
-  status: active
-  sensitivity: public
-  owner: research
-  tier_shorthand: T4
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: true
-  doc_id: DOC-RES-001
-  path: notebooklm-sources-2026-05-14/Analysis_of_Digital_Advertising_Performance_Metrics_in_Latin_America_A_Historical_Review_of_Q1_2018_.md
-  last_reviewed: '2026-05-20'
-- doc_type: research
-  doc_role: reference
-  visibility: public
-  audience:
-  - portfolio
-  authority: reference_only
-  status: active
-  sensitivity: public
-  owner: research
-  tier_shorthand: T4
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: true
-  doc_id: DOC-RES-002
-  path: notebooklm-sources-2026-05-14/Comprehensive_Analysis_of_Electorate_Distribution_and_Voter_Participation_in_the_2018_Paraguayan_Gen.md
-  last_reviewed: '2026-05-20'
-- doc_type: research
-  doc_role: reference
-  visibility: public
-  audience:
-  - portfolio
-  authority: reference_only
-  status: active
-  sensitivity: public
-  owner: research
-  tier_shorthand: T4
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: true
-  doc_id: DOC-RES-003
-  path: notebooklm-sources-2026-05-14/Digital_Transformation_in_the_Southern_Cone_An_Exhaustive_Analysis_of_Paraguay’s_Digital_Landscape_i.md
-  last_reviewed: '2026-05-20'
-- doc_type: research
-  doc_role: reference
-  visibility: public
-  audience:
-  - portfolio
-  authority: reference_only
-  status: active
-  sensitivity: public
-  owner: research
-  tier_shorthand: T4
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: true
-  doc_id: DOC-RES-004
-  path: notebooklm-sources-2026-05-14/Macroeconomic_Analysis_of_the_Paraguayan_Guaraní_Daily_Exchange_Rate_Dynamics_and_the_Institutional_.md
-  last_reviewed: '2026-05-20'
-- doc_type: research
-  doc_role: reference
-  visibility: public
-  audience:
-  - portfolio
-  authority: reference_only
-  status: active
-  sensitivity: public
-  owner: research
-  tier_shorthand: T4
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: true
-  doc_id: DOC-RES-005
-  path: notebooklm-sources-2026-05-14/Paraguayan_Exchange_Rate_Dynamics_A_Comprehensive_Analysis_of_Retail_Spreads_and_Interbank_Benchmark.md
-  last_reviewed: '2026-05-20'
-- doc_type: research
-  doc_role: reference
-  visibility: public
-  audience:
-  - portfolio
-  authority: reference_only
-  status: active
-  sensitivity: public
-  owner: research
-  tier_shorthand: T4
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: true
-  doc_id: DOC-RES-006
-  path: notebooklm-sources-2026-05-14/Psephological_Divergence_and_the_Structural_Dynamics_of_the_2018_Paraguayan_Presidential_Election_A_.md
-  last_reviewed: '2026-05-20'
-- doc_type: research
-  doc_role: reference
-  visibility: public
-  audience:
-  - portfolio
-  authority: reference_only
-  status: active
-  sensitivity: public
-  owner: research
-  tier_shorthand: T4
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: true
-  doc_id: DOC-RES-007
-  path: notebooklm-sources-2026-05-14/Socioeconomic_Structural_Analysis_of_Unsatisfied_Basic_Needs_in_Paraguay_A_Comprehensive_Evaluation_.md
-  last_reviewed: '2026-05-20'
-- doc_type: research
-  doc_role: reference
-  visibility: public
-  audience:
-  - portfolio
-  authority: reference_only
-  status: active
-  sensitivity: public
-  owner: research
-  tier_shorthand: T4
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: true
-  doc_id: DOC-RES-008
-  path: notebooklm-sources-2026-05-14/Technical_Assessment_of_the_Paraguayan_Road_Infrastructure_National_Inventory,_Departmental_Distribu.md
-  last_reviewed: '2026-05-20'
-- doc_type: research
-  doc_role: reference
-  visibility: public
-  audience:
-  - portfolio
-  authority: reference_only
-  status: active
-  sensitivity: public
-  owner: research
-  tier_shorthand: T4
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: true
-  doc_id: DOC-RES-009
-  path: notebooklm-sources-2026-05-14/The_2018_Presidential_Campaign_of_the_Asociación_Nacional_Republicana_An_Exhaustive_Analysis_of_Fina.md
-  last_reviewed: '2026-05-20'
-- doc_type: research
-  doc_role: reference
-  visibility: public
-  audience:
-  - portfolio
-  authority: reference_only
-  status: active
-  sensitivity: public
-  owner: research
-  tier_shorthand: T4
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: true
-  doc_id: DOC-RES-010
-  path: notebooklm-sources-2026-05-14/The_Digital_Architecture_of_Paraguay_A_Multi-Dimensional_Analysis_of_ICT_Penetration_and_Socio-Techn.md
-  last_reviewed: '2026-05-20'
-- doc_type: research
-  doc_role: reference
-  visibility: public
-  audience:
-  - portfolio
-  authority: reference_only
-  status: active
-  sensitivity: public
-  owner: research
-  tier_shorthand: T4
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: true
-  doc_id: DOC-RES-011
-  path: notebooklm-sources-2026-05-14/notebooklm-chat-currently-facebook-ads-ch-facebook-ads-is-alrea-2026-05-14.md
-  last_reviewed: '2026-05-20'
-- doc_type: research
-  doc_role: reference
-  visibility: public
-  audience:
-  - portfolio
-  authority: reference_only
-  status: active
-  sensitivity: public
-  owner: research
-  tier_shorthand: T4
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: true
-  doc_id: DOC-RES-012
-  path: notebooklm-sources-2026-05-14/notebooklm-note-enterprise-analytics-and-political-modeling-glossa-2026-05-14.md
-  last_reviewed: '2026-05-20'
-- doc_type: research
-  doc_role: reference
-  visibility: public
-  audience:
-  - portfolio
-  authority: reference_only
-  status: active
-  sensitivity: public
-  owner: research
-  tier_shorthand: T4
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: true
-  doc_id: DOC-RES-013
-  path: notebooklm-sources-2026-05-14/notebooklm-note-the-paraguay-2018-model-data-integration-and-valid-2026-05-14.md
-  last_reviewed: '2026-05-20'
 - doc_type: narrative
   doc_role: derived
   visibility: public
@@ -1303,7 +1328,7 @@ documents:
   owner: project
   tier_shorthand: T1
   canonical_source:
-  - DOC-ARCH-001
+  - DOC-CHARTER-001
   - DOC-EPI-001
   derived_from:
   - DOC-ARCH-001
@@ -1379,7 +1404,7 @@ documents:
   tier_shorthand: T1
   canonical_source:
   - DOC-SCH-001
-  - DOC-ARCH-001
+  - DOC-CHARTER-001
   derived_from:
   - DOC-SCH-001
   supersedes: []
@@ -1566,7 +1591,7 @@ documents:
   owner: project
   tier_shorthand: T1
   canonical_source:
-  - DOC-ARCH-001
+  - DOC-CHARTER-001
   derived_from:
   - DOC-ARCH-001
   supersedes: []
@@ -1592,7 +1617,7 @@ documents:
   tier_shorthand: T1
   canonical_source:
   - DOC-SCH-001
-  - DOC-ARCH-001
+  - DOC-CHARTER-001
   derived_from:
   - DOC-SCH-001
   supersedes: []

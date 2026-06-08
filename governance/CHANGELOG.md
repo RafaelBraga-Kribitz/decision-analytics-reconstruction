@@ -20,6 +20,18 @@ All notable changes to this project are documented here. This file follows [Keep
 
 ## [Unreleased]
 
+### Governance Replacement (2026-06-08)
+
+- Installed governance-bootstrap as the single tracked workflow: `CLAUDE.md`,
+  `PROJECT_CHARTER.md`, `CONTRIBUTING.md`, `governance/AUDIT_PROCEDURE.md`,
+  generated audit state, session handout, findings queue, and debt ratchet.
+- Retired the prior local transaction-gate harness and archived root planning
+  documents under `maintainer/archive/`.
+- Filed initial findings `F-001` through `F-009`; `F-005` through `F-009`
+  remain open remediation candidates.
+- Established debt baseline: `ruff_unused=9`, `radon_complex_blocks=38`,
+  `vulture_dead_code=3`.
+
 ### Added (T10–11: Digital Channels & Data Integration)
 
 #### Module A: Digital Advertising Channels (T10-1, T10-2)

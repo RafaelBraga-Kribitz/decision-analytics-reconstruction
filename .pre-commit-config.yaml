@@ -31,22 +31,30 @@ repos:
         types: [python]
         pass_filenames: false
 
-      - id: transaction-gate-staged
-        name: transaction gate (staged vs unit lock)
-        entry: poetry run python scripts/transaction_commit_gate.py --repo . --unit-lock .cursor/runtime/current_unit.json --check-staged
+      - id: governance-audit
+        name: governance audit (write AUDIT_STATE.json)
+        entry: poetry run python scripts/write_audit_state.py
         language: system
         pass_filenames: false
+        always_run: true
         stages: [pre-commit]
 
-      - id: transaction-gate-commit-msg
-        name: transaction gate (commit message UNIT_ID)
-        entry: poetry run python scripts/transaction_commit_gate.py --repo . --unit-lock .cursor/runtime/current_unit.json --check-message
+      - id: claude-md-guard
+        name: CLAUDE.md guard (anti-patterns)
+        entry: poetry run python scripts/check_claude_md.py
         language: system
-        pass_filenames: true
-        stages: [commit-msg]
+        pass_filenames: false
+        files: ^CLAUDE\.md$
+
+      - id: charter-size
+        name: PROJECT_CHARTER.md size guard (<=200 lines)
+        entry: poetry run python scripts/check_charter_size.py
+        language: system
+        pass_filenames: false
+        files: ^PROJECT_CHARTER\.md$
 
       - id: pytest-smoke
         name: pytest smoke (architecture contracts + portfolio e2e)
-        entry: poetry run pytest tests/test_architecture_ruff_black_contract.py tests/test_architecture_noqa_justification_contract.py tests/test_architecture_ruff_configuration.py tests/test_architecture_pyright_basic_contract.py tests/test_architecture_pre_commit_contract.py tests/test_architecture_transaction_contract.py module_a_population_segmentation/tests/test_architecture_generator_rural_anchor_contract.py module_a_population_segmentation/tests/test_architecture_generator_synthetic_rates_contract.py module_a_population_segmentation/tests/test_architecture_generator_dept_media_yaml_contract.py tests/test_portfolio_e2e_smoke.py -q --tb=line
+        entry: poetry run pytest tests/test_architecture_ruff_black_contract.py tests/test_architecture_noqa_justification_contract.py tests/test_architecture_ruff_configuration.py tests/test_architecture_pyright_basic_contract.py tests/test_architecture_pre_commit_contract.py module_a_population_segmentation/tests/test_architecture_generator_rural_anchor_contract.py module_a_population_segmentation/tests/test_architecture_generator_synthetic_rates_contract.py module_a_population_segmentation/tests/test_architecture_generator_dept_media_yaml_contract.py tests/test_portfolio_e2e_smoke.py -q --tb=line
         language: system
         pass_filenames: false

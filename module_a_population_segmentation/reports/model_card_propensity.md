@@ -64,8 +64,8 @@ Concretely:
 - AUC measures separation between these two quantities that share the same source signal.
 
 **Implications for the reader:**
-- AUC ≈ 0.97 is **not a generalization metric**. It does not represent out-of-sample discriminative ability on real voter-level data.
-- With real held-out microdata the expected AUC would fall to the **0.70–0.80 range** typical of turnout-propensity literature.
+- AUC ≈ 0.97 is **not a generalization metric**. It does not represent out-of-sample discriminative ability on real entity-level data.
+- With real held-out microdata the expected AUC would fall to the **0.70–0.80 range** typical of participation-propensity literature.
 - The **Brier score comparison** (model 0.088 vs naive 0.245) is the more defensible figure: both are measured against the same synthetic target, so the baseline is equally circular — the comparison isolates the model's structural improvement over the department-mean naive estimator.
 - The **reliability diagram** (max deviation < 3 pp) and **department-level calibration gates** (A10) are the most meaningful quality signals for the synthetic reconstruction setting.
 

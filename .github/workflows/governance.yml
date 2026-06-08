@@ -1,0 +1,57 @@
+name: Governance
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # Steward-equivalent: regenerate state, fail on validation errors.
+  governance-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: pip install pyyaml pytest
+      - name: make audit
+        run: make audit
+
+  # Adversary: re-verify every closed finding's verification_script on a clean
+  # checkout. A closed finding that regresses fails the PR.
+  adversary:
+    runs-on: ubuntu-latest
+    needs: governance-audit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: pip install pyyaml pytest
+      - name: Re-verify closed findings
+        run: python scripts/check_closed_findings.py
+
+  # Debt ratchet: re-scan technical debt and fail if any metric grew past the
+  # committed baseline (governance/DEBT_BASELINE.json). This is the "remediate
+  # before it grows" gate. Install whatever debt tools apply to the project's
+  # languages; missing tools are skipped, not fatal. See governance/DEBT_TOOLS.md.
+  tech-debt:
+    runs-on: ubuntu-latest
+    needs: governance-audit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Python debt tools
+        run: pip install pyyaml ruff vulture radon
+      # Uncomment for TS/JS projects:
+      # - uses: actions/setup-node@v4
+      #   with: { node-version: "20" }
+      # - run: npm install -g knip jscpd
+      - name: Debt ratchet
+        run: python scripts/check_debt_ratchet.py

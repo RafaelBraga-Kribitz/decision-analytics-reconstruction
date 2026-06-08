@@ -1,0 +1,13 @@
+id: F-006
+title: "Default pytest collection fails on duplicate conftest registration"
+category: fragmented_standards
+kind: recurrence_invariant
+status: open
+opened_at: 2026-06-08
+closed_at: null
+recurrence_count: 0
+evidence: "make test baseline — duplicate tests.conftest plugin registration involving Module C and root tests"
+verification_script: scripts/check_pytest_conftest_collection.py
+wont_fix_reason: null
+notes: |
+  Captures the inherited make test baseline failure before governance changes.

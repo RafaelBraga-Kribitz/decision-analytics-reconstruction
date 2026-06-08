@@ -1,4 +1,4 @@
-"""Regression: pre-commit config lists Ruff, Black, Pyright, and a pytest smoke hook."""
+"""Regression: pre-commit config lists code-quality and governance hooks."""
 
 from __future__ import annotations
 
@@ -33,9 +33,10 @@ def test_pre_commit_config_lists_core_hooks() -> None:
     hooks = locals_[0]["hooks"]
     ids = {h["id"] for h in hooks}
     assert "pyright" in ids
+    assert "governance-audit" in ids
+    assert "claude-md-guard" in ids
+    assert "charter-size" in ids
     assert "pytest-smoke" in ids
-    assert "transaction-gate-staged" in ids
-    assert "transaction-gate-commit-msg" in ids
 
     black_hook = _hook(repos, "https://github.com/psf/black", "black")
     assert "tests/test_eda.py" in " ".join(black_hook.get("args", []))

@@ -1,0 +1,13 @@
+id: F-002
+title: "Agents must read machine-generated governance state from disk"
+category: cross_session_amnesia
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-08
+closed_at: 2026-06-08
+recurrence_count: 0
+evidence: "CLAUDE.md — requires make session-start and governance/SESSION_HANDOUT.md"
+verification_script: scripts/check_claude_md.py
+wont_fix_reason: null
+notes: |
+  Replaces chat-history reconstruction with the Steward handout workflow.

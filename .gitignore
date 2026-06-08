@@ -68,13 +68,21 @@ coverage.xml
 # ─── DVC ─────────────────────────────────────────────────────────────────────
 /tmp/
 
-# ─── Internal harness / private project context ─────────────────────────────
-AGENTS.md
-CLAUDE.md
-GEMINI.md
+# ─── Internal private project context ────────────────────────────────────────
 project_scope/
 
-# Harness docs — private, fully ignored
+# Governance entrypoints are tracked; private assistant state remains ignored.
+!AGENTS.md
+!CLAUDE.md
+!GEMINI.md
+!CONTRIBUTING.md
+!PROJECT_CHARTER.md
+!governance/
+!governance/**
+!tests/governance/
+!tests/governance/**
+
+# Retired harness docs — private, fully ignored
 docs/ai_harness/
 notebooklm-sources-*/
 
@@ -104,3 +112,6 @@ reports/task_verify_*.md
 Project_Evaluation.md
 reports/integration_audit_2026-05-12.md
 reports/verification_session_proof_2026-05-12.md
+
+# ─── Audit task tracker (gitignored) ─────────────────────────────────────────
+.project-management/

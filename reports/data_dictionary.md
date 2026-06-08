@@ -6,11 +6,10 @@ visibility: public
 status: active
 owner: portfolio
 last_reviewed: '2026-05-20'
-canonical_source:
+canonical_source: &id001
 - DOC-SCH-001
-- DOC-ARCH-001
-derived_from:
-- DOC-SCH-001
+- DOC-CHARTER-001
+derived_from: *id001
 supersedes: null
 tags: []
 allowed_content:

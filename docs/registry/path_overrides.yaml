@@ -1,103 +1,42 @@
-# Path-level registry metadata overrides (generation policy).
-# Bump override_guard.max_paths only with a row in reports/decision_log.md or maintainer/doc_debt/open.yaml.
-
 override_guard:
-  max_paths: 45
+  max_paths: 52
 paths:
   README.md:
     doc_id: DOC-ROOT-001
     doc_type: narrative
-    doc_role: canonical
+    doc_role: derived
     visibility: public
     audience:
     - portfolio
     - technical
-    authority: canonical
+    authority: derived
     sensitivity: public
     owner: portfolio
     tier_shorthand: T1
     numeric_authority: []
+    canonical_source:
+    - DOC-CHARTER-001
+    derived_from:
+    - DOC-CHARTER-001
+    last_reviewed: '2026-06-08'
   ARCHITECTURE.md:
     doc_id: DOC-ARCH-001
     doc_type: specification
-    doc_role: canonical
+    doc_role: derived
     visibility: public
     audience:
     - portfolio
     - technical
-    authority: canonical
+    authority: derived
     sensitivity: public
     owner: architecture
     tier_shorthand: T1
     numeric_authority: []
-  IMPLEMENTATION_PLAN.md:
-    doc_id: DOC-PLAN-001
-    doc_type: execution
-    doc_role: canonical
-    visibility: public
-    audience:
-    - maintainer
-    - technical
-    authority: canonical
-    sensitivity: public
-    owner: maintainer
-    tier_shorthand: T2
-    supersedes:
-    - DOC-PLAN-002
-    - DOC-PLAN-003
-    numeric_authority: []
-  ROADMAP.md:
-    doc_id: DOC-PLAN-010
-    doc_type: execution
-    doc_role: derived
-    visibility: public
-    audience:
-    - portfolio
-    - maintainer
-    authority: derived
-    sensitivity: public
-    owner: maintainer
-    tier_shorthand: T2
     canonical_source:
-    - DOC-PLAN-001
+    - DOC-CHARTER-001
     derived_from:
-    - DOC-PLAN-001
-    allowed_content:
-    - interpretation
-    - summarization
-    forbidden_content:
-    - novel_metrics
-    - novel_claims
-  TASK_REFERENCE.md:
-    doc_id: DOC-PLAN-011
-    doc_type: execution
-    doc_role: derived
-    visibility: public
-    audience:
-    - maintainer
-    authority: derived
-    sensitivity: public
-    owner: maintainer
-    canonical_source:
-    - DOC-PLAN-001
-    derived_from:
-    - DOC-PLAN-001
-    allowed_content:
-    - interpretation
-    - summarization
-    forbidden_content:
-    - novel_metrics
-  CHANGELOG.md:
-    doc_id: DOC-ROOT-002
-    doc_type: narrative
-    doc_role: canonical
-    visibility: public
-    audience:
-    - portfolio
-    - maintainer
-    authority: canonical
-    sensitivity: public
-    owner: maintainer
+    - DOC-CHARTER-001
+    last_reviewed: '2026-06-08'
   reports/business_case.md:
     doc_id: DOC-BIZ-001
     doc_type: narrative
@@ -139,7 +78,7 @@ paths:
     owner: portfolio
     canonical_source:
     - DOC-SCH-001
-    - DOC-ARCH-001
+    - DOC-CHARTER-001
     derived_from:
     - DOC-SCH-001
     allowed_content:
@@ -282,7 +221,7 @@ paths:
     - portfolio
     authority: derived
     canonical_source:
-    - DOC-ARCH-001
+    - DOC-CHARTER-001
     derived_from:
     - DOC-ARCH-001
     allowed_content:
@@ -300,7 +239,7 @@ paths:
     authority: derived
     canonical_source:
     - DOC-SCH-001
-    - DOC-ARCH-001
+    - DOC-CHARTER-001
     derived_from:
     - DOC-SCH-001
     allowed_content:
@@ -371,7 +310,7 @@ paths:
     - technical
     authority: derived
     canonical_source:
-    - DOC-ARCH-001
+    - DOC-CHARTER-001
     - DOC-EPI-001
     derived_from:
     - DOC-ARCH-001
@@ -419,30 +358,6 @@ paths:
     forbidden_content:
     - novel_metrics
     - novel_claims
-  docs/ai_harness/README.md:
-    doc_id: DOC-HARNESS-002
-    doc_type: policy
-    doc_role: canonical
-    visibility: internal
-    audience:
-    - maintainer
-    - agent
-    authority: canonical
-    sensitivity: internal
-    owner: harness
-    tier_shorthand: T3
-  docs/ai_harness/CONTROLLED_WORKFLOW_PLAYBOOK.md:
-    doc_id: DOC-HARNESS-001
-    doc_type: policy
-    doc_role: canonical
-    visibility: internal
-    audience:
-    - agent
-    - maintainer
-    authority: canonical
-    sensitivity: internal
-    owner: harness
-    tier_shorthand: T3
   docs/registry/README.md:
     doc_id: DOC-REG-001
     doc_type: registry
@@ -468,25 +383,10 @@ paths:
     sensitivity: restricted
     owner: maintainer
     tier_shorthand: T2
-  Project_Action_list.md:
-    doc_id: DOC-PLAN-002
-    doc_type: execution
-    doc_role: derived
-    visibility: internal
-    audience:
-    - maintainer
-    authority: reference_only
-    status: archived
-    sensitivity: internal
-    owner: maintainer
-    canonical_source:
-    - DOC-PLAN-001
-    derived_from:
-    - DOC-PLAN-001
   maintainer/archive/Project_Action_list_full.md:
     doc_id: DOC-PLAN-003
     doc_type: execution
-    doc_role: derived
+    doc_role: reference
     visibility: internal
     audience:
     - maintainer
@@ -494,10 +394,8 @@ paths:
     status: archived
     sensitivity: internal
     owner: maintainer
-    canonical_source:
-    - DOC-PLAN-001
-    derived_from:
-    - DOC-PLAN-001
+    canonical_source: []
+    derived_from: []
     frontmatter_required: false
   maintainer/doc_debt/README.md:
     doc_id: DOC-DEBT-README
@@ -517,3 +415,391 @@ paths:
     numeric_authority: []
     tags:
     - doc-debt
+  maintainer/archive/IMPLEMENTATION_PLAN.md:
+    doc_id: DOC-PLAN-001
+    doc_type: execution
+    doc_role: reference
+    visibility: internal
+    audience:
+    - maintainer
+    - technical
+    authority: reference_only
+    sensitivity: internal
+    owner: maintainer
+    tier_shorthand: T2
+    supersedes:
+    - DOC-PLAN-002
+    - DOC-PLAN-003
+    numeric_authority: []
+    status: archived
+    frontmatter_required: false
+    canonical_source: []
+    derived_from: []
+  maintainer/archive/ROADMAP.md:
+    doc_id: DOC-PLAN-010
+    doc_type: execution
+    doc_role: reference
+    visibility: internal
+    audience:
+    - portfolio
+    - maintainer
+    authority: reference_only
+    sensitivity: internal
+    owner: maintainer
+    tier_shorthand: T2
+    canonical_source: []
+    derived_from: []
+    allowed_content:
+    - interpretation
+    - summarization
+    forbidden_content:
+    - novel_metrics
+    - novel_claims
+    status: archived
+    frontmatter_required: false
+  maintainer/archive/TASK_REFERENCE.md:
+    doc_id: DOC-PLAN-011
+    doc_type: execution
+    doc_role: reference
+    visibility: internal
+    audience:
+    - maintainer
+    authority: reference_only
+    sensitivity: internal
+    owner: maintainer
+    canonical_source: []
+    derived_from: []
+    allowed_content:
+    - interpretation
+    - summarization
+    forbidden_content:
+    - novel_metrics
+    status: archived
+    frontmatter_required: false
+  maintainer/archive/Project_Action_list.md:
+    doc_id: DOC-PLAN-002
+    doc_type: execution
+    doc_role: reference
+    visibility: internal
+    audience:
+    - maintainer
+    authority: reference_only
+    status: archived
+    sensitivity: internal
+    owner: maintainer
+    canonical_source: []
+    derived_from: []
+    frontmatter_required: false
+  governance/CHANGELOG.md:
+    doc_id: DOC-ROOT-002
+    doc_type: narrative
+    doc_role: canonical
+    visibility: public
+    audience:
+    - portfolio
+    - maintainer
+    authority: canonical
+    sensitivity: public
+    owner: maintainer
+  PROJECT_CHARTER.md:
+    doc_id: DOC-CHARTER-001
+    doc_type: policy
+    doc_role: canonical
+    visibility: public
+    audience:
+    - portfolio
+    - technical
+    - maintainer
+    - agent
+    authority: canonical
+    status: active
+    sensitivity: public
+    owner: governance
+    tier_shorthand: T0
+    canonical_source: []
+    derived_from: []
+    supersedes:
+    - DOC-PLAN-001
+    numeric_authority: []
+    frontmatter_required: false
+  CLAUDE.md:
+    doc_id: DOC-GOV-CLAUDE-001
+    doc_type: policy
+    doc_role: canonical
+    visibility: internal
+    audience:
+    - agent
+    - maintainer
+    authority: canonical
+    status: active
+    sensitivity: internal
+    owner: governance
+    tier_shorthand: T0
+    canonical_source: []
+    derived_from: []
+    supersedes: []
+    numeric_authority: []
+    frontmatter_required: false
+  AGENTS.md:
+    doc_id: DOC-GOV-AGENTS-001
+    doc_type: policy
+    doc_role: derived
+    visibility: internal
+    audience:
+    - agent
+    - maintainer
+    authority: derived
+    status: active
+    sensitivity: internal
+    owner: governance
+    tier_shorthand: T0
+    canonical_source:
+    - DOC-GOV-AUDIT-001
+    derived_from:
+    - DOC-GOV-AUDIT-001
+    supersedes: []
+    numeric_authority: []
+    frontmatter_required: false
+  GEMINI.md:
+    doc_id: DOC-GOV-GEMINI-001
+    doc_type: policy
+    doc_role: derived
+    visibility: internal
+    audience:
+    - agent
+    - maintainer
+    authority: derived
+    status: active
+    sensitivity: internal
+    owner: governance
+    tier_shorthand: T0
+    canonical_source:
+    - DOC-GOV-AUDIT-001
+    derived_from:
+    - DOC-GOV-AUDIT-001
+    supersedes: []
+    numeric_authority: []
+    frontmatter_required: false
+  CONTRIBUTING.md:
+    doc_id: DOC-GOV-CONTRIB-001
+    doc_type: policy
+    doc_role: canonical
+    visibility: public
+    audience:
+    - agent
+    - maintainer
+    authority: canonical
+    status: active
+    sensitivity: public
+    owner: governance
+    tier_shorthand: T0
+    canonical_source: []
+    derived_from: []
+    supersedes: []
+    numeric_authority: []
+    frontmatter_required: false
+  governance/AUDIT_PROCEDURE.md:
+    doc_id: DOC-GOV-AUDIT-001
+    doc_type: policy
+    doc_role: canonical
+    visibility: internal
+    audience:
+    - agent
+    - maintainer
+    authority: canonical
+    status: active
+    sensitivity: internal
+    owner: governance
+    tier_shorthand: T0
+    canonical_source: []
+    derived_from: []
+    supersedes: []
+    numeric_authority: []
+    frontmatter_required: false
+  governance/CATEGORIES.md:
+    doc_id: DOC-GOV-CAT-001
+    doc_type: policy
+    doc_role: canonical
+    visibility: internal
+    audience:
+    - agent
+    - maintainer
+    authority: canonical
+    status: active
+    sensitivity: internal
+    owner: governance
+    tier_shorthand: T0
+    canonical_source: []
+    derived_from: []
+    supersedes: []
+    numeric_authority: []
+    frontmatter_required: false
+  governance/DEBT_TOOLS.md:
+    doc_id: DOC-GOV-DEBT-001
+    doc_type: policy
+    doc_role: canonical
+    visibility: internal
+    audience:
+    - agent
+    - maintainer
+    authority: canonical
+    status: active
+    sensitivity: internal
+    owner: governance
+    tier_shorthand: T0
+    canonical_source: []
+    derived_from: []
+    supersedes: []
+    numeric_authority: []
+    frontmatter_required: false
+  governance/adrs/0002-tech-debt-ratchet.md:
+    doc_id: ADR-0002
+    doc_type: policy
+    doc_role: canonical
+    visibility: internal
+    audience:
+    - agent
+    - maintainer
+    authority: canonical
+    status: active
+    sensitivity: internal
+    owner: governance
+    tier_shorthand: T0
+    canonical_source: []
+    derived_from: []
+    supersedes: []
+    numeric_authority: []
+    frontmatter_required: false
+  governance/adrs/ADR-TEMPLATE.md:
+    doc_id: DOC-GOV-ADR-TEMPLATE
+    doc_type: policy
+    doc_role: reference
+    visibility: internal
+    audience:
+    - agent
+    - maintainer
+    authority: reference_only
+    status: active
+    sensitivity: internal
+    owner: governance
+    tier_shorthand: T0
+    canonical_source: []
+    derived_from: []
+    supersedes: []
+    numeric_authority: []
+    frontmatter_required: false
+  maintainer/agent_transaction_backlog.md:
+    doc_id: DOC-MAINT-BACKLOG-001
+    doc_type: execution
+    doc_role: derived
+    visibility: internal
+    audience:
+    - maintainer
+    authority: reference_only
+    status: archived
+    sensitivity: internal
+    owner: maintainer
+    tier_shorthand: T2
+    canonical_source:
+    - DOC-GOV-AUDIT-001
+    derived_from:
+    - DOC-GOV-AUDIT-001
+    supersedes: []
+    numeric_authority: []
+    frontmatter_required: false
+  module_b_resource_allocation/README.md:
+    doc_id: DOC-MODB-README-001
+    doc_type: narrative
+    doc_role: derived
+    visibility: public
+    audience:
+    - portfolio
+    - technical
+    authority: derived
+    status: active
+    sensitivity: public
+    owner: module_b
+    tier_shorthand: T1
+    canonical_source:
+    - DOC-MODB-001
+    derived_from:
+    - DOC-MODB-001
+    supersedes: []
+    numeric_authority: []
+    frontmatter_required: false
+  module_c_forecasting_scenarios/README.md:
+    doc_id: DOC-MODC-README-001
+    doc_type: narrative
+    doc_role: derived
+    visibility: public
+    audience:
+    - portfolio
+    - technical
+    authority: derived
+    status: active
+    sensitivity: public
+    owner: module_c
+    tier_shorthand: T1
+    canonical_source:
+    - DOC-MODC-001
+    derived_from:
+    - DOC-MODC-001
+    supersedes: []
+    numeric_authority: []
+    frontmatter_required: false
+  docs/development_process.md:
+    doc_id: DOC-DEVPROCESS-001
+    doc_type: policy
+    doc_role: reference
+    visibility: internal
+    audience:
+    - maintainer
+    - agent
+    authority: reference_only
+    status: archived
+    sensitivity: internal
+    owner: governance
+    tier_shorthand: T2
+    canonical_source: []
+    derived_from: []
+    supersedes: []
+    numeric_authority: []
+    frontmatter_required: false
+  governance/SESSION_HANDOUT.md:
+    doc_id: DOC-GOV-HANDOUT-001
+    doc_type: policy
+    doc_role: derived
+    visibility: internal
+    audience:
+    - agent
+    - maintainer
+    authority: derived
+    status: generated
+    sensitivity: internal
+    owner: governance
+    tier_shorthand: T0
+    canonical_source:
+    - DOC-GOV-AUDIT-001
+    derived_from:
+    - DOC-GOV-AUDIT-001
+    supersedes: []
+    numeric_authority: []
+    frontmatter_required: false
+  governance/SESSION_END.md:
+    doc_id: DOC-GOV-SESSION-END-001
+    doc_type: evidence
+    doc_role: evidence
+    visibility: internal
+    audience:
+    - agent
+    - maintainer
+    authority: evidence
+    status: active
+    sensitivity: internal
+    owner: governance
+    tier_shorthand: T0
+    canonical_source: []
+    derived_from: []
+    supersedes: []
+    numeric_authority: []
+    frontmatter_required: false

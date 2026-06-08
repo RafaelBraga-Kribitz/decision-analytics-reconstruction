@@ -1,0 +1,13 @@
+id: F-004
+title: "Root planning docs were consolidated into Charter plus archive"
+category: documentation_entropy
+kind: historical_change
+status: closed_historical
+opened_at: 2026-06-08
+closed_at: 2026-06-08
+recurrence_count: 0
+evidence: "PROJECT_CHARTER.md, maintainer/archive/, governance/CHANGELOG.md — planning docs moved out of root"
+verification_script: null
+wont_fix_reason: null
+notes: |
+  Historical record for the approved reorganization step.

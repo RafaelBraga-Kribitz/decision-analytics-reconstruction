@@ -1,0 +1,13 @@
+id: F-008
+title: "High-complexity blocks remain in baseline"
+category: fragmented_standards
+kind: recurrence_invariant
+status: open
+opened_at: 2026-06-08
+closed_at: null
+recurrence_count: 0
+evidence: "governance/DEBT_BASELINE.json — radon_complex_blocks=38"
+verification_script: scripts/check_radon_complexity_zero.py
+wont_fix_reason: null
+notes: |
+  Split by module when remediating; this finding records the global debt surface.

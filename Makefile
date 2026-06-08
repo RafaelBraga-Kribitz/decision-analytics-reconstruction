@@ -2,7 +2,7 @@
 	module-b-allocate module-b-allocate-sensitivity module-b-routing module-b-api \
 	test-module-a test-module-b test-module-c \
 	module-c-tracking module-c-exit module-c-mc module-c-all module-c-walk-forward module-c-ppc \
-	precommit transaction-verify validate doc-path-verify doc-registry-verify doc-registry-schema-export portfolio-verify tier3-smoke e2e-smoke
+	precommit validate doc-path-verify doc-registry-verify doc-registry-schema-export portfolio-verify tier3-smoke e2e-smoke audit verify session-start session-end debt-scan debt-check
 
 MODULE_A_SRC := module_a_population_segmentation/src
 MODULE_A_TESTS := module_a_population_segmentation/tests
@@ -35,9 +35,6 @@ test:
 precommit:
 	poetry run pre-commit install --hook-type pre-commit --hook-type commit-msg
 	poetry run pre-commit run --all-files
-
-transaction-verify:
-	poetry run python scripts/transaction_commit_gate.py --repo . --unit-lock .cursor/runtime/current_unit.json --check-staged
 
 validate: lint typecheck test doc-path-verify doc-registry-verify
 
@@ -231,3 +228,59 @@ rollback-module-b:
 	fi
 	@chmod +x scripts/rollback_cloudrun.sh
 	@./scripts/rollback_cloudrun.sh "$(GCP_PROJECT)" "module-b-fastapi" "$(or $(REGION),europe-west3)"
+
+# ── Governance — see governance/AUDIT_PROCEDURE.md ───────────────────────────
+#
+# Append (or merge) the targets below into your project's Makefile.
+# Only the governance-specific targets are defined here; your project's
+# build/test/lint targets stay separate.
+
+.PHONY: audit verify session-start session-end debt-scan debt-check
+
+PYTHON ?= python
+
+audit:
+	@echo "── make audit ─────────────────────────────────────────────"
+	@$(PYTHON) scripts/check_claude_md.py
+	@$(PYTHON) scripts/check_charter_size.py
+	@$(PYTHON) scripts/check_finding_coverage.py
+	@$(PYTHON) scripts/write_audit_state.py
+	@echo "✓ audit complete — see governance/AUDIT_STATE.json"
+
+# verify = audit + tests + closed-finding re-verification + debt ratchet
+verify: audit
+	@echo "── make verify ────────────────────────────────────────────"
+	@$(MAKE) doc-registry-verify
+	@$(PYTHON) scripts/check_terminology.py
+	@if ls tests/governance/test_*.py >/dev/null 2>&1; then \
+		$(PYTHON) -m pytest tests/governance/ -q; \
+	else \
+		echo "(no governance tests yet — skipping pytest)"; \
+	fi
+	@$(PYTHON) scripts/check_closed_findings.py
+	@$(PYTHON) scripts/check_debt_ratchet.py
+	@echo "✓ verify complete"
+
+# Rewrite governance/DEBT_BASELINE.json from a fresh scan. Run this after you
+# have *reduced* debt, to lock the gain so the ratchet can't slide back.
+# Committing a baseline that moves UP requires a dedicated PR that says why.
+debt-scan:
+	@$(PYTHON) scripts/debt_scan.py
+
+# Ratchet gate: re-scan and fail if any measured debt metric grew past the
+# baseline. This is the "remediate before it grows" enforcement. Runs in
+# `verify` and in CI; cheap enough to run locally before pushing.
+debt-check:
+	@$(PYTHON) scripts/check_debt_ratchet.py
+
+session-start: audit
+	@$(PYTHON) scripts/session_start.py
+	@echo ""
+	@echo "→ Read governance/SESSION_HANDOUT.md before choosing work."
+
+session-end:
+	@$(PYTHON) scripts/write_audit_state.py
+	@$(PYTHON) scripts/session_end.py
+	@echo ""
+	@echo "→ Edit free-text fields in governance/SESSION_END.md, then commit."
+

@@ -1,0 +1,13 @@
+id: F-005
+title: "Pre-commit Pyright hook omits Module C"
+category: fragmented_standards
+kind: recurrence_invariant
+status: open
+opened_at: 2026-06-08
+closed_at: null
+recurrence_count: 0
+evidence: ".pre-commit-config.yaml — pyright entry covers Module A and Module B src only"
+verification_script: scripts/check_precommit_pyright_all_modules.py
+wont_fix_reason: null
+notes: |
+  make typecheck covers all three modules; pre-commit should match or document an explicit exception.

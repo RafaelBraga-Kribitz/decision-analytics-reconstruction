@@ -1,0 +1,123 @@
+{
+  "findings": [
+    {
+      "category": "charter_sprawl",
+      "closed_at": "2026-06-08",
+      "id": "F-001",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-08",
+      "path": "governance/findings/F-001-charter-sprawl.yaml",
+      "status": "closed",
+      "title": "Project Charter must remain under the scannable line budget",
+      "verification_script": "scripts/check_charter_size.py"
+    },
+    {
+      "category": "cross_session_amnesia",
+      "closed_at": "2026-06-08",
+      "id": "F-002",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-08",
+      "path": "governance/findings/F-002-governance-session-state.yaml",
+      "status": "closed",
+      "title": "Agents must read machine-generated governance state from disk",
+      "verification_script": "scripts/check_claude_md.py"
+    },
+    {
+      "category": "methodology_drift",
+      "closed_at": "2026-06-08",
+      "id": "F-003",
+      "kind": "historical_change",
+      "opened_at": "2026-06-08",
+      "path": "governance/findings/F-003-retired-transaction-harness.yaml",
+      "status": "closed_historical",
+      "title": "Retired the old UNIT_ID transaction harness",
+      "verification_script": null
+    },
+    {
+      "category": "documentation_entropy",
+      "closed_at": "2026-06-08",
+      "id": "F-004",
+      "kind": "historical_change",
+      "opened_at": "2026-06-08",
+      "path": "governance/findings/F-004-root-doc-sprawl-consolidated.yaml",
+      "status": "closed_historical",
+      "title": "Root planning docs were consolidated into Charter plus archive",
+      "verification_script": null
+    },
+    {
+      "category": "fragmented_standards",
+      "closed_at": null,
+      "id": "F-005",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-08",
+      "path": "governance/findings/F-005-precommit-pyright-module-c.yaml",
+      "status": "open",
+      "title": "Pre-commit Pyright hook omits Module C",
+      "verification_script": "scripts/check_precommit_pyright_all_modules.py"
+    },
+    {
+      "category": "fragmented_standards",
+      "closed_at": null,
+      "id": "F-006",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-08",
+      "path": "governance/findings/F-006-pytest-conftest-collision.yaml",
+      "status": "open",
+      "title": "Default pytest collection fails on duplicate conftest registration",
+      "verification_script": "scripts/check_pytest_conftest_collection.py"
+    },
+    {
+      "category": "dead_artifacts",
+      "closed_at": null,
+      "id": "F-007",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-08",
+      "path": "governance/findings/F-007-ruff-unused-baseline.yaml",
+      "status": "open",
+      "title": "Ruff unused-code findings remain in baseline",
+      "verification_script": "scripts/check_ruff_unused_zero.py"
+    },
+    {
+      "category": "fragmented_standards",
+      "closed_at": null,
+      "id": "F-008",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-08",
+      "path": "governance/findings/F-008-radon-complexity-baseline.yaml",
+      "status": "open",
+      "title": "High-complexity blocks remain in baseline",
+      "verification_script": "scripts/check_radon_complexity_zero.py"
+    },
+    {
+      "category": "dead_artifacts",
+      "closed_at": null,
+      "id": "F-009",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-08",
+      "path": "governance/findings/F-009-vulture-dead-code-baseline.yaml",
+      "status": "open",
+      "title": "High-confidence dead-code findings remain in baseline",
+      "verification_script": "scripts/check_vulture_dead_code_zero.py"
+    }
+  ],
+  "generated_at": "2026-06-08T17:31:58.034675+00:00",
+  "git_branch": "chore/governance-bootstrap-replace",
+  "git_head_sha": "fd00b23df8f92a6f7a38cb1f99dbefe40d4dc6ae",
+  "migrations": [],
+  "summary": {
+    "findings_closed": 2,
+    "findings_closed_historical": 2,
+    "findings_in_progress": 0,
+    "findings_open": 5,
+    "findings_total": 9,
+    "findings_wont_fix": 0,
+    "migrations_in_progress": 0,
+    "migrations_total": 0,
+    "open_by_category": {
+      "dead_artifacts": 2,
+      "fragmented_standards": 3
+    }
+  },
+  "validation_errors": [],
+  "writer": "scripts/write_audit_state.py"
+}

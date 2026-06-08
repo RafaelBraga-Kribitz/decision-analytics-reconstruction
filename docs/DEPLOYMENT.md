@@ -349,3 +349,20 @@ gsutil -m rm -r gs://<project>-decision-analytics-artifacts/
 ---
 
 **Last updated:** 2026-05-15
+
+
+---
+
+## Cost Controls
+
+Use the Cloud Run resource tier deliberately; keep Docker workflows on this
+maintainer machine CLI-first and prefer Colima over Docker Desktop.
+
+| Tier | Module A | Module B | Monthly Cost | Trade-offs |
+|---|---|---|---|---|
+| Maximum | 2 Gi, 2 CPU, 3600s | 1 Gi, 1 CPU, 300s | $30-$50 | Best dashboard responsiveness and solver headroom |
+| Balanced | 1 Gi, 1 CPU, 1800s | 512 Mi, 0.5 CPU, 300s | $12-$20 | Default cost/performance posture |
+| Minimum | 512 Mi, 0.5 CPU, 900s | 256 Mi, 0.25 CPU, 300s | $5-$10 | Demo-only unless tested under load |
+
+Set cost alerts before deployment and preserve smoke-test output from
+`scripts/smoke_test_cloudrun.sh` when changing tiers.

@@ -1,0 +1,13 @@
+name: <slug>                        # required; lowercase-hyphen
+status: not_started                 # one of: not_started | in_progress | complete | abandoned
+started_at: 2026-01-01              # ISO date
+max_days_in_progress: 14            # int; CI fails if exceeded while status==in_progress
+phases:
+  - id: phase-1-slug
+    completion_criterion: "shell-verifiable predicate, e.g., 'grep -q FOO src/'"
+    done: false
+  - id: phase-2-slug
+    completion_criterion: "..."
+    done: false
+rollback: "git revert <sha>"        # required; how to undo if abandoned
+linked_finding: F-NNN               # the finding this migration discharges

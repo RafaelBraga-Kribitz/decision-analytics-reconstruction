@@ -1,0 +1,13 @@
+id: F-003
+title: "Retired the old UNIT_ID transaction harness"
+category: methodology_drift
+kind: historical_change
+status: closed_historical
+opened_at: 2026-06-08
+closed_at: 2026-06-08
+recurrence_count: 0
+evidence: "Makefile, .pre-commit-config.yaml, scripts/transaction_commit_gate.py — transaction gate removed"
+verification_script: null
+wont_fix_reason: null
+notes: |
+  Historical record only. The replacement methodology is governance/AUDIT_PROCEDURE.md.

@@ -6,10 +6,9 @@ visibility: public
 status: active
 owner: project
 last_reviewed: '2026-05-20'
-canonical_source:
-- DOC-ARCH-001
-derived_from:
-- DOC-ARCH-001
+canonical_source: &id001
+- DOC-CHARTER-001
+derived_from: *id001
 supersedes: null
 tags: []
 allowed_content:
