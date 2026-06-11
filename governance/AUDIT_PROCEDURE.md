@@ -20,7 +20,7 @@ The single canonical reference for how this repo's audit + remediation cycle wor
   3. Update the finding YAML: `status: closed`, `closed_at: <iso-date>`, fill `verification_script` path.
   4. Run `make verify`.
   5. Open a PR. PR title must contain the finding ID (`F-NNN`).
-- **Forbidden:** touching more than one finding per PR (except trivial cross-cutting cleanups under 10 lines); inventing new finding categories without prior agreement; declaring closure without a passing `verification_script`.
+- **Forbidden:** touching more than one finding per PR (except trivial cross-cutting cleanups under 10 lines, or themed multi-finding PRs during a declared completion sprint per `adrs/0004-completion-sprint-cadence.md`); inventing new finding categories without prior agreement; declaring closure without a passing `verification_script`.
 
 ### 3. Adversary (read-only; CI job + session end)
 
