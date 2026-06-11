@@ -8,56 +8,92 @@
 
 # Decision Analytics Reconstruction
 
-Retrospective reconstruction of a national-scale decision analytics system for
+Retrospective reconstruction of a national-scale decision analytics system:
 population modeling, constrained resource allocation, and probabilistic scenario
-analysis.
+analysis — wired as a single reproducible pipeline with governance ratchets.
 
 [![CI](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/ci.yml/badge.svg)](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/ci.yml)
 [![Governance](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/governance.yml/badge.svg)](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/governance.yml)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue)](.python-version)
 
-All three modules run locally in two commands (see Quick Start). Hosted demos
-are tracked as open finding `F-021` and will be linked here only once they
-return HTTP 200 from CI — this README does not claim deployments that are not
-live.
+Hosted demos are tracked as open finding **F-021** — this README does not claim
+URLs that CI has not verified live.
 
-## Source Of Truth
+## Three differentiators
 
-The project authority is `PROJECT_CHARTER.md`. Governance, findings, ADRs, and
-session handoffs live under `governance/`. Start AI-assisted work with:
+1. **Honest epistemic layering** — Every artifact is tagged verified / calibrated /
+   simulated / illustrative (`reports/epistemic_boundaries.md`). Headline numbers
+   live in one SSOT table (`reports/NUMERIC_SSOT.md`); golden metrics are CI-gated.
 
-```bash
-make session-start
-```
+2. **End-to-end wiring, not slide-ware** — `make pipeline-full` runs Module A → B
+   → C with the allocation parquet handshake enforced (F-040). Monte Carlo draws
+   fail loudly when B→C contacts are zero.
 
-## What This Repository Contains
+3. **Governance-as-code** — Findings YAML + adversary verification scripts
+   (`make verify`) replace narrative “audit complete” claims. One finding per PR;
+   regressions reopen closed items automatically.
 
-- `module_a_population_segmentation/`: population dataset generation, cleaning,
-  segmentation, participation propensity modeling, and Streamlit dashboard.
-- `module_b_resource_allocation/`: constrained allocation, routing support,
-  budget sensitivity, and FastAPI service.
-- `module_c_forecasting_scenarios/`: survey measurement aggregation, Bayesian
-  tracking, scenario simulation, and Quarto reporting.
-- `schema_contracts/`: versioned artifact contracts for module boundaries.
-- `docs/registry/`: machine-readable documentation inventory (internal metadata; no per-file YAML headers).
+## Verified anchors (Series A)
 
-## Quick Start
+| Quantity | Value |
+|---|---|
+| Outcome margin | **+3.70 pp** (46.43% vs 42.73%) |
+| Participation rate | **61.25%** |
+| Production run scale | **50,000** entities (4.26M design reference) |
+| Program window | **14 weeks** |
+
+Full table: [`reports/NUMERIC_SSOT.md`](reports/NUMERIC_SSOT.md).
+
+## Skills evidence (what reviewers can run)
+
+| Skill / claim | Evidence in repo |
+|---|---|
+| Segmentation + propensity | Module A pipeline, silhouette/ARI/Brier CI gates |
+| MILP under real constraints | Module B OPTIMAL baseline, 80% coverage floor |
+| Bayesian tracking + MC scenarios | Module C PyMC models, walk-forward estimand fix (F-034) |
+| Pipeline integration | `dvc.yaml`, `make pipeline-full`, `tests/test_golden_metrics.py` |
+| Statistical honesty | AUC circularity documented; no causal counterfactual fiction |
+| Reproducibility | `make test`, `scripts/generate_golden_metrics.py`, fresh-clone path in CONTRIBUTING |
+
+Case narrative: [`reports/CASE_STUDY.md`](reports/CASE_STUDY.md). Validation gates:
+[`reports/VALIDATION.md`](reports/VALIDATION.md).
+
+## Quick start
 
 ```bash
 poetry install
 make test
 
+# Full integrated pipeline (A → B → C → EDA)
+make pipeline-full
+
 # Local demos
-make dashboard       # Module A — Streamlit dashboard
-make module-b-api    # Module B — FastAPI service (docs at http://127.0.0.1:8088/docs)
+make dashboard       # Module A — Streamlit
+make module-b-api    # Module B — FastAPI (http://127.0.0.1:8088/docs)
 make module-c-all    # Module C — forecasting artifacts
 ```
 
-For deployment, read `docs/DEPLOYMENT.md`. For architecture, read
-`ARCHITECTURE.md`. For governance, read `governance/AUDIT_PROCEDURE.md`.
+## Modules
 
-## Status
+| Module | Role | Entry |
+|---|---|---|
+| **A** | Population dataset, segmentation, participation propensity | `module_a_population_segmentation/` |
+| **B** | Constrained allocation MILP + routing | `module_b_resource_allocation/` |
+| **C** | Survey aggregation, Bayesian tracking, MC scenarios | `module_c_forecasting_scenarios/` |
 
-This branch is replacing the previous local planning harness with a tracked
-findings-and-ratchet governance system. Known inherited test/lint failures are
-recorded in the session notes and will be promoted to findings where relevant.
+Architecture: [`ARCHITECTURE.md`](ARCHITECTURE.md). Contracts: `schema_contracts/`.
+
+## Governance
+
+AI-assisted work starts with:
+
+```bash
+make session-start   # → governance/SESSION_HANDOUT.md
+```
+
+Authority: `PROJECT_CHARTER.md`, `governance/AUDIT_PROCEDURE.md`, `governance/findings/`.
+
+## Deployment
+
+See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). Live URL verification: finding **F-021**
+(human platform auth required).

@@ -190,83 +190,6 @@ documents:
   doc_id: DOC-DOCS-001
   path: docs/DEPLOYMENT.md
   last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-DOCS-002
-  path: docs/DEPLOYMENT_CHECKLIST.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-DOCS-003
-  path: docs/GITHUB_ACTIONS_SETUP.md
-  last_reviewed: '2026-05-20'
-- doc_type: registry
-  doc_role: registry
-  visibility: public
-  audience:
-  - portfolio
-  - agent
-  - maintainer
-  authority: registry
-  status: generated
-  sensitivity: public
-  owner: architecture
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-DOCS-004
-  path: docs/INDEX.md
-  last_reviewed: '2026-05-20'
-- doc_type: policy
-  doc_role: reference
-  visibility: internal
-  audience:
-  - maintainer
-  - agent
-  authority: reference_only
-  status: archived
-  sensitivity: internal
-  owner: governance
-  tier_shorthand: T2
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-DEVPROCESS-001
-  path: docs/development_process.md
-  last_reviewed: '2026-05-20'
 - doc_type: registry
   doc_role: registry
   visibility: public
@@ -305,25 +228,6 @@ documents:
   doc_id: DOC-GOV-AUDIT-001
   path: governance/AUDIT_PROCEDURE.md
   last_reviewed: '2026-05-20'
-- doc_type: policy
-  doc_role: canonical
-  visibility: internal
-  audience:
-  - agent
-  - maintainer
-  authority: canonical
-  status: active
-  sensitivity: internal
-  owner: governance
-  tier_shorthand: T0
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-GOV-CAT-001
-  path: governance/CATEGORIES.md
-  last_reviewed: '2026-05-20'
 - doc_type: narrative
   doc_role: canonical
   visibility: public
@@ -342,25 +246,6 @@ documents:
   frontmatter_required: false
   doc_id: DOC-ROOT-002
   path: governance/CHANGELOG.md
-  last_reviewed: '2026-05-20'
-- doc_type: policy
-  doc_role: canonical
-  visibility: internal
-  audience:
-  - agent
-  - maintainer
-  authority: canonical
-  status: active
-  sensitivity: internal
-  owner: governance
-  tier_shorthand: T0
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-GOV-DEBT-001
-  path: governance/DEBT_TOOLS.md
   last_reviewed: '2026-05-20'
 - doc_type: evidence
   doc_role: evidence
@@ -401,82 +286,6 @@ documents:
   frontmatter_required: false
   doc_id: DOC-GOV-HANDOUT-001
   path: governance/SESSION_HANDOUT.md
-  last_reviewed: '2026-05-20'
-- doc_type: policy
-  doc_role: canonical
-  visibility: internal
-  audience:
-  - agent
-  - maintainer
-  authority: canonical
-  status: active
-  sensitivity: internal
-  owner: governance
-  tier_shorthand: T0
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: ADR-0002
-  path: governance/adrs/0002-tech-debt-ratchet.md
-  last_reviewed: '2026-05-20'
-- doc_type: policy
-  doc_role: canonical
-  visibility: internal
-  audience:
-  - agent
-  - maintainer
-  authority: canonical
-  status: active
-  sensitivity: internal
-  owner: governance
-  tier_shorthand: T0
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: ADR-0003
-  path: governance/adrs/0003-charter-line-budget.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-DOC-001
-  path: governance/adrs/0004-completion-sprint-cadence.md
-  last_reviewed: '2026-05-20'
-- doc_type: policy
-  doc_role: reference
-  visibility: internal
-  audience:
-  - agent
-  - maintainer
-  authority: reference_only
-  status: active
-  sensitivity: internal
-  owner: governance
-  tier_shorthand: T0
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-GOV-ADR-TEMPLATE
-  path: governance/adrs/ADR-TEMPLATE.md
   last_reviewed: '2026-05-20'
 - doc_type: execution
   doc_role: derived
@@ -602,6 +411,804 @@ documents:
   - novel_metrics
   doc_id: DOC-PLAN-011
   path: maintainer/archive/TASK_REFERENCE.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-001
+  path: maintainer/archives/docs/DEPLOYMENT_CHECKLIST.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-002
+  path: maintainer/archives/docs/GITHUB_ACTIONS_SETUP.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-003
+  path: maintainer/archives/docs/INDEX.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-004
+  path: maintainer/archives/docs/development_process.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-005
+  path: maintainer/archives/governance/0002-tech-debt-ratchet.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-006
+  path: maintainer/archives/governance/0003-charter-line-budget.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-007
+  path: maintainer/archives/governance/0004-completion-sprint-cadence.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-008
+  path: maintainer/archives/governance/ADR-TEMPLATE.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-009
+  path: maintainer/archives/governance/CATEGORIES.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-010
+  path: maintainer/archives/governance/DEBT_TOOLS.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-011
+  path: maintainer/archives/governance/REPRODUCIBILITY.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-012
+  path: maintainer/archives/module_a/audit_report_module_a_2026-05-11.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-013
+  path: maintainer/archives/module_a/segment_action_matrix.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-014
+  path: maintainer/archives/module_b/response_curve_spec.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-015
+  path: maintainer/archives/module_c/C_research_proof_table.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-016
+  path: maintainer/archives/module_c/research/exit_bias_mechanisms.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-017
+  path: maintainer/archives/module_c/research/oea_eu_survey_release_metadata.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-018
+  path: maintainer/archives/module_c/research/tsje_calibration_sources.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-019
+  path: maintainer/archives/reports/HIRING_CONTEXT.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-020
+  path: maintainer/archives/reports/baseline_comparison.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-021
+  path: maintainer/archives/reports/business_case.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-022
+  path: maintainer/archives/reports/case_study_business.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-023
+  path: maintainer/archives/reports/case_study_technical.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-024
+  path: maintainer/archives/reports/cluster_validation.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-025
+  path: maintainer/archives/reports/competitive_positioning.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-026
+  path: maintainer/archives/reports/data_dictionary.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-027
+  path: maintainer/archives/reports/data_lineage.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - maintainer
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: maintainer
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-DLOG-001
+  path: maintainer/archives/reports/decision_log.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-028
+  path: maintainer/archives/reports/executive_demo_walkthrough.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-029
+  path: maintainer/archives/reports/feature_engineering_justification.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-030
+  path: maintainer/archives/reports/integration_audit_2026-05-12.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-031
+  path: maintainer/archives/reports/model_hierarchy.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-032
+  path: maintainer/archives/reports/module_a_model_io_spec.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-033
+  path: maintainer/archives/reports/module_b_module_c_handshake.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-034
+  path: maintainer/archives/reports/module_b_optimization_formulation.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-035
+  path: maintainer/archives/reports/module_c_forecast_validation.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-036
+  path: maintainer/archives/reports/reproducibility_validation.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-037
+  path: maintainer/archives/reports/stakeholder_scenario_table.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-038
+  path: maintainer/archives/reports/statistical_independence_note.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-039
+  path: maintainer/archives/reports/statistical_metrics_summary.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-040
+  path: maintainer/archives/reports/system_walkthrough.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-041
+  path: maintainer/archives/reports/transformation_log.md
   last_reviewed: '2026-05-20'
 - doc_type: registry
   doc_role: registry
@@ -1001,25 +1608,6 @@ documents:
   numeric_authority: []
   frontmatter_required: false
   doc_id: DOC-MODA-002
-  path: module_a_population_segmentation/reports/audit_report_module_a_2026-05-11.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-MODA-003
   path: module_a_population_segmentation/reports/model_card_propensity.md
   last_reviewed: '2026-05-20'
 - doc_type: narrative
@@ -1038,27 +1626,8 @@ documents:
   supersedes: []
   numeric_authority: []
   frontmatter_required: false
-  doc_id: DOC-MODA-004
+  doc_id: DOC-MODA-003
   path: module_a_population_segmentation/reports/model_card_segmentation.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-MODA-005
-  path: module_a_population_segmentation/reports/segment_action_matrix.md
   last_reviewed: '2026-05-20'
 - doc_type: narrative
   doc_role: derived
@@ -1101,32 +1670,6 @@ documents:
   doc_id: DOC-MODB-001
   path: module_b_resource_allocation/SPECIFICATION.md
   last_reviewed: '2026-05-20'
-- doc_type: specification
-  doc_role: derived
-  visibility: public
-  audience:
-  - technical
-  authority: derived
-  status: active
-  sensitivity: public
-  owner: module_b
-  tier_shorthand: T1
-  canonical_source:
-  - DOC-MODB-001
-  derived_from:
-  - DOC-MODB-001
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  allowed_content:
-  - interpretation
-  - summarization
-  forbidden_content:
-  - novel_metrics
-  - novel_claims
-  doc_id: DOC-MODB-002
-  path: module_b_resource_allocation/reports/response_curve_spec.md
-  last_reviewed: '2026-05-20'
 - doc_type: methodology
   doc_role: canonical
   visibility: public
@@ -1167,126 +1710,6 @@ documents:
   doc_id: DOC-MODC-README-001
   path: module_c_forecasting_scenarios/README.md
   last_reviewed: '2026-05-20'
-- doc_type: evidence
-  doc_role: evidence
-  visibility: public
-  audience:
-  - technical
-  - maintainer
-  authority: evidence
-  status: active
-  sensitivity: public
-  owner: module_c
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-MODC-002
-  path: module_c_forecasting_scenarios/reports/C_research_proof_table.md
-  last_reviewed: '2026-05-20'
-- doc_type: methodology
-  doc_role: derived
-  visibility: public
-  audience:
-  - technical
-  authority: derived
-  status: active
-  sensitivity: public
-  owner: module_c
-  canonical_source:
-  - DOC-MODC-001
-  derived_from:
-  - DOC-MODC-001
-  allowed_content:
-  - interpretation
-  - summarization
-  forbidden_content:
-  - novel_metrics
-  - novel_claims
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-MODCRS-001
-  path: module_c_forecasting_scenarios/reports/research/exit_bias_mechanisms.md
-  last_reviewed: '2026-05-20'
-  supersedes: []
-- doc_type: methodology
-  doc_role: derived
-  visibility: public
-  audience:
-  - technical
-  authority: derived
-  status: active
-  sensitivity: public
-  owner: module_c
-  canonical_source:
-  - DOC-MODC-001
-  derived_from:
-  - DOC-MODC-001
-  allowed_content:
-  - interpretation
-  - summarization
-  forbidden_content:
-  - novel_metrics
-  - novel_claims
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-MODCRS-002
-  path: module_c_forecasting_scenarios/reports/research/oea_eu_survey_release_metadata.md
-  last_reviewed: '2026-05-20'
-  supersedes: []
-- doc_type: methodology
-  doc_role: derived
-  visibility: public
-  audience:
-  - technical
-  authority: derived
-  status: active
-  sensitivity: public
-  owner: module_c
-  canonical_source:
-  - DOC-MODC-001
-  derived_from:
-  - DOC-MODC-001
-  allowed_content:
-  - interpretation
-  - summarization
-  forbidden_content:
-  - novel_metrics
-  - novel_claims
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-MODCRS-003
-  path: module_c_forecasting_scenarios/reports/research/tsje_calibration_sources.md
-  last_reviewed: '2026-05-20'
-  supersedes: []
-- doc_type: narrative
-  doc_role: derived
-  visibility: public
-  audience:
-  - hiring
-  authority: derived
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source:
-  - DOC-BIZ-001
-  derived_from:
-  - DOC-BIZ-001
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  allowed_content:
-  - interpretation
-  - summarization
-  forbidden_content:
-  - novel_metrics
-  - novel_claims
-  doc_id: DOC-BIZ-005
-  path: reports/HIRING_CONTEXT.md
-  last_reviewed: '2026-05-20'
 - doc_type: narrative
   doc_role: canonical
   visibility: public
@@ -1304,213 +1727,6 @@ documents:
   numeric_authority: []
   frontmatter_required: false
   doc_id: DOC-REP-001
-  path: reports/baseline_comparison.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
-  - hiring
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: portfolio
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority:
-  - module_b_resource_allocation/src/module_b_resource_allocation/constants.py
-  - schema_contracts/budget_envelope.yaml
-  frontmatter_required: false
-  doc_id: DOC-BIZ-001
-  path: reports/business_case.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: derived
-  visibility: public
-  audience:
-  - portfolio
-  - hiring
-  authority: derived
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source:
-  - DOC-BIZ-001
-  derived_from:
-  - DOC-BIZ-001
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  allowed_content:
-  - interpretation
-  - summarization
-  forbidden_content:
-  - novel_metrics
-  - novel_claims
-  doc_id: DOC-BIZ-002
-  path: reports/case_study_business.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: derived
-  visibility: public
-  audience:
-  - portfolio
-  - technical
-  authority: derived
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source:
-  - DOC-CHARTER-001
-  - DOC-EPI-001
-  derived_from:
-  - DOC-ARCH-001
-  - DOC-EPI-001
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  allowed_content:
-  - interpretation
-  - summarization
-  forbidden_content:
-  - novel_metrics
-  - novel_claims
-  doc_id: DOC-BIZ-003
-  path: reports/case_study_technical.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-REP-002
-  path: reports/cluster_validation.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: derived
-  visibility: public
-  audience:
-  - hiring
-  - portfolio
-  authority: derived
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source:
-  - DOC-BIZ-001
-  derived_from:
-  - DOC-BIZ-001
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  allowed_content:
-  - interpretation
-  - summarization
-  forbidden_content:
-  - novel_metrics
-  - novel_claims
-  doc_id: DOC-BIZ-004
-  path: reports/competitive_positioning.md
-  last_reviewed: '2026-05-20'
-- doc_type: specification
-  doc_role: derived
-  visibility: public
-  audience:
-  - technical
-  - portfolio
-  authority: derived
-  status: active
-  sensitivity: public
-  owner: portfolio
-  tier_shorthand: T1
-  canonical_source:
-  - DOC-SCH-001
-  - DOC-CHARTER-001
-  derived_from:
-  - DOC-SCH-001
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  allowed_content:
-  - interpretation
-  - summarization
-  forbidden_content:
-  - novel_metrics
-  doc_id: DOC-DICT-001
-  path: reports/data_dictionary.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-REP-003
-  path: reports/data_lineage.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - maintainer
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: maintainer
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-DLOG-001
-  path: reports/decision_log.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-REP-004
   path: reports/eda/eda_report.md
   last_reviewed: '2026-05-20'
 - doc_type: narrative
@@ -1529,7 +1745,7 @@ documents:
   supersedes: []
   numeric_authority: []
   frontmatter_required: false
-  doc_id: DOC-REP-005
+  doc_id: DOC-REP-002
   path: reports/eda/strategic_brief.md
   last_reviewed: '2026-05-20'
 - doc_type: methodology
@@ -1552,305 +1768,6 @@ documents:
   frontmatter_required: false
   doc_id: DOC-EPI-001
   path: reports/epistemic_boundaries.md
-  last_reviewed: '2026-05-20'
-- doc_type: walkthrough
-  doc_role: derived
-  visibility: public
-  audience:
-  - portfolio
-  authority: derived
-  status: active
-  sensitivity: public
-  owner: portfolio
-  tier_shorthand: T1
-  canonical_source:
-  - DOC-WALK-001
-  derived_from:
-  - DOC-WALK-001
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  allowed_content:
-  - interpretation
-  - summarization
-  forbidden_content:
-  - novel_metrics
-  - novel_claims
-  doc_id: DOC-WALK-002
-  path: reports/executive_demo_walkthrough.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-REP-006
-  path: reports/feature_engineering_justification.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-REP-007
-  path: reports/integration_audit_2026-05-12.md
-  last_reviewed: '2026-05-20'
-- doc_type: methodology
-  doc_role: derived
-  visibility: public
-  audience:
-  - technical
-  - portfolio
-  authority: derived
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source:
-  - DOC-CHARTER-001
-  derived_from:
-  - DOC-ARCH-001
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  allowed_content:
-  - interpretation
-  - summarization
-  forbidden_content:
-  - novel_metrics
-  doc_id: DOC-RPT-010
-  path: reports/model_hierarchy.md
-  last_reviewed: '2026-05-20'
-- doc_type: specification
-  doc_role: derived
-  visibility: public
-  audience:
-  - technical
-  authority: derived
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source:
-  - DOC-SCH-001
-  - DOC-CHARTER-001
-  derived_from:
-  - DOC-SCH-001
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  allowed_content:
-  - interpretation
-  - summarization
-  forbidden_content:
-  - novel_metrics
-  doc_id: DOC-RPT-011
-  path: reports/module_a_model_io_spec.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-REP-008
-  path: reports/module_b_module_c_handshake.md
-  last_reviewed: '2026-05-20'
-- doc_type: methodology
-  doc_role: derived
-  visibility: public
-  audience:
-  - technical
-  authority: derived
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source:
-  - DOC-MODB-001
-  derived_from:
-  - DOC-MODB-001
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  allowed_content:
-  - interpretation
-  - summarization
-  forbidden_content:
-  - novel_metrics
-  doc_id: DOC-RPT-012
-  path: reports/module_b_optimization_formulation.md
-  last_reviewed: '2026-05-20'
-- doc_type: methodology
-  doc_role: derived
-  visibility: public
-  audience:
-  - technical
-  authority: derived
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source:
-  - DOC-MODC-001
-  derived_from:
-  - DOC-MODC-001
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  allowed_content:
-  - interpretation
-  - summarization
-  forbidden_content:
-  - novel_metrics
-  doc_id: DOC-RPT-013
-  path: reports/module_c_forecast_validation.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-REP-009
-  path: reports/reproducibility_validation.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-REP-010
-  path: reports/stakeholder_scenario_table.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-REP-011
-  path: reports/statistical_independence_note.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-REP-012
-  path: reports/statistical_metrics_summary.md
-  last_reviewed: '2026-05-20'
-- doc_type: walkthrough
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: portfolio
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-WALK-001
-  path: reports/system_walkthrough.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-REP-013
-  path: reports/transformation_log.md
   last_reviewed: '2026-05-20'
 - doc_type: specification
   doc_role: canonical
@@ -1889,23 +1806,4 @@ documents:
   frontmatter_required: false
   doc_id: DOC-TST-001
   path: tests/README.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-TST-002
-  path: tests/REPRODUCIBILITY.md
   last_reviewed: '2026-05-20'

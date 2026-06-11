@@ -16,6 +16,20 @@
 - Creating parallel docs (`TODO.md`, `PLAN.md`, `ROADMAP.md`, `SRS.md`, etc.). State lives in findings and ADRs.
 - Hand-editing `governance/AUDIT_STATE.json` or `governance/SESSION_HANDOUT.md`. Both are machine-generated.
 
+## Fresh-clone smoke test
+
+Before claiming a release-ready branch, run from a clean tree (or fresh clone):
+
+```bash
+poetry install
+make test
+make pipeline-full    # optional @pytest.mark.slow; validates A→B→C→EDA
+make verify
+make graphify         # after any src/ or config change
+```
+
+`make verify` re-runs every closed finding's `verification_script` (Adversary locally).
+
 ## Filing a new finding
 
 ```bash

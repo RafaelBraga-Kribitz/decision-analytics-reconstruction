@@ -1121,10 +1121,10 @@ Module C implements a Bayesian hierarchical tracking model calibrated on four po
 
 The Monte Carlo module then propagates uncertainty through 10,000 draws across two scenario buckets: **baseline** (stable conditions) and **extreme_tracker** (crisis-shock scenario with amplified shock scale). Battleground win probabilities are computed as posterior exceedance probabilities for each department.
 
-**Key findings at a glance:**
-- Candidate A closes the model at +15.1 pp margin (94% HDI: -9.1 to +38.3 pp)
-- Win probability >79% in every modelled department
-- Committed Opposition segment's high propensity for B-voting is the primary downside tail risk"""))
+**Key findings at a glance (fixture polls — illustrative; TSJE verified anchor +3.70 pp):**
+- Posterior mean margin at election eve is data-derived from `daily_posterior_forecast.parquet`
+- Department win probabilities are model outputs (~0.49–0.51 on current artifacts)
+- Committed Opposition segment's high B-preference strength is the primary persuasion-efficiency tail risk"""))
 
 # ── C1 — Forecast Timeline ───────────────────────────────────────────────────
 cells.append(code("""
@@ -1161,7 +1161,7 @@ plt.show()
 
 cells.append(
     md(
-        """**Finding:** The posterior mean preference margin for Candidate A opens at approximately +12 pp in December 2017 and rises to +15.1 pp by the final tracking date. The 94% HDI is wide (-9.1 to +38.3 pp) due to only four polling waves, but remains entirely above -15 pp even at the pessimistic tail. No tracking series shows a downward trend — momentum is consistently toward Candidate A.
+        """**Finding:** The posterior mean preference margin on fixture polls is data-derived from `daily_posterior_forecast.parquet` (illustrative — not verified outcome; TSJE anchor +3.70 pp). The 94% HDI is wide due to only four survey measurement waves, reflecting epistemic uncertainty on sparse fixtures.
 
 **Strategic implication:** Commission at least two additional poll waves in weeks 11–13 to narrow the HDI and provide the campaign with actionable final-week intelligence. The current uncertainty band is too wide for confident resource reallocation in the final sprint."""
     )
@@ -1229,7 +1229,7 @@ plt.show()
 
 cells.append(
     md(
-        """**Finding:** Every modelled department shows a win probability for Candidate A above 79%, with most clustering between 79.5% and 80.2%. San Pedro registers the highest win probability (80.0%), while Guaira shows the lowest (79.0%). The absence of any department below 70% win probability confirms this is not a competitive race — the variance is in mandate size, not outcome.
+        """**Finding:** Modelled department win probabilities cluster near 0.49–0.51 on fixture posteriors (illustrative model output — not verified outcome). Relative ordering across departments reflects the national posterior direction with synthetic geographic jitter.
 
 **Strategic implication:** No department should be written off or treated as a turnout sacrifice zone — the uniformly high win probabilities mean that mobilisation investment in any department directly translates to mandate size rather than swing-state insurance."""
     )
@@ -1705,28 +1705,28 @@ cells.append(
 # ── Cell 45 — Section 6: Strategic Recommendations ───────────────────────────
 cells.append(md("""## 6. Strategic Recommendations
 
-**CONFIDENTIAL — For Campaign Director Eyes Only**
-*Campaign Data Science Unit | Paraguay Elections 2018 | April 30, 2026*
+**Portfolio reconstruction brief | Generated from pipeline artifacts**
+*Decision Analytics Reconstruction | April 30, 2026*
 
 ---
 
 ### Situation Assessment
 
-The Bayesian tracking model closes at a **+15.1 pp preference margin** for Candidate A (94% HDI: -9.1 to +38.3 pp). Win probability exceeds **79% in every modelled department**. The race is not competitive. The strategic imperative is now **mandate maximisation through turnout**, not persuasion of the opposition.
+Tracking posterior on fixture polls is **illustrative model output** — pair with verified TSJE Series A anchor (**+3.70 pp**). Modelled department win probabilities cluster near **0.49–0.51** on current artifacts. This section demonstrates decision-support framing, not classified operational guidance.
 
 ---
 
 ### Top 3 Priority Departments
 
-**1. Central — Budget: $1.79M | Win Prob: 80.2% | Propensity: ~0.55**
+**1. Central — Budget: data-derived | Modelled Win Prob: ~50% | Propensity: ~0.55**
 
 Central is non-negotiable. With the largest voter population and the highest Youth Volatile concentration in the country, Central determines whether Candidate A wins with a thin mandate or a historic one. Reach utilisation is below cap in weeks 10–14, meaning the campaign is leaving contacts on the table during the crucial final push. **Action:** Increase WhatsApp chatbot activation in Central's urban districts by 20% in weeks 11–14 and deploy a targeted youth ground operation in Asuncion metro.
 
-**2. Caaguazu — Budget: $510K | Win Prob: 80.2% | Propensity: ~0.58**
+**2. Caaguazu — Budget: data-derived | Modelled Win Prob: ~50% | Propensity: ~0.58**
 
 Caaguazu is the efficiency sweet spot. Highest win probability among Oriental departments, strong Rural Committed presence (high propensity), and the lowest cost-per-persuasion-contact in the tier. Currently underfunded relative to its composite priority score. **Action:** A $75K budget increase from Central billboard savings would deliver approximately 24,000 additional persuasion-adjusted contacts.
 
-**3. Itapua — Budget: $554K | Win Prob: 80.0% | Propensity: ~0.65**
+**3. Itapua — Budget: data-derived | Modelled Win Prob: ~50% | Propensity: ~0.65**
 
 Itapua has the highest mean participation propensity of any department with significant Rural Committed presence. Radio is the primary reach channel and is performing near saturation. **Action:** Protect Itapua's radio budget unconditionally and explore a modest canvassing supplement in rural municipalities to push propensity-weighted turnout past 70%.
 
@@ -1790,7 +1790,7 @@ Itapua has the highest mean participation propensity of any department with sign
 **Bottom line:** Candidate A wins this election under virtually all scenarios. The campaign's job from this point forward is to define the **size and mandate** of that victory. Invest in turnout. Protect Rural Committed. Mobilise Youth Volatile. Redirect wasted spend. Commission more polling. The data supports all of these recommendations with high confidence.
 
 ---
-*Generated by Campaign Data Science Unit | Paraguay Elections 2018 | CONFIDENTIAL*"""))
+*Reconstruction artifact — see reports/epistemic_boundaries.md*"""))
 
 # ── Cell 46 — Assertion Suite ────────────────────────────────────────────────
 cells.append(code("""

@@ -241,7 +241,7 @@ class KMeansSegmenter:
             "segment_share": counts,
         }
 
-    def _bootstrap_ari(self, x: np.ndarray, full_labels: np.ndarray) -> float:
+    def _bootstrap_ari(self, x: np.ndarray, _full_labels: np.ndarray) -> float:
         """Mean ARI between two independent 80% subsample fits (platform-stable).
 
         Compares two independently-fitted subsamples on their shared rows only.

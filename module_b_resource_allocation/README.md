@@ -3,7 +3,7 @@
 Constrained linear/integer program (PuLP + CBC) allocating a multi-week budget across **18 geographic departments × 11 media channels**, maximizing persuasion-adjusted contact volume subject to reach caps, FX corridors, and municipality coverage constraints.
 
 **Scale:** 2,772 decision variables (18 × 11 × 14 weeks).
-**Budget envelope:** $6M USD reconstruction (from verified $44M BCP 2018Q1 operational record).
+**Budget envelope:** $6M USD reconstruction (`budget_envelope.yaml`).
 **FX model:** BCP Jan–Apr 2018 corridor (bid/ask spread parameterized).
 
 ## Quick start

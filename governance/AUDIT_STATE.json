@@ -46,12 +46,12 @@
     },
     {
       "category": "fragmented_standards",
-      "closed_at": null,
+      "closed_at": "2026-06-11",
       "id": "F-005",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-08",
       "path": "governance/findings/F-005-precommit-pyright-module-c.yaml",
-      "status": "open",
+      "status": "closed",
       "title": "Pre-commit Pyright hook omits Module C",
       "verification_script": "scripts/check_precommit_pyright_all_modules.py"
     },
@@ -68,12 +68,12 @@
     },
     {
       "category": "dead_artifacts",
-      "closed_at": null,
+      "closed_at": "2026-06-11",
       "id": "F-007",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-08",
       "path": "governance/findings/F-007-ruff-unused-baseline.yaml",
-      "status": "open",
+      "status": "closed",
       "title": "Ruff unused-code findings remain in baseline",
       "verification_script": "scripts/check_ruff_unused_zero.py"
     },
@@ -90,12 +90,12 @@
     },
     {
       "category": "dead_artifacts",
-      "closed_at": null,
+      "closed_at": "2026-06-11",
       "id": "F-009",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-08",
       "path": "governance/findings/F-009-vulture-dead-code-baseline.yaml",
-      "status": "open",
+      "status": "closed",
       "title": "High-confidence dead-code findings remain in baseline",
       "verification_script": "scripts/check_vulture_dead_code_zero.py"
     },
@@ -112,12 +112,23 @@
     },
     {
       "category": "documentation_entropy",
-      "closed_at": null,
+      "closed_at": "2026-06-11",
+      "id": "F-023",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-11",
+      "path": "governance/findings/F-023-numeric-ssot.yaml",
+      "status": "closed",
+      "title": "Numeric SSOT drift across flagship narrative docs",
+      "verification_script": "scripts/check_numeric_ssot.py"
+    },
+    {
+      "category": "documentation_entropy",
+      "closed_at": "2026-06-11",
       "id": "F-032",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-08",
       "path": "governance/findings/F-032-doc-surface-reduction.yaml",
-      "status": "open",
+      "status": "closed",
       "title": "Public documentation surface exceeds reviewer reading budget",
       "verification_script": "scripts/check_public_doc_count.py"
     },
@@ -210,24 +221,22 @@
       "verification_script": "scripts/check_pipeline_golden_metrics.py"
     }
   ],
-  "generated_at": "2026-06-11T09:25:33.012472+00:00",
+  "generated_at": "2026-06-11T10:07:04.905723+00:00",
   "git_branch": "main",
-  "git_head_sha": "61c5016916994b8abf6e029ede108b4a9873c5f5",
+  "git_head_sha": "da9695befb034d62c929ee06c5bd5db44999261e",
   "migrations": [],
   "summary": {
-    "findings_closed": 11,
+    "findings_closed": 16,
     "findings_closed_historical": 2,
     "findings_in_progress": 0,
-    "findings_open": 6,
-    "findings_total": 19,
+    "findings_open": 2,
+    "findings_total": 20,
     "findings_wont_fix": 0,
     "migrations_in_progress": 0,
     "migrations_total": 0,
     "open_by_category": {
-      "dead_artifacts": 2,
-      "documentation_entropy": 1,
       "fake_completion": 1,
-      "fragmented_standards": 2
+      "fragmented_standards": 1
     }
   },
   "validation_errors": [],

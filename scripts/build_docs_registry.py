@@ -63,6 +63,8 @@ def domain_for(path: str) -> str:
         return "EVID"
     if path.startswith("maintainer/archive/"):
         return "ARCHV"
+    if path.startswith("maintainer/archives/"):
+        return "ARCHV"
     if path.startswith("maintainer/doc_debt/"):
         return "DEBT"
     if path.startswith("maintainer/"):

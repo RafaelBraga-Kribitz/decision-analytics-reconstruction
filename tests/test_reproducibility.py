@@ -107,7 +107,7 @@ def test_module_b_allocation_spend_within_tolerance() -> None:
     path = _require_artifact(Path("data/processed/module_b/allocation_baseline.parquet"))
     df = pd.read_parquet(path)
     total_spend = float(df["budget_allocation_usd"].sum())
-    envelope = 6_000_000.0  # Reconstruction; real 2018 budget $44M [VERIFIED — T11-2]
+    envelope = 6_000_000.0  # Reconstruction envelope ($6M)
     tolerance = envelope * 0.01  # 1%
     assert (
         abs(total_spend - envelope) < tolerance

@@ -4,12 +4,12 @@ debts:
     issue: numeric_drift
     namespace: campaign_budget_usd
     detail: >-
-      Decision log describes a verified $44M operations scale narrative while reconstruction
-      code may intentionally retain a compressed $6M envelope for downstream modeling.
-      Numeric authority remains constants.py plus budget contracts until reconciled.
-    status: open
+      Resolved 2026-06-11 narrative reframe: decision_log and portfolio docs use $6M only;
+      NUMERIC_SSOT.md is canonical authority.
+    status: closed
     detected: "2026-05-20"
-    canonical_updated_after: null
+    closed: "2026-06-11"
+    canonical_updated_after: "2026-06-11"
 
   - debt_id: DEBT-003
     doc_id: DOC-GLOBAL-SCOPE

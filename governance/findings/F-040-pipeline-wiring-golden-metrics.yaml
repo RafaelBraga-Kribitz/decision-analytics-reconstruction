@@ -44,5 +44,7 @@ artifacts:
   - reports/eda/paraguay_election_eda.ipynb
 notes: >
   Part of the Truth and Rebuild Sprint (ADR-0004 themed cadence). Closes the
-  audited issues E-1 (silent-zero B→C), E-2 (no pipeline-full), E-3 (EDA
-  regeneration), and N-2 (synthetic pollster cells in the notebook).
+  audited issues C-2/E-2 (silent-zero B→C wiring), C-5 (validation metrics
+  now CI-golden), E-1 (stale committed EDA narrative regenerated), E-3
+  (synthetic pollster cells in the notebook), E-5 (counterfactual CSVs now
+  produced by dvc), and E-11 (CI gate on zero-allocation).

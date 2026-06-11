@@ -2,9 +2,9 @@ id: F-032
 title: "Public documentation surface exceeds reviewer reading budget"
 category: documentation_entropy
 kind: recurrence_invariant
-status: open
+status: closed
 opened_at: 2026-06-08
-closed_at: null
+closed_at: 2026-06-11
 recurrence_count: 0
 evidence: |
   The merged completion+density masterplan targets a single main-branch public

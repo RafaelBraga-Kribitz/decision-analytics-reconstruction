@@ -51,6 +51,43 @@ paths:
     numeric_authority:
     - module_b_resource_allocation/src/module_b_resource_allocation/constants.py
     - schema_contracts/budget_envelope.yaml
+  reports/NUMERIC_SSOT.md:
+    doc_id: DOC-REP-SSOT-001
+    doc_type: registry
+    doc_role: canonical
+    visibility: public
+    audience:
+    - portfolio
+    - technical
+    authority: canonical
+    sensitivity: public
+    owner: portfolio
+    numeric_authority:
+    - campaign_budget_usd
+  reports/CASE_STUDY.md:
+    doc_id: DOC-REP-CASE-001
+    doc_type: narrative
+    doc_role: canonical
+    visibility: public
+    audience:
+    - portfolio
+    authority: derived
+    sensitivity: public
+    owner: portfolio
+    canonical_source:
+    - DOC-REP-SSOT-001
+  reports/VALIDATION.md:
+    doc_id: DOC-REP-VAL-001
+    doc_type: narrative
+    doc_role: derived
+    visibility: public
+    audience:
+    - technical
+    authority: derived
+    sensitivity: public
+    owner: portfolio
+    canonical_source:
+    - DOC-REP-SSOT-001
   reports/epistemic_boundaries.md:
     doc_id: DOC-EPI-001
     doc_type: methodology
@@ -86,7 +123,7 @@ paths:
     - summarization
     forbidden_content:
     - novel_metrics
-  reports/decision_log.md:
+  maintainer/archives/reports/decision_log.md:
     doc_id: DOC-DLOG-001
     doc_type: narrative
     doc_role: canonical

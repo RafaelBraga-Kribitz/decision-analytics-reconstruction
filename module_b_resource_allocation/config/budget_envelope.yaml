@@ -18,7 +18,7 @@ campaign_window:
     - 2018-W13
     - 2018-W14
 budget:
-  total_envelope_usd: 6_000_000.0  # Reconstruction scale; real 2018 budget $44M [VERIFIED — T11-2]
+  total_envelope_usd: 6_000_000.0  # Reconstruction envelope; sole budget figure in portfolio narrative
   tolerance_pct: 0.005
   coverage_lower_bound_pct: 0.80
   bcp_corridor_max_pct: 0.10

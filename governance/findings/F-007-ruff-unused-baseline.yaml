@@ -2,9 +2,9 @@ id: F-007
 title: "Ruff unused-code findings remain in baseline"
 category: dead_artifacts
 kind: recurrence_invariant
-status: open
+status: closed
 opened_at: 2026-06-08
-closed_at: null
+closed_at: 2026-06-11
 recurrence_count: 0
 evidence: "governance/DEBT_BASELINE.json — ruff_unused=9"
 verification_script: scripts/check_ruff_unused_zero.py

@@ -25,8 +25,8 @@ repos:
   - repo: local
     hooks:
       - id: pyright
-        name: pyright (Module A + B src)
-        entry: poetry run pyright module_a_population_segmentation/src module_b_resource_allocation/src
+        name: pyright (Module A + B + C src)
+        entry: poetry run pyright module_a_population_segmentation/src module_b_resource_allocation/src module_c_forecasting_scenarios/src
         language: system
         types: [python]
         pass_filenames: false
