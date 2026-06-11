@@ -42,8 +42,11 @@ jobs:
         with:
           version: 1.5.57
 
-      - name: Install Jupyter kernel
+      - name: Register Poetry venv as Jupyter kernel
         run: poetry run python -m ipykernel install --user --name python3
+
+      - name: Point Quarto at Poetry Python
+        run: echo "QUARTO_PYTHON=$(poetry env info --path)/bin/python" >> "$GITHUB_ENV"
 
       - name: Run Module C pipeline (fast mode — fixture data)
         env:
