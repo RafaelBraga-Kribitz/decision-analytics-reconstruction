@@ -1,0 +1,47 @@
+id: F-038
+title: "A→B link was narrative: Module B never read Module A artifacts"
+status: closed
+severity: high
+category: architecture
+opened_at: 2026-06-11
+closed_at: 2026-06-11
+owner: remediator
+finding: >
+  Documentation claimed Module B consumed "Module A persuasion weights", but
+  the allocator's feature frame was built entirely from YAML priors inside
+  Module B (reach_caps.py anchors). No code path read Module A's exported
+  media_reachability_by_segment_department.csv or participation propensity;
+  the A→B handoff was co-location, not data flow. Additionally, the
+  constants.CHANNELS persuasion stack (alpha/psi/zeta per channel) was dead
+  code — reach_caps.py used its own partial dicts, and the ChannelSpec float
+  values were invented numbers used nowhere.
+remediation: >
+  Added features/module_a_ingestion.py: loads Module A's segment-by-
+  department reachability export, validates required columns, and reduces it
+  to segment-size-weighted department profiles (TV/radio/WhatsApp
+  penetration, internet access, mean participation propensity).
+  build_allocation_features() now overrides YAML reach-cap priors with
+  measured penetration for the six channels Module A measures (provenance
+  MODULE_A), recomputes reachable_audience from measured caps, and carries
+  dept_mean_propensity as a persuasion weight that enters BOTH the MILP
+  objective and the post-solve report (preserving the F-037 identity). The
+  bridge degrades gracefully to YAML priors + uniform weight when the
+  artifact is absent (fresh clone). constants.CHANNELS is now the single
+  live source of the anchored persuasion stack (psi_radio 0.2148, psi_tv
+  0.1290, alpha_radio 0.57, zeta_tv 0.70; neutral 1.0 elsewhere) consumed by
+  reach_caps.py. Contract bumped to 1.1.0 (MODULE_A provenance,
+  dept_mean_propensity field); dvc.yaml module_b stage now depends on the
+  Module A export; run manifest reports MODULE_A+PRIOR provenance.
+verification_script: scripts/check_module_b_a_ingestion.py
+artifacts:
+  - module_b_resource_allocation/src/module_b_resource_allocation/features/module_a_ingestion.py
+  - module_b_resource_allocation/src/module_b_resource_allocation/models/feature_join.py
+  - module_b_resource_allocation/src/module_b_resource_allocation/models/allocation.py
+  - module_b_resource_allocation/src/module_b_resource_allocation/features/reach_caps.py
+  - module_b_resource_allocation/src/module_b_resource_allocation/constants.py
+  - schema_contracts/reachability_caps_dept_channel.yaml
+  - dvc.yaml
+notes: >
+  Part of the Truth and Rebuild Sprint (ADR-0004 themed cadence). Closes the
+  audited issues B-4, B-5, and the minimal scope of E-4. Baseline solve
+  remains OPTIMAL with measured caps; objective identity gap 0.00002%.

@@ -259,6 +259,19 @@ def _tier_penalty(tier: str) -> float:
     return {"stronghold": 1.00, "swing": 1.10, "opposition": 0.85, "negligible": 0.55}[tier]
 
 
+def _propensity_weight(cap_row: pd.Series) -> float:
+    """Module A participation-propensity persuasion weight for a cap row.
+
+    Defaults to 1.0 when the feature frame predates the A→B ingestion (no
+    ``dept_mean_propensity`` column) or carries a null.
+    """
+    if "dept_mean_propensity" not in cap_row.index:
+        return 1.0
+    raw = cap_row["dept_mean_propensity"]
+    value = float(raw) if pd.notna(raw) else 1.0
+    return value if value > 0 else 1.0
+
+
 def solve(problem: AllocationProblem) -> AllocationResult:
     """Construct the PuLP model for ``problem`` and return the solved allocation.
 
@@ -299,6 +312,7 @@ def solve(problem: AllocationProblem) -> AllocationResult:
             attention = float(cap_row["attention_multiplier"])
             salience = float(cap_row["salience_multiplier"])
             hostility = float(cap_row["network_hostility"])
+            propensity_w = _propensity_weight(cap_row)
             inflection = float(cap_row["diminishing_returns_inflection_pct"])
             k_dim = float(cap_row["diminishing_returns_k"])
 
@@ -344,7 +358,9 @@ def solve(problem: AllocationProblem) -> AllocationResult:
                 prob += x_var == pulp.lpSum(seg_vars), f"seg_total_{d}_{c}_w{wi}"
 
                 cell_contacts = pulp.lpSum(cell_contacts_terms)
-                persuasion_mult = attention * salience * hostility * scenario_w * tier_w
+                persuasion_mult = (
+                    attention * salience * hostility * scenario_w * tier_w * propensity_w
+                )
                 contact_terms.append(persuasion_mult * cell_contacts)
                 dept_contacts.append(cell_contacts)
             dept_population_proxy = max(dept_population_proxy, audience)
@@ -548,10 +564,13 @@ def solve(problem: AllocationProblem) -> AllocationResult:
         attention = float(cap_row["attention_multiplier"])
         salience = float(cap_row["salience_multiplier"])
         hostility = float(cap_row["network_hostility"])
+        propensity_w = _propensity_weight(cap_row)
         scenario_w = _scenario_week_weight(problem.scenario_id, wi)
         dept_tier = str(cap_row["department_tier"])
         tier_w = _tier_penalty(dept_tier)
-        persuasion = contacts * attention * salience * hostility * scenario_w * tier_w
+        persuasion = (
+            contacts * attention * salience * hostility * scenario_w * tier_w * propensity_w
+        )
         tier_default = str(cap_row["fx_tier_default"])
         bundle_id = CHANNEL_TO_BUNDLE.get(c)
 

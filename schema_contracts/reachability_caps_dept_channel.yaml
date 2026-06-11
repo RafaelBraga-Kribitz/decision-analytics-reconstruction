@@ -1,10 +1,16 @@
 schema_name: reachability_caps_dept_channel
-schema_version: "1.0.0"
+schema_version: "1.1.0"
 description: >
   Per-(department, channel) reachability ceiling table used by Module B LP/MILP.
   Fuses the 2018 digital divide, FTA TV penetration anchors, mobile saturation,
   radio/TV salience scalars, and tier-eligibility flags into a single artifact.
-  Produced by: module_b_resource_allocation/features/reach_caps.py
+  When Module A's media_reachability_by_segment_department export is present,
+  measured penetration replaces YAML priors for the channels Module A measures
+  (provenance MODULE_A) and dept_mean_propensity carries the participation
+  propensity persuasion weight.
+  Produced by: module_b_resource_allocation/models/feature_join.py
+  (build_allocation_features, joining features/reach_caps.py priors with
+  features/module_a_ingestion.py measured overrides).
   Consumed by: module_b_resource_allocation/models/allocation.py (LP/MILP).
 
 unique_key:
@@ -113,13 +119,24 @@ fields:
     min: 0.0
     max: 1.0
     description: Saturation inflection share of reach_cap_share.
+  dept_mean_propensity:
+    type: float32
+    nullable: false
+    min: 0.0
+    max: 1.0
+    description: >
+      Segment-size-weighted mean participation propensity of the department
+      from Module A's reachability export; used as a persuasion weight in the
+      MILP objective. Uniform 1.0 when the Module A artifact is unavailable.
   provenance:
     type: string
     nullable: false
-    allowed_values: [VERIFIED, PRIOR, ESTIMATED]
+    allowed_values: [VERIFIED, MODULE_A, PRIOR, ESTIMATED]
     description: >
-      Each row must carry its anchoring provenance.  PRIOR/ESTIMATED rows MUST
-      be hardened to VERIFIED sources before any portfolio release.
+      Each row must carry its anchoring provenance.  MODULE_A marks measured
+      penetration ingested from Module A's segment-by-department export.
+      PRIOR/ESTIMATED rows MUST be hardened to VERIFIED or MODULE_A sources
+      before any portfolio release.
 
 quality_gates:
   required_columns:

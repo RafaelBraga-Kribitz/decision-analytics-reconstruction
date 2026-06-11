@@ -27,6 +27,7 @@ stages:
       --seed 20180422
     deps:
       - module_b_resource_allocation/src/module_b_resource_allocation
+      - data/processed/media_reachability_by_segment_department.csv
     outs:
       - data/processed/module_b/allocation_baseline.parquet
       - data/processed/module_b/reach_caps_baseline.csv

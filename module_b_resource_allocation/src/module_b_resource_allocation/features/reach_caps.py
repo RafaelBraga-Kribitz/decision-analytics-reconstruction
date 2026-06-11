@@ -17,6 +17,7 @@ import pandas as pd
 from module_b_resource_allocation.constants import (
     CHACO_DEPARTMENTS,
     CHANNEL_NAMES,
+    CHANNELS,
     DEPARTMENTS,
     region_for,
 )
@@ -42,10 +43,9 @@ _FTA_TV: Final[dict[str, float]] = {
 _FTA_TV_NATIONAL: Final[float] = 0.890
 _FTA_TV_CHACO_DEFAULT: Final[float] = 0.650  # sparse rural infrastructure
 
-# Salience scalars (plan §4.4): psi_radio, psi_tv (attention relative to direct contact)
-_PSI_RADIO: Final[float] = 0.2148
-_PSI_TV: Final[float] = 0.1290
-_ALPHA_RADIO_AD: Final[float] = 0.57  # attentive radio listeners
+# Persuasion stack (salience/attention/hostility) is sourced from
+# constants.CHANNELS — the anchored psi/alpha/zeta values live there.
+_CHANNEL_SPEC: Final = {c.name: c for c in CHANNELS}
 
 # Pay-TV income gate: only these departments have sufficient urban income proxies
 _PAY_TV_ELIGIBLE: Final[frozenset[str]] = frozenset({"Asuncion", "Central", "Alto Parana"})
@@ -104,14 +104,6 @@ _CHANNEL_CAP_FUNC: dict[str, object] = {
     "sound_cars": lambda d: 0.40 if d in CHACO_DEPARTMENTS else 0.55,
 }
 
-_SALIENCE: dict[str, float] = {
-    "radio_spots": _PSI_RADIO,
-    "tv_spots": _PSI_TV,
-}
-_ATTENTION: dict[str, float] = {
-    "radio_spots": _ALPHA_RADIO_AD,
-}
-
 _PROVENANCE: dict[str, str] = {
     "tv_spots": "PRIOR",  # FTA anchored for key depts, rest interpolated
     "radio_spots": "ESTIMATED",
@@ -159,9 +151,9 @@ def build_reach_caps() -> pd.DataFrame:
                     "region": region_for(dept),
                     "reach_cap_share": min(1.0, max(0.0, cap)),
                     "pay_tv_eligible": (dept in _PAY_TV_ELIGIBLE) and (channel == "tv_spots"),
-                    "salience_multiplier": _SALIENCE.get(channel, 1.0),
-                    "attention_multiplier": _ATTENTION.get(channel, 1.0),
-                    "network_hostility": 0.70 if channel == "tv_spots" else 1.0,
+                    "salience_multiplier": _CHANNEL_SPEC[channel].salience_psi,
+                    "attention_multiplier": _CHANNEL_SPEC[channel].persuasion_attention,
+                    "network_hostility": _CHANNEL_SPEC[channel].hostility_zeta,
                     "provenance": _PROVENANCE.get(channel, "ESTIMATED"),
                 }
             )

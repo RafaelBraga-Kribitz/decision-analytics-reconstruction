@@ -71,23 +71,27 @@ class ChannelSpec:
     name: str
     channel_type: str  # bilateral | broadcast | broadcast_to_bilateral | in_person
     fx_tier_default: str  # REF | RETAIL
-    persuasion_attention: float  # alpha_*
-    salience_psi: float  # psi_*
-    hostility_zeta: float  # zeta_network
+    persuasion_attention: float  # alpha_* — attentive-audience conversion factor
+    salience_psi: float  # psi_* — salience relative to direct contact (plan §4.4)
+    hostility_zeta: float  # zeta_network in (0, 1]; <1 = hostile editorial stance
 
 
+# Anchored persuasion stack (plan §4.4): psi_radio = 0.2148, psi_tv = 0.1290,
+# alpha_radio_ad = 0.57, zeta_tv = 0.70. Channels without a measured anchor
+# carry the neutral 1.0 — they are NOT differentiated by invented multipliers.
+# This tuple is the single source consumed by features/reach_caps.py.
 CHANNELS: Final[tuple[ChannelSpec, ...]] = (
-    ChannelSpec("whatsapp_chatbot", "bilateral", "REF", 0.62, 1.00, 1.00),
-    ChannelSpec("messenger_chatbot", "bilateral", "REF", 0.58, 0.95, 1.00),
-    ChannelSpec("facebook_ads", "broadcast", "REF", 0.41, 0.90, 1.00),
-    ChannelSpec("sms", "bilateral", "RETAIL", 0.50, 0.85, 1.00),
-    ChannelSpec("email", "bilateral", "REF", 0.28, 0.65, 1.00),
-    ChannelSpec("tv_spots", "broadcast", "REF", 0.46, 1.10, 0.70),
-    ChannelSpec("radio_spots", "broadcast", "RETAIL", 0.57, 1.05, 1.00),
-    ChannelSpec("billboards", "broadcast", "RETAIL", 0.30, 0.75, 1.00),
-    ChannelSpec("rallies_events", "in_person", "RETAIL", 0.78, 1.15, 1.00),
-    ChannelSpec("canvassing", "in_person", "RETAIL", 0.83, 1.20, 1.00),
-    ChannelSpec("sound_cars", "broadcast_to_bilateral", "RETAIL", 0.41, 0.90, 1.00),
+    ChannelSpec("whatsapp_chatbot", "bilateral", "REF", 1.00, 1.00, 1.00),
+    ChannelSpec("messenger_chatbot", "bilateral", "REF", 1.00, 1.00, 1.00),
+    ChannelSpec("facebook_ads", "broadcast", "REF", 1.00, 1.00, 1.00),
+    ChannelSpec("sms", "bilateral", "RETAIL", 1.00, 1.00, 1.00),
+    ChannelSpec("email", "bilateral", "REF", 1.00, 1.00, 1.00),
+    ChannelSpec("tv_spots", "broadcast", "REF", 1.00, 0.1290, 0.70),
+    ChannelSpec("radio_spots", "broadcast", "RETAIL", 0.57, 0.2148, 1.00),
+    ChannelSpec("billboards", "broadcast", "RETAIL", 1.00, 1.00, 1.00),
+    ChannelSpec("rallies_events", "in_person", "RETAIL", 1.00, 1.00, 1.00),
+    ChannelSpec("canvassing", "in_person", "RETAIL", 1.00, 1.00, 1.00),
+    ChannelSpec("sound_cars", "broadcast_to_bilateral", "RETAIL", 1.00, 1.00, 1.00),
 )
 
 CHANNEL_NAMES: Final[tuple[str, ...]] = tuple(c.name for c in CHANNELS)

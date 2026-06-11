@@ -185,7 +185,11 @@ def main(argv: list[str] | None = None) -> int:
         "total_persuasion_contacts": round(result.total_persuasion_adjusted_contacts, 2),
         "row_count": int(len(result.allocation)),
         "artifacts": artifacts,
-        "provenance": "PRIOR",
+        "provenance": (
+            "MODULE_A+PRIOR"
+            if (problem.reach_caps["provenance"] == "MODULE_A").any()
+            else "PRIOR"
+        ),
         "module_b_version": "0.1.0",
         "lp_diagnostics": result.lp_diagnostics,
         "baseline_comparison": baseline_comparison_payload,
