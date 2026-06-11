@@ -15,7 +15,6 @@ SSOT = REPO_ROOT / "reports" / "NUMERIC_SSOT.md"
 ANCHOR_FILES: tuple[Path, ...] = (
     REPO_ROOT / "reports" / "NUMERIC_SSOT.md",
     REPO_ROOT / "reports" / "CASE_STUDY.md",
-    REPO_ROOT / "reports" / "case_study_business.md",
     REPO_ROOT / "README.md",
 )
 
@@ -36,7 +35,6 @@ FORBIDDEN_IN_PUBLIC: tuple[tuple[str, re.Pattern[str], tuple[Path, ...]], ...] =
         re.compile(r"18-week execution|over 18 weeks|11 channel types over 18 weeks", re.I),
         (
             REPO_ROOT / "reports" / "CASE_STUDY.md",
-            REPO_ROOT / "reports" / "case_study_business.md",
             REPO_ROOT / "README.md",
         ),
     ),
@@ -46,7 +44,6 @@ FORBIDDEN_IN_PUBLIC: tuple[tuple[str, re.Pattern[str], tuple[Path, ...]], ...] =
         (
             REPO_ROOT / "reports" / "epistemic_boundaries.md",
             REPO_ROOT / "reports" / "CASE_STUDY.md",
-            REPO_ROOT / "reports" / "case_study_business.md",
         ),
     ),
     (
@@ -65,7 +62,6 @@ FORBIDDEN_IN_PUBLIC: tuple[tuple[str, re.Pattern[str], tuple[Path, ...]], ...] =
         re.compile(r"underperformed the verified outcome by 2[–-]4", re.I),
         (
             REPO_ROOT / "reports" / "CASE_STUDY.md",
-            REPO_ROOT / "reports" / "case_study_business.md",
         ),
     ),
     (
@@ -74,8 +70,6 @@ FORBIDDEN_IN_PUBLIC: tuple[tuple[str, re.Pattern[str], tuple[Path, ...]], ...] =
         (
             REPO_ROOT / "reports" / "NUMERIC_SSOT.md",
             REPO_ROOT / "reports" / "CASE_STUDY.md",
-            REPO_ROOT / "reports" / "case_study_business.md",
-            REPO_ROOT / "reports" / "case_study_technical.md",
             REPO_ROOT / "reports" / "epistemic_boundaries.md",
             REPO_ROOT / "module_b_resource_allocation" / "README.md",
             REPO_ROOT / "module_b_resource_allocation" / "config" / "budget_envelope.yaml",

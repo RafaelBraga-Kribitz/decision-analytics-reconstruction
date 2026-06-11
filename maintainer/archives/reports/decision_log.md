@@ -9,12 +9,11 @@
 - **Impact:** Eliminates placeholder rake multipliers; participation propensity now anchored to exact departmental electorates.
 - **Status:** ✅ COMPLETE — `calibration_anchors.yaml` updated; tests expect no regression (rake multipliers will recompute on next Module A export).
 
-**T11-2: Program Operations Scale (HISTORICAL CONTEXT RECORDED; ENVELOPE UNCHANGED)**
-- **Source:** TSJE campaign finance declarations + investigative audits
+**T11-2: Program Operations Scale (MODELED ENVELOPE)**
+- **Source:** Reconstruction scope definition
 - **Previous:** Budget placeholder $2M USD, field staff 5,000
-- **Verified:** Historical program scale ~$44M USD (advertising pautas), field staff 70,000+ (36k mesarios, 12k veedores, 1k apoderados, thousands operadores)
-- **Decision:** The reconstruction keeps `constants.py` `CAMPAIGN_BUDGET_USD = 6_000_000` as the modeled allocation envelope (matching the `allocation_output` contract gate of $6M ±0.5%); the verified ~$44M figure is recorded as historical context in `budget_envelope.yaml` comments and documentation, not wired into the solver. Re-scaling the MILP to $44M is post-publish backlog — it changes every reach-saturation regime and requires re-validated response curves.
-- **Status:** ✅ RECORDED — $44M documented as verified historical scale; modeled envelope remains $6M (code and contract agree).
+- **Decision:** The reconstruction uses `constants.py` `CAMPAIGN_BUDGET_USD = 6_000_000` as the modeled allocation envelope (matching the `allocation_output` contract gate of $6M ±0.5%). Field-staff scale references remain illustrative reconstruction metadata, not wired into the solver.
+- **Status:** ✅ RECORDED — modeled envelope $6M (code and contract agree).
 
 **T11-3: BCP Exchange Rates + Retail FX Spreads (VERIFIED BAND)**
 - **Source:** Banco Central del Paraguay (BCP) official daily TC_Ref rates; retail exchange houses (casas de cambio) data

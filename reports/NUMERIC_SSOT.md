@@ -75,6 +75,6 @@ This is a **solver comparator on the reconstruction envelope**, not a verified h
 
 ## Provenance
 
-- Anchors: `appendix/verified_calibration_anchors_full.md`, `config/calibration_anchors.yaml`
+- Anchors: `maintainer/archives/verified_calibration_anchors_full.md`, `config/calibration_anchors.yaml`
 - Golden snapshot: `reports/golden_metrics.json`
 - Baseline comparator: `data/processed/module_b/run_manifest_baseline.json`

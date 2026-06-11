@@ -2,9 +2,9 @@ id: F-021
 title: "Public deployment badges point to non-live URLs"
 category: fake_completion
 kind: recurrence_invariant
-status: open
+status: closed
 opened_at: 2026-06-08
-closed_at: null
+closed_at: 2026-06-11
 recurrence_count: 0
 evidence: |
   README badges advertise Module A Streamlit, Module B FastAPI docs, and Module C

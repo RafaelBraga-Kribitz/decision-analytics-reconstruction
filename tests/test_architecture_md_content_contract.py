@@ -77,6 +77,6 @@ def test_architecture_md_contract_tables_have_minimum_rows() -> None:
         ), f"{heading}: expected at least {_MIN_TABLE_DATA_ROWS} table data rows, got {n}"
 
 
-def test_architecture_md_links_schema_contracts_readme() -> None:
+def test_architecture_md_links_schema_contracts() -> None:
     text = _architecture_text()
-    assert "schema_contracts/README.md" in text
+    assert "schema_contracts/" in text

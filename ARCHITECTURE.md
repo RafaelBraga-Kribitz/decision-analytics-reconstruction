@@ -32,7 +32,7 @@ The default `make test` path runs pytest with shared `$(COV_FLAGS)` (terminal an
 
 Mermaid diagrams, detailed contract tables, and the entity walkthrough below are guarded by [`tests/test_architecture_md_content_contract.py`](tests/test_architecture_md_content_contract.py).
 
-The full inventory of YAML contracts and producer or consumer notes lives in [`schema_contracts/README.md`](schema_contracts/README.md).
+The full inventory of YAML contracts lives under [`schema_contracts/`](schema_contracts/) (field specs in each `*.yaml`; maintainer notes in [`maintainer/archives/schema_contracts_README.md`](maintainer/archives/schema_contracts_README.md)).
 
 ## Diagrams: artifact flow
 
@@ -152,7 +152,7 @@ decision-analytics-reconstruction/
 │
 ├── schema_contracts/                    Versioned YAML column contracts (cross-module authority)
 ├── appendix/
-│   └── verified_calibration_anchors_full.md   source-tagged anchor registry
+│   └── (see maintainer/archives/verified_calibration_anchors_full.md)   source-tagged anchor registry
 └── reports/
     ├── case_study_business.md / .pdf    business-audience case study
     ├── case_study_technical.md / .pdf   technical architecture document
@@ -332,7 +332,7 @@ Source: [`schema_contracts/polls_clean_tracking_wave.yaml`](schema_contracts/pol
 5. Module B joins those Module A artifacts under the same keys when building weekly **program** spend; exported rows must match [`schema_contracts/allocation_output.yaml`](schema_contracts/allocation_output.yaml) for each department, channel, and week triple.
 6. Module C consumes allocation rows as priors or side information for scenario work while keeping calibration series tags consistent with contract rules.
 7. Separately, Module C ingests press-release **survey measurement** tables that validate against [`schema_contracts/polls_clean_tracking_wave.yaml`](schema_contracts/polls_clean_tracking_wave.yaml), including `calibration_series` and `series_tag` alignment for tracking runs.
-8. Forecast outputs (for example daily posterior summaries) are governed by additional contracts listed in [`schema_contracts/README.md`](schema_contracts/README.md); this walkthrough stops at the five tables above to avoid duplicating every downstream artifact.
+8. Forecast outputs (for example daily posterior summaries) are governed by additional contracts under [`schema_contracts/`](schema_contracts/); this walkthrough stops at the five tables above to avoid duplicating every downstream artifact.
 
 ---
 

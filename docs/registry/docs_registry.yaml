@@ -151,26 +151,6 @@ documents:
   last_reviewed: '2026-06-08'
   doc_id: DOC-ROOT-001
   path: README.md
-- doc_type: registry
-  doc_role: canonical
-  visibility: public
-  audience:
-  - technical
-  - portfolio
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: module_a
-  tier_shorthand: T0
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority:
-  - module_a_population_segmentation/config/calibration_anchors.yaml
-  frontmatter_required: false
-  doc_id: DOC-CAL-001
-  path: appendix/verified_calibration_anchors_full.md
-  last_reviewed: '2026-05-20'
 - doc_type: narrative
   doc_role: canonical
   visibility: public
@@ -189,6 +169,26 @@ documents:
   frontmatter_required: false
   doc_id: DOC-DOCS-001
   path: docs/DEPLOYMENT.md
+  last_reviewed: '2026-05-20'
+- doc_type: registry
+  doc_role: registry
+  visibility: public
+  audience:
+  - portfolio
+  - agent
+  - maintainer
+  authority: registry
+  status: generated
+  sensitivity: public
+  owner: architecture
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-DOCS-002
+  path: docs/INDEX.md
   last_reviewed: '2026-05-20'
 - doc_type: registry
   doc_role: registry
@@ -1210,6 +1210,44 @@ documents:
   doc_id: DOC-ARCHV-041
   path: maintainer/archives/reports/transformation_log.md
   last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-042
+  path: maintainer/archives/schema_contracts_README.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-ARCHV-043
+  path: maintainer/archives/verified_calibration_anchors_full.md
+  last_reviewed: '2026-05-20'
 - doc_type: registry
   doc_role: registry
   visibility: internal
@@ -1715,6 +1753,64 @@ documents:
   visibility: public
   audience:
   - portfolio
+  authority: derived
+  status: active
+  sensitivity: public
+  owner: portfolio
+  tier_shorthand: T1
+  canonical_source:
+  - DOC-REP-SSOT-001
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-REP-CASE-001
+  path: reports/CASE_STUDY.md
+  last_reviewed: '2026-05-20'
+- doc_type: registry
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: portfolio
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority:
+  - campaign_budget_usd
+  frontmatter_required: false
+  doc_id: DOC-REP-SSOT-001
+  path: reports/NUMERIC_SSOT.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: derived
+  visibility: public
+  audience:
+  - technical
+  authority: derived
+  status: active
+  sensitivity: public
+  owner: portfolio
+  tier_shorthand: T1
+  canonical_source:
+  - DOC-REP-SSOT-001
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-REP-VAL-001
+  path: reports/VALIDATION.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
   - technical
   authority: canonical
   status: active
@@ -1768,42 +1864,4 @@ documents:
   frontmatter_required: false
   doc_id: DOC-EPI-001
   path: reports/epistemic_boundaries.md
-  last_reviewed: '2026-05-20'
-- doc_type: specification
-  doc_role: canonical
-  visibility: public
-  audience:
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: architecture
-  tier_shorthand: T0
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority:
-  - schema_contracts/*.yaml
-  frontmatter_required: false
-  doc_id: DOC-SCH-001
-  path: schema_contracts/README.md
-  last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
-  - technical
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: project
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-TST-001
-  path: tests/README.md
   last_reviewed: '2026-05-20'

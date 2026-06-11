@@ -1,3 +1,20 @@
+# Session End — 2026-06-11
+
+## Findings touched
+
+- F-021: open -> closed (`scripts/check_live_deployment_urls.py` — all three deploy URLs 200)
+- F-023, F-032: regression fixes after doc consolidation (anchor paths, public md count = 20)
+
+## Sprint status
+
+Truth and Rebuild Sprint plan todos marked complete. `make verify` passes (17 closed findings). Only **F-008** (radon complexity) remains open.
+
+## Recommended next action
+
+- F-008 time-boxed refactor of worst demo-path blocks, or deliberate wont-fix with baseline waiver discussion.
+
+---
+
 # Session End — 2026-06-08
 
 ## Findings touched

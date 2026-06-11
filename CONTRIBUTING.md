@@ -71,6 +71,26 @@ duplication, and complexity using whatever tools are installed (see
    unreviewable diffs and breaks one-finding-per-PR.
 4. After the fix lands, `make debt-scan` to lock the lower baseline.
 
+## Tests and coverage
+
+Root-level pytest modules live in `tests/` (cross-cutting contracts, CI, portfolio smoke). Per-module tests:
+
+- `module_a_population_segmentation/tests/`
+- `module_b_resource_allocation/tests/`
+- `module_c_forecasting_scenarios/tests/`
+
+| Command | Scope |
+|--------|--------|
+| `make test` | All module + root tests, excludes `-m slow`, with coverage on the three `src/` trees |
+| `make coverage` | Same paths as `make test` but includes slow tests |
+| `poetry run pytest <path> -q` | Targeted run |
+
+**Policy:** Combined statement coverage across Module A, B, and C `src/` trees shall be **≥ 80%** on the default suite (`make test`).
+
+Tests marked `@pytest.mark.slow` (full MCMC) are excluded from `make test`. Run with `MC_FAST=1 poetry run pytest module_c_forecasting_scenarios/tests -m slow`.
+
+`tests/test_reproducibility.py` and `tests/test_eda.py` validate pipeline artifacts and EDA outputs; they **skip** on a fresh clone until `make pipeline-full` has run.
+
 ## Coding standards
 
 <!-- Fill in once the project picks a language/framework. Examples:

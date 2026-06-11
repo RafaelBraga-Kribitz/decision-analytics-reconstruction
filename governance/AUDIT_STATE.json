@@ -101,12 +101,12 @@
     },
     {
       "category": "fake_completion",
-      "closed_at": null,
+      "closed_at": "2026-06-11",
       "id": "F-021",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-08",
       "path": "governance/findings/F-021-live-deployment-urls.yaml",
-      "status": "open",
+      "status": "closed",
       "title": "Public deployment badges point to non-live URLs",
       "verification_script": "scripts/check_live_deployment_urls.py"
     },
@@ -221,21 +221,20 @@
       "verification_script": "scripts/check_pipeline_golden_metrics.py"
     }
   ],
-  "generated_at": "2026-06-11T10:07:04.905723+00:00",
+  "generated_at": "2026-06-11T15:27:26.786964+00:00",
   "git_branch": "main",
-  "git_head_sha": "da9695befb034d62c929ee06c5bd5db44999261e",
+  "git_head_sha": "aa355b4c7c928ad4a6ad34f13cb272fe473a601e",
   "migrations": [],
   "summary": {
-    "findings_closed": 16,
+    "findings_closed": 17,
     "findings_closed_historical": 2,
     "findings_in_progress": 0,
-    "findings_open": 2,
+    "findings_open": 1,
     "findings_total": 20,
     "findings_wont_fix": 0,
     "migrations_in_progress": 0,
     "migrations_total": 0,
     "open_by_category": {
-      "fake_completion": 1,
       "fragmented_standards": 1
     }
   },

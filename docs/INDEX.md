@@ -32,7 +32,6 @@ Run `poetry run python scripts/generate_doc_index.py --write` after registry cha
 - **DOC-GOV-CLAUDE-001** — `CLAUDE.md` — *policy* / *canonical*
 - **DOC-GOV-CONTRIB-001** — `CONTRIBUTING.md` — *policy* / *canonical*
 - **DOC-CHARTER-001** — `PROJECT_CHARTER.md` — *policy* / *canonical*
-- **DOC-CAL-001** — `appendix/verified_calibration_anchors_full.md` — *registry* / *canonical*
 - **DOC-DOCS-001** — `docs/DEPLOYMENT.md` — *narrative* / *canonical*
 - **DOC-GOV-AUDIT-001** — `governance/AUDIT_PROCEDURE.md` — *policy* / *canonical*
 - **DOC-ROOT-002** — `governance/CHANGELOG.md` — *narrative* / *canonical*
@@ -78,17 +77,18 @@ Run `poetry run python scripts/generate_doc_index.py --write` after registry cha
 - **DOC-ARCHV-039** — `maintainer/archives/reports/statistical_metrics_summary.md` — *narrative* / *canonical*
 - **DOC-ARCHV-040** — `maintainer/archives/reports/system_walkthrough.md` — *narrative* / *canonical*
 - **DOC-ARCHV-041** — `maintainer/archives/reports/transformation_log.md` — *narrative* / *canonical*
+- **DOC-ARCHV-042** — `maintainer/archives/schema_contracts_README.md` — *narrative* / *canonical*
+- **DOC-ARCHV-043** — `maintainer/archives/verified_calibration_anchors_full.md` — *narrative* / *canonical*
 - **DOC-MAINT-001** — `maintainer/pre_public_cleanup_manifest.md` — *policy* / *canonical*
 - **DOC-MODA-001** — `module_a_population_segmentation/README.md` — *narrative* / *canonical*
 - **DOC-MODA-002** — `module_a_population_segmentation/reports/model_card_propensity.md` — *narrative* / *canonical*
 - **DOC-MODA-003** — `module_a_population_segmentation/reports/model_card_segmentation.md` — *narrative* / *canonical*
 - **DOC-MODB-001** — `module_b_resource_allocation/SPECIFICATION.md` — *specification* / *canonical*
 - **DOC-MODC-001** — `module_c_forecasting_scenarios/METHODOLOGY.md` — *methodology* / *canonical*
+- **DOC-REP-SSOT-001** — `reports/NUMERIC_SSOT.md` — *registry* / *canonical*
 - **DOC-REP-001** — `reports/eda/eda_report.md` — *narrative* / *canonical*
 - **DOC-REP-002** — `reports/eda/strategic_brief.md` — *narrative* / *canonical*
 - **DOC-EPI-001** — `reports/epistemic_boundaries.md` — *methodology* / *canonical*
-- **DOC-SCH-001** — `schema_contracts/README.md` — *specification* / *canonical*
-- **DOC-TST-001** — `tests/README.md` — *narrative* / *canonical*
 
 ## Derived portfolio views
 
@@ -98,6 +98,7 @@ Run `poetry run python scripts/generate_doc_index.py --write` after registry cha
 - **DOC-ROOT-001** — `README.md` — canonical: DOC-CHARTER-001
 - **DOC-MODB-README-001** — `module_b_resource_allocation/README.md` — canonical: DOC-MODB-001
 - **DOC-MODC-README-001** — `module_c_forecasting_scenarios/README.md` — canonical: DOC-MODC-001
+- **DOC-REP-VAL-001** — `reports/VALIDATION.md` — canonical: DOC-REP-SSOT-001
 
 ## Evidence and internal artifacts
 
