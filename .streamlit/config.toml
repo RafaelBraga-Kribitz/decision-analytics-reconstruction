@@ -1,0 +1,10 @@
+# Reverse-proxy settings (Render, Cloud Run, etc.). Health can be 200 while the
+# browser WebSocket still fails without these.
+[server]
+headless = true
+enableCORS = false
+enableXsrfProtection = false
+enableWebsocketCompression = false
+
+[browser]
+gatherUsageStats = false

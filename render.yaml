@@ -18,5 +18,13 @@ services:
         value: "1"
       - key: PYTHONUNBUFFERED
         value: "1"
+      - key: STREAMLIT_SERVER_ENABLE_CORS
+        value: "false"
+      - key: STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION
+        value: "false"
+      - key: STREAMLIT_SERVER_ENABLE_WEBSOCKET_COMPRESSION
+        value: "false"
+      - key: STREAMLIT_SERVER_HEADLESS
+        value: "true"
     healthCheckPath: /_stcore/health
     autoDeploy: true

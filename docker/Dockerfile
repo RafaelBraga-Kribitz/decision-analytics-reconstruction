@@ -14,6 +14,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends make gcc g++ \
 RUN pip install --no-cache-dir poetry==2.4.0
 
 COPY pyproject.toml poetry.lock* README.md .pre-commit-config.yaml /app/
+COPY .streamlit /app/.streamlit
 COPY Makefile /app/
 COPY module_a_population_segmentation /app/module_a_population_segmentation
 COPY module_b_resource_allocation /app/module_b_resource_allocation
