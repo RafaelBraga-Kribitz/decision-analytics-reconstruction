@@ -1,0 +1,32 @@
+id: F-035
+title: "Module A calibration anchors drifted across config, schema contract, and model card"
+category: doc_drift
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-11
+closed_at: 2026-06-11
+recurrence_count: 0
+evidence: |
+  config/calibration_anchors.yaml carried the verified T11-1 departmental
+  participation rates (Central 0.6207, Presidente Hayes 0.5816, ...) while
+  schema_contracts/participation_propensity.yaml still ENFORCED stale targets
+  (Central 0.4399, Presidente Hayes 0.3237, ...) and the propensity model
+  card reported those stale values as measured PASSes. reports/decision_log.md
+  claimed CAMPAIGN_BUDGET_USD was changed to $44M "COMPLETE" while code and
+  the allocation_output contract remained $6M. The Streamlit dashboard
+  imported shap at module top level, crashing startup when the optional
+  explainability extra was absent.
+verification_script: scripts/check_module_a_anchor_sync.py
+wont_fix_reason: null
+notes: |
+  Fixed in the truth-and-rebuild sprint (ADR-0004 themed cadence):
+  - Schema ENFORCED gates updated to verified T11-1 values; stale
+    "14 placeholders" narrative replaced (all 18 departments verified).
+  - Model card re-measured at n=15k seed=42 with current anchors:
+    Brier 0.1185, AUC ~0.89 (circularity caveat retained), national mean
+    0.6175 vs TSJE 0.6125; A10 rows marked rake-exact-by-construction.
+  - decision_log T11-2 rewritten: $44M recorded as verified historical
+    context; modeled envelope stays $6M (code and contract agree).
+  - tests/test_anchor_schema_sync.py keeps config, schema contract, and
+    model card values locked together in CI.
+  - shap import is lazy in the dashboard SHAP tab.

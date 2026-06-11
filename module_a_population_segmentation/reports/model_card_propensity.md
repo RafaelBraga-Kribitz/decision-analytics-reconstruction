@@ -11,38 +11,45 @@ Run `poetry install --extras explainability` (adds SHAP) then `poetry run python
 
 ## Quality gates (measured at n=15k, seed=42 — no masking applied)
 
+Gate targets are the verified TSJE 2018 departmental rates (T11-1 full table)
+and MUST match `config/calibration_anchors.yaml` and
+`schema_contracts/participation_propensity.yaml` — synced by CI test
+`tests/test_anchor_schema_sync.py`. Department means are rake-exact by
+construction (see Known limitations), so A10 verifies the rake executed, not
+model skill.
+
 | Gate | Criterion | Measured | Status |
 |------|-----------|----------|--------|
-| A7 | Brier score < 0.237 | 0.0878 | PASS |
-| A10 | Presidente Hayes propensity mean within ±0.5 pp of 0.3237 | 0.3237 | PASS |
-| A10 | Alto Parana propensity mean within ±0.5 pp of 0.3747 | 0.3747 | PASS |
-| A10 | Central propensity mean within ±0.5 pp of 0.4399 | 0.4399 | PASS |
-| A10 | Guaira propensity mean within ±0.5 pp of 0.5826 | 0.5826 | PASS |
+| A7 | Brier score < 0.237 | 0.1185 | PASS |
+| A10 | Presidente Hayes propensity mean within ±0.5 pp of 0.5816 | 0.5816 | PASS (rake-exact) |
+| A10 | Alto Parana propensity mean within ±0.5 pp of 0.6291 | 0.6291 | PASS (rake-exact) |
+| A10 | Central propensity mean within ±0.5 pp of 0.6207 | 0.6207 | PASS (rake-exact) |
+| A10 | Guaira propensity mean within ±0.5 pp of 0.6061 | 0.6061 | PASS (rake-exact) |
 
 ## Informational calibration metrics (not enforced as hard gates)
 
 | Metric | Measured | TSJE Anchor | Note |
 |--------|----------|-------------|------|
-| National mean | 0.522 | 0.6125 | 14 of 18 dept targets are placeholder (0.6125); most-populous depts (Central=0.44, Alto Parana=0.375) drag the mean. Reconcilable once full TSJE dept table is ingested. |
-| Youth mean | 0.232 | 0.528 | Youth concentrate in urban low-participation departments. Directional gate (youth < national) passes. |
-| Female mean | 0.597 | 0.6946 | TSJE gender rates (F: 0.6946, M: 0.6772) imply a national mean of ~0.686, inconsistent with the verified national rate 0.6125. Different denominator in source tables likely. Gender calibration is approximate. |
-| Male mean | 0.447 | 0.6772 | See female_mean note. |
+| National mean | 0.6175 | 0.6125 | All 18 dept rates verified (T11-1); the post-rake national mean is now within 0.5 pp of the TSJE rate. Residual gap reflects the synthetic population's department distribution. |
+| Youth mean | 0.4884 | 0.528 | Youth concentrate in urban low-participation departments. Directional gate (youth < national) passes. |
+| Female mean | 0.6507 | 0.6946 | TSJE gender rates (F: 0.6946, M: 0.6772) imply a national mean of ~0.686, inconsistent with the verified national rate 0.6125. Different denominator in source tables likely. Gender calibration is approximate. |
+| Male mean | 0.5841 | 0.6772 | See female_mean note. |
 
 ## Gate threshold changes from original design
 
 | Gate | Original | New | Reason |
 |------|----------|-----|--------|
-| A7 Brier | < 0.22 | < 0.237 | Original was only met by `min(brier, 0.219)` clipping. True Brier with `department_logit_offset` feature is 0.088 (well within gate); gate set conservatively for robustness. |
+| A7 Brier | < 0.22 | < 0.237 | Original was only met by `min(brier, 0.219)` clipping. True Brier with `department_logit_offset` feature is 0.1185 (well within gate); gate set conservatively for robustness. |
 | A8 youth | ±0.5 pp | directional (youth < national_mean) | Youth concentration in low-participation urban departments makes numeric gate unachievable without changing the synthetic population's dept distribution. |
 | A9 gender | ±0.2 pp | ±25 pp (informational) | TSJE anchor values are internally inconsistent with national rate — see national mean note. |
 
 ## Key design note: `department_logit_offset` feature
 
-This feature encodes the logit of the historically observed department participation rate as a first-class input. In the synthetic reconstruction setting, this is the single strongest predictor (domain knowledge from TSJE 2018). It explains most of the Brier score improvement over naive baseline (naive ≈ 0.245, model 0.088).
+This feature encodes the logit of the historically observed department participation rate as a first-class input. In the synthetic reconstruction setting, this is the single strongest predictor (domain knowledge from TSJE 2018). It explains most of the Brier score improvement over naive baseline (naive ≈ 0.24, model 0.1185 at n=15k, seed=42).
 
 ## Limitations of reported AUC
 
-No AUC-ROC figure is included in the formal quality-gate table above for a reason: the AUC reported in `statistical_metrics_summary.md` (≈ 0.97) is measured on a **synthetic target** derived from the same TSJE participation-rate anchors used in `department_logit_offset` feature engineering and post-hoc department rake. The model "discriminates" well because both the label and the strongest predictor originate from the same calibration data — this is circular.
+No AUC-ROC figure is included in the formal quality-gate table above for a reason: the measured AUC (≈ 0.89 at n=15k, seed=42, with the T11-1 verified anchors) is computed on a **synthetic target** derived from the same TSJE participation-rate anchors used in `department_logit_offset` feature engineering and post-hoc department rake. The model "discriminates" well because both the label and the strongest predictor originate from the same calibration data — this is circular.
 
 Concretely:
 - The target variable `participation_flag` is generated by thresholding a department-level participation probability drawn from TSJE 2018 anchors.
@@ -50,9 +57,9 @@ Concretely:
 - AUC measures separation between these two quantities that share the same source signal.
 
 **Implications for the reader:**
-- AUC ≈ 0.97 is **not a generalization metric**. It does not represent out-of-sample discriminative ability on real entity-level data.
+- AUC ≈ 0.89 is **not a generalization metric**. It does not represent out-of-sample discriminative ability on real entity-level data.
 - With real held-out microdata the expected AUC would fall to the **0.70–0.80 range** typical of participation-propensity literature.
-- The **Brier score comparison** (model 0.088 vs naive 0.245) is the more defensible figure: both are measured against the same synthetic target, so the baseline is equally circular — the comparison isolates the model's structural improvement over the department-mean naive estimator.
+- The **Brier score comparison** (model 0.1185 vs naive ≈ 0.24) is the more defensible figure: both are measured against the same synthetic target, so the baseline is equally circular — the comparison isolates the model's structural improvement over the department-mean naive estimator.
 - The **reliability diagram** (max deviation < 3 pp) and **department-level calibration gates** (A10) are the most meaningful quality signals for the synthetic reconstruction setting.
 
 ## Known limitations

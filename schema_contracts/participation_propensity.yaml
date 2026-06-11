@@ -27,48 +27,48 @@ fields:
     description: Department-level rake factor applied post-Platt
 
 calibration_gates:
-  # VERIFIED department gates (TSJE 2018) — enforced at export exit, ±0.5 pp
+  # VERIFIED department gates (TSJE 2018, T11-1 full table) — enforced at
+  # export exit, ±0.5 pp. Targets MUST equal
+  # module_a_population_segmentation/config/calibration_anchors.yaml
+  # department_participation_rates (CI sync test:
+  # module_a_population_segmentation/tests/test_anchor_schema_sync.py).
   presidente_hayes_mean:
-    target: 0.3237
+    target: 0.5816
     tolerance_pp: 0.005
     status: ENFORCED
     filter: "department == 'Presidente Hayes'"
-    source: "TSJE, 2018"
+    source: "TSJE, 2018 (T11-1)"
   alto_parana_mean:
-    target: 0.3747
+    target: 0.6291
     tolerance_pp: 0.005
     status: ENFORCED
     filter: "department == 'Alto Parana'"
-    source: "TSJE, 2018"
+    source: "TSJE, 2018 (T11-1)"
   central_mean:
-    target: 0.4399
+    target: 0.6207
     tolerance_pp: 0.005
     status: ENFORCED
     filter: "department == 'Central'"
-    source: "TSJE, 2018"
+    source: "TSJE, 2018 (T11-1)"
   guaira_mean:
-    target: 0.5826
+    target: 0.6061
     tolerance_pp: 0.005
     status: ENFORCED
     filter: "department == 'Guaira'"
-    source: "TSJE, 2018"
+    source: "TSJE, 2018 (T11-1)"
 
-  # INFORMATIONAL gates — not enforced at exit; documented for downstream consumers
-  # NOTE: The TSJE-stated national rate (0.6125), gender rates (female: 0.6946,
-  # male: 0.6772), and the 4 verified department rates together imply a population-
-  # weighted participation mean of ~0.52 in the synthetic data (because Central and
-  # Alto Parana are among the most populous departments but have below-national rates).
-  # The calibration YAML currently uses 0.6125 as a placeholder for all 14 non-
-  # verified departments; once the full TSJE department table is ingested the
-  # national mean will be reconcilable.  Until then, national/gender/youth gates
-  # are informational only.
+  # INFORMATIONAL gates — not enforced at exit; documented for downstream
+  # consumers. All 18 departmental participation rates are now verified
+  # (T11-1), so the post-rake national mean is reconcilable with the TSJE
+  # national rate up to the synthetic population's department distribution.
   national_mean:
     target: 0.6125
     tolerance_pp: 0.10
     status: INFORMATIONAL
     note: >
-      Placeholder: 14 departments defaulted to national rate (0.6125).
-      Actual post-rake mean depends on dept population distribution.
+      All 18 department rates verified (T11-1). Post-rake national mean
+      depends on the synthetic population's department distribution; kept
+      informational rather than enforced.
     source: "TSJE, 2018"
   youth_mean:
     target: 0.528

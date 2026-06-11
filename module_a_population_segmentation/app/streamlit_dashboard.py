@@ -6,7 +6,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-import shap
 import streamlit as st
 import yaml
 from population_segmentation.data.cleaner import clean_population
@@ -147,6 +146,17 @@ def main() -> None:
             "Feature importance for the underlying logistic regression (before raking). "
             "SHAP explains model predictions via Shapley values."
         )
+
+        # Lazy import: shap is an optional extra. The dashboard must start
+        # without it; only this tab requires it.
+        try:
+            import shap
+        except ImportError:
+            st.warning(
+                "SHAP is not installed. Run `poetry install --extras explainability` "
+                "to enable this tab. The other tabs work without it."
+            )
+            st.stop()
 
         model = prop["fitted_model"]
         feature_names = prop["feature_names"]
