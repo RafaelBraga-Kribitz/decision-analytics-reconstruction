@@ -44,12 +44,16 @@ Transparency (`phi`) inversely scales std dev; clipped to [1, 25] pp. Pollsters 
 ### Inference
 
 - **Sampler:** NUTS (No-U-Turn sampler in PyMC)
-- **Chains:** 2
-- **Draws:** 400 per chain (800 total post-warmup)
-- **Tuning:** 400 steps per chain
-- **Target acceptance:** 0.9
+- **Chains:** 4 (see `config/pymc_sampler.yaml`)
+- **Draws:** 1000 per chain (post-warmup)
+- **Tuning:** 1000 steps per chain
+- **Target acceptance:** 0.95
 - **Seed:** 42
 - **Fast mode (MC_FAST=1):** 50 draws, 50 tune (CI only)
+
+**Outcome anchor (m★):** After the random-walk likelihood, terminal margin is tied
+to the verified Series A/B anchor via `Normal(mu_margin[-1], anchor_sigma)` — see
+`models/tracking/hierarchical.py`.
 
 **Posterior extraction (5th, 50th, 95th quantiles):**
 - `posterior_mean_preference_margin_pp` = mean across chains/draws
@@ -71,7 +75,7 @@ Output: `daily_posterior_forecast.parquet` (date, calibration_series, posterior_
 **Linear regression on exit margin:**
 ```
 m_exit[i] ~ Normal(intercept + beta_oea * oea[i] + beta_eu * eu[i], sigma)
-  intercept ~ Normal(60.0, 15.0)
+  intercept ~ Normal(0.0, 30.0)
   beta_oea ~ Normal(0.0, 5.0)
   beta_eu ~ Normal(0.0, 5.0)
   sigma ~ HalfNormal(8.0)
@@ -84,10 +88,10 @@ m_exit[i] ~ Normal(intercept + beta_oea * oea[i] + beta_eu * eu[i], sigma)
 ### Inference
 
 - **Sampler:** NUTS
-- **Chains:** 2
-- **Draws:** 200 per chain (standard); 80 per chain (MC_FAST=1)
-- **Tune:** 200 / 80
-- **Target acceptance:** 0.85
+- **Chains:** 4
+- **Draws:** 1000 per chain (standard); 50 per chain (MC_FAST=1)
+- **Tune:** 1000 / 50
+- **Target acceptance:** 0.95 (0.90 in MC_FAST exit path)
 - **Seed:** 42
 
 ### Early return
@@ -105,13 +109,13 @@ If exit_df has < 2 rows: return summary stub with `note="insufficient_exit_rows_
 **File:** `config/pymc_sampler.yaml`
 
 ```yaml
-chains: 2
-draws: 400          # per chain
-tune: 400
-target_accept: 0.9
+chains: 4
+draws: 1000          # per chain
+tune: 1000
+target_accept: 0.95
 random_seed: 42
-draws_fast: 50      # when MC_FAST=1
-tune_tune_fast: 50
+draws_fast: 50       # when MC_FAST=1
+tune_fast: 50
 ```
 
 **Environment variable:** `MC_FAST=1` → use fast draws/tune (unit tests, CI).

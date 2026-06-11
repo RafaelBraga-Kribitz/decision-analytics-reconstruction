@@ -76,7 +76,9 @@ See `ROADMAP.md` § Module C for remediation status.
 
 ## Walk-forward validation
 
-The model is validated using walk-forward cross-validation: held-out polls from the final 7 days before the outcome event, with posterior predictive intervals checked for coverage. See `METHODOLOGY.md` § Validation.
+Walk-forward cross-validation is implemented on the sparse Paraguay fixture
+(held-out final-week polls). Coverage on this synthetic setup is **not**
+external validation — see `VALIDATION.md` and `epistemic_boundaries.md`.
 
 ## Tests and CI
 

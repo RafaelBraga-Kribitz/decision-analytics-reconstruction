@@ -1,0 +1,38 @@
+id: F-023
+title: "Numeric SSOT drift across flagship narrative docs"
+status: closed
+severity: high
+kind: recurrence_invariant
+category: documentation_entropy
+opened_at: 2026-06-11
+closed_at: 2026-06-11
+owner: remediator
+finding: >
+  Case studies, EDA prose, module READMEs, and ARCHITECTURE still headline
+  contradictory scale (4.26M vs 50k), horizon (18 vs 14 weeks), participation
+  (63.6% vs 61.25%), aspirational gates (silhouette 0.35 / ARI 0.80) vs enforced
+  CI gates, causal counterfactual fiction, and circular AUC — with no tracked
+  canonical table or verification script.
+remediation: >
+  Publish reports/NUMERIC_SSOT.md as the public authority table; rewrite
+  CASE_STUDY.md and sync epistemic_boundaries, METHODOLOGY, module C README,
+  and ARCHITECTURE MCMC language; regenerate EDA from data-derived stats;
+  enforce via scripts/check_numeric_ssot.py (forbidden wrong numbers + required
+  anchors in SSOT, README, CASE_STUDY).
+verification_script: scripts/check_numeric_ssot.py
+artifacts:
+  - reports/NUMERIC_SSOT.md
+  - reports/CASE_STUDY.md
+  - reports/case_study_business.md
+  - reports/case_study_technical.md
+  - reports/decision_log.md
+  - scripts/check_numeric_ssot.py
+  - reports/epistemic_boundaries.md
+  - reports/eda/generate_eda.py
+  - module_c_forecasting_scenarios/METHODOLOGY.md
+  - module_c_forecasting_scenarios/README.md
+  - ARCHITECTURE.md
+notes: >
+  Truth and Rebuild Sprint P4 (ssot-reframe). N-2 MILP comparator kept (~54.77%
+  lift); causal with/without analytics removed. N-5 $44M removed from tracked docs.
+  N-3 18-week scope / 14-week pipeline. N-13 CONFIDENTIAL tone removed.

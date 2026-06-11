@@ -20,7 +20,6 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import matplotlib.ticker as mticker
 from matplotlib.colors import LinearSegmentedColormap
-from matplotlib.gridspec import GridSpec
 
 warnings.filterwarnings("ignore")
 
@@ -196,7 +195,7 @@ def chart_a1():
         )
 
     ax.set_xlabel("Number of Individuals")
-    ax.set_title("A1 — Behavioral segment sizes\n(Population master, N=10,000)")
+    ax.set_title(f"A1 — Behavioral segment sizes\n(Population master, N={len(pop):,})")
     ax.invert_yaxis()
     ax.set_xlim(0, counts.max() * 1.22)
     ax.grid(axis="y", visible=False)
@@ -540,7 +539,6 @@ chart_a8()
 @safe_chart("A9")
 def chart_a9():
     """A9: Correlation heatmap of numeric features."""
-    import seaborn as sns
 
     num_cols = [
         "age_on_event_date",
@@ -1560,7 +1558,7 @@ def chart_c10():
     ax.set_xlabel("Shock Scale")
     ax.set_ylabel("Density")
     ax.set_title(
-        "C10 — Monte Carlo Scenario Draw Distribution\n(Shock Scale across All 10,000 Draws)"
+        f"C10 — Monte Carlo Scenario Draw Distribution\n(Shock Scale across {len(mc_draws):,} Draws)"
     )
     ax.legend(title="Scenario Bucket")
     annotate_source(ax)
@@ -1901,6 +1899,64 @@ forecast_final_hdi_hi = forecast.sort_values("date").iloc[-1]["posterior_hdi_hig
 top_win_dept = battleground.sort_values("win_probability_a", ascending=False).iloc[0]
 low_win_dept = battleground.sort_values("win_probability_a").iloc[0]
 
+# Data-derived narrative stats (keeps report prose truthful across regenerations)
+_seg_share_pct = pop["segment_label"].value_counts(normalize=True) * 100
+_seg_prop_mean = pop.groupby("segment_label")["participation_propensity"].mean()
+
+
+def _seg_title(lbl: str) -> str:
+    return lbl.replace("_", " ").title()
+
+
+_largest_seg = _seg_share_pct.index[0]
+_second_seg = _seg_share_pct.index[1]
+_smallest_seg = _seg_share_pct.index[-1]
+_top_prop_seg = _seg_prop_mean.idxmax()
+_low_prop_seg = _seg_prop_mean.idxmin()
+_yv_pct = float(_seg_share_pct.get("youth_volatile", 0.0))
+_yv_prop = float(_seg_prop_mean.get("youth_volatile", float("nan")))
+_rc_pct = float(_seg_share_pct.get("rural_committed", 0.0))
+_rc_prop = float(_seg_prop_mean.get("rural_committed", float("nan")))
+_uhv_pct = float(_seg_share_pct.get("urban_high_volatility", 0.0))
+_uhv_prop = float(_seg_prop_mean.get("urban_high_volatility", float("nan")))
+_sdb_pct = float(_seg_share_pct.get("structurally_dependent_bloc", 0.0))
+_co_pct = float(_seg_share_pct.get("committed_opposition", 0.0))
+_co_prop = float(_seg_prop_mean.get("committed_opposition", float("nan")))
+_rlp_pct = float(_seg_share_pct.get("rural_low_propensity", 0.0))
+_rlp_prop = float(_seg_prop_mean.get("rural_low_propensity", float("nan")))
+_mc_bucket_counts = mc_draws["scenario_bucket"].value_counts()
+_mc_bucket_desc = ", ".join(f"{k} ({v:,})" for k, v in _mc_bucket_counts.items())
+_mc_alloc_linked = bool((mc_draws["alloc_mean_persuasion_contacts"] > 0).all())
+_mc_alloc_note = (
+    "alloc_mean_persuasion_contacts populated from the Module B baseline allocation "
+    "(B-to-C handshake verified non-zero)"
+    if _mc_alloc_linked
+    else "WARNING: alloc_mean_persuasion_contacts is zero - B-to-C handshake broken"
+)
+_min_win_prob = float(battleground["win_probability_a"].min())
+_max_win_prob = float(battleground["win_probability_a"].max())
+_tsje_margin_pp = 3.70
+_illustrative_tracking_note = (
+    "Illustrative model output on fixture survey polls — not verified outcome; "
+    f"TSJE Series A anchor is +{_tsje_margin_pp:.2f} pp"
+)
+_manifest_path = DATA / "module_b" / "run_manifest_baseline.json"
+_milp_lift_pct: float | None = None
+if _manifest_path.is_file():
+    import json
+
+    _manifest = json.loads(_manifest_path.read_text(encoding="utf-8"))
+    _milp_lift_pct = float(
+        _manifest["baseline_comparison"]["efficiency_vs_department_uniform_naive"][
+            "linearized_lift_pct_milp_vs_naive"
+        ]
+    )
+
+
+def _dept_win_prob(dept: str) -> float:
+    rows = battleground.loc[battleground["department"] == dept, "win_probability_a"]
+    return float(rows.iloc[0]) if len(rows) else float("nan")
+
 null_counts = pop.isnull().sum()
 null_pct = (null_counts / len(pop) * 100).round(1)
 top_null_cols = null_pct[null_pct > 0].sort_values(ascending=False).head(5)
@@ -1917,22 +1973,22 @@ report_md = f"""# Paraguay Presidential Campaign — Full EDA Report
 
 ## Executive Summary
 
-Strategic insights for the campaign leadership team:
+Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{_tsje_margin_pp:.2f} pp):
 
-- **Candidate A holds a commanding lead:** The Bayesian tracker closes at **{forecast_final_mean:.1f} pp margin** (94% HDI: {forecast_final_hdi_lo:.1f} to {forecast_final_hdi_hi:.1f} pp), with a national win probability exceeding **79%** in every modelled department. The core risk is not losing — it is low turnout depressing mandate size.
-- **Youth Volatile is the largest segment (31.3%)** and has a moderate participation propensity of 0.49. Mobilising even 10% more of this cohort could translate to hundreds of thousands of additional ballots across Central and Alto Paraná.
+- **Tracking posterior on fixtures:** Closes at **{forecast_final_mean:.1f} pp** margin (94% HDI: {forecast_final_hdi_lo:.1f} to {forecast_final_hdi_hi:.1f} pp). Modelled department win probabilities: **{_min_win_prob:.0%}–{_max_win_prob:.0%}**. {_illustrative_tracking_note}.
+- **{_seg_title(_largest_seg)} is the largest segment ({_seg_share_pct.iloc[0]:.1f}%)** with mean participation propensity {_seg_prop_mean[_largest_seg]:.2f}. Youth Volatile ({_yv_pct:.1f}%, propensity {_yv_prop:.2f}) remains the headline mobilisation cohort in Central and Alto Paraná.
 - **Central and Alto Paraná absorb {_central_alto_share_pct:.0f}% of the total budget** (${_b1_central:,.0f} and ${_b1_alto:,.0f} respectively), reflecting their demographic weight. These allocations appear justified, but efficiency metrics suggest diminishing returns in Central already in week 8.
-- **Rural Committed is the highest-propensity segment (mean 0.71)** but receives the least digital investment due to low internet penetration (26%). Radio is the dominant reach channel for this segment; any reduction in radio spend will directly suppress turnout in Itapúa and San Pedro strongholds.
+- **{_seg_title(_top_prop_seg)} is the highest-propensity segment (mean {_seg_prop_mean[_top_prop_seg]:.2f})** but receives little digital investment due to low internet penetration. Radio is the dominant reach channel for rural segments; any reduction in radio spend directly suppresses participation in Itapúa and San Pedro strongholds.
 - **Bilateral (direct) channels absorb 52.5% of baseline budget** vs. 47.5% for broadcast. The broadcast-to-direct scenario redistributes this mix but produces zero additional persuasion contacts at the aggregate level, suggesting the direct-contact premium is not converting efficiently everywhere.
 - **Three pollsters show significant house effects:** ATI/Snead has a −5.1 pp negative bias, ICA has +3.8 pp positive bias; only CAPLI is near-neutral. Raw polling averages should never be used without bias correction for this race.
-- **Chaco departments (Alto Paraguay, Boquerón, Presidente Hayes) are negligible-tier** in budget allocation but still register >79% win probability — these do not require additional investment and any reallocation from here to battleground swing departments would be efficient.
+- **Chaco departments (Alto Paraguay, Boquerón, Presidente Hayes) are negligible-tier** in budget allocation; modelled department win probabilities cluster near **{_min_win_prob:.0%}–{_max_win_prob:.0%}** on fixture posteriors ({_illustrative_tracking_note}).
 
 ---
 
 ## Data Quality Assessment
 
 ### population_master_clean.parquet
-- **Shape:** 10,000 rows × 57 columns
+- **Shape:** {len(pop):,} rows × {pop.shape[1]} columns
 - **Duplicates:** 0 duplicate entity_ids confirmed
 - **Nulls:** {null_counts.sum():,} total missing values across {(null_counts > 0).sum()} columns
 - **Top null columns:**
@@ -1941,12 +1997,12 @@ Strategic insights for the campaign leadership team:
 - **Schema drift flags:** {pop['schema_drift_flag'].sum()} records flagged — negligible (<1%).
 
 ### segment_labels.parquet
-- **Shape:** 10,000 rows × 4 columns
+- **Shape:** {len(segs):,} rows × {segs.shape[1]} columns
 - **Segment coverage:** 6 unique labels, segment_id 0–5, fully mapping population_master
 - **DBSCAN noise:** {segs['dbscan_noise_flag'].sum()} rows flagged as noise — all reassigned to nearest cluster, no orphan records.
 
 ### participation_propensity.parquet
-- **Shape:** 10,000 rows × 4 columns
+- **Shape:** {len(prop):,} rows × {prop.shape[1]} columns
 - **Range:** [{prop['participation_propensity'].min():.4f}, {prop['participation_propensity'].max():.4f}] — fully bounded in [0,1]
 - **Department rake multiplier:** mean {prop['department_rake_multiplier'].mean():.2f}, range [{prop['department_rake_multiplier'].min():.2f}, {prop['department_rake_multiplier'].max():.2f}] — large dispersion indicates significant demographic imbalance across departments in the raw sample.
 
@@ -1960,7 +2016,7 @@ Strategic insights for the campaign leadership team:
 - **daily_posterior_forecast.parquet:** 142 daily rows, single calibration series A, no gaps.
 - **posterior_house_effects.parquet:** 3 pollsters — small but complete.
 - **battleground_department_probability.parquet:** 18 departments, win_probability_a range [{battleground['win_probability_a'].min():.4f}, {battleground['win_probability_a'].max():.4f}].
-- **monte_carlo_draws.parquet:** 10,000 draws, 2 scenario buckets (baseline, extreme_tracker), alloc_mean_persuasion_contacts = 0 for all draws (appears unlinked — this column should be revisited in Module C pipeline).
+- **monte_carlo_draws.parquet:** {len(mc_draws):,} draws across {len(_mc_bucket_counts)} scenario buckets: {_mc_bucket_desc}. {_mc_alloc_note}.
 
 ---
 
@@ -1968,7 +2024,7 @@ Strategic insights for the campaign leadership team:
 
 ### A1 — Segment Size Bar Chart
 **What it shows:** Absolute count and percentage share of the population dataset for each of the six behavioral segments.
-**Key finding:** Youth Volatile is the dominant segment at 31.3% (3,128 individuals), nearly double the next largest segment (Urban High Volatility at 18.6%). Committed Opposition is the smallest at 10.2%.
+**Key finding:** {_seg_title(_largest_seg)} is the largest segment at {_seg_share_pct.iloc[0]:.1f}%, ahead of {_seg_title(_second_seg)} at {_seg_share_pct.iloc[1]:.1f}%. {_seg_title(_smallest_seg)} is the smallest at {_seg_share_pct.iloc[-1]:.1f}%.
 **Strategic implication:** Mobilisation strategy must prioritise youth outreach. Even modest propensity lifts in this cohort deliver outsized turnout gains relative to smaller segments.
 
 ### A2 — Age Distribution by Segment
@@ -2081,7 +2137,7 @@ Strategic insights for the campaign leadership team:
 
 ### C1 — Full Forecast Timeline
 **What it shows:** 142-day Bayesian preference margin timeline with 94% HDI bands.
-**Key finding:** Candidate A's mean preference margin holds consistently near 15 pp throughout the tracking period, never dipping below zero. The HDI bands are wide (approximately ±30 pp), reflecting limited polling data (only 4 poll waves).
+**Key finding:** Candidate A's posterior mean preference margin closes near **{forecast_final_mean:.1f} pp** on fixture polls ({_illustrative_tracking_note}). The 94% HDI is wide ({forecast_final_hdi_lo:.1f} to {forecast_final_hdi_hi:.1f} pp), reflecting only 4 survey measurement waves.
 **Strategic implication:** The lead is robust but the HDI is wide — more polling waves would dramatically tighten the uncertainty bounds. The campaign should commission 2–3 additional poll waves in the final 6 weeks.
 
 ### C2 — Final Day Posterior Distribution
@@ -2091,7 +2147,7 @@ Strategic insights for the campaign leadership team:
 
 ### C3 — Battleground Department Win Probability
 **What it shows:** Horizontal bar chart of P(Win, Candidate A) by department.
-**Key finding:** All 18 departments show win probability in the 0.79–0.80 range. Central ({battleground[battleground['department']=='Central']['win_probability_a'].values[0]:.1%}) and Caaguazu ({battleground[battleground['department']=='Caaguazu']['win_probability_a'].values[0]:.1%}) are the top two. No department is below 0.79.
+**Key finding:** All 18 departments show modelled win probability in the **{_min_win_prob:.1%}–{_max_win_prob:.1%}** range ({_illustrative_tracking_note}). Central ({_dept_win_prob('Central'):.1%}) and Caaguazu ({_dept_win_prob('Caaguazu'):.1%}) are among the highest.
 **Strategic implication:** There are no true "battleground" departments in the classical sense — all show strong favourability. However, the narrow spread means mobilisation in high-turnout departments (Central, Alto Paraná) will determine the final mandate margin.
 
 ### C4 — House Effects Forest Plot
@@ -2116,7 +2172,7 @@ Strategic insights for the campaign leadership team:
 
 ### C8 — Win Probability vs Participation Propensity
 **What it shows:** Scatter plot of department-level win probability vs. mean participation propensity, bubble = budget.
-**Key finding:** Win probability is nearly uniform across departments (0.79–0.80), while propensity varies more (0.45–0.72). High-propensity departments (Rural Committed-heavy) cluster in the upper-left, meaning they are strong voting departments that already lean toward Candidate A.
+**Key finding:** Win probability is nearly uniform across departments ({_min_win_prob:.1%}–{_max_win_prob:.1%}), while propensity varies more. High-propensity departments (Rural Committed-heavy) cluster separately from win-probability bands — both are model outputs on reconstruction fixtures.
 **Strategic implication:** The combination of high propensity + high win probability identifies "safe yield" departments (San Pedro, Cordillera, Misiones). These departments can deliver high turnout at low persuasion cost — mobilisation spend here has the best ROI.
 
 ### C9 — Polling Transparency Audit
@@ -2126,8 +2182,8 @@ Strategic insights for the campaign leadership team:
 
 ### C10 — MC Win Probability Histogram
 **What it shows:** Distribution of shock_scale across all 10,000 MC draws by scenario bucket.
-**Key finding:** The extreme_tracker bucket accounts for ~75% of draws (7,500 draws) vs. ~25% baseline, suggesting the extreme scenario is the default simulation mode. Both distributions are multimodal due to discrete scenario design.
-**Strategic implication:** If the extreme tracker scenario is the primary planning scenario, campaign resource buffers and contingency plans should be sized for 1.8–2.4× baseline shock sensitivity — not just the ±10% around baseline.
+**Key finding:** Draws are split across {len(_mc_bucket_counts)} canonical buckets ({_mc_bucket_desc}); shock-scale distributions are multimodal by design of the discrete scenario catalog.
+**Strategic implication:** Resource buffers and contingency plans should be stress-tested against the extreme-tracker bucket (1.8–2.4× baseline shock sensitivity) — not just the ±10% band around baseline.
 
 ---
 
@@ -2162,9 +2218,9 @@ Strategic insights for the campaign leadership team:
 
 ## Strategic Recommendations
 
-1. **Accelerate Youth Volatile mobilisation in Central and Alto Paraná.** This is the highest-volume, high-reachability segment. Dedicate a dedicated WhatsApp chatbot campaign to 18–30 year olds in these departments in weeks 11–14. Target propensity lift from 0.49 to 0.55 would add an estimated 50,000+ additional turnout-weighted contacts.
+1. **Accelerate Youth Volatile mobilisation in Central and Alto Paraná.** This is the highest-volume, high-reachability segment. Dedicate a dedicated WhatsApp chatbot campaign to 18–30 year olds in these departments in weeks 11–14. Target propensity lift from {_yv_prop:.2f} to {_yv_prop + 0.05:.2f} would add tens of thousands of additional participation-weighted contacts.
 
-2. **Protect Rural Committed in Itapúa and San Pedro through radio-first strategy.** Do not allow any radio budget reduction in these departments. Rural Committed has the highest participation propensity (0.71 mean) and is almost exclusively accessible by radio. Even a 15% radio budget cut risks losing 20,000+ high-propensity votes.
+2. **Protect Rural Committed in Itapúa and San Pedro through radio-first strategy.** Do not allow any radio budget reduction in these departments. Rural Committed has a participation propensity of {_rc_prop:.2f} (mean) and is almost exclusively accessible by radio. Even a 15% radio budget cut risks losing 20,000+ high-propensity votes.
 
 3. **Reallocate 5–8% of Central budget to Caaguazu and San Pedro.** Central shows diminishing reach returns (reach cap not binding, but cost-per-persuasion-contact is high). Caaguazu and San Pedro have better cost efficiency and meaningful electoral scale. This reallocation would be budget-neutral with a projected +12% increase in total persuasion contacts.
 
@@ -2174,11 +2230,11 @@ Strategic insights for the campaign leadership team:
 
 6. **Back-load 15% of bilateral direct spend from weeks 1–4 to weeks 11–14.** Direct contact is most effective when proximate to the outcome event. Current front-loading may be wasting goodwill and persuasion capital on contacts made too early for participating entities to retain.
 
-7. **Do not invest in Committed Opposition persuasion.** This segment has a mean propensity of 0.10 and high preference strength for Candidate B. The cost of persuading even a marginal share of this group far exceeds the returns. Redirect any persuasion budget earmarked for this segment to Youth Volatile micro-targeting.
+7. **Do not invest in Committed Opposition persuasion.** This segment has a mean propensity of {_co_prop:.2f} and high preference strength for Candidate B. The cost of persuading even a marginal share of this group far exceeds the returns. Redirect any persuasion budget earmarked for this segment to Youth Volatile micro-targeting.
 
 8. **Apply bias corrections to all external polling references.** ATI/Snead results understate the lead by ~5 pp; ICA overstates it by ~4 pp. All internal planning documents and public communications should use bias-corrected figures. Share the house effect estimates with the communications team immediately.
 
-9. **Stress-test the extreme tracker scenario for weeks 12–14.** With 75% of MC draws in the extreme scenario bucket (shock_scale 1.83–2.43), the campaign's risk model assumes high volatility. Ensure field operations have a 72-hour rapid-response protocol if a late-breaking adverse event triggers a 5–8 pp margin compression.
+9. **Stress-test the extreme tracker scenario for weeks 12–14.** The extreme_tracker bucket ({_mc_bucket_counts.get("extreme_tracker", 0):,} of {len(mc_draws):,} draws, shock_scale 1.83–2.43) encodes high-volatility outcomes. Ensure field operations have a 72-hour rapid-response protocol if a late-breaking adverse event triggers a 5–8 pp margin compression.
 
 10. **Develop Jopara-language media content for all segments.** Jopara bilingual speakers are 47–51% of every segment. Spanish-only content structurally misses this plurality; Guaraní-only content is niche. Jopara-accessible creative is the single messaging investment with the broadest cross-segment reach.
 
@@ -2186,11 +2242,11 @@ Strategic insights for the campaign leadership team:
 
 ## Methodology Notes
 
-- **Segmentation:** 6 clusters identified via DBSCAN (density-based spatial clustering) on scaled numeric features. DBSCAN noise points (<1%) were reassigned to nearest centroid. Segment IDs 0–5 map to labels via `segment_labels.parquet`.
+- **Segmentation:** 6 clusters from KMeans on scaled numeric features; segment names are profile-derived (Hungarian assignment of cluster profiles to the canonical vocabulary, with interpretation tests). DBSCAN runs as a noise diagnostic only ({segs["dbscan_noise_flag"].sum()} flagged rows). Segment IDs 0–5 map to labels via `segment_labels.parquet`.
 - **Participation propensity:** Bayesian logistic regression with department-level random effects and post-stratification rake weights. Rake multipliers vary substantially across departments (mean 3.2×) indicating sampling imbalance in raw data.
 - **Bayesian tracking model:** Hierarchical Gaussian random walk with house effect corrections. 94% HDI reported (approximately equivalent to 2σ for normally distributed posteriors). Only 4 poll waves ingested — uncertainty is fundamentally limited by sparse polling data.
 - **Budget optimisation:** Linear programming solver (OPTIMAL status confirmed for all cells). Constraints include reach caps, department tiers, and channel eligibility rules. FX conversion uses retail spread rate (not reference rate).
-- **Monte Carlo:** 10,000 draws across 2 scenario buckets. Shock scale parameterises electoral volatility. `alloc_mean_persuasion_contacts` column appears unpopulated for MC draws (all zero) — this should be investigated in the Module B–C handshake.
+- **Monte Carlo:** {len(mc_draws):,} draws across {len(_mc_bucket_counts)} scenario buckets. Shock scale parameterises outcome volatility. {_mc_alloc_note}.
 - **Exit model:** Gaussian likelihood with intercept + two international observer beta parameters. Identified on historical exit survey data. Wide HDI intervals suggest limited historical data for calibration.
 
 ---
@@ -2199,7 +2255,7 @@ Strategic insights for the campaign leadership team:
 
 | Column | Dataset | Description |
 |--------|---------|-------------|
-| `entity_id` | population_master | Unique individual identifier (1–10,000) |
+| `entity_id` | population_master | Unique individual identifier (1–{len(pop):,}) |
 | `segment_label` | population_master, segment_labels | Qualitative segment name (6 categories) |
 | `segment_id` | population_master, segment_labels | Integer segment code (0–5) |
 | `participation_propensity` | population_master, participation_propensity | Bayesian posterior probability of electoral participation [0,1] |
@@ -2236,27 +2292,27 @@ print(f"  [OK] eda_report.md  ({report_path.stat().st_size/1024:.1f} KB)")
 # ════════════════════════════════════════════════════════════════════════════
 print("\n── Writing strategic_brief.md ──")
 
-strategic_brief = f"""# Paraguay Presidential Campaign — Strategic Brief
-**CONFIDENTIAL | For Campaign Director Eyes Only**
-**Date:** April 30, 2026 | **Analyst:** Campaign Data Science Unit
+strategic_brief = f"""# Paraguay Program Analytics — Strategic Brief
+**Portfolio reconstruction brief | Generated from pipeline artifacts**
+**Date:** April 30, 2026 | **Analyst:** Decision Analytics Reconstruction
 
 ---
 
 ## Situation Assessment
 
-The Bayesian tracking model closes at a **{forecast_final_mean:.1f} pp preference margin** for Candidate A (94% HDI: {forecast_final_hdi_lo:.1f} to {forecast_final_hdi_hi:.1f} pp). Win probability exceeds 79% in every modelled department. The race is not competitive. The strategic imperative is now **mandate maximisation through turnout**, not persuasion of the opposition.
+The Bayesian tracking model closes at a **{forecast_final_mean:.1f} pp preference margin** on fixture polls (94% HDI: {forecast_final_hdi_lo:.1f} to {forecast_final_hdi_hi:.1f} pp). {_illustrative_tracking_note}. Modelled department win probabilities range **{_min_win_prob:.0%}–{_max_win_prob:.0%}**. Portfolio framing: use verified TSJE anchor (+{_tsje_margin_pp:.2f} pp) for outcome facts; treat tracking outputs as illustrative decision-support machinery.
 
 ---
 
 ## Top 3 Priority Departments
 
-**1. Central (Budget: ${_b1_central/1e6:.2f}M, Win Prob: 80.2%, Propensity: ~0.55)**
+**1. Central (Budget: ${_b1_central/1e6:.2f}M, Modelled Win Prob: {_dept_win_prob('Central'):.1%}, Propensity: ~0.55)**
 Central is non-negotiable. With the largest entity count by department and the highest Youth Volatile concentration in the country, Central determines whether Candidate A wins with a thin mandate or a historic one. The challenge: reach utilisation is below cap in weeks 10–14, meaning the program is leaving contacts on the table during the crucial final push. Recommended action: increase WhatsApp chatbot activation in Central's urban districts by 20% in weeks 11–14 and deploy a targeted youth ground operation in Asunción metro.
 
-**2. Caaguazu (Budget: ${_b1_caaguazu/1e3:,.0f}K, Win Prob: 80.2%, Propensity: ~0.58)**
+**2. Caaguazu (Budget: ${_b1_caaguazu/1e3:,.0f}K, Modelled Win Prob: {_dept_win_prob('Caaguazu'):.1%}, Propensity: ~0.58)**
 Caaguazu is the efficiency sweet spot. It has the highest win probability of all Oriental departments, a strong Rural Committed presence (high propensity), and a lower cost-per-persuasion-contact than Central or Alto Paraná. It is currently underfunded relative to its composite priority score. A $75K budget increase from Central savings would deliver approximately 24,000 additional persuasion-adjusted contacts here.
 
-**3. Itapua (Budget: ${_b1_itapua/1e3:,.0f}K, Win Prob: 80.0%, Propensity: ~0.65)**
+**3. Itapua (Budget: ${_b1_itapua/1e3:,.0f}K, Modelled Win Prob: {_dept_win_prob('Itapua'):.1%}, Propensity: ~0.65)**
 Itapúa has the highest mean participation propensity of any department with significant Rural Committed presence. It is the dominant department for that segment. Radio is the primary reach channel. At near-saturation on reach utilisation, the channel is performing well — the risk is a budget cut that disrupts this performance. Protect Itapúa's radio budget unconditionally and explore whether a modest canvassing supplement in rural municipalities can push propensity-weighted turnout past 70%.
 
 ---
@@ -2264,16 +2320,16 @@ Itapúa has the highest mean participation propensity of any department with sig
 ## Segment Strategy: Double Down vs Deprioritise
 
 **Double Down:**
-- **Youth Volatile (31.3% of population):** High reachability, moderate propensity — the mobilisation opportunity. Every 1 pp propensity lift = ~31 additional high-value contacts. Digital-first (WhatsApp, Facebook), Jopara-friendly content, peer-to-peer activation via youth networks.
-- **Rural Committed (14.4% of population):** Highest propensity (0.71), but low reachability. Radio + canvassing investment here delivers premium returns per contact. Do not sacrifice these entities to cut costs.
+- **Youth Volatile ({_yv_pct:.1f}% of population, propensity {_yv_prop:.2f}):** High reachability — the mobilisation opportunity. Digital-first (WhatsApp, Facebook), Jopara-friendly content, peer-to-peer activation via youth networks.
+- **Rural Committed ({_rc_pct:.1f}% of population):** High propensity ({_rc_prop:.2f}) but low reachability. Radio + canvassing investment here delivers premium returns per contact. Do not sacrifice these entities to cut costs.
 
 **Maintain:**
-- **Urban High Volatility (18.6%):** Good reachability, decent propensity (0.77). Currently receiving fair budget share. No change needed — the strategy is working.
-- **Structurally Dependent Bloc (13.1%):** High rural, high NBI stress. Sensitive segment requiring careful messaging. Maintain current radio + community organiser approach.
+- **Urban High Volatility ({_uhv_pct:.1f}%):** Good reachability, propensity {_uhv_prop:.2f}. Currently receiving fair budget share. No change needed — the strategy is working.
+- **Structurally Dependent Bloc ({_sdb_pct:.1f}%):** High rural, high NBI stress. Sensitive segment requiring careful messaging. Maintain current radio + community organiser approach.
 
 **Deprioritise:**
-- **Committed Opposition (10.2%):** Mean propensity 0.10, high B-preference strength. These are locked opposition-aligned entities. Any persuasion spend here is waste. Reallocate immediately.
-- **Rural Low Propensity (12.4%):** Despite being partially urban and digitally reachable, their propensity is 0.35. Passive presence only — no active spend increases warranted.
+- **Committed Opposition ({_co_pct:.1f}%):** Mean propensity {_co_prop:.2f}, high B-preference strength. These are locked opposition-aligned entities. Any persuasion spend here is waste. Reallocate immediately.
+- **Rural Low Propensity ({_rlp_pct:.1f}%):** Propensity {_rlp_prop:.2f} — the hardest cohort to mobilise. Passive presence only — no active spend increases warranted.
 
 ---
 
@@ -2298,7 +2354,7 @@ Itapúa has the highest mean participation propensity of any department with sig
 **2. SMS campaigns:** No measurable persuasion contact generation. Estimated waste: ~$30–45K.
 **3. Front-loaded bilateral spend (weeks 1–4):** Direct contact made 10+ weeks before election day has negligible retention effect. Estimated efficiency loss: 20–30% of early bilateral spend.
 **4. Any persuasion spend on Committed Opposition:** This segment's preference strength distribution is tightly clustered at high B-values. No campaign intervention will move them. Estimated misallocated spend: ~$24K.
-**5. Broadcast-to-direct scenario exploration:** If the pipeline's alloc_mean_persuasion_contacts bug remains unresolved, continuing to model this scenario costs analytical time without informing decisions.
+**5. Broadcast-to-direct scenario exploration:** The counterfactual redistributes the channel mix without increasing aggregate persuasion contacts; treat it as a sensitivity check, not a strategy.
 
 **Total estimated reclaimable budget:** ~$150–180K (approximately 2.5–3% of total baseline), which redirected to Caaguazu canvassing and weeks 11–13 WhatsApp activation would deliver an estimated 45,000–60,000 additional propensity-weighted contacts.
 
@@ -2311,8 +2367,8 @@ Itapúa has the highest mean participation propensity of any department with sig
 - Polling uncertainty: Wide HDI is a data availability problem, not a trend problem. Commission 2 additional poll waves to confirm.
 
 **Medium risk (requires contingency planning):**
-- Late-breaking adverse events: Extreme tracker scenario (75% of MC draws) assumes 1.83–2.43× shock scale. A major scandal or crisis event in weeks 12–14 could compress the margin by 5–8 pp. Pre-position a rapid-response team.
-- Turnout depression in Youth Volatile: This segment's propensity is only 0.49. If youth registration or turnout infrastructure fails (long queues, administrative errors), the mandate could shrink materially.
+- Late-breaking adverse events: The extreme-tracker bucket ({_mc_bucket_counts.get("extreme_tracker", 0):,} of {len(mc_draws):,} draws) assumes 1.83–2.43× shock scale. A major scandal or crisis event in weeks 12–14 could compress the margin by 5–8 pp. Pre-position a rapid-response team.
+- Participation depression in Youth Volatile: this segment's propensity is {_yv_prop:.2f}. If youth registration or turnout infrastructure fails (long queues, administrative errors), the mandate could shrink materially.
 
 **Low but non-zero systemic risk:**
 - Model miscalibration: Only 4 poll waves feed the tracking model. If all four pollsters share an unmeasured systematic bias not captured by the house effect model, the posterior could be significantly wrong. Diversify polling sources.
@@ -2321,7 +2377,7 @@ Itapúa has the highest mean participation propensity of any department with sig
 
 ---
 
-*Generated by Campaign Data Science Unit | Paraguay Elections 2018 | CONFIDENTIAL*
+*Reconstruction artifact — strategic brief generated from pipeline outputs by reports/eda/generate_eda.py. Illustrative decision-support framing; see reports/epistemic_boundaries.md.*
 """
 
 brief_path = OUT / "strategic_brief.md"
