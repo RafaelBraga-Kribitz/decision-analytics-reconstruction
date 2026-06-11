@@ -49,8 +49,9 @@ make deploy-module-c
 
 ## Live report
 
-Quarto-rendered posterior report (GitHub Pages):
-https://RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction/
+Quarto-rendered posterior report: build locally with the Pages workflow steps
+(`.github/workflows/deploy-module-c-pages.yml`). The hosted GitHub Pages link
+is tracked as open finding `F-021` and will be added once verifiably live.
 
 ## Source surface
 

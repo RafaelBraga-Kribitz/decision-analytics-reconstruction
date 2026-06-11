@@ -13,10 +13,13 @@ population modeling, constrained resource allocation, and probabilistic scenario
 analysis.
 
 [![CI](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/ci.yml/badge.svg)](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/ci.yml)
-[![Module A Dashboard (Render)](https://img.shields.io/badge/Module_A-Streamlit_Dashboard-brightgreen)](https://decision-analytics-module-a.onrender.com)
-[![Module B API (Railway)](https://img.shields.io/badge/Module_B-FastAPI_Docs-brightgreen)](https://decision-analytics-module-b.up.railway.app/docs)
-[![Module C Report](https://img.shields.io/badge/Module_C-Quarto_Report-blue)](https://RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction/)
+[![Governance](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/governance.yml/badge.svg)](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/governance.yml)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue)](.python-version)
+
+All three modules run locally in two commands (see Quick Start). Hosted demos
+are tracked as open finding `F-021` and will be linked here only once they
+return HTTP 200 from CI — this README does not claim deployments that are not
+live.
 
 ## Source Of Truth
 
@@ -43,7 +46,11 @@ make session-start
 ```bash
 poetry install
 make test
-make dashboard
+
+# Local demos
+make dashboard       # Module A — Streamlit dashboard
+make module-b-api    # Module B — FastAPI service (docs at http://127.0.0.1:8088/docs)
+make module-c-all    # Module C — forecasting artifacts
 ```
 
 For deployment, read `docs/DEPLOYMENT.md`. For architecture, read

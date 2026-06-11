@@ -48,8 +48,7 @@ rigor that was absent at the original operational tempo.
 A senior reviewer can complete this checklist in under 15 minutes.
 
 1. **README.** `README.md` — top-of-tree narrative and architecture diagram.
-2. **Live dashboard.** Streamlit deploy:
-  [https://decision-analytics-module-a.onrender.com](https://decision-analytics-module-a.onrender.com).
+2. **Dashboard.** Run `make dashboard` (Streamlit, local).
    Set `k = 6` and look at: (a) Segment Explorer tab, (b) Propensity
    National-Rate Reference Diagnostic tab, (c) Data Quality Report tab.
 3. **Local Module C scenario explorer (Plotly HTML).**
@@ -226,9 +225,9 @@ per firm with full uncertainty propagation — they do not adjudicate intent.
 
 Every chart, HTML page, GIS layer, and notebook a reviewer might want to open.
 
-**Live web.**
+**Local web.**
 
-- Module A Streamlit dashboard: [https://decision-analytics-module-a.onrender.com](https://decision-analytics-module-a.onrender.com)
+- Module A Streamlit dashboard: `make dashboard`
 (segment explorer · propensity diagnostic · data quality report).
 
 **Local HTML.**
