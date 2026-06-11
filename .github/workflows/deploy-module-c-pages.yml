@@ -65,6 +65,10 @@ jobs:
             module_c_forecasting_scenarios/portfolio/quarto/post_mortem.qmd \
             --to html \
             --output-dir _site
+          # Quarto writes _site beside the .qmd, not at repo root.
+          SITE_SRC="module_c_forecasting_scenarios/portfolio/quarto/_site"
+          mkdir -p _site
+          cp "$SITE_SRC/post_mortem.html" _site/index.html
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
