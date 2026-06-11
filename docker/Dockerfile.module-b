@@ -15,7 +15,10 @@ RUN pip install --no-cache-dir poetry==2.4.0
 
 COPY pyproject.toml poetry.lock* README.md /app/
 COPY Makefile /app/
+# Poetry packages list all three modules; paths must exist at install time.
+COPY module_a_population_segmentation /app/module_a_population_segmentation
 COPY module_b_resource_allocation /app/module_b_resource_allocation
+COPY module_c_forecasting_scenarios /app/module_c_forecasting_scenarios
 COPY schema_contracts /app/schema_contracts
 COPY data /app/data
 
@@ -24,6 +27,5 @@ RUN poetry config virtualenvs.create false && \
 
 EXPOSE 8000
 
-CMD ["poetry", "run", "python", "-m", "uvicorn", \
-     "module_b_resource_allocation.api.app:app", \
-     "--host=0.0.0.0", "--port=8000"]
+# railway.toml startCommand overrides CMD; default supports local compose.
+CMD ["sh", "-c", "poetry run python -m uvicorn module_b_resource_allocation.api.app:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"]

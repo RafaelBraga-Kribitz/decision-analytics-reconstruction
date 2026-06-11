@@ -5,7 +5,9 @@
 # Docs: https://docs.railway.app/reference/config-as-code
 
 [build]
-builder = "nixpacks"
+# Nixpacks fails when NIXPACKS_POETRY_VERSION is unset (pip install poetry==).
+builder = "DOCKERFILE"
+dockerfilePath = "docker/Dockerfile.module-b"
 
 [deploy]
 # Railway injects $PORT; bind 0.0.0.0 to accept external connections.
