@@ -2,6 +2,7 @@ id: F-038
 title: "A→B link was narrative: Module B never read Module A artifacts"
 status: closed
 severity: high
+kind: recurrence_invariant
 category: architecture
 opened_at: 2026-06-11
 closed_at: 2026-06-11

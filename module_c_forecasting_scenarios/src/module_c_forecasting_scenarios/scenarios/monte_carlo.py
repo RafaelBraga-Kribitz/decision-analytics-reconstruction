@@ -144,15 +144,26 @@ def run_monte_carlo_scenarios(
     with open(cat_path, "w") as f:
         yaml.safe_dump({"shocks": shocks}, f, sort_keys=False)
 
-    # Allocation handshake.
+    # Allocation handshake. A passed-but-missing path is a wiring error and
+    # must fail loudly — silently degrading to 0.0 hid a dead B→C link.
     alloc_mean_contacts = 0.0
-    if allocation_path and allocation_path.exists():
+    if allocation_path is not None:
+        if not allocation_path.exists():
+            raise FileNotFoundError(
+                f"allocation parquet not found at {allocation_path}; "
+                "run the Module B pipeline first (make module-b-allocate)"
+            )
         adf = pd.read_parquet(allocation_path)
         handshake_cols = ("persuasion_adjusted_contacts", "expected_contacts", "scenario_id")
         for c in handshake_cols:
             if c not in adf.columns:
                 raise ValueError(f"allocation_output missing handshake column {c!r}")
         alloc_mean_contacts = float(adf["persuasion_adjusted_contacts"].mean())
+        if alloc_mean_contacts <= 0.0:
+            raise ValueError(
+                f"allocation parquet {allocation_path} has non-positive mean persuasion "
+                "contacts — the B→C handshake would be a silent zero"
+            )
 
     # Stratified per-bucket draws.
     bucket_quota = _bucket_share(n, len(CANONICAL_BUCKETS))

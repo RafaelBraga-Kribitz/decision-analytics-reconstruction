@@ -1,6 +1,6 @@
 .PHONY: install lint format typecheck test coverage all clean module-a-export module-a-pipeline graphify \
 	module-b-allocate module-b-allocate-sensitivity module-b-routing module-b-api \
-	test-module-a test-module-b test-module-c \
+	test-module-a test-module-b test-module-c pipeline-full \
 	module-c-tracking module-c-exit module-c-mc module-c-all module-c-walk-forward module-c-ppc \
 	precommit validate doc-path-verify doc-registry-verify doc-registry-schema-export portfolio-verify tier3-smoke e2e-smoke audit verify session-start session-end debt-scan debt-check
 
@@ -90,11 +90,15 @@ module-c-mc:
 		--raw-csv module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv \
 		--out-dir data/processed/module_c/mc
 
+# B→C handshake: pass the Module B allocation parquet when it exists so the
+# Monte Carlo draws carry real persuasion contacts (silent-zero is an error).
+MODULE_B_ALLOC := data/processed/module_b/allocation_baseline.parquet
 module-c-all:
 	MLFLOW_TRACKING_URI=$(or $(MLFLOW_TRACKING_URI),file:./mlruns) \
 	poetry run python -m module_c_forecasting_scenarios.pipeline.run_all \
 		--raw-csv module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv \
-		--out-dir data/processed/module_c/run_all
+		--out-dir data/processed/module_c/run_all \
+		$(if $(wildcard $(MODULE_B_ALLOC)),--allocation-parquet $(MODULE_B_ALLOC),)
 
 module-c-walk-forward:
 	MLFLOW_TRACKING_URI=$(or $(MLFLOW_TRACKING_URI),file:./mlruns) \
@@ -157,7 +161,17 @@ module-b-allocate:
 	poetry run python -m module_b_resource_allocation.pipeline.run_allocation \
 		--scenario $(or $(SCENARIO),baseline) \
 		--out-dir data/processed/module_b \
-		--seed $(or $(SEED),20180422)
+		--seed $(or $(SEED),20180422) \
+		--counterfactual
+
+# Full A→B→C pipeline + EDA regeneration, on the canonical dev scale.
+# Order matters: B ingests A's reachability export; C ingests B's allocation.
+pipeline-full:
+	$(MAKE) module-a-pipeline SAMPLE=$(or $(SAMPLE),50000)
+	$(MAKE) module-b-allocate
+	$(MAKE) module-b-routing-schedules
+	$(MAKE) module-c-all
+	poetry run python reports/eda/generate_eda.py
 
 module-b-allocate-sensitivity:
 	poetry run python -m module_b_resource_allocation.pipeline.run_allocation \

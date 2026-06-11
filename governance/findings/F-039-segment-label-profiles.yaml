@@ -2,6 +2,7 @@ id: F-039
 title: "Segment names were an arbitrary KMeans-index map, not earned by cluster content"
 status: closed
 severity: high
+kind: recurrence_invariant
 category: statistical-rigor
 opened_at: 2026-06-11
 closed_at: 2026-06-11

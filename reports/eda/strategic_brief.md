@@ -6,19 +6,19 @@
 
 ## Situation Assessment
 
-The Bayesian tracking model closes at a **13.6 pp preference margin** for Candidate A (94% HDI: 2.8 to 20.2 pp). Win probability exceeds 79% in every modelled department. The race is not competitive. The strategic imperative is now **mandate maximisation through turnout**, not persuasion of the opposition.
+The Bayesian tracking model closes at a **3.7 pp preference margin** for Candidate A (94% HDI: 2.9 to 4.6 pp). Win probability exceeds 79% in every modelled department. The race is not competitive. The strategic imperative is now **mandate maximisation through turnout**, not persuasion of the opposition.
 
 ---
 
 ## Top 3 Priority Departments
 
-**1. Central (Budget: $1.79M, Win Prob: 80.2%, Propensity: ~0.55)**
+**1. Central (Budget: $1.92M, Win Prob: 80.2%, Propensity: ~0.55)**
 Central is non-negotiable. With the largest entity count by department and the highest Youth Volatile concentration in the country, Central determines whether Candidate A wins with a thin mandate or a historic one. The challenge: reach utilisation is below cap in weeks 10–14, meaning the program is leaving contacts on the table during the crucial final push. Recommended action: increase WhatsApp chatbot activation in Central's urban districts by 20% in weeks 11–14 and deploy a targeted youth ground operation in Asunción metro.
 
-**2. Caaguazu (Budget: $510K, Win Prob: 80.2%, Propensity: ~0.58)**
+**2. Caaguazu (Budget: $468K, Win Prob: 80.2%, Propensity: ~0.58)**
 Caaguazu is the efficiency sweet spot. It has the highest win probability of all Oriental departments, a strong Rural Committed presence (high propensity), and a lower cost-per-persuasion-contact than Central or Alto Paraná. It is currently underfunded relative to its composite priority score. A $75K budget increase from Central savings would deliver approximately 24,000 additional persuasion-adjusted contacts here.
 
-**3. Itapua (Budget: $554K, Win Prob: 80.0%, Propensity: ~0.65)**
+**3. Itapua (Budget: $494K, Win Prob: 80.0%, Propensity: ~0.65)**
 Itapúa has the highest mean participation propensity of any department with significant Rural Committed presence. It is the dominant department for that segment. Radio is the primary reach channel. At near-saturation on reach utilisation, the channel is performing well — the risk is a budget cut that disrupts this performance. Protect Itapúa's radio budget unconditionally and explore whether a modest canvassing supplement in rural municipalities can push propensity-weighted turnout past 70%.
 
 ---

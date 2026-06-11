@@ -48,6 +48,13 @@ jobs:
       - name: Point Quarto at Poetry Python
         run: echo "QUARTO_PYTHON=$(poetry env info --path)/bin/python" >> "$GITHUB_ENV"
 
+      - name: Run Module B allocation (B→C handshake input)
+        run: |
+          poetry run python -m module_b_resource_allocation.pipeline.run_allocation \
+            --scenario baseline \
+            --out-dir data/processed/module_b \
+            --seed 20180422
+
       - name: Run Module C pipeline (fast mode — fixture data)
         env:
           MC_FAST: "1"
@@ -55,7 +62,8 @@ jobs:
         run: |
           poetry run python -m module_c_forecasting_scenarios.pipeline.run_all \
             --raw-csv module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv \
-            --out-dir data/processed/module_c/run_all
+            --out-dir data/processed/module_c/run_all \
+            --allocation-parquet data/processed/module_b/allocation_baseline.parquet
 
       - name: Render Quarto report
         env:

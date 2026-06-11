@@ -2,7 +2,7 @@ stages:
   module_a:
     cmd: >-
       poetry run python -m population_segmentation.pipeline
-      --sample-size 10000
+      --sample-size 50000
       --out-dir data/processed
     deps:
       - module_a_population_segmentation/config/generation.yaml
@@ -25,12 +25,16 @@ stages:
       --scenario baseline
       --out-dir data/processed/module_b
       --seed 20180422
+      --counterfactual
     deps:
       - module_b_resource_allocation/src/module_b_resource_allocation
       - data/processed/media_reachability_by_segment_department.csv
     outs:
       - data/processed/module_b/allocation_baseline.parquet
       - data/processed/module_b/reach_caps_baseline.csv
+      - data/processed/module_b/allocation_broadcast_to_direct.parquet
+      - data/processed/module_b/reach_caps_broadcast_to_direct.csv
+      - data/processed/module_b/reallocation_counterfactuals.parquet
     metrics:
       - data/processed/module_b/run_manifest_baseline.json:
           cache: false
@@ -40,10 +44,12 @@ stages:
       poetry run python -m module_c_forecasting_scenarios.pipeline.run_all
       --raw-csv module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv
       --out-dir data/processed/module_c/run_all
+      --allocation-parquet data/processed/module_b/allocation_baseline.parquet
     deps:
       - module_c_forecasting_scenarios/src/module_c_forecasting_scenarios
       - module_c_forecasting_scenarios/config/calibration.yaml
       - module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv
+      - data/processed/module_b/allocation_baseline.parquet
     outs:
       - data/processed/module_c/run_all/tracking/daily_posterior_forecast.parquet
       - data/processed/module_c/run_all/tracking/posterior_house_effects.parquet

@@ -1,0 +1,48 @@
+id: F-040
+title: "B→C link was narrative: pipeline wiring + golden-metric CI gates"
+status: closed
+severity: high
+kind: recurrence_invariant
+category: architecture
+opened_at: 2026-06-11
+closed_at: 2026-06-11
+owner: remediator
+finding: >
+  The B→C handoff existed only as an optional CLI flag nobody passed: dvc.yaml,
+  `make module-c-all`, and the Pages deploy workflow all ran Module C without
+  Module B's allocation parquet, so the Monte Carlo engine silently defaulted
+  to alloc_mean_persuasion_contacts = 0.0 — masking a broken handshake while
+  docs described an integrated A→B→C pipeline. There was no single command
+  that ran the full pipeline, no regeneration of the EDA from current
+  artifacts (the notebook fabricated synthetic pollster tables), and no CI
+  gate that would catch a regression in any reported headline number.
+remediation: >
+  monte_carlo.py now fails loudly (FileNotFoundError / ValueError) when an
+  allocation path is passed but missing or carries non-positive contacts.
+  dvc.yaml chains module_a → module_b (with --counterfactual and all
+  counterfactual outs) → module_c (--allocation-parquet); the Makefile gains
+  a `pipeline-full` target (A → B → routing → C → EDA regeneration) and
+  module-c-all auto-passes the allocation parquet when present; the Pages
+  workflow runs module-b-allocate before Module C. The EDA notebook reads
+  real posterior_house_effects.parquet / polling_transparency_audit.csv
+  instead of fabricated tables and asserts the handshake is non-zero.
+  scripts/generate_golden_metrics.py snapshots canonical numbers
+  (reports/golden_metrics.json) and tests/test_golden_metrics.py gates:
+  solver OPTIMAL, MODULE_A provenance, objective-vs-reported identity,
+  allocation_input wired (not null), contacts strictly positive, and
+  golden-number reproduction at 0.5% tolerance.
+verification_script: scripts/check_pipeline_golden_metrics.py
+artifacts:
+  - dvc.yaml
+  - Makefile
+  - .github/workflows/deploy-module-c-pages.yml
+  - module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/scenarios/monte_carlo.py
+  - module_b_resource_allocation/src/module_b_resource_allocation/pipeline/run_allocation.py
+  - scripts/generate_golden_metrics.py
+  - scripts/check_pipeline_golden_metrics.py
+  - tests/test_golden_metrics.py
+  - reports/eda/paraguay_election_eda.ipynb
+notes: >
+  Part of the Truth and Rebuild Sprint (ADR-0004 themed cadence). Closes the
+  audited issues E-1 (silent-zero B→C), E-2 (no pipeline-full), E-3 (EDA
+  regeneration), and N-2 (synthetic pollster cells in the notebook).

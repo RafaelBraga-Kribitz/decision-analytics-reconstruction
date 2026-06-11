@@ -159,16 +159,23 @@ def main(argv: list[str] | None = None) -> int:
     if args.counterfactual:
         cf = run_broadcast_to_direct(result, routing_df, shift_share=args.shift_share)
         cf_csv = args.out_dir / "allocation_broadcast_to_direct.csv"
+        cf_parquet = args.out_dir / "allocation_broadcast_to_direct.parquet"
+        cf_caps_csv = args.out_dir / "reach_caps_broadcast_to_direct.csv"
         deltas_csv = args.out_dir / "allocation_broadcast_to_direct_deltas.csv"
         rc_parquet = args.out_dir / "reallocation_counterfactuals.parquet"
         try:
             cf.counterfactual_allocation.to_csv(cf_csv, index=False)
+            cf.counterfactual_allocation.to_parquet(cf_parquet, index=False)
+            # Counterfactual reallocates within the same cap surface.
+            reach_caps.to_csv(cf_caps_csv, index=False)
             cf.deltas.to_csv(deltas_csv, index=False)
             build_reallocation_counterfactuals_table(cf).to_parquet(rc_parquet, index=False)
         except OSError as exc:
             logger.exception("failed writing counterfactual artifacts: %s", exc)
             return 4
         artifacts["counterfactual_csv"] = str(cf_csv)
+        artifacts["counterfactual_parquet"] = str(cf_parquet)
+        artifacts["counterfactual_reach_caps_csv"] = str(cf_caps_csv)
         artifacts["counterfactual_deltas_csv"] = str(deltas_csv)
         artifacts["reallocation_counterfactuals_parquet"] = str(rc_parquet)
         artifacts["routing_feasible_share"] = str(round(cf.routing_feasible_share, 4))

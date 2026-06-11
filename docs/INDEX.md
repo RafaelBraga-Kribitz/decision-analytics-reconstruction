@@ -42,6 +42,7 @@ Run `poetry run python scripts/generate_doc_index.py --write` after registry cha
 - **DOC-GOV-DEBT-001** — `governance/DEBT_TOOLS.md` — *policy* / *canonical*
 - **ADR-0002** — `governance/adrs/0002-tech-debt-ratchet.md` — *policy* / *canonical*
 - **ADR-0003** — `governance/adrs/0003-charter-line-budget.md` — *policy* / *canonical*
+- **DOC-DOC-001** — `governance/adrs/0004-completion-sprint-cadence.md` — *narrative* / *canonical*
 - **DOC-MAINT-001** — `maintainer/pre_public_cleanup_manifest.md` — *policy* / *canonical*
 - **DOC-MODA-001** — `module_a_population_segmentation/README.md` — *narrative* / *canonical*
 - **DOC-MODA-002** — `module_a_population_segmentation/reports/audit_report_module_a_2026-05-11.md` — *narrative* / *canonical*

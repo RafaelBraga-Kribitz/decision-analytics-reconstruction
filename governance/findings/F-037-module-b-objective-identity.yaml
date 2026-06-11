@@ -2,6 +2,7 @@ id: F-037
 title: "Module B MILP maximized a different objective than it reported"
 status: closed
 severity: high
+kind: recurrence_invariant
 category: statistical-rigor
 opened_at: 2026-06-11
 closed_at: 2026-06-11
