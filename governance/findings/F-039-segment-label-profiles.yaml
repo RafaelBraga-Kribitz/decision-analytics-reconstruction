@@ -1,0 +1,43 @@
+id: F-039
+title: "Segment names were an arbitrary KMeans-index map, not earned by cluster content"
+status: closed
+severity: high
+category: statistical-rigor
+opened_at: 2026-06-11
+closed_at: 2026-06-11
+owner: remediator
+finding: >
+  SEGMENT_LABEL_MAP hard-wired KMeans cluster index 0..5 to semantic names
+  (rural_committed, youth_volatile, ...). KMeans index order is arbitrary —
+  it depends on initialization, not content — so the names carried no
+  guarantee: the cluster labeled "rural_committed" could be fully urban. No
+  test ever checked that a named segment exhibited the semantics its name
+  claims, and downstream consumers (dashboard, Module B reachability
+  aggregates, case studies) repeated the unearned names as findings.
+remediation: >
+  Added profile-derived label assignment: after each fit, cluster profiles
+  (rural/metro/youth shares, structural dependency, preference strength,
+  opposition share, NBI stress) are z-scored across clusters; each canonical
+  label scores clusters via LABEL_SCORE_WEIGHTS encoding its semantics; the
+  Hungarian algorithm picks the bijective assignment maximizing semantic
+  fit. build_segmentation_frame now uses assign_segment_labels() instead of
+  the index map (the map remains only as the canonical name vocabulary).
+  New interpretation gate (test_segment_label_interpretation.py) fits the
+  real pipeline and asserts: bijection over the 6 canonical names,
+  deterministic re-assignment, committed_opposition has the top opposition
+  share, structurally_dependent_bloc the top dependency, rural_committed is
+  more rural than urban_high_volatility and stronger-preference than
+  rural_low_propensity, youth_volatile sits on a >=90% youth cluster, and a
+  zero-variance profile feature cannot poison the scores.
+verification_script: scripts/check_module_a_segment_labels.py
+artifacts:
+  - module_a_population_segmentation/src/population_segmentation/pipeline/models/segmentation.py
+  - module_a_population_segmentation/src/population_segmentation/models/segmentation.py
+  - module_a_population_segmentation/tests/test_segment_label_interpretation.py
+notes: >
+  Part of the Truth and Rebuild Sprint (ADR-0004 themed cadence). Closes
+  audited issue A-4. The canonical 6-name vocabulary is contract-fixed; the
+  empirical cluster structure supports 5 of 6 names strongly (the sixth,
+  rural_low_propensity, lands on the least-distinctive cluster by
+  elimination — recorded honestly here rather than papered over).
+  Downstream artifacts regenerate in the Phase 3 pipeline re-run.

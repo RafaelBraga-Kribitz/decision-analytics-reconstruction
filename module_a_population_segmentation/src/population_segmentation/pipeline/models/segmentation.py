@@ -1,5 +1,11 @@
 # pyright: reportUnknownMemberType=false, reportUnknownVariableType=false, reportUnknownArgumentType=false, reportUnknownLambdaType=false
-"""Segmentation models: DBSCAN noise filter + KMeans segmenter."""
+"""Segmentation models: DBSCAN noise filter + KMeans segmenter.
+
+Segment names are **profile-derived**: after KMeans fits, each canonical
+label is matched to the cluster whose feature profile best fits the label's
+semantics (Hungarian assignment over z-scored cluster profiles) — cluster
+index order is never assumed to mean anything.
+"""
 
 from __future__ import annotations
 
@@ -8,13 +14,16 @@ from typing import Any
 
 import numpy as np
 import pandas as pd
+from scipy.optimize import linear_sum_assignment
 from sklearn.cluster import DBSCAN, KMeans
 from sklearn.decomposition import PCA
 from sklearn.metrics import adjusted_rand_score, silhouette_score
 from sklearn.preprocessing import StandardScaler
 
-# Canonical k=6 segment label map — index 0–5 (KMeans cluster index → name).
-# Source of truth for all downstream consumers (dashboard, export pipeline, schema contracts).
+# Canonical k=6 segment label vocabulary. The historical index keys are kept
+# only so downstream consumers can enumerate the canonical names and k —
+# the actual cluster→name mapping is computed per fit by
+# :func:`assign_segment_labels` from cluster profiles, NOT from this order.
 SEGMENT_LABEL_MAP: dict[int, str] = {
     0: "rural_committed",
     1: "urban_high_volatility",
@@ -23,6 +32,101 @@ SEGMENT_LABEL_MAP: dict[int, str] = {
     4: "rural_low_propensity",
     5: "committed_opposition",
 }
+
+# Label semantics as weights over z-scored cluster-profile features.
+# preference_proxy encoding (features/behavioral.py): A=0, B=1, other=2, none=3;
+# "opposition" below is the share of preference B, "no_preference" the share of none.
+LABEL_SCORE_WEIGHTS: dict[str, dict[str, float]] = {
+    "rural_committed": {"rural": 1.0, "strength": 1.0, "opposition": -0.5},
+    "urban_high_volatility": {"metro": 1.0, "strength": -1.0, "no_preference": 0.5},
+    "youth_volatile": {"youth": 1.5, "strength": -0.5},
+    "structurally_dependent_bloc": {"dependency": 1.5, "nbi_stress": 0.5},
+    "rural_low_propensity": {"rural": 1.0, "strength": -1.0, "nbi_stress": 0.5},
+    "committed_opposition": {"opposition": 1.5, "strength": 0.5},
+}
+
+#: Interpretable profile features used for label assignment.
+PROFILE_FEATURES: tuple[str, ...] = (
+    "rural",
+    "metro",
+    "youth",
+    "dependency",
+    "strength",
+    "opposition",
+    "no_preference",
+    "nbi_stress",
+)
+
+
+def cluster_profiles(df: pd.DataFrame, labels: np.ndarray) -> pd.DataFrame:
+    """Mean interpretable feature profile per cluster.
+
+    Args:
+        df: Entity-level feature frame (must carry the behavioral columns).
+        labels: KMeans cluster index per row of ``df``.
+
+    Returns:
+        DataFrame indexed by cluster id with :data:`PROFILE_FEATURES` columns.
+
+    Raises:
+        KeyError: If a required behavioral column is missing.
+
+    Example:
+        ``cluster_profiles(feat_df, kmeans_labels).loc[3, "youth"]``.
+    """
+    prof = pd.DataFrame(
+        {
+            "rural": df["rural_flag"].astype(float),
+            "metro": df["metro_flag"].astype(float),
+            "youth": df["youth_flag"].astype(float),
+            "dependency": df["structural_dependency_encoded"].astype(float),
+            "strength": df["preference_proxy_strength"].astype(float),
+            "opposition": (df["preference_proxy_encoded"] == 1).astype(float),
+            "no_preference": (df["preference_proxy_encoded"] == 3).astype(float),
+            "nbi_stress": df["nbi_stress_prior_scaled"].astype(float),
+            "cluster": labels,
+        }
+    )
+    return prof.groupby("cluster").mean()
+
+
+def assign_segment_labels(df: pd.DataFrame, labels: np.ndarray) -> dict[int, str]:
+    """Profile-derived one-to-one mapping of cluster index → canonical name.
+
+    Each cluster's profile is z-scored across clusters; each canonical label
+    scores every cluster via :data:`LABEL_SCORE_WEIGHTS`; the Hungarian
+    algorithm picks the assignment maximizing total semantic fit. The result
+    is deterministic for a given fit.
+
+    Args:
+        df: Entity-level feature frame aligned with ``labels``.
+        labels: KMeans cluster index per row.
+
+    Returns:
+        Dict mapping each cluster id to a unique canonical segment label.
+        Clusters beyond the canonical vocabulary (k > 6) get ``segment_<id>``.
+
+    Raises:
+        KeyError: If a required behavioral column is missing from ``df``.
+
+    Example:
+        ``assign_segment_labels(feat_df, kmeans_labels)[0]``.
+    """
+    profiles = cluster_profiles(df, labels)
+    std = profiles.std(ddof=0).replace(0.0, 1.0)
+    z = (profiles - profiles.mean()) / std
+
+    label_names = list(LABEL_SCORE_WEIGHTS)
+    score = np.zeros((len(profiles), len(label_names)))
+    for j, name in enumerate(label_names):
+        for feat, w in LABEL_SCORE_WEIGHTS[name].items():
+            score[:, j] += w * z[feat].to_numpy()
+
+    rows, cols = linear_sum_assignment(-score)
+    mapping = {int(profiles.index[r]): label_names[c] for r, c in zip(rows, cols, strict=False)}
+    for cluster_id in profiles.index:
+        mapping.setdefault(int(cluster_id), f"segment_{int(cluster_id)}")
+    return mapping
 
 FEATURE_COLUMNS = [
     "age_bin_encoded",
@@ -211,11 +315,12 @@ def build_segmentation_frame(
     seg_out = seg.fit_predict(df, x=x)
     kmeans_labels: np.ndarray = np.asarray(seg_out["labels"])
 
+    label_map = assign_segment_labels(df, kmeans_labels)
     labels_df = pd.DataFrame(
         {
             "entity_id": df["entity_id"].to_numpy(),
             "segment_id": kmeans_labels,
-            "segment_label": pd.Series(kmeans_labels).map(SEGMENT_LABEL_MAP).to_numpy(),
+            "segment_label": pd.Series(kmeans_labels).map(label_map).to_numpy(),
             "dbscan_noise_flag": dbscan_noise_flag,
         }
     )
