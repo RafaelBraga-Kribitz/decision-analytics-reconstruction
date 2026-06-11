@@ -27,5 +27,5 @@ RUN poetry config virtualenvs.create false && \
 
 EXPOSE 8000
 
-# railway.toml startCommand overrides CMD; default supports local compose.
-CMD ["sh", "-c", "poetry run python -m uvicorn module_b_resource_allocation.api.app:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1"]
+# Shell form so Railway's PORT expands; skip poetry run (packages on system Python).
+CMD python -m uvicorn module_b_resource_allocation.api.app:app --host 0.0.0.0 --port ${PORT:-8000} --workers 1

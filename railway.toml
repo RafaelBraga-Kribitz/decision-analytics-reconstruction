@@ -10,8 +10,8 @@ builder = "DOCKERFILE"
 dockerfilePath = "docker/Dockerfile.module-b"
 
 [deploy]
-# Railway injects $PORT; bind 0.0.0.0 to accept external connections.
-startCommand = "poetry run uvicorn module_b_resource_allocation.api.app:app --host 0.0.0.0 --port $PORT --workers 1"
+# Do not set startCommand here: Docker deploys use exec form and $PORT would not
+# expand (uvicorn error: '$PORT' is not a valid integer). Use docker/Dockerfile.module-b CMD.
 healthcheckPath = "/healthz"
 healthcheckTimeout = 300
 restartPolicyType = "on_failure"
