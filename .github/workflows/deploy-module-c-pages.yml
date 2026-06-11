@@ -65,9 +65,19 @@ jobs:
             --out-dir data/processed/module_c/run_all \
             --allocation-parquet data/processed/module_b/allocation_baseline.parquet
 
+      - name: Run Module C PPC (fast mode — fixture data)
+        env:
+          MC_FAST: "1"
+          MLFLOW_TRACKING_URI: ""
+        run: |
+          poetry run python -m module_c_forecasting_scenarios.pipeline.run_ppc \
+            --raw-csv module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv \
+            --out-dir data/processed/module_c/ppc
+
       - name: Render Quarto report
         env:
-          MODULE_C_OUT_DIR: data/processed/module_c/run_all
+          MODULE_C_OUT_DIR: ${{ github.workspace }}/data/processed/module_c/run_all
+          MODULE_C_PPC_DIR: ${{ github.workspace }}/data/processed/module_c/ppc
         run: |
           quarto render \
             module_c_forecasting_scenarios/portfolio/quarto/post_mortem.qmd \

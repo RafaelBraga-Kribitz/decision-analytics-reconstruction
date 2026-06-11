@@ -29,9 +29,32 @@ import plotly.express as px
 from plotly.subplots import make_subplots
 from IPython.display import display, HTML
 
-# Data root: set MODULE_C_OUT_DIR env var at render time (CI injects it).
-# Falls back to the standard make module-c-all output location.
-_base = Path(os.environ.get("MODULE_C_OUT_DIR", "data/processed/module_c/run_all"))
+# Data root: set MODULE_C_OUT_DIR at render time (CI injects repo-relative or absolute).
+# Quarto may execute with cwd beside this .qmd — anchor relative paths at repo root.
+def _find_repo_root() -> Path:
+    starts: list[Path] = []
+    try:
+        starts.append(Path(__file__).resolve())
+    except NameError:
+        pass
+    starts.append(Path.cwd())
+    for start in starts:
+        for parent in [start, *start.parents]:
+            if (parent / "pyproject.toml").exists() and (
+                parent / "module_c_forecasting_scenarios"
+            ).exists():
+                return parent
+    return Path.cwd()
+
+
+def _resolve_data_path(env_key: str, default_rel: str) -> Path:
+    raw = os.environ.get(env_key, default_rel)
+    path = Path(raw)
+    return path if path.is_absolute() else _find_repo_root() / path
+
+
+_base = _resolve_data_path("MODULE_C_OUT_DIR", "data/processed/module_c/run_all")
+
 
 def _load(sub: str, fname: str) -> pd.DataFrame | None:
     p = _base / sub / fname
@@ -111,12 +134,24 @@ if daily is not None:
         annotation_position="bottom right",
     )
 
-    # Outcome event date
-    fig.add_vline(
-        x="2018-04-22",
-        line_dash="dot",
-        line_color="#888",
-        annotation_text="Outcome event",
+    # Outcome event date (shape + annotation — add_vline breaks on datetime axes)
+    _outcome = pd.Timestamp("2018-04-22")
+    fig.add_shape(
+        type="line",
+        x0=_outcome,
+        x1=_outcome,
+        y0=0,
+        y1=1,
+        yref="paper",
+        line=dict(dash="dot", color="#888"),
+    )
+    fig.add_annotation(
+        x=_outcome,
+        y=1,
+        yref="paper",
+        text="Outcome event",
+        showarrow=False,
+        yanchor="bottom",
     )
 
     fig.update_layout(
@@ -373,10 +408,7 @@ Posterior predictive checks (PPC) compare re-simulated data from the fitted mode
 #| label: fig-ppc
 #| fig-cap: "Posterior predictive check: observed polls (red) vs. posterior predictive distribution (blue bands). 50%/80%/95% PPC intervals shown."
 
-from pathlib import Path as _Path
-import os as _os
-
-_ppc_dir = _Path(_os.environ.get("MODULE_C_PPC_DIR", "data/processed/module_c/ppc"))
+_ppc_dir = _resolve_data_path("MODULE_C_PPC_DIR", "data/processed/module_c/ppc")
 _ppc_png = _ppc_dir / "ppc_plot.png"
 _ppc_summary_path = _ppc_dir / "ppc_summary.json"
 
