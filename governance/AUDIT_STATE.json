@@ -98,23 +98,47 @@
       "status": "open",
       "title": "High-confidence dead-code findings remain in baseline",
       "verification_script": "scripts/check_vulture_dead_code_zero.py"
+    },
+    {
+      "category": "fake_completion",
+      "closed_at": null,
+      "id": "F-021",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-08",
+      "path": "governance/findings/F-021-live-deployment-urls.yaml",
+      "status": "open",
+      "title": "Public deployment badges point to non-live URLs",
+      "verification_script": "scripts/check_live_deployment_urls.py"
+    },
+    {
+      "category": "documentation_entropy",
+      "closed_at": null,
+      "id": "F-032",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-08",
+      "path": "governance/findings/F-032-doc-surface-reduction.yaml",
+      "status": "open",
+      "title": "Public documentation surface exceeds reviewer reading budget",
+      "verification_script": "scripts/check_public_doc_count.py"
     }
   ],
-  "generated_at": "2026-06-08T19:42:05.482732+00:00",
-  "git_branch": "chore/governance-bootstrap-replace",
-  "git_head_sha": "2b46aeaed41337a03e344e26297cb666ee02572f",
+  "generated_at": "2026-06-08T21:20:22.456532+00:00",
+  "git_branch": "main",
+  "git_head_sha": "ce5404a75ccb14fc89963819fd2137c7f49ea8f9",
   "migrations": [],
   "summary": {
     "findings_closed": 3,
     "findings_closed_historical": 2,
     "findings_in_progress": 0,
-    "findings_open": 4,
-    "findings_total": 9,
+    "findings_open": 6,
+    "findings_total": 11,
     "findings_wont_fix": 0,
     "migrations_in_progress": 0,
     "migrations_total": 0,
     "open_by_category": {
       "dead_artifacts": 2,
+      "documentation_entropy": 1,
+      "fake_completion": 1,
       "fragmented_standards": 2
     }
   },

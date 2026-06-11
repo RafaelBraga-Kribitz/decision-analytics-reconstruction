@@ -422,6 +422,25 @@ documents:
   path: governance/adrs/0002-tech-debt-ratchet.md
   last_reviewed: '2026-05-20'
 - doc_type: policy
+  doc_role: canonical
+  visibility: internal
+  audience:
+  - agent
+  - maintainer
+  authority: canonical
+  status: active
+  sensitivity: internal
+  owner: governance
+  tier_shorthand: T0
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: ADR-0003
+  path: governance/adrs/0003-charter-line-budget.md
+  last_reviewed: '2026-05-20'
+- doc_type: policy
   doc_role: reference
   visibility: internal
   audience:

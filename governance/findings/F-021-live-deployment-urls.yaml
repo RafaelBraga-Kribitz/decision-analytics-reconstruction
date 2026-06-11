@@ -1,0 +1,20 @@
+id: F-021
+title: "Public deployment badges point to non-live URLs"
+category: fake_completion
+kind: recurrence_invariant
+status: open
+opened_at: 2026-06-08
+closed_at: null
+recurrence_count: 0
+evidence: |
+  README badges advertise Module A Streamlit, Module B FastAPI docs, and Module C
+  Quarto report URLs as public artifacts. A live check on 2026-06-08 returned
+  non-200 responses for all three URLs, so the portfolio currently claims live
+  deployment before the deployment proof exists.
+verification_script: scripts/check_live_deployment_urls.py
+wont_fix_reason: null
+notes: |
+  Human deployment setup is required before closure: provision or repair the
+  Module A and B services, enable the Module C Pages report, then run the script
+  until it reports [PASS]. Do not complete documentation-density consolidation
+  before this honesty blocker is resolved or deliberately reframed.

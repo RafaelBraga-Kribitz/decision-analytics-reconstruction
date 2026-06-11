@@ -14,6 +14,8 @@ Then read `governance/SESSION_HANDOUT.md` and follow
 
 The active work queue is `governance/findings/F-*.yaml`. Work one open finding
 at a time, and close a finding only when its `verification_script` exits 0.
+For portfolio-completion triage, use `.cursor/rules/11-project-completion-decoder.mdc`
+only as a read-only decoder; findings remain the executable queue.
 
 Machine and terminology constraints still apply through:
 

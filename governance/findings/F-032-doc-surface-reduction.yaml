@@ -1,0 +1,22 @@
+id: F-032
+title: "Public documentation surface exceeds reviewer reading budget"
+category: documentation_entropy
+kind: recurrence_invariant
+status: open
+opened_at: 2026-06-08
+closed_at: null
+recurrence_count: 0
+evidence: |
+  The merged completion+density masterplan targets a single main-branch public
+  tree with about 20 reviewer-facing Markdown files. Current tracked Markdown
+  includes many operator, archive, evidence, and duplicate narrative files that
+  exceed that reading budget and dilute portfolio signal.
+verification_script: scripts/check_public_doc_count.py
+wont_fix_reason: null
+notes: |
+  Execute as sequential units, one PR at a time: first untrack operator-only
+  surfaces, then merge repeated narrative into README, ARCHITECTURE,
+  reports/VALIDATION.md, docs/DEPLOYMENT.md, a single Module B specification,
+  and CASE_STUDY.md. Do not start this consolidation before the honesty-first
+  findings for live URLs, stale generated outputs, and numeric drift are filed
+  and resolved or explicitly scheduled.
