@@ -1,6 +1,6 @@
 # Railway.app service configuration — Module B Resource Allocation API
 # Service: decision-analytics-module-b
-# URL: https://decision-analytics-module-a-production.up.railway.app  (Railway-assigned hostname)
+# URL: https://decision-analytics-module-b-production.up.railway.app  (Railway-assigned hostname)
 # Plan: Starter ($5 credit / month — sufficient for portfolio traffic)
 # Docs: https://docs.railway.app/reference/config-as-code
 

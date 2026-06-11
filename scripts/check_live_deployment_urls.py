@@ -12,7 +12,7 @@ from _governance_check import gate
 
 URLS = {
     "module_a_streamlit": "https://decision-analytics-module-a.onrender.com",
-    "module_b_fastapi_docs": "https://decision-analytics-module-a-production.up.railway.app/docs",
+    "module_b_fastapi_docs": "https://decision-analytics-module-b-production.up.railway.app/docs",
     "module_c_quarto": "https://RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction/",
 }
 
