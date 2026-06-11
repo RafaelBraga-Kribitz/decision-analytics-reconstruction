@@ -36,6 +36,7 @@ from module_b_resource_allocation.models.allocation import (
     AllocationResult,
     _expected_contacts,  # pyright: ignore[reportPrivateUsage]
 )
+from module_b_resource_allocation.models.feature_join import build_allocation_features
 
 _BROADCAST_DONORS: frozenset[str] = frozenset({"tv_spots", "radio_spots", "billboards"})
 _DIRECT_RECEIVERS: tuple[str, ...] = (
@@ -70,6 +71,7 @@ def run_broadcast_to_direct(
     routing_cost: pd.DataFrame,
     shift_share: float = 0.30,
     saturation_pct: float = 0.65,
+    reach_caps: pd.DataFrame | None = None,
 ) -> CounterfactualResult:
     """Reallocate ``shift_share`` of broadcast spend into direct channels.
 
@@ -86,6 +88,11 @@ def run_broadcast_to_direct(
     saturation_pct:
         Hard cap on per-week reach utilization for the receiving direct
         channels.
+    reach_caps:
+        Feature table carrying per-(department, channel) diminishing-returns
+        parameters. Defaults to ``build_allocation_features()`` — the same
+        table the baseline solve used by default — so counterfactual contacts
+        are recomputed with the row's true response curve.
 
     Returns
     -------
@@ -109,6 +116,16 @@ def run_broadcast_to_direct(
         raise ValueError("shift_share must be in [0, 1]")
     if not 0.0 < saturation_pct <= 1.0:
         raise ValueError("saturation_pct must be in (0, 1]")
+
+    if reach_caps is None:
+        reach_caps = build_allocation_features()
+    dr_lookup: dict[tuple[str, str], tuple[float, float]] = {
+        (str(r["department"]), str(r["channel"])): (
+            float(r["diminishing_returns_k"]),
+            float(r["diminishing_returns_inflection_pct"]),
+        )
+        for _, r in reach_caps.iterrows()
+    }
 
     base = baseline.allocation.copy()
 
@@ -201,9 +218,9 @@ def run_broadcast_to_direct(
             unit_cost_usd = 0.50
         units = spend_usd / unit_cost_usd if unit_cost_usd > 0 else 0.0
         reach_used = min(units / audience if audience > 0 else 0.0, 1.0)
-        # Use k=1.0, infl=0.5 as a conservative default if not present.
-        k = 1.0
-        infl = 0.5
+        # Row-level diminishing-returns parameters (same curve the baseline
+        # solve reported with); generic fallback only for unknown pairs.
+        k, infl = dr_lookup.get((str(row["department"]), str(row["channel"])), (1.0, 0.5))
         contacts = _expected_contacts(audience, reach_used, k, infl)
         attn_ratio = (
             float(row["persuasion_adjusted_contacts"]) / max(baseline_contacts, 1e-9)

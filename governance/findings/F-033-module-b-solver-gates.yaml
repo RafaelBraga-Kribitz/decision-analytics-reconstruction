@@ -1,0 +1,30 @@
+id: F-033
+title: "Module B solver gates were fictional: 4% effective coverage, null diagnostics, wrong counterfactual curves"
+category: fake_completion
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-11
+closed_at: 2026-06-11
+recurrence_count: 0
+evidence: |
+  models/allocation.py applied a silent `* 0.05` factor to the documented 80%
+  coverage floor (effective floor ~4% of an audience-weeks denominator that
+  itself double-counted people across channels and weeks); `binding_constraint`
+  was always null and `binding_constraints` always empty despite the schema
+  contract; the broadcast-to-direct counterfactual recomputed contacts with
+  hardcoded k=1.0/inflection=0.5 instead of row-level diminishing-returns
+  parameters; and the contract's quality_gates block (budget envelope,
+  coverage floor, solver-status allow-list) was never enforced at export.
+verification_script: scripts/check_module_b_solver_gates.py
+wont_fix_reason: null
+notes: |
+  Fixed in the truth-and-rebuild sprint (ADR-0004 themed cadence):
+  - Coverage floor now binds expected contacts >= 80% of the department
+    population proxy (largest single-channel reachable audience); baseline
+    solve remains OPTIMAL with min ratio ~16x the floor.
+  - validate_allocation_output_df loads quality_gates from
+    schema_contracts/allocation_output.yaml (contract is the SSOT) and
+    enforces budget envelope + coverage + status.
+  - Result-level binding constraints from zero-slack global constraints;
+    per-row binding_constraint reports reach_cap / paytv_block / neg_tier_cap.
+  - Counterfactual uses row-level diminishing-returns parameters.

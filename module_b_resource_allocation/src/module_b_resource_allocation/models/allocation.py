@@ -16,8 +16,9 @@ Maximize total persuasion-adjusted expected contacts subject to:
 * ``sum(x) == B`` (total USD envelope, with a small ± tolerance).
 * For every (d, c, w):
   ``x[d, c, w] / unit_cost_usd[d, c, w] <= reachable_audience[d, c]``.
-* National coverage lower bound: contacted share across departments
-  ≥ ``COVERAGE_LOWER_BOUND_PCT``.
+* Per-department coverage floor: expected contacts in each department
+  ≥ ``COVERAGE_LOWER_BOUND_PCT`` × the department's population proxy
+  (largest single-channel reachable audience).
 * Bundle constraints (conglomerate ratios + cardinality) for every active week.
 * Channel cardinality: at most one bundle membership per (d, w) row, with
   bundle equality/inequality rules per ``channel_bundles.yaml``.
@@ -51,7 +52,6 @@ from module_b_resource_allocation.constants import (
     DEPARTMENTS,
     SCENARIO_BASELINE,
     VALID_SCENARIOS,
-    WEEK_COUNT,
     WEEK_INDEX,
     WEEK_LABELS,
 )
@@ -238,10 +238,13 @@ def solve(problem: AllocationProblem) -> AllocationResult:
     y: dict[tuple[str, str, int], pulp.LpVariable] = {}
     contact_terms: list[pulp.LpAffineExpression] = []
     coverage_terms: list[pulp.LpAffineExpression] = []
-    audience_total = 0.0
 
     for d in DEPARTMENTS:
-        dept_audience = 0.0
+        # Population proxy: the largest single-channel reachable audience in the
+        # department. Channel audiences overlap the same population, so summing
+        # them (let alone multiplying by weeks) would inflate the coverage
+        # denominator by an order of magnitude.
+        dept_population_proxy = 0.0
         dept_contacts: list[pulp.LpAffineExpression] = []
         for c in CHANNEL_NAMES:
             cap_row = caps_lookup.loc[(d, c)]
@@ -297,14 +300,16 @@ def solve(problem: AllocationProblem) -> AllocationResult:
                 term = persuasion_per_unit * x_var
                 contact_terms.append(term)
                 dept_contacts.append(contacts_per_unit_eff * x_var)
-            dept_audience += audience * WEEK_COUNT
-        audience_total += dept_audience
+            dept_population_proxy = max(dept_population_proxy, audience)
 
-        # Coverage proxy: each department must receive at least
-        # COVERAGE_LOWER_BOUND_PCT * dept_audience contacts across the window.
-        if dept_audience > 0 and dept_contacts:
+        # Coverage floor: each department must receive expected contacts of at
+        # least COVERAGE_LOWER_BOUND_PCT of its population proxy across the
+        # 14-week window (contacts may repeat-touch the same person, so the
+        # floor is feasible even in low-budget runs).
+        if dept_population_proxy > 0 and dept_contacts:
             prob += (
-                pulp.lpSum(dept_contacts) >= COVERAGE_LOWER_BOUND_PCT * dept_audience * 0.05,
+                pulp.lpSum(dept_contacts)
+                >= COVERAGE_LOWER_BOUND_PCT * dept_population_proxy,
                 f"coverage_{d}",
             )
             coverage_terms.append(pulp.lpSum(dept_contacts))
@@ -449,7 +454,24 @@ def solve(problem: AllocationProblem) -> AllocationResult:
     }
 
     rows: list[dict[str, Any]] = []
+
+    # Result-level binding constraints: zero-slack global constraints
+    # (budget band, coverage floors, bundle minimum-spend floors). Bundle
+    # cardinality constraints are tight by construction so reporting them adds
+    # noise; per-cell link/cap constraints are reported per row instead.
+    _GLOBAL_PREFIXES = ("budget_", "coverage_", "bundle_min_spend_")
     binding: list[str] = []
+    for cname, con in prob.constraints.items():
+        if not str(cname).startswith(_GLOBAL_PREFIXES):
+            continue
+        slack = getattr(con, "slack", None)
+        try:
+            slack_f = float(slack) if slack is not None else None
+        except (TypeError, ValueError):
+            slack_f = None
+        if slack_f is not None and abs(slack_f) <= 1e-4:
+            binding.append(str(cname))
+    binding.sort()
 
     def _trunc_cents(v: float) -> float:
         # Truncate to cents so the cumulative output never breaches the LP envelope.
@@ -475,10 +497,27 @@ def solve(problem: AllocationProblem) -> AllocationResult:
         salience = float(cap_row["salience_multiplier"])
         hostility = float(cap_row["network_hostility"])
         scenario_w = _scenario_week_weight(problem.scenario_id, wi)
-        tier_w = _tier_penalty(str(cap_row["department_tier"]))
+        dept_tier = str(cap_row["department_tier"])
+        tier_w = _tier_penalty(dept_tier)
         persuasion = contacts * attention * salience * hostility * scenario_w * tier_w
         tier_default = str(cap_row["fx_tier_default"])
         bundle_id = CHANNEL_TO_BUNDLE.get(c)
+
+        # Per-row binding diagnostic: which hard cap (if any) this cell hit.
+        row_binding: str | None = None
+        if c == "tv_spots" and d not in _PAY_TV_ELIGIBLE:
+            row_binding = "paytv_block"
+        elif reach_used >= 0.999:
+            row_binding = "reach_cap"
+        elif (
+            dept_tier == "negligible"
+            and CHANNEL_TYPES[c] == "in_person"
+            and uc_usd > 0
+            and val_usd >= 0.05 * audience * uc_usd - 0.01
+            and val_usd > 0
+        ):
+            row_binding = "neg_tier_cap"
+
         rows.append(
             {
                 "department": d,
@@ -486,7 +525,7 @@ def solve(problem: AllocationProblem) -> AllocationResult:
                 "channel_type": CHANNEL_TYPES[c],
                 "week_index": int(wi),
                 "iso_week": w,
-                "department_tier": str(cap_row["department_tier"]),
+                "department_tier": dept_tier,
                 "region": str(cap_row["region"]),
                 "budget_allocation_usd": val_usd,
                 "budget_allocation_pyg": round(val_usd * layer.rate(w, tier_default), 2),  # type: ignore[arg-type]  # w/tier_default are str; layer.rate expects Literal types; loop controls valid values
@@ -496,7 +535,7 @@ def solve(problem: AllocationProblem) -> AllocationResult:
                 "persuasion_adjusted_contacts": round(persuasion, 4),
                 "reach_cap_population_proxy": audience,
                 "reach_utilization": round(min(reach_used, 1.5), 4),
-                "binding_constraint": None,
+                "binding_constraint": row_binding,
                 "bundle_id": bundle_id,
                 "scenario_id": problem.scenario_id,
                 "solver_status": row_solver_status,
