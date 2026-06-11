@@ -8,7 +8,8 @@ ARG INSTALL_DEV=0
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends make && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends make gcc g++ \
+    && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir poetry==2.4.0
 
@@ -27,9 +28,10 @@ RUN poetry config virtualenvs.create false && \
     if [ "$INSTALL_DEV" = "1" ]; then \
         poetry install --extras all; \
     else \
-        poetry install --only main; \
+        poetry install --only main --extras dashboard; \
     fi
 
 EXPOSE 8501
 
-CMD ["streamlit", "run", "module_a_population_segmentation/app/streamlit_dashboard.py", "--server.port=8501", "--server.address=0.0.0.0"]
+# Render injects PORT (default 10000); local compose keeps 8501 when PORT is unset.
+CMD ["sh", "-c", "streamlit run module_a_population_segmentation/app/streamlit_dashboard.py --server.port=${PORT:-8501} --server.address=0.0.0.0"]
