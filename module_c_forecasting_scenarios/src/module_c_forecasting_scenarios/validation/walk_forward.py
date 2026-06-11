@@ -2,14 +2,21 @@
 """Walk-forward out-of-sample validation for the hierarchical tracking model.
 
 For each chronologically-ordered holdout poll ``k`` (starting from
-``min_train_size``), the tracking model is refit on polls ``[0..k-1]``
-and the posterior latent margin at the holdout poll's date is used to
-predict the held-out observation. Reported metrics:
+``min_train_size``), the tracking model is refit on polls ``[0..k-1]`` and the
+held-out poll is scored against its **posterior predictive** distribution —
+``mu_margin[day] + house_offset[pollster] + Normal(0, sigma_obs(phi))`` — the
+same generative mean and noise the likelihood assigns to a poll observation.
+(Scoring against the latent ``mu_margin`` alone would omit the house effect
+and survey noise, structurally deflating coverage; that was a former bug.)
+Holdout pollsters unseen in the training fold draw their house offset from
+the population prior ``Normal(0, sigma_house)`` using posterior draws.
+
+Reported metrics:
 
 * **Brier score / log loss** — binary task ``P(margin > 0)`` vs. observed
   sign of the held-out poll margin.
 * **80% / 95% interval coverage** — fraction of held-out poll margins
-  whose observed value falls inside the posterior HDI on the holdout date.
+  whose observed value falls inside the posterior-predictive HDI.
 
 The Paraguay 2018 fixture provides only four tracking polls, so the
 walk-forward loop is small (two holdouts at ``min_train_size=2``). This
@@ -21,7 +28,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from datetime import date
-from typing import cast
+from typing import Any, cast
 
 import arviz as az
 import numpy as np
@@ -30,9 +37,11 @@ import pandas as pd
 from module_c_forecasting_scenarios.models.tracking.hierarchical import (
     _build_day_index,  # pyright: ignore[reportPrivateUsage]
     fit_tracking_hierarchical,
+    observation_sigma,
 )
 
 _EPS = 1e-6
+_PREDICTIVE_SEED = 20180422
 
 
 @dataclass(frozen=True)
@@ -70,7 +79,13 @@ def _predict_holdout(
     outcome_event_date: date,
     calibration_series: str,
 ) -> dict[str, float]:
-    """Fit on ``train`` and extract posterior of latent margin at holdout's date."""
+    """Fit on ``train`` and score the holdout against its posterior predictive.
+
+    The predictive distribution for a held-out poll observation is
+    ``mu_margin[day] + house_offset[pollster] + Normal(0, sigma_obs(phi))`` —
+    matching the model's likelihood for poll data. Unseen pollsters draw their
+    house offset from ``Normal(0, sigma_house)`` posterior draws.
+    """
     idata = fit_tracking_hierarchical(
         train,
         outcome_event_date=outcome_event_date,
@@ -92,8 +107,31 @@ def _predict_holdout(
     day_label = clamped.strftime("%Y-%m-%d")
     day_idx = day_strs.index(day_label)
 
-    post = cast(object, idata.posterior["mu_margin"])  # type: ignore[union-attr]
-    samples = np.asarray(post.isel(day=day_idx).values).reshape(-1)  # type: ignore[attr-defined]
+    posterior = idata.posterior  # type: ignore[union-attr]
+    mu_samples = np.asarray(
+        cast(Any, posterior["mu_margin"]).isel(day=day_idx).values
+    ).reshape(-1)
+
+    # House effect for the holdout's pollster: posterior draws when seen in
+    # training, otherwise the population prior Normal(0, sigma_house).
+    rng = np.random.default_rng(_PREDICTIVE_SEED)
+    pollster_id = str(holdout_row["pollster_id"])
+    trained_pollsters = [str(p) for p in np.asarray(cast(Any, posterior["pollster"]).values)]
+    if pollster_id in trained_pollsters:
+        house_samples = np.asarray(
+            cast(Any, posterior["house_offset"]).sel(pollster=pollster_id).values
+        ).reshape(-1)
+    else:
+        sigma_h_samples = np.asarray(cast(Any, posterior["sigma_house"]).values).reshape(-1)
+        house_samples = rng.normal(0.0, sigma_h_samples)
+
+    # Survey observation noise from the holdout's transparency index — the
+    # same heteroskedastic scale the likelihood would assign.
+    phi = float(holdout_row["phi_transparency"])
+    sigma_obs = float(np.asarray(observation_sigma(phi)))
+    noise = rng.normal(0.0, sigma_obs, size=mu_samples.shape[0])
+
+    samples = mu_samples + house_samples + noise
 
     hdi80_low, hdi80_high = _hdi_bounds(samples, hdi_prob=0.80)
     hdi95_low, hdi95_high = _hdi_bounds(samples, hdi_prob=0.95)

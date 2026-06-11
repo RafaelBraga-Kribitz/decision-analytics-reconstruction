@@ -58,7 +58,10 @@ def fit_exit_quickcount(
     oea = exit_df["oea_timing_compliant"].fillna(False).astype(float).to_numpy()
     eu = exit_df["eu_release_window_flag"].fillna(False).astype(float).to_numpy()
     with pm.Model():
-        intercept = pm.Normal("intercept", mu=60.0, sigma=15.0)
+        # Weakly-informative prior on the *margin* scale (pp difference, not a
+        # percentage level). A legacy mu=60 prior — percentage-level thinking —
+        # pulled posterior margins upward on ~30 pp data.
+        intercept = pm.Normal("intercept", mu=0.0, sigma=30.0)
         beta_oea = pm.Normal("beta_oea", mu=0.0, sigma=5.0)
         beta_eu = pm.Normal("beta_eu", mu=0.0, sigma=5.0)
         sigma = pm.HalfNormal("sigma", 8.0)

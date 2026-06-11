@@ -82,6 +82,11 @@ def test_walk_forward_runs_and_reports_metrics() -> None:
     assert result.metrics["coverage_95pct"] >= result.metrics["coverage_80pct"] - 1e-9
     assert result.metrics["brier_score"] >= 0.0
     assert result.metrics["log_loss"] >= 0.0
+    # Estimand regression: holdouts must be scored against the posterior
+    # predictive (latent + house effect + survey noise). On well-specified
+    # synthetic data the predictive 95% interval must cover most holdouts;
+    # the former latent-only scoring produced 0% coverage here.
+    assert result.metrics["coverage_95pct"] >= 2.0 / 3.0
 
 
 def test_walk_forward_raises_when_too_few_polls() -> None:

@@ -69,6 +69,15 @@ def _build_day_index(
     return days, poll_day_idx
 
 
+def observation_sigma(phi: np.ndarray | float) -> np.ndarray | float:
+    """Survey observation noise (pp) from the transparency index ``phi``.
+
+    Single source of truth for the heteroskedastic likelihood scale — used by
+    the model fit and by walk-forward posterior-predictive scoring.
+    """
+    return np.clip(6.0 / np.sqrt(np.maximum(phi, 0.05)), 1.0, 25.0)
+
+
 def fit_tracking_hierarchical(
     tracking: pd.DataFrame,
     *,
@@ -84,7 +93,7 @@ def fit_tracking_hierarchical(
     p2i = {p: i for i, p in enumerate(pollsters)}
     pollster_idx = np.array([p2i[str(x)] for x in tracking["pollster_id"]], dtype=np.int64)
     phi = tracking["phi_transparency"].to_numpy(dtype=np.float64)
-    sigma_obs = np.clip(6.0 / np.sqrt(np.maximum(phi, 0.05)), 1.0, 25.0)
+    sigma_obs = observation_sigma(phi)
 
     day_labels = [d.strftime("%Y-%m-%d") for d in days]
 

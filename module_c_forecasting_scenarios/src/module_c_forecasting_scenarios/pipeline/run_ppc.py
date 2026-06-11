@@ -31,6 +31,34 @@ from module_c_forecasting_scenarios.viz.ppc_plot import generate_ppc_plot
 logger = logging.getLogger(__name__)
 
 
+def calibration_verdict_from_coverage(cov80: float, cov95: float) -> str:
+    """Map empirical PPC interval coverages to a calibration verdict.
+
+    Both interval levels must behave: a 95% band wide enough to cover
+    everything is not "calibrated" when the 80% band misses badly (the former
+    rubric labelled exactly that case calibrated).
+
+    Args:
+        cov80: Fraction of observations inside the 80% predictive interval.
+        cov95: Fraction of observations inside the 95% predictive interval.
+
+    Returns:
+        One of ``calibrated``, ``under-confident``, ``miscalibrated-shape``,
+        ``slightly-over-confident``, ``over-confident``, ``prior-dominated``.
+    """
+    if cov80 == 0.0 and cov95 == 0.0:
+        return "prior-dominated"
+    if cov95 >= 0.90 and 0.60 <= cov80 <= 0.95:
+        return "calibrated"
+    if cov95 >= 0.90 and cov80 > 0.95:
+        return "under-confident"
+    if cov95 >= 0.90:
+        return "miscalibrated-shape"
+    if cov95 >= 0.70:
+        return "slightly-over-confident"
+    return "over-confident"
+
+
 def run_ppc(
     tracking_csv: Path,
     out_dir: Path,
@@ -90,14 +118,7 @@ def run_ppc(
     cov80 = in80 / n
     cov95 = in95 / n
 
-    if cov95 >= 0.90:
-        calibration_verdict = "calibrated"
-    elif cov95 >= 0.70:
-        calibration_verdict = "slightly-over-confident"
-    elif cov80 == 0.0 and cov95 == 0.0:
-        calibration_verdict = "prior-dominated"
-    else:
-        calibration_verdict = "over-confident"
+    calibration_verdict = calibration_verdict_from_coverage(cov80, cov95)
 
     _, poll_day_idx = _build_day_index(tracking, outcome)
     days_spanned = int(poll_day_idx.max() - poll_day_idx.min()) if len(poll_day_idx) > 1 else 0

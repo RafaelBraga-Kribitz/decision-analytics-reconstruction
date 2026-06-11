@@ -1,0 +1,33 @@
+id: F-034
+title: "Module C scored the wrong estimand in walk-forward and mislabelled PPC calibration"
+category: fake_completion
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-11
+closed_at: 2026-06-11
+recurrence_count: 0
+evidence: |
+  validation/walk_forward.py scored held-out polls against the latent
+  mu_margin alone — omitting the pollster house offset and survey observation
+  noise that the model's own likelihood assigns to a poll observation —
+  structurally deflating interval coverage to 0% on the Paraguay fixture.
+  pipeline/run_ppc.py labelled any run with cov95 >= 0.90 "calibrated" even
+  when the 80% band missed badly (wide-band trap). models/exit/exit_model.py
+  put a Normal(60, 15) prior on a ~30pp margin intercept (percentage-level
+  thinking on a margin-scale parameter). config/shock_params.yaml's
+  m_star_extreme_pp was never read; the 12pp threshold was hardcoded.
+verification_script: scripts/check_module_c_estimand_gates.py
+wont_fix_reason: null
+notes: |
+  Fixed in the truth-and-rebuild sprint (ADR-0004 themed cadence):
+  - Walk-forward scores the posterior predictive of the held-out observation:
+    mu_margin[day] + house_offset[pollster] + Normal(0, sigma_obs(phi));
+    unseen pollsters draw house offsets from Normal(0, sigma_house) posterior
+    draws. Shared observation_sigma() prevents fit/validation drift.
+  - calibration_verdict_from_coverage() requires both interval levels to
+    behave; wide-band runs are now "under-confident"/"miscalibrated-shape".
+  - Exit intercept prior is weakly informative on the margin scale
+    (Normal(0, 30)).
+  - scenario_bucket_for_margin reads m_star_extreme_pp from shock_params.yaml.
+  Regression locks: test_core_correctness_gates.py and the >= 2/3
+  walk-forward coverage assertion in test_walk_forward.py.

@@ -39,8 +39,16 @@ def shock_score_s(
     return float(s * scale)
 
 
-def scenario_bucket_for_margin(m_poll_pp: float, m_star_pp: float, phi: float, rho: float) -> str:
-    extreme = abs(m_poll_pp - m_star_pp) >= 12.0
+def scenario_bucket_for_margin(
+    m_poll_pp: float,
+    m_star_pp: float,
+    phi: float,
+    rho: float,
+    params: dict[str, object] | None = None,
+) -> str:
+    p = params or load_shock_params()
+    extreme_pp = float(p.get("m_star_extreme_pp", 12.0))  # type: ignore[arg-type]  # dict[str, object] value; runtime is float
+    extreme = abs(m_poll_pp - m_star_pp) >= extreme_pp
     opaque = phi < 0.35
     if extreme and opaque and rho > 0.4:
         return "compounded_herd"
