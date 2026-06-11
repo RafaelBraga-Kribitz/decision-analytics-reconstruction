@@ -1,0 +1,32 @@
+id: F-036
+title: "Module C calibration anchor m-star never entered the Bayesian likelihood"
+category: fake_completion
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-11
+closed_at: 2026-06-11
+recurrence_count: 0
+evidence: |
+  The tracking model (models/tracking/hierarchical.py) fit only poll
+  observations; the verified outcome margin m-star (calibration.yaml,
+  series A: +3.70pp / series B: +3.88pp) was used for narrative bracket QA
+  and seed matrices but never constrained the posterior. "Calibrated
+  forecasting" was therefore a documentation claim, not a model property.
+verification_script: scripts/check_module_c_outcome_anchor.py
+wont_fix_reason: null
+notes: |
+  Rebuilt in the truth-and-rebuild sprint (model version
+  c_tracking_hierarchical_v0.2):
+  - Soft Gaussian outcome anchor on the terminal latent margin:
+    m_star ~ Normal(mu_margin[-1], outcome_anchor_sigma_pp), series-aware,
+    configured via calibration.yaml (use_outcome_anchor,
+    outcome_anchor_sigma_pp; default 0.5pp).
+  - House effects deliberately excluded from the anchor (the outcome is not
+    a survey measurement).
+  - Walk-forward validation never receives the anchor (no outcome leakage in
+    out-of-sample claims); run_tracking and run_ppc fit the production
+    anchored model.
+  - Sensitivity suite tests/test_outcome_anchor.py proves the anchor is
+    structural: tight anchor pins terminal margin to m-star against 12pp
+    contrarian polls, unanchored fit follows polls, series A|B move the
+    terminal state independently, loose anchors interpolate monotonically.

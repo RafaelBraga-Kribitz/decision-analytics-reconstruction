@@ -84,11 +84,16 @@ def run_ppc(
     raw = load_raw_polls_csv(tracking_csv)
     tracking, _ = clean_raw_polls(raw, series)
 
+    # PPC runs against the production model, anchor included when configured.
+    m_star = float(cal["anchors"][series]["margin_m_star_pp"])
+    use_anchor = bool(cal.get("use_outcome_anchor", True))
     idata = fit_tracking_hierarchical(
         tracking,
         outcome_event_date=outcome,
         calibration_series=series,
         sample_ppc=True,
+        m_star_pp=m_star if use_anchor else None,
+        anchor_sigma_pp=float(cal.get("outcome_anchor_sigma_pp", 0.5)),
     )
 
     out_dir.mkdir(parents=True, exist_ok=True)

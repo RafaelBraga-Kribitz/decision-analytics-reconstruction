@@ -49,11 +49,15 @@ def main(argv: list[str] | None = None) -> None:
     seed.to_csv(args.out_dir / "house_effect_seed_matrix.csv", index=False)
     audit = build_polling_transparency_audit(tracking)
     audit.to_csv(args.out_dir / "polling_transparency_audit.csv", index=False)
+    anchor_sigma = float(cal.get("outcome_anchor_sigma_pp", 0.5))
+    use_anchor = bool(cal.get("use_outcome_anchor", True))
     _, daily, houses = run_tracking_fit_and_export(
         tracking,
         args.out_dir,
         outcome_event_date=outcome,
         calibration_series=series,
+        m_star_pp=m_star if use_anchor else None,
+        anchor_sigma_pp=anchor_sigma,
     )
     validate_dataframe_contract(daily, "daily_posterior_forecast")
     validate_dataframe_contract(houses, "posterior_house_effects")

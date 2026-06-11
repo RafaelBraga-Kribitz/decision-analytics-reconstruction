@@ -15,7 +15,7 @@ import yaml
 
 from module_c_forecasting_scenarios.paths import module_config_dir
 
-MODEL_VERSION = "c_tracking_hierarchical_v0.1"
+MODEL_VERSION = "c_tracking_hierarchical_v0.2"  # v0.2: soft m-star outcome anchor in likelihood
 
 
 def _sampler_kwargs() -> dict[str, Any]:
@@ -84,9 +84,32 @@ def fit_tracking_hierarchical(
     outcome_event_date: date,
     calibration_series: str,
     sample_ppc: bool = False,
+    m_star_pp: float | None = None,
+    anchor_sigma_pp: float = 0.5,
 ) -> az.InferenceData:
+    """Fit the latent-margin random walk with pollster house effects.
+
+    Args:
+        tracking: Cleaned tracking polls (``clean_raw_polls`` output).
+        outcome_event_date: Outcome event date; the day grid ends on its eve.
+        calibration_series: ``"A"`` or ``"B"`` — selects the m★ convention and
+            is recorded in provenance attrs.
+        sample_ppc: Extend the InferenceData with posterior predictive draws.
+        m_star_pp: Verified outcome margin for the active series. When given,
+            a soft Gaussian **outcome anchor** enters the likelihood on the
+            terminal latent state: ``m★ ~ Normal(mu_margin[-1], anchor_sigma)``.
+            This is what makes the reconstruction's "calibrated forecasting"
+            structurally true rather than narrative. Leave ``None`` for honest
+            out-of-sample validation (walk-forward must never see the outcome).
+        anchor_sigma_pp: Anchor strength in percentage points. Small values
+            pin the terminal margin to m★; large values let poll evidence
+            dominate. Sensitivity is exercised in
+            ``tests/test_outcome_anchor.py``.
+    """
     if tracking.empty:
         raise ValueError("tracking dataframe is empty")
+    if anchor_sigma_pp <= 0:
+        raise ValueError("anchor_sigma_pp must be positive")
     days, poll_day_idx = _build_day_index(tracking, outcome_event_date)
     y = tracking["m_poll_pp"].to_numpy(dtype=np.float64)
     pollsters = sorted(tracking["pollster_id"].astype(str).unique())
@@ -105,6 +128,16 @@ def fit_tracking_hierarchical(
         house_offset = pm.Normal("house_offset", 0.0, sigma=sigma_h, dims="pollster")
         mu_poll = mu_margin[poll_day_idx] + house_offset[pollster_idx]
         pm.Normal("obs", mu=mu_poll, sigma=sigma_obs, observed=y)
+        if m_star_pp is not None:
+            # Soft terminal anchor: the verified outcome margin constrains the
+            # latent margin on the eve of the outcome event. House effects do
+            # NOT enter — the outcome is not a survey measurement.
+            pm.Normal(
+                "outcome_anchor",
+                mu=mu_margin[-1],
+                sigma=float(anchor_sigma_pp),
+                observed=float(m_star_pp),
+            )
         sk = _sampler_kwargs()
         idata = pm.sample(**sk, progressbar=False)
         if sample_ppc:
@@ -113,6 +146,8 @@ def fit_tracking_hierarchical(
             )
     idata.attrs["calibration_series"] = calibration_series
     idata.attrs["model_version"] = MODEL_VERSION
+    idata.attrs["outcome_anchor_m_star_pp"] = "" if m_star_pp is None else float(m_star_pp)
+    idata.attrs["outcome_anchor_sigma_pp"] = float(anchor_sigma_pp)
     return idata
 
 
@@ -177,12 +212,16 @@ def run_tracking_fit_and_export(
     *,
     outcome_event_date: date,
     calibration_series: str,
+    m_star_pp: float | None = None,
+    anchor_sigma_pp: float = 0.5,
 ) -> tuple[az.InferenceData, pd.DataFrame, pd.DataFrame]:
     days, _ = _build_day_index(tracking, outcome_event_date)
     idata = fit_tracking_hierarchical(
         tracking,
         outcome_event_date=outcome_event_date,
         calibration_series=calibration_series,
+        m_star_pp=m_star_pp,
+        anchor_sigma_pp=anchor_sigma_pp,
     )
     pollsters = sorted(tracking["pollster_id"].astype(str).unique())
     daily = export_daily_posterior_table(idata, days, calibration_series)

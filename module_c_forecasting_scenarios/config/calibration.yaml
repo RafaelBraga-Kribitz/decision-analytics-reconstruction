@@ -16,3 +16,10 @@ anchors:
 # Posterior bracket QA (percentage points) vs active series m*
 posterior_margin_tolerance_pp: 4.0
 outcome_event_date: "2018-04-22"
+
+# Outcome anchor (reconstruction calibration): the active series' m* enters
+# the tracking likelihood as a soft Gaussian anchor on the terminal latent
+# margin (eve of the outcome event). Disable for out-of-sample experiments;
+# walk-forward validation NEVER uses the anchor regardless of this flag.
+use_outcome_anchor: true
+outcome_anchor_sigma_pp: 0.5
