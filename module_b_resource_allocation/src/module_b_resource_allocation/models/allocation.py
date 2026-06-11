@@ -25,10 +25,13 @@ Maximize total persuasion-adjusted expected contacts subject to:
 * Tier-eligibility hard locks: ``negligible`` departments may not host
   in-person channels above a 5% population-share spend ceiling.
 
-The model uses piecewise-linear diminishing returns by linearizing each
-channel's response curve at a single inflection point — this keeps the model
-LP-friendly while preserving the reach-saturation shape Module B's spec
-requires.
+The model uses piecewise-linear diminishing returns: each (department,
+channel, week) cell's spend is split across K-1 chord segments of the exact
+``_expected_contacts`` response curve (K=6 reach breakpoints — 0, the
+inflection, and an even split of the saturating tail). The curve is concave
+for all configured parameters, so segments fill in order without extra
+binaries, and the optimizer's objective is the chord interpolant of the SAME
+curve the post-solve report evaluates (identity gated in tests).
 """
 
 from __future__ import annotations
@@ -80,6 +83,49 @@ def _expected_contacts(
 
 
 _CONFIG_DIR = Path(__file__).resolve().parents[3] / "config"
+
+#: Number of piecewise-linear breakpoints on the reach axis (K=6 → 5 segments).
+_K_REACH_BREAKPOINTS = 6
+
+
+def _reach_breakpoints(inflection_pct: float, k: int = _K_REACH_BREAKPOINTS) -> list[float]:
+    """K breakpoints on the reach axis, exact at 0 and the inflection.
+
+    The first segment covers the linear region [0, inflection]; the remaining
+    segments split the saturating tail evenly up to full reach (r = 1).
+    """
+    infl = min(max(float(inflection_pct), 0.0), 1.0)
+    n_above = k - 2
+    pts = [0.0, infl] + [infl + (1.0 - infl) * j / n_above for j in range(1, n_above + 1)]
+    return sorted({round(p, 6) for p in pts})
+
+
+def _pl_segments(
+    audience: float, uc_usd: float, k_dim: float, inflection: float
+) -> list[tuple[float, float]]:
+    """Piecewise-linear segments of the response curve in USD space.
+
+    Returns ``[(width_usd, contacts_per_usd), ...]`` chords of
+    :func:`_expected_contacts` between reach breakpoints. The curve is concave
+    for all configured (k, inflection), so slopes are non-increasing and an
+    LP maximization fills segments in order — the objective equals the chord
+    interpolant of the same curve the post-solve report evaluates.
+    """
+    bps = _reach_breakpoints(inflection)
+    segments: list[tuple[float, float]] = []
+    prev_slope = float("inf")
+    for r_lo, r_hi in zip(bps[:-1], bps[1:]):
+        width_usd = (r_hi - r_lo) * audience * uc_usd
+        if width_usd <= 0:
+            continue
+        f_lo = _expected_contacts(audience, r_lo, k_dim, inflection)
+        f_hi = _expected_contacts(audience, r_hi, k_dim, inflection)
+        slope = (f_hi - f_lo) / width_usd
+        # Guard concavity against floating-point noise so greedy filling holds.
+        slope = min(slope, prev_slope)
+        prev_slope = slope
+        segments.append((width_usd, max(slope, 0.0)))
+    return segments
 
 
 @dataclass(frozen=True)
@@ -256,12 +302,6 @@ def solve(problem: AllocationProblem) -> AllocationResult:
             inflection = float(cap_row["diminishing_returns_inflection_pct"])
             k_dim = float(cap_row["diminishing_returns_k"])
 
-            # Two linear segments approximating the diminishing-returns curve.
-            # Below inflection: 1.0 contact per unit cap; above: avg saturation
-            # ≈ (1 - exp(-k * 0.5)) / 0.5 over the residual.
-            avg_residual = (1.0 - math.exp(-k_dim * 0.5)) / 0.5  # in (0, 1]
-            avg_residual = max(min(avg_residual, 1.0), 0.0)
-
             for wi, w in enumerate(WEEK_LABELS, start=1):
                 uc_usd = _unit_cost_usd(cap_row, layer, w)
                 if uc_usd <= 0:
@@ -285,21 +325,28 @@ def solve(problem: AllocationProblem) -> AllocationResult:
                 if c == "tv_spots" and d not in _PAY_TV_ELIGIBLE:
                     prob += x_var == 0.0, f"paytv_block_{d}_w{wi}"
 
-                # Contact contribution: piecewise-linear approximation (single
-                # blended slope below/above the inflection share).
-                contacts_per_unit_below = 1.0 / uc_usd
-                contacts_per_unit_above = avg_residual / uc_usd
-                # Use the convex combination weighted by inflection point.
-                contacts_per_unit_eff = (
-                    inflection * contacts_per_unit_below
-                    + (1.0 - inflection) * contacts_per_unit_above
-                )
-                persuasion_per_unit = (
-                    contacts_per_unit_eff * attention * salience * hostility * scenario_w * tier_w
-                )
-                term = persuasion_per_unit * x_var
-                contact_terms.append(term)
-                dept_contacts.append(contacts_per_unit_eff * x_var)
+                # Objective-consistent piecewise-linear response: K=6 reach
+                # breakpoints chord the SAME _expected_contacts curve the
+                # post-solve report evaluates. Concavity makes segment order
+                # self-enforcing (no extra binaries).
+                segments = _pl_segments(audience, uc_usd, k_dim, inflection)
+                seg_vars: list[pulp.LpVariable] = []
+                cell_contacts_terms: list[pulp.LpAffineExpression] = []
+                for j, (width_usd, slope) in enumerate(segments):
+                    s_var = pulp.LpVariable(
+                        f"xseg_{d}_{c}_w{wi}_s{j}",
+                        lowBound=0.0,
+                        upBound=width_usd,
+                        cat="Continuous",
+                    )
+                    seg_vars.append(s_var)
+                    cell_contacts_terms.append(slope * s_var)
+                prob += x_var == pulp.lpSum(seg_vars), f"seg_total_{d}_{c}_w{wi}"
+
+                cell_contacts = pulp.lpSum(cell_contacts_terms)
+                persuasion_mult = attention * salience * hostility * scenario_w * tier_w
+                contact_terms.append(persuasion_mult * cell_contacts)
+                dept_contacts.append(cell_contacts)
             dept_population_proxy = max(dept_population_proxy, audience)
 
         # Coverage floor: each department must receive expected contacts of at
@@ -389,13 +436,16 @@ def solve(problem: AllocationProblem) -> AllocationResult:
             )
             prob += bundle_total >= floor * z, f"bundle_min_spend_{bundle_id}"
 
-    # In-person channels in 'negligible' tier capped at 5% of dept audience.
-    in_person = {c for c, t in CHANNEL_TYPES.items() if t == "in_person"}
+    # Ground channels (physical presence: in-person ops and sound cars) in
+    # 'negligible' tier capped at 5% of dept audience.
+    ground_channels = {
+        c for c, t in CHANNEL_TYPES.items() if t in {"in_person", "broadcast_to_bilateral"}
+    }
     for d in DEPARTMENTS:
         tier = str(caps_lookup.loc[(d, "tv_spots"), "department_tier"])
         if tier != "negligible":
             continue
-        for c in in_person:
+        for c in ground_channels:
             for wi in WEEK_INDEX:
                 if (d, c, wi) not in x:
                     continue
@@ -445,12 +495,14 @@ def solve(problem: AllocationProblem) -> AllocationResult:
         _status_label = str(pulp.LpStatus[status])
     except Exception:
         _status_label = f"code_{int(status)}"
+    objective_value = pulp.value(prob.objective)
     lp_diagnostics: dict[str, Any] = {
         "budget_upper_pi": _constraint_pi("budget_upper"),
         "budget_lower_pi": _constraint_pi("budget_lower"),
         "pulp_status_code": int(status),
         "pulp_status_label": _status_label,
         "reach_cap_duals_top5": cap_dual_rows[:5],
+        "objective_value": float(objective_value) if objective_value is not None else None,
     }
 
     rows: list[dict[str, Any]] = []
@@ -511,7 +563,7 @@ def solve(problem: AllocationProblem) -> AllocationResult:
             row_binding = "reach_cap"
         elif (
             dept_tier == "negligible"
-            and CHANNEL_TYPES[c] == "in_person"
+            and CHANNEL_TYPES[c] in {"in_person", "broadcast_to_bilateral"}
             and uc_usd > 0
             and val_usd >= 0.05 * audience * uc_usd - 0.01
             and val_usd > 0

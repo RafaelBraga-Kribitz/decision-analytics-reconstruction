@@ -1,0 +1,36 @@
+id: F-037
+title: "Module B MILP maximized a different objective than it reported"
+status: closed
+severity: high
+category: statistical-rigor
+opened_at: 2026-06-11
+closed_at: 2026-06-11
+owner: remediator
+finding: >
+  The MILP objective used a single blended slope per (department, channel,
+  week) cell — a convex combination of below/above-inflection efficiency —
+  while the post-solve report evaluated the exact saturating response curve
+  (_expected_contacts). The optimizer therefore maximized a quantity that was
+  not the one shown to reviewers: spend placement was systematically biased
+  toward cells where the blended proxy over-credits saturated reach, and the
+  reported "optimal" contacts were not optimal for the reported curve.
+  Additionally, the negligible-tier ground-operations cap silently omitted
+  sound_cars (channel_type broadcast_to_bilateral), a latent policy gap that
+  the proxy objective's economics had masked.
+remediation: >
+  Rebuilt the objective as an objective-consistent piecewise-linear chord
+  interpolant of the SAME _expected_contacts curve, using K=6 reach
+  breakpoints (0, the inflection, and an even split of the saturating tail)
+  per cell. Concavity of the response curve for all configured (k,
+  inflection) makes segment fill order self-enforcing — no extra binaries.
+  Exposed the solved objective value in lp_diagnostics and added an identity
+  gate asserting |objective - reported persuasion contacts| / reported <
+  0.5% (measured: 0.0001%). Extended the negligible-tier 5% cap to all
+  ground channels (in_person + broadcast_to_bilateral, i.e. sound_cars).
+verification_script: scripts/check_module_b_objective_identity.py
+artifacts:
+  - module_b_resource_allocation/src/module_b_resource_allocation/models/allocation.py
+  - module_b_resource_allocation/tests/test_objective_identity.py
+notes: >
+  Part of the Truth and Rebuild Sprint (ADR-0004 themed cadence). The full
+  Module B suite (256 tests) passes against the rebuilt objective.
