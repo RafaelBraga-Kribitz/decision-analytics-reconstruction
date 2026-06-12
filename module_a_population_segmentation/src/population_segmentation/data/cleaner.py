@@ -192,7 +192,7 @@ def _ensure_internet_flag(
 
 def clean_population(
     raw_df: pd.DataFrame,
-    config: dict[str, Any],
+    config: dict[str, Any],  # generation.yaml nested knobs; single TypedDict deferred
     qa_report_dir: str | Path | None = None,
     seed: int | None = 42,
 ) -> pd.DataFrame:

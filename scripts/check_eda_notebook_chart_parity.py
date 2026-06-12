@@ -53,7 +53,12 @@ def _check_c8_layout(gen_full: str) -> list[str]:
 
 def main() -> int:
     if not GENERATOR.is_file() or not NOTEBOOK_BUILDER.is_file():
-        return gate("F-049", Path(__file__).name, False, "missing generate_eda.py or build_notebook.py")
+        return gate(
+            "F-049",
+            Path(__file__).name,
+            False,
+            "missing generate_eda.py or build_notebook.py",
+        )
 
     gen_full = GENERATOR.read_text(encoding="utf-8")
     gen_c2 = _extract_c2_generator_block(gen_full)
@@ -61,7 +66,9 @@ def main() -> int:
     gaps = _check_c2_parity(gen_c2, nb_c2) + _check_c8_layout(gen_full)
 
     ok = not gaps
-    detail = "; ".join(gaps) if gaps else "EDA notebook builder aligned with canonical chart definitions"
+    detail = (
+        "; ".join(gaps) if gaps else "EDA notebook builder aligned with canonical chart definitions"
+    )
     return gate("F-049", Path(__file__).name, ok, detail)
 
 

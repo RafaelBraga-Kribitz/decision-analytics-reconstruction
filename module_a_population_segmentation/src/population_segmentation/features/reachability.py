@@ -9,9 +9,7 @@ from typing import TypedDict
 import pandas as pd
 import yaml
 
-_DEFAULT_MODEL_PARAMS = (
-    Path(__file__).resolve().parents[3] / "config" / "model_params.yaml"
-)
+_DEFAULT_MODEL_PARAMS = Path(__file__).resolve().parents[3] / "config" / "model_params.yaml"
 
 
 class ReachabilityWeights(TypedDict):
@@ -21,7 +19,22 @@ class ReachabilityWeights(TypedDict):
 
 
 def load_reachability_weights(config_path: Path | None = None) -> ReachabilityWeights:
-    """Load reachability index weights from ``model_params.yaml``."""
+    """Load reachability index weights from ``model_params.yaml``.
+
+    Args:
+        config_path: Optional override for the YAML path; defaults to
+            ``module_a_population_segmentation/config/model_params.yaml``.
+
+    Returns:
+        Weight triple for digital, broadcast TV, and broadcast radio indices.
+
+    Raises:
+        FileNotFoundError: When ``config_path`` does not exist.
+        KeyError: When ``reachability_weights`` is missing from the YAML.
+
+    Example:
+        ``load_reachability_weights()["digital"]``.
+    """
     path = config_path or _DEFAULT_MODEL_PARAMS
     with open(path, encoding="utf-8") as handle:
         params = yaml.safe_load(handle)

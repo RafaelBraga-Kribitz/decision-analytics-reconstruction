@@ -144,14 +144,15 @@ def build_allocation_features(
             profile = department_media_profile(seg_dept)
 
     if profile is not None:
+        dept_series = cast(pd.Series, df["department"])
         for channel, source_col in CHANNEL_PENETRATION_SOURCE.items():
-            measured = df["department"].map(profile[source_col])
+            penetration_by_dept = cast(pd.Series, profile[source_col]).to_dict()
+            measured = dept_series.map(penetration_by_dept)
             replace = (df["channel"] == channel) & measured.notna()
             df.loc[replace, "reach_cap_share"] = measured[replace]
             df.loc[replace, "provenance"] = "MODULE_A"
-        df["dept_mean_propensity"] = (
-            df["department"].map(profile["mean_participation_propensity"]).fillna(1.0)
-        )
+        propensity_by_dept = cast(pd.Series, profile["mean_participation_propensity"]).to_dict()
+        df["dept_mean_propensity"] = dept_series.map(propensity_by_dept).fillna(1.0)
     else:
         df["dept_mean_propensity"] = 1.0
 

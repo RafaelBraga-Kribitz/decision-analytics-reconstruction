@@ -10,7 +10,7 @@ index order is never assumed to mean anything.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, cast
 
 import numpy as np
 import pandas as pd
@@ -87,7 +87,7 @@ def cluster_profiles(df: pd.DataFrame, labels: np.ndarray) -> pd.DataFrame:
             "cluster": labels,
         }
     )
-    return prof.groupby("cluster").mean()
+    return cast(pd.DataFrame, prof.groupby("cluster").mean())
 
 
 def assign_segment_labels(df: pd.DataFrame, labels: np.ndarray) -> dict[int, str]:
@@ -113,7 +113,7 @@ def assign_segment_labels(df: pd.DataFrame, labels: np.ndarray) -> dict[int, str
         ``assign_segment_labels(feat_df, kmeans_labels)[0]``.
     """
     profiles = cluster_profiles(df, labels)
-    std = profiles.std(ddof=0).replace(0.0, 1.0)
+    std = cast(pd.Series, profiles.std(ddof=0)).replace(0.0, 1.0)
     z = (profiles - profiles.mean()) / std
 
     label_names = list(LABEL_SCORE_WEIGHTS)
@@ -123,7 +123,8 @@ def assign_segment_labels(df: pd.DataFrame, labels: np.ndarray) -> dict[int, str
             score[:, j] += w * z[feat].to_numpy()
 
     rows, cols = linear_sum_assignment(-score)
-    mapping = {int(profiles.index[r]): label_names[c] for r, c in zip(rows, cols, strict=False)}
+    cluster_ids = profiles.index.to_numpy()
+    mapping = {int(cluster_ids[r]): label_names[c] for r, c in zip(rows, cols, strict=False)}
     for cluster_id in profiles.index:
         mapping.setdefault(int(cluster_id), f"segment_{int(cluster_id)}")
     return mapping
