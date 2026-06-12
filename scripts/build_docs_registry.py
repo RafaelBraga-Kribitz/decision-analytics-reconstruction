@@ -257,7 +257,7 @@ def main() -> int:
                     "module_b_resource_allocation/src/module_b_resource_allocation/constants.py",
                     "schema_contracts/budget_envelope.yaml",
                 ],
-                "allow_in_docs": ["DOC-DLOG-001"],
+                "allow_in_docs": ["DOC-REP-SSOT-001"],
             }
         },
         "documents": documents,

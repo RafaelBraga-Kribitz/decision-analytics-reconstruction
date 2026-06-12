@@ -187,6 +187,15 @@ def run_export(
             "propensity": 42,
         },
     )
+    manifest_payload["segmentation_metrics"] = {
+        "silhouette": float(seg_metrics.get("silhouette", 0.0)),
+        "bootstrap_ari": float(seg_metrics.get("bootstrap_ari", 0.0)),
+        "noise_rate": float(seg_metrics.get("noise_rate", 0.0)),
+    }
+    manifest_payload["propensity_metrics"] = {
+        "auc_roc": float(prop_metrics.get("auc_roc", 0.0)),
+        "brier_score": float(prop_metrics.get("brier_score", 0.0)),
+    }
     write_model_run_manifest(manifest_path, manifest_payload)
     mlflow_metrics: dict[str, float] = {
         "segmentation_silhouette": float(seg_metrics.get("silhouette", 0.0)),

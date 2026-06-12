@@ -1,0 +1,20 @@
+id: F-050
+title: "Committed chart PNGs must bind to a single canonical data run"
+category: fake_completion
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-12
+closed_at: 2026-06-12
+recurrence_count: 0
+evidence: |
+  Chart audit batch 1 (2026-06-12): C4 forest vs Firm__Posterior_mean_pp table disagree;
+  C6 vs C10 baseline shock annotations conflict; Module A dashboard (live rebuild at
+  5k–15k) contradicts N=50k A-charts by up to 19 pp on segment shares; reliability
+  diagram exists in two capitalizations; eda_overview previously committed as orphan.
+  Root cause: no machine-readable lineage between data/processed/model_run_manifest.json,
+  governance/FIGURE_MANIFEST.yaml, and every reports/*.png consumer.
+verification_script: scripts/check_figure_artifact_lineage.py
+notes: |
+  Triage: chart_audit_2026_06 cross-cutting AUD-XCUT-002, AUD-XCUT-003, AUD-PUB-002.
+  Remediation: keep FIGURE_MANIFEST.yaml current; stamp run_id on figure footers;
+  make Streamlit load data/processed artifacts; regenerate all PNGs from one export.
