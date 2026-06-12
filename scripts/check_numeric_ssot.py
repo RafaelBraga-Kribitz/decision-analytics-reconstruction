@@ -60,9 +60,7 @@ FORBIDDEN_IN_PUBLIC: tuple[tuple[str, re.Pattern[str], tuple[Path, ...]], ...] =
     (
         "causal_counterfactual",
         re.compile(r"underperformed the verified outcome by 2[–-]4", re.I),
-        (
-            REPO_ROOT / "reports" / "CASE_STUDY.md",
-        ),
+        (REPO_ROOT / "reports" / "CASE_STUDY.md",),
     ),
     (
         "forbidden_44m_budget",
@@ -90,6 +88,40 @@ def _read(path: Path) -> str:
     return path.read_text(encoding="utf-8", errors="replace")
 
 
+def _ssot_anchor_gaps(ssot_text: str) -> list[str]:
+    gaps: list[str] = []
+    for label, pat in REQUIRED_PATTERNS:
+        if not pat.search(ssot_text):
+            gaps.append(f"NUMERIC_SSOT.md missing anchor {label}")
+    return gaps
+
+
+def _missing_anchor_files() -> list[str]:
+    return [
+        f"missing anchor file {path.relative_to(REPO_ROOT)}"
+        for path in ANCHOR_FILES
+        if not path.is_file()
+    ]
+
+
+def _forbidden_claim_gaps() -> list[str]:
+    gaps: list[str] = []
+    for label, pat, paths in FORBIDDEN_IN_PUBLIC:
+        for path in paths:
+            if path.is_file() and pat.search(_read(path)):
+                gaps.append(f"{path.relative_to(REPO_ROOT)}: forbidden {label}")
+    return gaps
+
+
+def _ssot_disclaimer_gaps(ssot_text: str) -> list[str]:
+    gaps: list[str] = []
+    if "Circular" not in ssot_text and "circular" not in ssot_text:
+        gaps.append("NUMERIC_SSOT.md missing AUC circularity disclaimer")
+    if not re.search(r"18[- ]week.*14", ssot_text, re.I | re.S):
+        gaps.append("NUMERIC_SSOT.md missing 18-week scope vs 14-week pipeline framing")
+    return gaps
+
+
 def main() -> int:
     gaps: list[str] = []
 
@@ -97,26 +129,11 @@ def main() -> int:
         gaps.append("missing reports/NUMERIC_SSOT.md")
     else:
         ssot_text = _read(SSOT)
-        for label, pat in REQUIRED_PATTERNS:
-            if not pat.search(ssot_text):
-                gaps.append(f"NUMERIC_SSOT.md missing anchor {label}")
+        gaps.extend(_ssot_anchor_gaps(ssot_text))
+        gaps.extend(_ssot_disclaimer_gaps(ssot_text))
 
-    for path in ANCHOR_FILES:
-        if not path.is_file():
-            gaps.append(f"missing anchor file {path.relative_to(REPO_ROOT)}")
-
-    for label, pat, paths in FORBIDDEN_IN_PUBLIC:
-        for path in paths:
-            if path.is_file() and pat.search(_read(path)):
-                gaps.append(f"{path.relative_to(REPO_ROOT)}: forbidden {label}")
-
-    # SSOT doc must disclaim AUC circularity and 18-week program vs 14-week pipeline.
-    if SSOT.is_file():
-        ssot = _read(SSOT)
-        if "Circular" not in ssot and "circular" not in ssot:
-            gaps.append("NUMERIC_SSOT.md missing AUC circularity disclaimer")
-        if not re.search(r"18[- ]week.*14", ssot, re.I | re.S):
-            gaps.append("NUMERIC_SSOT.md missing 18-week scope vs 14-week pipeline framing")
+    gaps.extend(_missing_anchor_files())
+    gaps.extend(_forbidden_claim_gaps())
 
     ok = not gaps
     return gate(

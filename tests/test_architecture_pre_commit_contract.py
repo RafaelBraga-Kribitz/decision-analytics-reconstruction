@@ -21,34 +21,43 @@ def _hook(repos: list[dict[str, Any]], repo_url: str, hook_id: str) -> dict[str,
     raise AssertionError(f"hook {hook_id!r} not found under {repo_url!r}")
 
 
-def test_pre_commit_config_lists_core_hooks() -> None:
+def _load_pre_commit_repos() -> list[dict[str, Any]]:
     data = yaml.safe_load(_PRE_COMMIT.read_text(encoding="utf-8"))
-    repos = data["repos"]
-    urls = {r["repo"] for r in repos if isinstance(r.get("repo"), str)}
+    return data["repos"]
+
+
+def test_pre_commit_lists_black_and_ruff_repos() -> None:
+    urls = {r["repo"] for r in _load_pre_commit_repos() if isinstance(r.get("repo"), str)}
     assert "https://github.com/psf/black" in urls
     assert "https://github.com/astral-sh/ruff-pre-commit" in urls
 
+
+def test_pre_commit_local_governance_hooks() -> None:
+    repos = _load_pre_commit_repos()
     locals_ = [r for r in repos if r.get("repo") == "local"]
     assert len(locals_) == 1
-    hooks = locals_[0]["hooks"]
-    ids = {h["id"] for h in hooks}
-    assert "pyright" in ids
-    assert "governance-audit" in ids
-    assert "claude-md-guard" in ids
-    assert "charter-size" in ids
-    assert "pytest-smoke" in ids
+    ids = {h["id"] for h in locals_[0]["hooks"]}
+    assert {"pyright", "governance-audit", "claude-md-guard", "charter-size", "pytest-smoke"} <= ids
 
+
+def test_pre_commit_black_excludes_eda_test() -> None:
+    repos = _load_pre_commit_repos()
     black_hook = _hook(repos, "https://github.com/psf/black", "black")
     assert "tests/test_eda.py" in " ".join(black_hook.get("args", []))
 
+
+def test_pre_commit_ruff_is_check_only() -> None:
+    repos = _load_pre_commit_repos()
     ruff_hook = _hook(repos, "https://github.com/astral-sh/ruff-pre-commit", "ruff")
     joined = " ".join(ruff_hook.get("args", []))
     assert "test_eda.py" in joined
     assert "--fix" not in joined, "pre-commit ruff should match make lint (check-only, no --fix)"
 
+
+def test_pre_commit_nbstripout_scopes_module_a_only() -> None:
+    repos = _load_pre_commit_repos()
     nb_repo = next(r for r in repos if r.get("repo") == "https://github.com/kynan/nbstripout")
-    nb_hook = nb_repo["hooks"][0]
-    files_pat = str(nb_hook.get("files", ""))
+    files_pat = str(nb_repo["hooks"][0].get("files", ""))
     assert "module_a_population_segmentation" in files_pat
     assert "reports" not in files_pat
 

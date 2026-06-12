@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -26,9 +28,16 @@ from population_segmentation.visualization.segment_profiles import (
 )
 
 
+def _repo_root() -> Path:
+    return Path(__file__).resolve().parents[2]
+
+
+def _processed_dir() -> Path:
+    return _repo_root() / "data" / "processed"
+
+
 def _load_cfg() -> tuple[dict, dict, tuple[str, ...]]:
-    root = Path(__file__).resolve().parents[2]
-    mod = root / "module_a_population_segmentation" / "config"
+    mod = _repo_root() / "module_a_population_segmentation" / "config"
     with open(mod / "generation.yaml") as f:
         gen = yaml.safe_load(f)
     with open(mod / "calibration_anchors.yaml") as f:
@@ -40,7 +49,42 @@ def _load_cfg() -> tuple[dict, dict, tuple[str, ...]]:
 
 
 @st.cache_data(show_spinner=False)
+def _load_canonical_bundle() -> tuple[pd.DataFrame, dict[str, float], dict[str, Any], dict, str]:
+    """Load the canonical Module A export bundle from data/processed/."""
+    processed = _processed_dir()
+    master_path = processed / "population_master_clean.parquet"
+    manifest_path = processed / "model_run_manifest.json"
+
+    if not master_path.is_file():
+        raise FileNotFoundError(
+            f"Missing canonical export at {master_path}. "
+            "Run `poetry run python -m population_segmentation.pipeline.export` first."
+        )
+
+    feat = pd.read_parquet(master_path)
+    prop_path = processed / "participation_propensity.parquet"
+    if prop_path.is_file() and "participation_propensity" not in feat.columns:
+        prop_df = pd.read_parquet(prop_path)
+        feat = feat.merge(prop_df[["entity_id", "participation_propensity"]], on="entity_id")
+
+    run_id = "unknown"
+    seg_metrics: dict[str, float] = {}
+    if manifest_path.is_file():
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        commit = str(manifest.get("git_commit", "unknown"))
+        run_id = commit[:12]
+        raw_seg = manifest.get("segmentation_metrics") or {}
+        if isinstance(raw_seg, dict):
+            seg_metrics = {k: float(v) for k, v in raw_seg.items()}
+
+    _, anc, stratify_by = _load_cfg()
+    prop = PropensityModel(random_state=42, stratify_by=stratify_by).fit_predict(feat, anc)
+    return feat, seg_metrics, prop, anc, run_id
+
+
+@st.cache_data(show_spinner=False)
 def _build_sample(sample_size: int = 15000):
+    """Non-canonical live rebuild (developer override only)."""
     gen, anc, stratify_by = _load_cfg()
     gen["sample_size"] = sample_size
     base = generate_population(gen, seed=42)
@@ -48,16 +92,12 @@ def _build_sample(sample_size: int = 15000):
     clean = clean_population(
         raw,
         gen,
-        qa_report_dir=Path(__file__).resolve().parents[2]
-        / "module_a_population_segmentation"
-        / "reports",
+        qa_report_dir=_repo_root() / "module_a_population_segmentation" / "reports",
     )
     feat = build_reachability_features(build_behavioral_features(build_demographic_features(clean)))
     labels_df, seg = build_segmentation_frame(feat, k=6, random_state=42)
     feat = feat.copy()
     feat = feat.reset_index(drop=True)
-    # Mirror the export pipeline: attach all segment columns so dashboard output
-    # columns match what downstream consumers (Module B/C) receive from run_export().
     feat["segment_label"] = labels_df["segment_label"].to_numpy()
     feat["segment_id"] = labels_df["segment_id"].to_numpy()
     feat["dbscan_noise_flag"] = labels_df["dbscan_noise_flag"].to_numpy()
@@ -71,22 +111,7 @@ def _make_national_reference_labels(n: int, national_rate: float, seed: int = 42
 
     This is a *national-rate reference* used only for the reliability
     diagnostic chart.  It is NOT the model's training target (which
-    incorporates department, youth, and gender deviations).  The chart
-    therefore shows how well the model's raked propensity scores track a
-    simple national-rate baseline, not the learned synthetic labels.
-
-    Parameters
-    ----------
-    n:
-        Number of labels to generate.
-    national_rate:
-        Target Bernoulli success probability (national participation rate).
-    seed:
-        RNG seed for reproducibility.
-
-    Returns
-    -------
-    np.ndarray of int (0/1), shape (n,).
+    incorporates department, youth, and gender deviations).
     """
     return (np.random.default_rng(seed).random(n) < national_rate).astype(int)
 
@@ -95,10 +120,22 @@ def main() -> None:
     st.set_page_config(page_title="Module A Dashboard", layout="wide")
     st.title("Module A — Population Modeling and Segmentation")
 
-    sample_size = st.sidebar.slider(
-        "Sample size", min_value=5000, max_value=30000, value=15000, step=1000
+    use_live_rebuild = st.sidebar.checkbox(
+        "Live rebuild (non-canonical)",
+        value=False,
+        help="When unchecked, loads data/processed/population_master_clean.parquet "
+        "from the last export run (same bundle as committed charts).",
     )
-    raw, feat, seg, prop, anc = _build_sample(sample_size)
+
+    if use_live_rebuild:
+        sample_size = st.sidebar.slider(
+            "Sample size", min_value=5000, max_value=30000, value=15000, step=1000
+        )
+        raw, feat, seg, prop, anc = _build_sample(sample_size)
+        run_id = f"live-{sample_size}"
+    else:
+        feat, seg, prop, anc, run_id = _load_canonical_bundle()
+        st.sidebar.caption(f"Canonical run `{run_id}` · N={len(feat):,}")
 
     tab1, tab2, tab3, tab4 = st.tabs(
         ["Segment Explorer", "Propensity Calibration", "Data Quality Report", "SHAP Importance"]
@@ -106,8 +143,10 @@ def main() -> None:
 
     with tab1:
         st.subheader("Segment Explorer")
-        st.metric("Silhouette (k=6)", f"{seg['silhouette']:.3f}")
-        st.metric("Bootstrap ARI", f"{seg['bootstrap_ari']:.3f}")
+        if "silhouette" in seg:
+            st.metric("Silhouette (k=6)", f"{seg['silhouette']:.3f}")
+        if "bootstrap_ari" in seg:
+            st.metric("Bootstrap ARI", f"{seg['bootstrap_ari']:.3f}")
         prof = segment_profile_table(feat)
         st.dataframe(prof, use_container_width=True)
         st.plotly_chart(segment_size_chart(prof), use_container_width=True)
@@ -137,8 +176,9 @@ def main() -> None:
             st.markdown(qa_path.read_text(encoding="utf-8"))
         else:
             st.info("QA report not found yet. Run cleaning pipeline first.")
-        st.write(f"Raw rows: {len(raw)}")
-        st.write(f"Clean rows: {len(feat)}")
+        st.write(f"Rows loaded: {len(feat)}")
+        source = "live rebuild" if use_live_rebuild else "data/processed/population_master_clean.parquet"
+        st.write(f"Data source: {source}")
 
     with tab4:
         st.subheader("SHAP Feature Importance — Propensity Model")
@@ -147,8 +187,6 @@ def main() -> None:
             "SHAP explains model predictions via Shapley values."
         )
 
-        # Lazy import: shap is an optional extra. The dashboard must start
-        # without it; only this tab requires it.
         try:
             import shap
         except ImportError:
@@ -183,7 +221,7 @@ def main() -> None:
                 "Higher = more important for model predictions."
             )
 
-        else:  # Individual force plot
+        else:
             entity_idx = st.slider("Select entity", 0, len(feat) - 1, 0)
             with st.spinner("Computing SHAP values..."):
                 explainer = shap.LinearExplainer(model, x_scaled, feature_names=feature_names)
@@ -196,7 +234,6 @@ def main() -> None:
             st.write(f"**Entity ID:** {entity_id}")
             st.write(f"**Predicted participation propensity:** {pred_prob:.3f}")
 
-            # Force plot (bar chart approximation for Streamlit)
             shap_df = pd.DataFrame(
                 {"Feature": feature_names, "SHAP value": shap_vals, "|SHAP|": np.abs(shap_vals)}
             ).sort_values("|SHAP|", ascending=True)

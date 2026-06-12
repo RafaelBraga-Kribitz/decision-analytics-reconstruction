@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any, cast
 
@@ -20,8 +21,8 @@ def load_registry() -> list[dict[str, Any]]:
     return cast(list[dict[str, Any]], reg["documents"])
 
 
-def render_index(documents: list[dict[str, Any]]) -> str:
-    lines: list[str] = [
+def _index_header_lines() -> list[str]:
+    return [
         "---",
         "doc_id: DOC-REG-INDEX",
         "doc_type: registry",
@@ -51,49 +52,96 @@ def render_index(documents: list[dict[str, Any]]) -> str:
         "4. Evidence (`maintainer/evidence/`)",
         "5. Archived lineage only",
         "",
+    ]
+
+
+def _render_section(
+    lines: list[str],
+    title: str,
+    documents: list[dict[str, Any]],
+    formatter: Callable[[dict[str, Any]], str],
+    *,
+    limit: int | None = None,
+    overflow_msg: str | None = None,
+) -> None:
+    lines.append(title)
+    lines.append("")
+    subset = documents[:limit] if limit else documents
+    for d in subset:
+        lines.append(formatter(d))
+    if limit and len(documents) > limit and overflow_msg:
+        lines.append(overflow_msg.format(extra=len(documents) - limit))
+    lines.append("")
+
+
+def _sorted_docs(
+    documents: list[dict[str, Any]],
+    predicate: Callable[[dict[str, Any]], bool],
+) -> list[dict[str, Any]]:
+    return sorted([d for d in documents if predicate(d)], key=lambda d: str(d["path"]))
+
+
+def _format_canonical(d: dict[str, Any]) -> str:
+    return (
+        f"- **{d['doc_id']}** — `{d['path']}` — " f"*{d.get('doc_type')}* / *{d.get('doc_role')}*"
+    )
+
+
+def _format_derived(d: dict[str, Any]) -> str:
+    src = ", ".join(str(x) for x in (d.get("canonical_source") or [])) or "—"
+    return f"- **{d['doc_id']}** — `{d['path']}` — canonical: {src}"
+
+
+def _format_evidence(d: dict[str, Any]) -> str:
+    return f"- **{d['doc_id']}** — `{d['path']}` — *{d.get('status')}*"
+
+
+def _format_research(d: dict[str, Any]) -> str:
+    return f"- **{d['doc_id']}** — `{d['path']}`"
+
+
+def render_index(documents: list[dict[str, Any]]) -> str:
+    lines = _index_header_lines()
+
+    _render_section(
+        lines,
         "## Canonically authoritative (selection)",
-        "",
-    ]
-    canon = [
-        d
-        for d in documents
-        if d.get("authority") == "canonical" and str(d.get("status")) == "active"
-    ]
-    canon.sort(key=lambda d: str(d["path"]))
-    for d in canon:
-        dt, dr = d.get("doc_type"), d.get("doc_role")
-        lines.append(
-            f"- **{d['doc_id']}** — `{d['path']}` — *{dt}* / *{dr}*",
-        )
-    lines.append("")
-    lines.append("## Derived portfolio views")
-    lines.append("")
-    derived = [
-        d for d in documents if d.get("doc_role") == "derived" and str(d.get("status")) == "active"
-    ]
-    derived.sort(key=lambda d: str(d["path"]))
-    for d in derived:
-        src = ", ".join(str(x) for x in (d.get("canonical_source") or []))
-        lines.append(f"- **{d['doc_id']}** — `{d['path']}` — canonical: {src or '—'}")
-    lines.append("")
-    lines.append("## Evidence and internal artifacts")
-    lines.append("")
-    evid = [
-        d for d in documents if d.get("doc_type") == "evidence" or d.get("authority") == "evidence"
-    ]
-    evid.sort(key=lambda d: str(d["path"]))
-    for d in evid[:60]:
-        lines.append(f"- **{d['doc_id']}** — `{d['path']}` — *{d.get('status')}*")
-    if len(evid) > 60:
-        lines.append(f"- … and {len(evid) - 60} more evidence rows (see YAML registry)")
-    lines.append("")
-    lines.append("## Research inputs (reference only)")
-    lines.append("")
-    res = [d for d in documents if d.get("doc_type") == "research"]
-    res.sort(key=lambda d: str(d["path"]))
-    for d in res:
-        lines.append(f"- **{d['doc_id']}** — `{d['path']}`")
-    lines.append("")
+        _sorted_docs(
+            documents,
+            lambda d: d.get("authority") == "canonical" and str(d.get("status")) == "active",
+        ),
+        _format_canonical,
+    )
+
+    _render_section(
+        lines,
+        "## Derived portfolio views",
+        _sorted_docs(
+            documents,
+            lambda d: d.get("doc_role") == "derived" and str(d.get("status")) == "active",
+        ),
+        _format_derived,
+    )
+
+    _render_section(
+        lines,
+        "## Evidence and internal artifacts",
+        _sorted_docs(
+            documents,
+            lambda d: d.get("doc_type") == "evidence" or d.get("authority") == "evidence",
+        ),
+        _format_evidence,
+        limit=60,
+        overflow_msg="- … and {extra} more evidence rows (see YAML registry)",
+    )
+
+    _render_section(
+        lines,
+        "## Research inputs (reference only)",
+        _sorted_docs(documents, lambda d: d.get("doc_type") == "research"),
+        _format_research,
+    )
+
     return "\n".join(lines) + "\n"
 
 
@@ -126,7 +174,6 @@ def main() -> int:
         print("generate_doc_index --check OK")
         return 0
 
-    # default: print diff hint
     print("Specify --write or --check")
     return 1
 

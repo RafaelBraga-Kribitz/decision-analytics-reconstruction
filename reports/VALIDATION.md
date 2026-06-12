@@ -43,3 +43,33 @@ findings via `make verify`.
 Module outputs are designed for sequential decision support; correlation across
 modules is documented in `epistemic_boundaries.md`. No single metric summarizes
 "portfolio accuracy."
+
+## Post-publish backlog (honest roadmap)
+
+These items are **out of scope** for the reconstruction portfolio but documented
+so reviewers know the architecture's next engineering steps:
+
+| ID | Item | Why deferred |
+|---|---|---|
+| A-3 | Non-circular propensity evaluation (hold-out departments, drop logit offset) | Requires new labeled holdout design; current AUC is diagnostic only |
+| C-4 | Stratified Bayesian battleground model | Current dept win map is illustrative jitter on fixture posterior |
+| C-10 | Monte Carlo scenarios feeding back into daily forecast | MC draws are standalone; coupling needs new PyMC state |
+| B-MMM | MMM-grade empirical response curves | MILP uses piecewise-linear chords on policy caps, not fitted MMM |
+| E-7 | Segment-level allocation truth in solver output | S1 chart prorates by segment share; solver is dept×channel×week |
+| A-11 | `reliability_max_deviation_pp` enforcement on real model | Helper exists; gate not wired to production export |
+| Scale | Full 4.26M roll + 18-week operational ingest | Pipeline models 14 ISO weeks where working data exists |
+
+## Fresh-clone smoke (release gate)
+
+From a clean tree after `poetry install`:
+
+```bash
+make test
+make verify
+poetry run python scripts/check_fresh_clone_smoke.py
+```
+
+Optional full path (slow, CPU-only): `make pipeline-full` then golden-metric gates.
+
+`scripts/check_fresh_clone_smoke.py` verifies Makefile targets and release artifacts
+without cloning; golden-metric tests skip cleanly when `data/processed/` is empty.

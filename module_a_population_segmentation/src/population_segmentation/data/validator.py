@@ -25,6 +25,52 @@ class AnchorCheck:
     passed: bool
 
 
+def _validate_required_columns(df: pd.DataFrame) -> None:
+    required = [
+        "entity_id",
+        "cedula",
+        "department",
+        "municipality",
+        "gender",
+        "age_on_event_date",
+        "rural_flag",
+        "phone",
+    ]
+    missing = [c for c in required if c not in df.columns]
+    if missing:
+        raise QAGateFailure(f"Missing required columns: {missing}")
+
+
+def _validate_cedula_format(df: pd.DataFrame) -> None:
+    if not df["cedula"].astype(str).str.match(r"^\d{8}$").all():
+        raise QAGateFailure("cedula must match ^\\d{8}$ for all rows")
+
+
+def _validate_department_values(df: pd.DataFrame) -> None:
+    if bool(df["department"].isna().any()):
+        raise QAGateFailure("department contains null values")
+    bad_departments = set(df["department"].dropna().unique()) - CANONICAL_DEPARTMENTS
+    if bad_departments:
+        raise QAGateFailure(f"Non-canonical departments found: {sorted(bad_departments)}")
+
+
+def _validate_gender_and_age(df: pd.DataFrame) -> None:
+    if df["municipality"].isna().mean() >= 0.001:
+        raise QAGateFailure("municipality null rate must be < 0.1%")
+    bad_gender = set(df["gender"].dropna().unique()) - CANONICAL_GENDER
+    if bad_gender:
+        raise QAGateFailure(f"Non-canonical gender values: {sorted(bad_gender)}")
+    if not df["age_on_event_date"].between(18, 115).all():
+        raise QAGateFailure("age_on_event_date must be within [18, 115]")
+
+
+def _validate_rural_and_phone(df: pd.DataFrame) -> None:
+    if bool(df["rural_flag"].isna().any()):
+        raise QAGateFailure("rural_flag cannot be null")
+    if not df["phone"].astype(str).str.match(r"^\+595\d{9}$").all():
+        raise QAGateFailure("phone must match +595XXXXXXXXX")
+
+
 def validate_schema(df: pd.DataFrame) -> None:
     """Validate that ``df`` satisfies the Module A clean-population column contract.
 
@@ -42,44 +88,11 @@ def validate_schema(df: pd.DataFrame) -> None:
         Intended for use immediately after ``clean_population``; supply anchors from
         ``calibration_anchors.yaml`` before downstream modeling.
     """
-    required = [
-        "entity_id",
-        "cedula",
-        "department",
-        "municipality",
-        "gender",
-        "age_on_event_date",
-        "rural_flag",
-        "phone",
-    ]
-    missing = [c for c in required if c not in df.columns]
-    if missing:
-        raise QAGateFailure(f"Missing required columns: {missing}")
-
-    if not df["cedula"].astype(str).str.match(r"^\d{8}$").all():
-        raise QAGateFailure("cedula must match ^\\d{8}$ for all rows")
-
-    if bool(df["department"].isna().any()):
-        raise QAGateFailure("department contains null values")
-    bad_departments = set(df["department"].dropna().unique()) - CANONICAL_DEPARTMENTS
-    if bad_departments:
-        raise QAGateFailure(f"Non-canonical departments found: {sorted(bad_departments)}")
-
-    if df["municipality"].isna().mean() >= 0.001:
-        raise QAGateFailure("municipality null rate must be < 0.1%")
-
-    bad_gender = set(df["gender"].dropna().unique()) - CANONICAL_GENDER
-    if bad_gender:
-        raise QAGateFailure(f"Non-canonical gender values: {sorted(bad_gender)}")
-
-    if not df["age_on_event_date"].between(18, 115).all():
-        raise QAGateFailure("age_on_event_date must be within [18, 115]")
-
-    if bool(df["rural_flag"].isna().any()):
-        raise QAGateFailure("rural_flag cannot be null")
-
-    if not df["phone"].astype(str).str.match(r"^\+595\d{9}$").all():
-        raise QAGateFailure("phone must match +595XXXXXXXXX")
+    _validate_required_columns(df)
+    _validate_cedula_format(df)
+    _validate_department_values(df)
+    _validate_gender_and_age(df)
+    _validate_rural_and_phone(df)
 
 
 def validate_calibration_anchors(df: pd.DataFrame, anchors: dict[str, object]) -> dict[str, object]:

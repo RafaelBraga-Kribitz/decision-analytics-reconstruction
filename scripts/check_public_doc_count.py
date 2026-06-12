@@ -25,6 +25,7 @@ OPERATOR_FILES = {
     "docs/INDEX.md",
     "governance/SESSION_END.md",
     "governance/SESSION_HANDOUT.md",
+    "governance/Truth_and_rebuild_sprint.md",
 }
 
 
@@ -67,4 +68,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-

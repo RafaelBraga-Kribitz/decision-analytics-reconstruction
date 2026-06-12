@@ -15,9 +15,7 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[2]
 ANCHORS = REPO_ROOT / "module_a_population_segmentation" / "config" / "calibration_anchors.yaml"
 SCHEMA = REPO_ROOT / "schema_contracts" / "participation_propensity.yaml"
-MODEL_CARD = (
-    REPO_ROOT / "module_a_population_segmentation" / "reports" / "model_card_propensity.md"
-)
+MODEL_CARD = REPO_ROOT / "module_a_population_segmentation" / "reports" / "model_card_propensity.md"
 
 # Schema gate key -> department name in calibration_anchors.yaml
 ENFORCED_GATES = {

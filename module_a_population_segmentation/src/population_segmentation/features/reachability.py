@@ -3,15 +3,48 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+from typing import TypedDict
+
 import pandas as pd
+import yaml
+
+_DEFAULT_MODEL_PARAMS = (
+    Path(__file__).resolve().parents[3] / "config" / "model_params.yaml"
+)
 
 
-def build_reachability_features(df: pd.DataFrame) -> pd.DataFrame:
+class ReachabilityWeights(TypedDict):
+    digital: float
+    broadcast_tv: float
+    broadcast_radio: float
+
+
+def load_reachability_weights(config_path: Path | None = None) -> ReachabilityWeights:
+    """Load reachability index weights from ``model_params.yaml``."""
+    path = config_path or _DEFAULT_MODEL_PARAMS
+    with open(path, encoding="utf-8") as handle:
+        params = yaml.safe_load(handle)
+    raw = params["reachability_weights"]
+    return {
+        "digital": float(raw["digital"]),
+        "broadcast_tv": float(raw["broadcast_tv"]),
+        "broadcast_radio": float(raw["broadcast_radio"]),
+    }
+
+
+def build_reachability_features(
+    df: pd.DataFrame,
+    *,
+    reachability_weights: ReachabilityWeights | None = None,
+) -> pd.DataFrame:
     """Combine digital and broadcast penetration into reachability indices and tiers.
 
     Args:
         df: Population frame with internet access, WhatsApp or TV or radio penetration,
             and ``rural_flag``.
+        reachability_weights: Optional override for index weights; defaults to
+            ``model_params.yaml`` ``reachability_weights``.
 
     Returns:
         Copy of ``df`` with ``reachability_*`` columns, tertile labels, and compound
@@ -25,6 +58,7 @@ def build_reachability_features(df: pd.DataFrame) -> pd.DataFrame:
         reachability = build_reachability_features(behavioral_frame)
     """
     out = df.copy()
+    weights = reachability_weights or load_reachability_weights()
 
     out["reachability_digital"] = out["internet_access_flag"].astype(float) * out[
         "media_penetration_whatsapp"
@@ -43,12 +77,9 @@ def build_reachability_features(df: pd.DataFrame) -> pd.DataFrame:
             out[f"reachability_{ad_channel}"] = 0.0
 
     out["reachability_index"] = (
-        0.25 * out["reachability_digital"]
-        + 0.25 * out["reachability_broadcast_tv"]
-        + 0.15 * out["reachability_broadcast_radio"]
-        + 0.15 * out["reachability_facebook_ads"]
-        + 0.10 * out["reachability_instagram_ads"]
-        + 0.10 * out["reachability_google_ads"]
+        weights["digital"] * out["reachability_digital"]
+        + weights["broadcast_tv"] * out["reachability_broadcast_tv"]
+        + weights["broadcast_radio"] * out["reachability_broadcast_radio"]
     ).clip(0.0, 1.0)
 
     q_low = out["reachability_index"].quantile(0.33)

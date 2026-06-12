@@ -28,7 +28,7 @@ Sampler: PyMC NUTS (full) or fixture-backed fast CI (MC_FAST mode).
 
 ### 2. Exit / quickcount
 
-Exit-poll bias model with OEA timing + EU observation-window flags. Produces last-mile posterior adjustment on election day.
+Exit-survey-measurement bias model with OEA timing + EU observation-window flags. Produces last-mile posterior adjustment on outcome event day.
 
 ### 3. Monte Carlo shock-score
 
@@ -85,7 +85,7 @@ See `ROADMAP.md` § Module C for remediation status.
 ## Walk-forward validation
 
 Walk-forward cross-validation is implemented on the sparse Paraguay fixture
-(held-out final-week polls). Coverage on this synthetic setup is **not**
+(held-out final-week survey measurements). Coverage on this synthetic setup is **not**
 external validation — see `VALIDATION.md` and `epistemic_boundaries.md`.
 
 ## Tests and CI

@@ -60,6 +60,31 @@ def _git(*args: str) -> str:
         return "unknown"
 
 
+def _validate_finding_fields(path: Path, data: dict, errors: list[str]) -> None:
+    for required in ("id", "title", "category", "kind", "status", "opened_at"):
+        if required not in data:
+            errors.append(f"{path}: missing required field '{required}'")
+    status = data.get("status")
+    if status not in VALID_FINDING_STATUSES:
+        errors.append(f"{path}: invalid status '{status}'")
+    if status == "wont_fix" and not data.get("wont_fix_reason"):
+        errors.append(f"{path}: status=wont_fix requires wont_fix_reason")
+
+
+def _finding_record(path: Path, data: dict) -> dict:
+    return {
+        "id": data.get("id"),
+        "title": data.get("title"),
+        "category": data.get("category"),
+        "kind": data.get("kind"),
+        "status": data.get("status"),
+        "opened_at": str(data.get("opened_at")),
+        "closed_at": str(data["closed_at"]) if data.get("closed_at") is not None else None,
+        "verification_script": data.get("verification_script"),
+        "path": str(path.relative_to(REPO_ROOT)),
+    }
+
+
 def collect_findings() -> tuple[list[dict], list[str]]:
     findings: list[dict] = []
     errors: list[str] = []
@@ -73,29 +98,8 @@ def collect_findings() -> tuple[list[dict], list[str]]:
         except yaml.YAMLError as exc:
             errors.append(f"{path}: YAML parse error: {exc}")
             continue
-        for required in ("id", "title", "category", "kind", "status", "opened_at"):
-            if required not in data:
-                errors.append(f"{path}: missing required field '{required}'")
-        status = data.get("status")
-        if status not in VALID_FINDING_STATUSES:
-            errors.append(f"{path}: invalid status '{status}'")
-        if status == "wont_fix" and not data.get("wont_fix_reason"):
-            errors.append(f"{path}: status=wont_fix requires wont_fix_reason")
-        findings.append(
-            {
-                "id": data.get("id"),
-                "title": data.get("title"),
-                "category": data.get("category"),
-                "kind": data.get("kind"),
-                "status": data.get("status"),
-                "opened_at": str(data.get("opened_at")),
-                "closed_at": (
-                    str(data["closed_at"]) if data.get("closed_at") is not None else None
-                ),
-                "verification_script": data.get("verification_script"),
-                "path": str(path.relative_to(REPO_ROOT)),
-            }
-        )
+        _validate_finding_fields(path, data, errors)
+        findings.append(_finding_record(path, data))
     return findings, errors
 
 

@@ -19,6 +19,19 @@ SESSION_END_PATH = REPO_ROOT / "governance" / "SESSION_END.md"
 DEBT_PATH = REPO_ROOT / "governance" / "DEBT_BASELINE.json"
 
 
+def _append_hotspots(lines: list[str], measured: dict[str, dict]) -> None:
+    nonzero = {k: v["value"] for k, v in measured.items() if v.get("value")}
+    if nonzero:
+        lines.append("Current hotspots (candidates for the next remediation finding):")
+        lines.append("")
+        for name, value in sorted(nonzero.items(), key=lambda kv: -float(kv[1])):
+            lines.append(f"- `{name}`: {value}")
+        lines.append("")
+        return
+    lines.append("All measured debt metrics are at zero. 🎯")
+    lines.append("")
+
+
 def _append_debt_section(lines: list[str]) -> None:
     """Surface the technical-debt baseline (read-only; does not re-scan)."""
     if not DEBT_PATH.exists():
@@ -46,17 +59,7 @@ def _append_debt_section(lines: list[str]) -> None:
         "The ratchet (`make debt-check`) fails any PR where these grow."
     )
     lines.append("")
-    # Surface the biggest debt items first so the next remediation is obvious.
-    nonzero = {k: v["value"] for k, v in measured.items() if v.get("value")}
-    if nonzero:
-        lines.append("Current hotspots (candidates for the next remediation finding):")
-        lines.append("")
-        for name, value in sorted(nonzero.items(), key=lambda kv: -float(kv[1])):
-            lines.append(f"- `{name}`: {value}")
-        lines.append("")
-    else:
-        lines.append("All measured debt metrics are at zero. 🎯")
-        lines.append("")
+    _append_hotspots(lines, measured)
     if skipped:
         lines.append(
             f"⚠ Unmeasured (tool not installed): {', '.join(skipped)} — "
@@ -65,21 +68,7 @@ def _append_debt_section(lines: list[str]) -> None:
         lines.append("")
 
 
-def main() -> int:
-    if not STATE_PATH.exists():
-        print(f"[session_start] {STATE_PATH} missing — run `make audit` first", file=sys.stderr)
-        return 1
-    state = json.loads(STATE_PATH.read_text())
-    summary = state["summary"]
-    findings = state["findings"]
-    state["migrations"]
-
-    open_findings = [f for f in findings if f["status"] == "open"]
-    in_progress_findings = [f for f in findings if f["status"] == "in_progress"]
-
-    open_findings.sort(key=lambda f: (f.get("category") or "", f.get("id") or ""))
-
-    lines: list[str] = []
+def _append_snapshot(lines: list[str], state: dict, summary: dict) -> None:
     lines.append(f"# Session Handout — {datetime.now(UTC).strftime('%Y-%m-%d')}")
     lines.append("")
     lines.append(
@@ -102,37 +91,29 @@ def main() -> int:
     )
     lines.append("")
 
-    if summary.get("open_by_category"):
-        lines.append("## Open by category")
-        lines.append("")
-        for cat, n in sorted(summary["open_by_category"].items()):
-            lines.append(f"- `{cat}`: {n}")
-        lines.append("")
 
-    if in_progress_findings:
-        lines.append("## In progress")
-        lines.append("")
-        for f in in_progress_findings:
-            lines.append(f"- **{f['id']}** — {f['title']} (`{f['path']}`)")
-        lines.append("")
+def _append_open_by_category(lines: list[str], summary: dict) -> None:
+    if not summary.get("open_by_category"):
+        return
+    lines.append("## Open by category")
+    lines.append("")
+    for cat, n in sorted(summary["open_by_category"].items()):
+        lines.append(f"- `{cat}`: {n}")
+    lines.append("")
 
-    if open_findings:
-        lines.append("## Open findings (work queue)")
-        lines.append("")
-        for f in open_findings:
-            lines.append(f"- **{f['id']}** ({f['category']}) — {f['title']}")
-            lines.append(f"  - YAML: `{f['path']}`")
-            if f.get("verification_script"):
-                lines.append(f"  - Verification: `{f['verification_script']}`")
-            else:
-                lines.append("  - Verification: **TODO — write the script first**")
-        lines.append("")
-        recommended = open_findings[0]
-        lines.append("## Recommended next action")
-        lines.append("")
-        lines.append(f"Pick up **{recommended['id']}** — {recommended['title']}.")
-        lines.append("")
-    else:
+
+def _append_in_progress(lines: list[str], in_progress_findings: list[dict]) -> None:
+    if not in_progress_findings:
+        return
+    lines.append("## In progress")
+    lines.append("")
+    for f in in_progress_findings:
+        lines.append(f"- **{f['id']}** — {f['title']} (`{f['path']}`)")
+    lines.append("")
+
+
+def _append_open_findings(lines: list[str], open_findings: list[dict]) -> None:
+    if not open_findings:
         lines.append("## Open findings")
         lines.append("")
         lines.append("None. The queue is empty.")
@@ -145,7 +126,52 @@ def main() -> int:
             "`make session-end`."
         )
         lines.append("")
+        return
 
+    lines.append("## Open findings (work queue)")
+    lines.append("")
+    for f in open_findings:
+        lines.append(f"- **{f['id']}** ({f['category']}) — {f['title']}")
+        lines.append(f"  - YAML: `{f['path']}`")
+        if f.get("verification_script"):
+            lines.append(f"  - Verification: `{f['verification_script']}`")
+        else:
+            lines.append("  - Verification: **TODO — write the script first**")
+    lines.append("")
+    recommended = open_findings[0]
+    lines.append("## Recommended next action")
+    lines.append("")
+    lines.append(f"Pick up **{recommended['id']}** — {recommended['title']}.")
+    lines.append("")
+
+
+def _append_validation_errors(lines: list[str], state: dict) -> None:
+    if not state.get("validation_errors"):
+        return
+    lines.append("## ⚠ Validation errors")
+    lines.append("")
+    for err in state["validation_errors"]:
+        lines.append(f"- {err}")
+    lines.append("")
+
+
+def main() -> int:
+    if not STATE_PATH.exists():
+        print(f"[session_start] {STATE_PATH} missing — run `make audit` first", file=sys.stderr)
+        return 1
+    state = json.loads(STATE_PATH.read_text())
+    summary = state["summary"]
+    findings = state["findings"]
+
+    open_findings = [f for f in findings if f["status"] == "open"]
+    in_progress_findings = [f for f in findings if f["status"] == "in_progress"]
+    open_findings.sort(key=lambda f: (f.get("category") or "", f.get("id") or ""))
+
+    lines: list[str] = []
+    _append_snapshot(lines, state, summary)
+    _append_open_by_category(lines, summary)
+    _append_in_progress(lines, in_progress_findings)
+    _append_open_findings(lines, open_findings)
     _append_debt_section(lines)
 
     if SESSION_END_PATH.exists():
@@ -154,12 +180,7 @@ def main() -> int:
         lines.append(f"See `{SESSION_END_PATH.relative_to(REPO_ROOT)}`.")
         lines.append("")
 
-    if state.get("validation_errors"):
-        lines.append("## ⚠ Validation errors")
-        lines.append("")
-        for err in state["validation_errors"]:
-            lines.append(f"- {err}")
-        lines.append("")
+    _append_validation_errors(lines, state)
 
     HANDOUT_PATH.write_text("\n".join(lines))
     print(f"[session_start] wrote {HANDOUT_PATH.relative_to(REPO_ROOT)}")

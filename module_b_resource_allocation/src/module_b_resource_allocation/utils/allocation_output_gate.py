@@ -31,6 +31,57 @@ def _quality_gates() -> dict[str, Any]:
     return cast(dict[str, Any], contract.get("quality_gates", {}))
 
 
+def _validate_structural_keys(df: pd.DataFrame, errors: list[str]) -> None:
+    if len(df) != ALLOCATION_ROWS:
+        errors.append(f"row_count: expected {ALLOCATION_ROWS}, got {len(df)}")
+    if df.duplicated(["department", "channel", "week_index"]).any():
+        errors.append("unique_key: duplicate (department, channel, week_index)")
+    gates = _quality_gates()
+    allowed_status = tuple(gates.get("solver_status_allow", _SOLVER_OK))
+    bad_status = df[~df["solver_status"].isin(allowed_status)]
+    if len(bad_status):
+        bad_vals = cast(pd.Series, bad_status["solver_status"]).unique().tolist()
+        errors.append(f"solver_status: invalid values {bad_vals}")
+    if not df["week_index"].between(1, WEEK_COUNT).all():
+        errors.append("week_index: out of range")
+    bad_ch = set(df["channel"].unique()) - set(CHANNEL_NAMES)
+    if bad_ch:
+        errors.append(f"channel: non-canonical values {bad_ch}")
+    bad_d = set(df["department"].unique()) - set(DEPARTMENTS)
+    if bad_d:
+        errors.append(f"department: non-canonical values {bad_d}")
+
+
+def _validate_budget_envelope(df: pd.DataFrame, gates: dict[str, Any], errors: list[str]) -> None:
+    envelope = gates.get("total_budget_envelope_usd")
+    tolerance = float(gates.get("total_budget_envelope_tolerance_pct", 0.0))
+    if envelope is None:
+        return
+    total = float(df["budget_allocation_usd"].sum())
+    lo = float(envelope) * (1.0 - tolerance)
+    hi = float(envelope) * (1.0 + tolerance)
+    if not lo <= total <= hi:
+        errors.append(f"budget_envelope: total {total:.2f} outside [{lo:.2f}, {hi:.2f}]")
+
+
+def _validate_coverage_floor(df: pd.DataFrame, gates: dict[str, Any], errors: list[str]) -> None:
+    coverage_pct = gates.get("coverage_lower_bound_pct")
+    if coverage_pct is None:
+        return
+    grouped = df.groupby("department")
+    contacts_by_dept = grouped["expected_contacts"].sum()
+    pop_proxy_by_dept = grouped["reach_cap_population_proxy"].max()
+    for dept in contacts_by_dept.index:
+        dept_key = str(dept)
+        floor = float(coverage_pct) * float(pop_proxy_by_dept.loc[dept_key])
+        actual = float(contacts_by_dept.loc[dept_key])
+        if actual < floor * (1.0 - 1e-3):
+            errors.append(
+                f"coverage: {dept} expected_contacts {actual:.1f} "
+                f"< {float(coverage_pct):.0%} of population proxy ({floor:.1f})"
+            )
+
+
 def validate_allocation_output_df(df: pd.DataFrame, *, enforce_coverage: bool = True) -> None:
     """Validate ``df`` against the ``allocation_output`` schema contract.
 
@@ -54,54 +105,11 @@ def validate_allocation_output_df(df: pd.DataFrame, *, enforce_coverage: bool = 
         ``validate_allocation_output_df(result.allocation)`` at the end of the CLI pipeline.
     """
     errors: list[str] = []
-    if len(df) != ALLOCATION_ROWS:
-        errors.append(f"row_count: expected {ALLOCATION_ROWS}, got {len(df)}")
-    if df.duplicated(["department", "channel", "week_index"]).any():
-        errors.append("unique_key: duplicate (department, channel, week_index)")
+    _validate_structural_keys(df, errors)
     gates = _quality_gates()
-    allowed_status = tuple(gates.get("solver_status_allow", _SOLVER_OK))
-    bad_status = df[~df["solver_status"].isin(allowed_status)]
-    if len(bad_status):
-        bad_vals = cast(pd.Series, bad_status["solver_status"]).unique().tolist()
-        errors.append(f"solver_status: invalid values {bad_vals}")
-    if not df["week_index"].between(1, WEEK_COUNT).all():
-        errors.append("week_index: out of range")
-    bad_ch = set(df["channel"].unique()) - set(CHANNEL_NAMES)
-    if bad_ch:
-        errors.append(f"channel: non-canonical values {bad_ch}")
-    bad_d = set(df["department"].unique()) - set(DEPARTMENTS)
-    if bad_d:
-        errors.append(f"department: non-canonical values {bad_d}")
-
-    # Quality gate: total budget envelope within tolerance.
-    envelope = gates.get("total_budget_envelope_usd")
-    tolerance = float(gates.get("total_budget_envelope_tolerance_pct", 0.0))
-    if envelope is not None:
-        total = float(df["budget_allocation_usd"].sum())
-        lo = float(envelope) * (1.0 - tolerance)
-        hi = float(envelope) * (1.0 + tolerance)
-        if not lo <= total <= hi:
-            errors.append(
-                f"budget_envelope: total {total:.2f} outside [{lo:.2f}, {hi:.2f}]"
-            )
-
-    # Quality gate: per-department coverage floor — expected contacts must
-    # reach coverage_lower_bound_pct of the department population proxy
-    # (largest single-channel reachable audience).
-    coverage_pct = gates.get("coverage_lower_bound_pct")
-    if enforce_coverage and coverage_pct is not None:
-        grouped = df.groupby("department")
-        contacts_by_dept = grouped["expected_contacts"].sum()
-        pop_proxy_by_dept = grouped["reach_cap_population_proxy"].max()
-        for dept in contacts_by_dept.index:
-            floor = float(coverage_pct) * float(pop_proxy_by_dept[dept])
-            actual = float(contacts_by_dept[dept])
-            # Small epsilon: post-solve cent truncation rounds spend down.
-            if actual < floor * (1.0 - 1e-3):
-                errors.append(
-                    f"coverage: {dept} expected_contacts {actual:.1f} "
-                    f"< {float(coverage_pct):.0%} of population proxy ({floor:.1f})"
-                )
+    _validate_budget_envelope(df, gates, errors)
+    if enforce_coverage:
+        _validate_coverage_floor(df, gates, errors)
 
     if errors:
         raise ValueError("allocation_output gate failed: " + "; ".join(errors))

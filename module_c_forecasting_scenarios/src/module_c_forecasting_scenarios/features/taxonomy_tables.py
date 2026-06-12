@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
+
 POLLSTER_BIAS_FAMILY: dict[str, str] = {
     "capli": "capli",
     "capli_first": "capli",
@@ -15,23 +17,42 @@ POLLSTER_BIAS_FAMILY: dict[str, str] = {
 }
 
 
+def _match_capli(d: str) -> bool:
+    return "capli" in d or "first análisis" in d or "first analisis" in d
+
+
+def _match_ati_snead(d: str) -> bool:
+    return "ati" in d and "snead" in d
+
+
+def _match_ica(d: str) -> bool:
+    return "ica" in d or "taka" in d
+
+
+def _match_market(d: str) -> bool:
+    return "market" in d or "república" in d or "republica" in d
+
+
+def _match_prologo(d: str) -> bool:
+    return "prologo" in d or "pro logo" in d
+
+
+_POLLSTER_MATCHERS: tuple[tuple[Callable[[str], bool], str], ...] = (
+    (_match_capli, "capli"),
+    (_match_ati_snead, "ati_snead"),
+    (_match_ica, "ica"),
+    (lambda d: "grau" in d, "grau"),
+    (lambda d: "ecodat" in d, "ecodat"),
+    (_match_market, "market"),
+    (_match_prologo, "prologo"),
+    (lambda d: "exit" in d, "exit_consortium"),
+)
+
+
 def normalize_pollster_id(display: str) -> tuple[str, str]:
     d = display.lower().strip()
-    if "capli" in d or "first análisis" in d or "first analisis" in d:
-        return ("capli", POLLSTER_BIAS_FAMILY["capli"])
-    if "ati" in d and "snead" in d:
-        return ("ati_snead", POLLSTER_BIAS_FAMILY["ati_snead"])
-    if "ica" in d or "taka" in d:
-        return ("ica", POLLSTER_BIAS_FAMILY["ica"])
-    if "grau" in d:
-        return ("grau", POLLSTER_BIAS_FAMILY["grau"])
-    if "ecodat" in d:
-        return ("ecodat", POLLSTER_BIAS_FAMILY["ecodat"])
-    if "market" in d or "república" in d or "republica" in d:
-        return ("market", POLLSTER_BIAS_FAMILY["market"])
-    if "prologo" in d or "pro logo" in d:
-        return ("prologo", POLLSTER_BIAS_FAMILY["prologo"])
-    if "exit" in d:
-        return ("exit_consortium", POLLSTER_BIAS_FAMILY["exit_consortium"])
+    for predicate, pollster_id in _POLLSTER_MATCHERS:
+        if predicate(d):
+            return (pollster_id, POLLSTER_BIAS_FAMILY[pollster_id])
     slug = "_".join(ch for ch in d if ch.isalnum() or ch == " ").replace(" ", "_")[:48]
     return (slug or "unknown", "default")

@@ -108,9 +108,7 @@ def _predict_holdout(
     day_idx = day_strs.index(day_label)
 
     posterior = idata.posterior  # type: ignore[union-attr]
-    mu_samples = np.asarray(
-        cast(Any, posterior["mu_margin"]).isel(day=day_idx).values
-    ).reshape(-1)
+    mu_samples = np.asarray(cast(Any, posterior["mu_margin"]).isel(day=day_idx).values).reshape(-1)
 
     # House effect for the holdout's pollster: posterior draws when seen in
     # training, otherwise the population prior Normal(0, sigma_house).

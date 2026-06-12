@@ -17,15 +17,17 @@ DENY_PREFIXES: tuple[str, ...] = ("graphify-out/",)
 # Other paths under maintainer/ must not be tracked publicly (see manifest M10/M12).
 MAINTAINER_ALLOWED_PREFIXES: tuple[str, ...] = (
     "maintainer/doc_debt/",
-    "maintainer/evidence/",
-    "maintainer/archive/",
 )
 
 
 def maintainer_path_allowed(path: str) -> bool:
-    if path == "maintainer/pre_public_cleanup_manifest.md":
-        return True
     return any(path.startswith(p) for p in MAINTAINER_ALLOWED_PREFIXES)
+
+
+def _is_forbidden_path(path: str) -> bool:
+    if any(path.startswith(p) or path.startswith(p.lstrip("./")) for p in DENY_PREFIXES):
+        return True
+    return path.startswith("maintainer/") and not maintainer_path_allowed(path)
 
 
 def main() -> int:
@@ -36,13 +38,7 @@ def main() -> int:
         text=True,
     )
     files = [ln.strip() for ln in proc.stdout.splitlines() if ln.strip()]
-    bad: list[str] = []
-    for f in files:
-        if any(f.startswith(p) or f.startswith(p.lstrip("./")) for p in DENY_PREFIXES):
-            bad.append(f)
-            continue
-        if f.startswith("maintainer/") and not maintainer_path_allowed(f):
-            bad.append(f)
+    bad = [f for f in files if _is_forbidden_path(f)]
     if bad:
         print("portfolio-verify FAILED — forbidden tracked paths:")
         for b in bad[:200]:

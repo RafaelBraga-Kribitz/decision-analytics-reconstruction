@@ -97,14 +97,8 @@ ruvector.db
 
 # ─── Maintainer-only docs (not for public clone) ─────────────────────────────
 maintainer/*
-!maintainer/pre_public_cleanup_manifest.md
-!maintainer/agent_transaction_backlog.md
 !maintainer/doc_debt/
 !maintainer/doc_debt/**
-!maintainer/evidence/
-!maintainer/evidence/**
-!maintainer/archive/
-!maintainer/archive/**
 
 reports/task_verify_*.md
 

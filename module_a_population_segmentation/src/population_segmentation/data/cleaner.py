@@ -91,6 +91,105 @@ def _language_imputation_labels_and_probs(config: dict[str, Any]) -> tuple[list[
     return list(_LANGUAGE_IMPUTATION_KEYS), probs
 
 
+def _apply_encoding_provenance(df: pd.DataFrame) -> pd.DataFrame:
+    if ENC_SOURCE_RAW in df.columns:
+        raw_tags = df[ENC_SOURCE_RAW].fillna("unknown").astype(str).str.strip().str.lower()
+        df[ENC_SOURCE] = raw_tags.where(raw_tags.isin(CANONICAL_ENC_SOURCE), "unknown")
+        df = df.drop(columns=[ENC_SOURCE_RAW])
+    elif ENC_SOURCE not in df.columns:
+        df[ENC_SOURCE] = "utf8"
+    return df
+
+
+def _standardize_cedula_and_gender(df: pd.DataFrame) -> None:
+    df["cedula"] = df["cedula"].astype(str).str.replace(r"\D", "", regex=True).str.zfill(8).str[-8:]
+    df["cedula_invalid"] = ~df["cedula"].str.match(r"^\d{8}$")
+    df["gender"] = df["gender"].replace(_GENDER_MAP).fillna("unknown")
+
+
+def _normalize_departments_and_dedupe(df: pd.DataFrame) -> pd.DataFrame:
+    dept = df["department"].astype(str).str.strip()
+    df["department"] = dept.replace(_DEPT_NORMALIZE)
+    df.loc[~df["department"].isin(list(CANONICAL_DEPARTMENTS)), "department"] = "Central"
+    df = df.sort_values("entity_id").drop_duplicates(subset=["entity_id", "cedula"], keep="first")
+    return df.drop_duplicates(subset=["entity_id"], keep="first")
+
+
+def _derive_age_from_dob(df: pd.DataFrame) -> None:
+    dob_series = _normalize_dob(pd.Series(df["dob"].astype(str)))
+    df["dob"] = dob_series
+    event_date = pd.Timestamp("2018-04-22")
+    dob_parsed = pd.to_datetime(df["dob"], format="%d/%m/%Y", errors="coerce")
+    age = ((event_date - dob_parsed).dt.days / 365.25).fillna(0).astype(int)
+    df["age_on_event_date"] = age
+    df["dob_ambiguous"] = dob_parsed.isna()
+    df["age_out_of_range"] = ~df["age_on_event_date"].between(18, 115)
+    df.loc[df["age_on_event_date"] < 18, "age_on_event_date"] = 18
+    df.loc[df["age_on_event_date"] > 115, "age_on_event_date"] = 115
+
+
+def _impute_municipalities(df: pd.DataFrame) -> None:
+    df["municipality_imputed"] = df["municipality"].isna()
+    dept_mode = (
+        df.dropna(subset=["municipality"])
+        .groupby("department")["municipality"]
+        .agg(lambda s: s.mode().iat[0] if not s.mode().empty else "Unknown")
+    )
+    null_idx = df["municipality"].isna()
+    df.loc[null_idx, "municipality"] = (
+        df.loc[null_idx, "department"].map(dept_mode).fillna("Unknown")
+    )
+
+
+def _canonicalize_phone(df: pd.DataFrame) -> None:
+    df["phone"] = df["phone"].astype(str).str.replace(r"\D", "", regex=True)
+    df["phone"] = df["phone"].str[-9:]
+    df["phone"] = "+595" + df["phone"]
+    df["phone_invalid"] = ~df["phone"].str.match(r"^\+595\d{9}$")
+
+
+def _ensure_rural_flag(df: pd.DataFrame, config: dict[str, Any], rng: np.random.Generator) -> None:
+    if "rural_flag" not in df.columns:
+        csd: dict[str, Any] = config.get("cleaner_synthetic_defaults") or {}
+        rural_p = float(csd.get("rural_flag_true_rate", 0.383))
+        df["rural_flag"] = rng.random(len(df)) < rural_p
+    df["rural_flag"] = df["rural_flag"].fillna(False).astype(bool)
+    df["rural_flag_derived"] = True
+
+
+def _ensure_language_bucket(
+    df: pd.DataFrame, config: dict[str, Any], rng: np.random.Generator
+) -> None:
+    if "language_census_bucket" not in df.columns:
+        labels, probs = _language_imputation_labels_and_probs(config)
+        df["language_census_bucket"] = rng.choice(labels, size=len(df), p=probs)
+
+
+def _ensure_structural_dependency(
+    df: pd.DataFrame, config: dict[str, Any], rng: np.random.Generator
+) -> None:
+    if "structural_dependency_proxy" not in df.columns:
+        csd: dict[str, Any] = config.get("cleaner_synthetic_defaults") or {}
+        sdp = float(csd.get("structural_dependency_true_rate", 0.25))
+        df["structural_dependency_proxy"] = rng.random(len(df)) < sdp
+    df["structural_dependency_proxy"] = df["structural_dependency_proxy"].astype(bool)
+
+
+def _ensure_internet_flag(
+    df: pd.DataFrame, config: dict[str, Any], rng: np.random.Generator
+) -> None:
+    if "internet_access_flag" not in df.columns:
+        ict = config.get("media_penetration_defaults", {})
+        rural_inet_p = float(ict.get("internet_access_rural_rate", 0.279))
+        urban_inet_p = float(ict.get("internet_access_urban_rate", 0.734))
+        df["internet_access_flag"] = np.where(
+            df["rural_flag"],
+            rng.random(len(df)) < rural_inet_p,
+            rng.random(len(df)) < urban_inet_p,
+        )
+    df["internet_access_flag"] = df["internet_access_flag"].astype(bool)
+
+
 def clean_population(
     raw_df: pd.DataFrame,
     config: dict[str, Any],
@@ -123,100 +222,17 @@ def clean_population(
     rng = make_rng(seed)
     df = raw_df.copy()
 
-    # Step 1: encoding provenance — raw contract uses `enc_source_raw`; clean contract
-    # uses `enc_source` (see schema_contracts/population_master_{raw,clean}.yaml).
-    if ENC_SOURCE_RAW in df.columns:
-        raw_tags = df[ENC_SOURCE_RAW].fillna("unknown").astype(str).str.strip().str.lower()
-        df[ENC_SOURCE] = raw_tags.where(raw_tags.isin(CANONICAL_ENC_SOURCE), "unknown")
-        df = df.drop(columns=[ENC_SOURCE_RAW])
-    elif ENC_SOURCE not in df.columns:
-        df[ENC_SOURCE] = "utf8"
+    df = _apply_encoding_provenance(df)
+    _standardize_cedula_and_gender(df)
+    df = _normalize_departments_and_dedupe(df)
+    _derive_age_from_dob(df)
+    _impute_municipalities(df)
+    _canonicalize_phone(df)
+    _ensure_rural_flag(df, config, rng)
+    _ensure_language_bucket(df, config, rng)
+    _ensure_structural_dependency(df, config, rng)
+    _ensure_internet_flag(df, config, rng)
 
-    # Step 2: cedula standardization to 8 digits
-    df["cedula"] = df["cedula"].astype(str).str.replace(r"\D", "", regex=True).str.zfill(8).str[-8:]
-    df["cedula_invalid"] = ~df["cedula"].str.match(r"^\d{8}$")
-
-    # Step 3: gender normalization
-    df["gender"] = df["gender"].replace(_GENDER_MAP).fillna("unknown")
-
-    # Step 4: department normalization
-    dept = df["department"].astype(str).str.strip()
-    df["department"] = dept.replace(_DEPT_NORMALIZE)
-    df.loc[~df["department"].isin(list(CANONICAL_DEPARTMENTS)), "department"] = "Central"
-
-    # Step 5: deduplication — two passes to enforce entity_id uniqueness.
-    # Pass 5a: drop rows with identical (entity_id, cedula) — handles clean re-registrations.
-    # Pass 5b: drop remaining duplicate entity_ids (different cedula means one row is a flaw
-    # injected by raw_injector; keep the first occurrence, which is the original record).
-    # This guarantees the schema contract entity_id: unique: true.
-    df = df.sort_values("entity_id").drop_duplicates(subset=["entity_id", "cedula"], keep="first")
-    df = df.drop_duplicates(subset=["entity_id"], keep="first")
-
-    # Step 6: date parsing and age derivation
-    dob_series = _normalize_dob(pd.Series(df["dob"].astype(str)))
-    df["dob"] = dob_series
-    event_date = pd.Timestamp("2018-04-22")
-    dob_parsed = pd.to_datetime(df["dob"], format="%d/%m/%Y", errors="coerce")
-    age = ((event_date - dob_parsed).dt.days / 365.25).fillna(0).astype(int)
-    df["age_on_event_date"] = age
-    df["dob_ambiguous"] = dob_parsed.isna()
-
-    # Step 7: age range enforcement
-    df["age_out_of_range"] = ~df["age_on_event_date"].between(18, 115)
-    df.loc[df["age_on_event_date"] < 18, "age_on_event_date"] = 18
-    df.loc[df["age_on_event_date"] > 115, "age_on_event_date"] = 115
-
-    # Step 8: municipality imputation
-    df["municipality_imputed"] = df["municipality"].isna()
-    dept_mode = (
-        df.dropna(subset=["municipality"])
-        .groupby("department")["municipality"]
-        .agg(lambda s: s.mode().iat[0] if not s.mode().empty else "Unknown")
-    )
-    null_idx = df["municipality"].isna()
-    df.loc[null_idx, "municipality"] = (
-        df.loc[null_idx, "department"].map(dept_mode).fillna("Unknown")
-    )
-
-    # Step 9: phone canonicalization to +595XXXXXXXXX
-    df["phone"] = df["phone"].astype(str).str.replace(r"\D", "", regex=True)
-    df["phone"] = df["phone"].str[-9:]
-    df["phone"] = "+595" + df["phone"]
-    df["phone_invalid"] = ~df["phone"].str.match(r"^\+595\d{9}$")
-
-    # Step 10: ensure rural flag exists and complete
-    if "rural_flag" not in df.columns:
-        csd: dict[str, Any] = config.get("cleaner_synthetic_defaults") or {}
-        rural_p = float(csd.get("rural_flag_true_rate", 0.383))
-        df["rural_flag"] = rng.random(len(df)) < rural_p
-    df["rural_flag"] = df["rural_flag"].fillna(False).astype(bool)
-    df["rural_flag_derived"] = True
-
-    # Step 11: language raking rough pass
-    if "language_census_bucket" not in df.columns:
-        labels, probs = _language_imputation_labels_and_probs(config)
-        df["language_census_bucket"] = rng.choice(labels, size=len(df), p=probs)
-
-    # Step 12: structural dependency proxy ensure bool
-    if "structural_dependency_proxy" not in df.columns:
-        csd: dict[str, Any] = config.get("cleaner_synthetic_defaults") or {}
-        sdp = float(csd.get("structural_dependency_true_rate", 0.25))
-        df["structural_dependency_proxy"] = rng.random(len(df)) < sdp
-    df["structural_dependency_proxy"] = df["structural_dependency_proxy"].astype(bool)
-
-    # Step 13: internet flag ensure bool
-    if "internet_access_flag" not in df.columns:
-        ict = config.get("media_penetration_defaults", {})
-        rural_inet_p = float(ict.get("internet_access_rural_rate", 0.279))
-        urban_inet_p = float(ict.get("internet_access_urban_rate", 0.734))
-        df["internet_access_flag"] = np.where(
-            df["rural_flag"],
-            rng.random(len(df)) < rural_inet_p,
-            rng.random(len(df)) < urban_inet_p,
-        )
-    df["internet_access_flag"] = df["internet_access_flag"].astype(bool)
-
-    # Step 14: QA report generation
     if qa_report_dir is not None:
         _write_qa_report(df, raw_df, Path(qa_report_dir))
 

@@ -1,0 +1,19 @@
+id: F-041
+title: "Terminology compliance gaps in public markdown"
+category: fragmented_standards
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-12
+closed_at: 2026-06-12
+recurrence_count: 0
+evidence: |
+  Scope master §12 and .cursor/rules/05-terminology-compliance-gate.mdc require
+  participation rate, survey measurement, program, outcome event — not voter,
+  turnout, poll, campaign, election_date in public prose. MASTERPLAN N-15 and
+  scripts/check_terminology.py sample only two patterns; flagship README and
+  module docs still contain banned clusters.
+verification_script: scripts/check_terminology_compliance.py
+wont_fix_reason: null
+notes: |
+  Triage source: governance/ISSUE_TRIAGE_MASTER.yaml (N-15). Expand scan paths
+  before closure; do not weaken patterns to pass — rewrite prose instead.

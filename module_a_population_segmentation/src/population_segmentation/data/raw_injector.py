@@ -73,6 +73,98 @@ _GENDER_VARIANTS: dict[str, list[str]] = {
 }
 
 
+def _inject_cedula_format_errors(
+    df: pd.DataFrame, rate: float, n: int, rng: np.random.Generator
+) -> None:
+    mask = rng.random(n) < rate
+    df.loc[mask, CEDULA] = df.loc[mask, CEDULA].str.lstrip("0").str.slice(0, 7)
+
+
+def _inject_duplicate_rows(
+    df: pd.DataFrame, rate_dup: float, n: int, rng: np.random.Generator
+) -> pd.DataFrame:
+    n_dups = int(round(n * rate_dup))
+    dup_idx = rng.choice(n, size=n_dups, replace=False)
+    dup_rows = df.iloc[dup_idx].copy()
+    dup_rows[CEDULA] = dup_rows[CEDULA].apply(
+        lambda c: c[:-1] + str(rng.integers(0, 9)) if pd.notna(c) and len(str(c)) == 8 else c
+    )
+    return pd.concat([df, dup_rows], ignore_index=True)
+
+
+def _inject_department_typos(
+    df: pd.DataFrame, rate: float, n_total: int, rng: np.random.Generator
+) -> None:
+    mask = rng.random(n_total) < rate
+    for i in df.index[mask]:
+        orig = df.at[i, DEPARTMENT]
+        if orig in _DEPT_TYPOS:
+            options = _DEPT_TYPOS[orig]
+            df.at[i, DEPARTMENT] = options[int(rng.integers(0, len(options)))]
+        else:
+            df.at[i, DEPARTMENT] = str(orig).lower() if pd.notna(orig) else orig
+
+
+def _inject_dob_swaps(
+    df: pd.DataFrame, rate: float, n_total: int, rng: np.random.Generator
+) -> None:
+    mask_dob = rng.random(n_total) < rate
+    dob_col = df[DOB]
+    swapped_dob = dob_col.copy()
+    for i in df.index[mask_dob]:
+        raw = str(dob_col[i])
+        parts = raw.split("/")
+        if len(parts) == 3:
+            swapped_dob[i] = f"{parts[1]}/{parts[0]}/{parts[2]}"
+    df[DOB] = swapped_dob
+
+
+def _inject_encoding_errors(
+    df: pd.DataFrame, rate: float, n_total: int, rng: np.random.Generator
+) -> None:
+    mask = rng.random(n_total) < rate
+    df.loc[df.index[mask], FIRST_NAME] = df.loc[df.index[mask], FIRST_NAME].apply(_garble_encoding)
+    df.loc[df.index[mask], LAST_NAME] = df.loc[df.index[mask], LAST_NAME].apply(_garble_encoding)
+
+
+def _inject_gender_variants(
+    df: pd.DataFrame, rate: float, n_total: int, rng: np.random.Generator
+) -> None:
+    mask = rng.random(n_total) < rate
+    for i in df.index[mask]:
+        g = df.at[i, GENDER]
+        if g in _GENDER_VARIANTS:
+            opts = _GENDER_VARIANTS[g]
+            df.at[i, GENDER] = opts[int(rng.integers(0, len(opts)))]
+
+
+def _inject_age_range_errors(
+    df: pd.DataFrame, rate: float, n_total: int, rng: np.random.Generator
+) -> None:
+    mask = rng.random(n_total) < rate
+    for i in df.index[mask]:
+        raw_dob = df.at[i, DOB]
+        parts = str(raw_dob).split("/")
+        if len(parts) == 3:
+            df.at[i, DOB] = f"{parts[2]}/{parts[1]}/{parts[0]}"
+
+
+def _inject_sentiment_scale_inconsistency(
+    df: pd.DataFrame, rate: float, n_total: int, rng: np.random.Generator
+) -> None:
+    mask = rng.random(n_total) < rate
+    half = mask.sum() // 2
+    mask_idx = np.where(mask)[0]
+    df.loc[df.index[mask_idx[:half]], QUALITATIVE_SENTIMENT] = rng.integers(1, 6, size=half).astype(
+        float
+    )
+    if len(mask_idx) > half:
+        remaining = len(mask_idx) - half
+        df.loc[df.index[mask_idx[half:]], QUALITATIVE_SENTIMENT] = rng.integers(
+            0, 101, size=remaining
+        ).astype(float)
+
+
 def inject_flaws(
     df: pd.DataFrame,
     config: dict[str, Any],
@@ -107,114 +199,35 @@ def inject_flaws(
     # ── 1. Add synthetic fields needed for raw layer ───────────────────────────
     df = _add_raw_fields(df, n, rng)
 
-    # ── FMT-1: Cédula format errors (7-digit, missing zero-pad) ───────────────
-    rate = rates["cedula_format_error_rate"]
-    mask = rng.random(n) < rate
-    df.loc[mask, CEDULA] = df.loc[mask, CEDULA].str.lstrip("0").str.slice(0, 7)
-
-    # ── DUP: Cross-office duplicate rows ──────────────────────────────────────
-    rate_dup = rates["duplicate_rate"]
-    n_dups = int(round(n * rate_dup))
-    dup_idx = rng.choice(n, size=n_dups, replace=False)
-    dup_rows = df.iloc[dup_idx].copy()
-    # Minor name-spelling variation in duplicates
-    dup_rows[CEDULA] = dup_rows[CEDULA].apply(
-        lambda c: c[:-1] + str(rng.integers(0, 9)) if pd.notna(c) and len(str(c)) == 8 else c
-    )
-    df = pd.concat([df, dup_rows], ignore_index=True)
+    _inject_cedula_format_errors(df, rates["cedula_format_error_rate"], n, rng)
+    df = _inject_duplicate_rows(df, rates["duplicate_rate"], n, rng)
     n_total = len(df)
 
-    # ── TYP-1: Department typo variants ───────────────────────────────────────
-    rate = rates["department_typo_rate"]
-    mask = rng.random(n_total) < rate
-    for i in df.index[mask]:
-        orig = df.at[i, DEPARTMENT]
-        if orig in _DEPT_TYPOS:
-            options = _DEPT_TYPOS[orig]
-            df.at[i, DEPARTMENT] = options[int(rng.integers(0, len(options)))]
-        else:
-            # Generic: lowercase first char
-            df.at[i, DEPARTMENT] = str(orig).lower() if pd.notna(orig) else orig
+    _inject_department_typos(df, rates["department_typo_rate"], n_total, rng)
 
-    # ── NUL-1: Municipality nulls (~8%) ───────────────────────────────────────
-    rate = rates["municipality_null_rate"]
-    mask = rng.random(n_total) < rate
+    mask = rng.random(n_total) < rates["municipality_null_rate"]
     df.loc[df.index[mask], MUNICIPALITY] = None
 
-    # ── FMT-2: DOB format swap (MM/DD/YYYY for ~1.8% of records) ──────────────
-    rate = rates["date_format_swap_rate"]
-    mask_dob = rng.random(n_total) < rate
-    # Mark affected rows; actual swap simulated by transposing day/month in dob string
-    dob_col = df[DOB]
-    swapped_dob = dob_col.copy()
-    for i in df.index[mask_dob]:
-        raw = str(dob_col[i])
-        parts = raw.split("/")
-        if len(parts) == 3:
-            # Swap day and month
-            swapped_dob[i] = f"{parts[1]}/{parts[0]}/{parts[2]}"
-    df[DOB] = swapped_dob
+    _inject_dob_swaps(df, rates["date_format_swap_rate"], n_total, rng)
+    _inject_encoding_errors(df, rates["encoding_error_rate"], n_total, rng)
 
-    # ── ENC: Encoding errors in name fields ───────────────────────────────────
-    rate = rates["encoding_error_rate"]
-    mask = rng.random(n_total) < rate
-    df.loc[df.index[mask], FIRST_NAME] = df.loc[df.index[mask], FIRST_NAME].apply(_garble_encoding)
-    df.loc[df.index[mask], LAST_NAME] = df.loc[df.index[mask], LAST_NAME].apply(_garble_encoding)
-
-    # ── FMT-3: Phone format variants ──────────────────────────────────────────
-    rate = rates["phone_format_variant_rate"]
-    mask = rng.random(n_total) < rate
+    mask = rng.random(n_total) < rates["phone_format_variant_rate"]
     df.loc[df.index[mask], PHONE] = df.loc[df.index[mask], PHONE].apply(
         lambda p: _randomize_phone_format(p, rng)
     )
 
-    # ── TYP-2: Gender variants ────────────────────────────────────────────────
-    rate = rates["gender_variant_rate"]
-    mask = rng.random(n_total) < rate
-    for i in df.index[mask]:
-        g = df.at[i, GENDER]
-        if g in _GENDER_VARIANTS:
-            opts = _GENDER_VARIANTS[g]
-            df.at[i, GENDER] = opts[int(rng.integers(0, len(opts)))]
+    _inject_gender_variants(df, rates["gender_variant_rate"], n_total, rng)
+    _inject_age_range_errors(df, rates["age_range_error_rate"], n_total, rng)
 
-    # ── RNG: Age range errors (transposed DOBs produce bad ages) ─────────────
-    rate = rates["age_range_error_rate"]
-    mask = rng.random(n_total) < rate
-    # Inject an extra DOB swap that creates year-transposition → age < 18 or > 120
-    for i in df.index[mask]:
-        raw_dob = df.at[i, DOB]
-        parts = str(raw_dob).split("/")
-        if len(parts) == 3:
-            # Year → 2-digit confusion: swap last two digits of year with day
-            df.at[i, DOB] = f"{parts[2]}/{parts[1]}/{parts[0]}"
-
-    # ── SCH: Schema drift flag ────────────────────────────────────────────────
-    rate = rates["schema_drift_rate"]
-    mask = rng.random(n_total) < rate
+    mask = rng.random(n_total) < rates["schema_drift_rate"]
     df[SCHEMA_DRIFT_FLAG] = False
     df.loc[df.index[mask], SCHEMA_DRIFT_FLAG] = True
 
-    # ── TYP-3: Qualitative sentiment inconsistent scale ───────────────────────
-    rate = rates["sentiment_scale_inconsistency"]
-    mask = rng.random(n_total) < rate
-    # Half of affected rows: scale 1–5; other half: scale 0–100
-    half = mask.sum() // 2
-    mask_idx = np.where(mask)[0]
-    df.loc[df.index[mask_idx[:half]], QUALITATIVE_SENTIMENT] = rng.integers(1, 6, size=half).astype(
-        float
-    )
-    if len(mask_idx) > half:
-        remaining = len(mask_idx) - half
-        df.loc[df.index[mask_idx[half:]], QUALITATIVE_SENTIMENT] = rng.integers(
-            0, 101, size=remaining
-        ).astype(float)
+    _inject_sentiment_scale_inconsistency(df, rates["sentiment_scale_inconsistency"], n_total, rng)
 
-    # ── NUL-2: Qualitative district nulls (~25%) ──────────────────────────────
-    rate = rates["qualitative_district_null_rate"]
-    mask = rng.random(n_total) < rate
+    mask = rng.random(n_total) < rates["qualitative_district_null_rate"]
     df.loc[df.index[mask], QUALITATIVE_DISTRICT] = None
 
-    # Metadata
     df.attrs["flaw_types_injected"] = [
         "FMT_cedula",
         "DUP",

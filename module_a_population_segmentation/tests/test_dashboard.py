@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import pytest
 
+pytest.importorskip("streamlit")
 pytest.importorskip(
     "shap",
     reason="install poetry with --extras explainability for dashboard SHAP tab",
@@ -15,8 +16,23 @@ pytest.importorskip(
 
 from module_a_population_segmentation.app.streamlit_dashboard import (
     _build_sample,
+    _load_canonical_bundle,
     _make_national_reference_labels,
 )
+
+
+def test_load_canonical_bundle_smoke() -> None:
+    """Canonical dashboard path must load population_master_clean.parquet when present."""
+    from pathlib import Path
+
+    master = Path("data/processed/population_master_clean.parquet")
+    if not master.is_file():
+        pytest.skip("canonical export not present in this clone")
+    feat, seg, prop, anc, run_id = _load_canonical_bundle()
+    assert len(feat) > 0
+    assert "participation_propensity" in feat.columns
+    assert "national" in anc
+    assert run_id != "unknown"
 
 
 def test_dashboard_data_builder_smoke() -> None:

@@ -1,0 +1,497 @@
+# Unified issue / task / evaluation registry — Governance Agent triage (2026-06-12)
+# Purpose: single inventory of every mentioned issue; classify before filing new F-*.yaml.
+# Next step: close or file findings for all rows marked open_unfiled or insufficient_fix.
+
+meta:
+  version: 2
+  generated_at: "2026-06-12"
+  agent: governance
+  repo_head: "14da1e02"
+  source_files:
+    - governance/findings/F-*.yaml
+    - governance/FIGURE_MANIFEST.yaml
+    - governance/AUDIT_STATE.json
+    - governance/Truth_and_rebuild_sprint.md
+    - ~/.cursor/projects/.../MASTERPLAN_SILENT.md
+    - maintainer/Project_Evaluation.md
+    - .project-management/audit_task_execution_plan.md
+    - .cursor/rules/11-project-completion-decoder.mdc
+    - maintainer/doc_debt/open.yaml
+    - maintainer/pre_public_cleanup_manifest.md
+    - chart_audit_batch_1_2026-06-12 (user audit prose — ingested below)
+
+status_legend:
+  verified_closed: Finding closed (or historical) and verification_script passes today
+  superseded: Absorbed by another finding or sprint fix; no separate action
+  obsolete: Source audit predates fix; issue no longer applies in current tree
+  reframe_sufficient: Addressed by honest documentation / epistemic boundaries, not code
+  open_finding: Active governance/findings/F-*.yaml with status open
+  open_unfiled: Still valid; needs new F-*.yaml + verification_script
+  deferred: Post-publish backlog; document in VALIDATION.md or epistemic_boundaries
+  human_only: Requires human action (deploy auth, walkthrough, external review)
+  insufficient_fix: Partial fix landed; quality bar not met — reopen or new finding
+
+summary:
+  findings_total: 32
+  findings_open: 3
+  findings_closed_verified: 27
+  findings_historical: 2
+  masterplan_items: 54
+  project_evaluation_phases: 18
+  audit_task_execution_rows: 38
+  decoder_proposed_unfiled: 14
+  doc_debt_open: 1
+  chart_audit_rows: 52
+  chart_audit_open_unfiled: 39
+  chart_audit_p0_filed: 3
+
+# ─── Machine-enforced findings (authoritative closure surface) ─────────────────
+
+findings:
+  - id: F-001
+    status: verified_closed
+    verification: scripts/check_charter_size.py
+  - id: F-002
+    status: verified_closed
+    verification: scripts/check_claude_md.py
+  - id: F-003
+    status: verified_closed
+    kind: historical
+  - id: F-004
+    status: verified_closed
+    kind: historical
+  - id: F-005
+    status: verified_closed
+    verification: scripts/check_precommit_pyright_all_modules.py
+  - id: F-006
+    status: verified_closed
+    verification: scripts/check_pytest_conftest_collection.py
+  - id: F-007
+    status: verified_closed
+    verification: scripts/check_ruff_unused_zero.py
+  - id: F-008
+    status: open_finding
+    verification: scripts/check_radon_complexity_zero.py
+    last_check: "2026-06-12 radon_complex_blocks=8 (down from 34; target 0)"
+    notes: CL Agent owns remediation
+  - id: F-009
+    status: verified_closed
+    verification: scripts/check_vulture_dead_code_zero.py
+  - id: F-021
+    status: verified_closed
+    verification: scripts/check_live_deployment_urls.py
+  - id: F-023
+    status: verified_closed
+    verification: scripts/check_numeric_ssot.py
+  - id: F-032
+    status: verified_closed
+    verification: scripts/check_public_doc_count.py
+  - id: F-033
+    status: verified_closed
+    verification: scripts/check_module_b_solver_gates.py
+    supersedes: [T3-02]
+  - id: F-034
+    status: verified_closed
+    verification: scripts/check_module_c_estimand_gates.py
+  - id: F-035
+    status: verified_closed
+    verification: scripts/check_module_a_anchor_sync.py
+  - id: F-036
+    status: verified_closed
+    verification: scripts/check_module_c_outcome_anchor.py
+  - id: F-037
+    status: verified_closed
+    verification: scripts/check_module_b_objective_identity.py
+  - id: F-038
+    status: verified_closed
+    verification: scripts/check_module_b_a_ingestion.py
+    supersedes: [F-010-partial, E-4]
+  - id: F-039
+    status: verified_closed
+    verification: scripts/check_module_a_segment_labels.py
+  - id: F-040
+    status: verified_closed
+    verification: scripts/check_pipeline_golden_metrics.py
+    supersedes: [F-010, F-011, F-015-partial, F-022, E-2, C-2-wiring]
+  - id: F-041
+    status: open_finding
+    title: Terminology compliance in public markdown
+    verification: scripts/check_terminology_compliance.py
+  - id: F-042
+    status: verified_closed
+    verification: scripts/check_mcmc_diagnostics_disclosure.py
+  - id: F-043
+    status: open_finding
+    title: Operator-only artifacts remain publicly tracked
+    verification: scripts/check_tracked_operator_artifacts.py
+  - id: F-044
+    status: open_finding
+    title: Module A model_params.yaml not wired to runtime loaders
+    verification: scripts/check_module_a_config_wiring.py
+  - id: F-045
+    status: verified_closed
+    verification: scripts/check_battleground_illustrative_label.py
+  - id: F-046
+    status: verified_closed
+    verification: scripts/check_eda_stale_orphan_pngs.py
+    note: Orphans now in generate_eda manifest; lineage gate is F-050
+  - id: F-047
+    status: verified_closed
+    verification: scripts/check_module_a_report_charts.py
+  - id: F-048
+    status: verified_closed
+    verification: scripts/check_eda_battleground_chart_labels.py
+  - id: F-049
+    status: verified_closed
+    verification: scripts/check_eda_notebook_chart_parity.py
+  - id: F-050
+    status: open_finding
+    title: Committed chart PNGs bind to single canonical data run
+    verification: scripts/check_figure_artifact_lineage.py
+  - id: F-051
+    status: open_finding
+    title: Canonical chart population earns segment label semantics
+    verification: scripts/check_segment_label_chart_semantics.py
+    supersedes_partial: F-039
+    note: F-039 gates fresh fit; F-051 gates data/processed artifact charts consume
+  - id: F-052
+    status: open_finding
+    title: Propensity varies within departments and segments
+    verification: scripts/check_propensity_individual_variation.py
+
+# ─── Chart audit batch 1 (2026-06-12) — Modules A/B/C + public layer ───────────
+
+chart_audit_2026_06:
+  cross_cutting:
+    - {id: AUD-XCUT-001, status: open_finding, finding: F-051, title: Segment labels wrong on canonical parquet (A6 convicts)}
+    - {id: AUD-XCUT-002, status: open_finding, finding: F-050, title: Stale figure pairs / missing run_id (C4 table vs forest, C6 vs C10)}
+    - {id: AUD-XCUT-003, status: open_finding, finding: F-050, title: Dashboard live rebuild vs N=50k chart population}
+    - {id: AUD-XCUT-004, status: open_unfiled, root_cause: figure_template, title: Watermark/legend collisions all modules}
+    - {id: AUD-XCUT-005, status: open_unfiled, root_cause: module_c_coherence, title: C2 national win certain vs C3/C8 dept coin flips}
+    - {id: AUD-XCUT-006, status: open_finding, finding: F-052, title: Individual covariates are dept constants (A5/A10/A11)}
+    - {id: AUD-XCUT-007, status: open_unfiled, root_cause: chart_cull, title: Deliverable cull to ~5 Module C + 6 Module B keepers}
+  module_c:
+    - {id: AUD-C1, status: open_unfiled, finding: F-053-proposed, severity: critical, title: C1 anchor unlabeled / retrodiction vs forecast, blocks: [AUD-C2]}
+    - {id: AUD-C2, status: open_unfiled, severity: critical, title: C2 terminal posterior borrowed from anchor}
+    - {id: AUD-C3, status: open_unfiled, severity: reject, title: C3 dept win prob noise band 49–51%}
+    - {id: AUD-C4, status: open_unfiled, severity: rework, title: C4 vs table house-effect inconsistency}
+    - {id: AUD-C5, status: open_unfiled, severity: reject, title: C5 fan chart meaningless x-axis}
+    - {id: AUD-C6, status: open_unfiled, severity: reject, title: C6 KDE on point masses}
+    - {id: AUD-C7, status: open_unfiled, severity: rework, title: C7 exit model null coefficients unlabeled}
+    - {id: AUD-C8, status: open_unfiled, severity: reject, title: C8/C8_v2 bubble causal bait on noise y-axis}
+    - {id: AUD-C9, status: open_unfiled, severity: reject, title: C9 n=3 transparency scatter}
+    - {id: AUD-C10, status: open_unfiled, severity: reject, title: C10 filename promises P(win) histogram}
+    - {id: AUD-PPC, status: open_unfiled, severity: approved_revisions, title: PPC n=4 promote with firm labels}
+    - {id: AUD-REL, status: open_unfiled, severity: rework, title: Reliability diagram missing disclaimer on PNG}
+  module_b:
+    - {id: AUD-B1, status: open_unfiled, severity: approved_revisions, title: B1 needs per-capita normalization}
+    - {id: AUD-B2, status: open_unfiled, severity: rework, title: B2 missing in_person channel / not burn-down}
+    - {id: AUD-B3, status: open_unfiled, severity: reject, title: B3a stacks mutually exclusive scenarios}
+    - {id: AUD-B4, status: open_unfiled, severity: rework, title: B4 blank broadcast columns / 100% saturation}
+    - {id: AUD-B5, status: open_unfiled, severity: reject, title: B5 ratio self-correlation / 3.5¢ contacts}
+    - {id: AUD-B6, status: open_unfiled, severity: approved_revisions, title: B6 synthetic FX unlabeled}
+    - {id: AUD-B7, status: open_unfiled, severity: reject, title: B7 routing matrix half-labeled / orphan channel}
+    - {id: AUD-B8, status: open_unfiled, severity: reject, finding: F-055-proposed, title: B8 contacts exceed caps 5×}
+    - {id: AUD-S1, status: open_unfiled, severity: rework, title: S1 committed segments funded incoherently}
+    - {id: AUD-S2, status: open_unfiled, severity: approved_revisions, title: S2 quadrant labels wrong}
+    - {id: AUD-S3, status: open_unfiled, severity: rework, title: S3 ROI inherits contact inflation}
+    - {id: AUD-S4, status: open_unfiled, severity: reject, title: S4 priority score circular / MC noise}
+    - {id: AUD-S5, status: open_unfiled, severity: reject, title: S5 mislabeled efficiency frontier}
+    - {id: AUD-BMC, status: open_unfiled, severity: reject, finding: F-056-proposed, title: MC contacts flat across scenarios}
+  module_a:
+    - {id: AUD-A1, status: insufficient_fix, finding: F-050, title: A1 segment sizes contradict dashboard shares}
+    - {id: AUD-A2, status: open_unfiled, severity: rework, title: A2 hard age cut at 25 exposes flag-driven segments}
+    - {id: AUD-A3, status: deferred, title: A3 gender null — replace with one sentence}
+    - {id: AUD-A4, status: open_finding, finding: F-051, title: A4 rural_committed only in metro depts}
+    - {id: AUD-A5, status: open_finding, finding: F-052, title: A5 degenerate propensity violins}
+    - {id: AUD-A6, status: open_finding, finding: F-051, title: A6 rural_committed 95% urban — promoted exhibit}
+    - {id: AUD-A7, status: open_unfiled, severity: approved_revisions, title: A7 language after label fix}
+    - {id: AUD-A8, status: open_unfiled, severity: approved_revisions, title: A8 structurally_dependent name falsified}
+    - {id: AUD-A9, status: open_unfiled, severity: rework, title: A9 correlation QA internal only}
+    - {id: AUD-A10, status: open_unfiled, severity: reject, title: A10 PCA lattice proves dept constants}
+    - {id: AUD-A11, status: open_finding, finding: F-052, title: A11 NBI bimodality misdrawn as outliers}
+    - {id: AUD-A12, status: open_unfiled, severity: reject, title: A12 reachability histogram unreadable}
+    - {id: AUD-A13, status: deferred, title: A13 preference proxy null — drop feature}
+    - {id: AUD-SHAP, status: open_unfiled, severity: rework, title: SHAP missing model/target label}
+  public_layer:
+    - {id: AUD-PUB-001, status: open_unfiled, severity: reject, title: Dashboard QA tab empty}
+    - {id: AUD-PUB-002, status: open_finding, finding: F-050, title: GitHub Pages report 280px capture useless}
+    - {id: AUD-PUB-003, status: open_unfiled, severity: rework, title: Calibration tab disclaimer stripped from PNG}
+    - {id: AUD-PUB-004, status: open_unfiled, severity: reject, title: eda_overview data/model scope mislabel + truncated bars}
+    - {id: AUD-PUB-005, status: open_unfiled, severity: appendix, title: Module B API OpenAPI schemas absent}
+
+# ─── Decoder-proposed findings never filed (deduped) ───────────────────────────
+
+decoder_proposed:
+  - id: F-010
+    status: superseded
+    merged_into: F-038, F-040
+  - id: F-011
+    status: superseded
+    merged_into: F-040
+  - id: F-012
+    status: open_unfiled
+    title: B→C contract surface incomplete (weekly allocation schema)
+    recommended_action: file F-046 when schema work starts
+  - id: F-013
+    status: open_unfiled
+    title: budget_allocation_weekly_v1.yaml missing
+  - id: F-014
+    status: deferred
+    title: Walk-forward on longer dated fixture
+  - id: F-015
+    status: superseded
+    merged_into: F-040
+    note: Analytical MC coupling (shift posteriors) still deferred — see C-10
+  - id: F-016
+    status: open_unfiled
+    title: Deploy healthcheck in CI beyond F-021 script
+  - id: F-017
+    status: open_unfiled
+    title: Flaw-type set parity (13 vs 12)
+  - id: F-018
+    status: deferred
+  - id: F-019
+    status: deferred
+  - id: F-020
+    status: open_unfiled
+    title: yamllint / nbval CI gates
+  - id: F-022
+    status: superseded
+    merged_into: F-040
+  - id: F-024
+    status: open_unfiled
+    title: Pre-commit ruff auto-fix vs make lint alignment
+  - id: F-025
+    status: open_unfiled
+    title: Module B CI coverage floor 80%
+  - id: F-026
+    status: open_unfiled
+    title: Module C CI coverage floor 80%
+  - id: F-027
+    status: open_unfiled
+    title: DVC remote / artifact provenance for external clones
+  - id: F-028
+    status: superseded
+    note: README skills evidence table shipped in sprint
+  - id: F-029
+    status: open_unfiled
+    title: Full-scale benchmark summary artifact
+  - id: F-031
+    status: open_unfiled
+    title: project_scope/ hydration documented for terminology gate
+    related: DEBT-003
+
+human_touchpoints:
+  - id: H-01
+    status: human_only
+    title: External senior peer code review
+  - id: H-02
+    status: human_only
+    title: Cross-machine reproducibility sign-off
+  - id: H-03
+    status: obsolete
+    note: Governance merged to main
+  - id: H-04
+    status: deferred
+    title: GCP Cloud Run optional path
+  - id: H-05
+    status: verified_closed
+    merged_into: F-021
+  - id: H-06
+    status: verified_closed
+    merged_into: F-021
+  - id: H-07
+    status: open_unfiled
+    merged_into: F-031, DEBT-003
+  - id: H-08
+    status: open_unfiled
+    title: Pre-public cleanup manifest M1–M37 execution
+    source: maintainer/pre_public_cleanup_manifest.md
+    related_finding: F-043
+  - id: H-09
+    status: human_only
+    title: Deployment sign-off / walkthrough
+  - id: D12
+    status: human_only
+    title: Human portfolio walkthrough (Governance Agent = first reviewer after)
+
+# ─── MASTERPLAN_SILENT 54-issue inventory ─────────────────────────────────────
+
+masterplan:
+  module_a:
+    - {id: A-1, status: verified_closed, finding: F-035}
+    - {id: A-2, status: reframe_sufficient, finding: F-023}
+    - {id: A-3, status: reframe_sufficient, deferred_deep_fix: true, backlog: VALIDATION.md A-3}
+    - {id: A-4, status: verified_closed, finding: F-039}
+    - {id: A-5, status: open_unfiled, finding: F-044, title: model_params largely unwired}
+    - {id: A-6, status: insufficient_fix, title: AUC gate tests toy data; threshold drift}
+    - {id: A-7, status: open_unfiled, title: DBSCAN noise diagnostic only}
+    - {id: A-8, status: insufficient_fix, title: Streamlit loads synthetic not artifacts; SHAP lazy only}
+    - {id: A-9, status: open_unfiled, title: Model card vs code stratification claims}
+    - {id: A-10, status: open_unfiled, title: export.py ignores RANDOM_SEED helper}
+    - {id: A-11, status: deferred}
+    - {id: A-12, status: open_unfiled, finding: F-044, title: reachability weights code vs YAML}
+    - {id: A-13, status: open_unfiled, title: Streamlit shows index not entity_id}
+  module_b:
+    - {id: B-1, status: verified_closed, finding: F-037}
+    - {id: B-2, status: open_unfiled, title: Spec objective (1-util/cap) not implemented}
+    - {id: B-3, status: verified_closed, finding: F-033}
+    - {id: B-4, status: verified_closed, finding: F-038}
+    - {id: B-5, status: verified_closed, finding: F-038}
+    - {id: B-6, status: open_unfiled, title: Scenario ID naming misleading}
+    - {id: B-7, status: verified_closed, finding: F-037}
+    - {id: B-8, status: verified_closed, finding: F-033}
+    - {id: B-9, status: verified_closed, finding: F-033}
+    - {id: B-10, status: verified_closed, finding: F-033}
+    - {id: B-11, status: open_unfiled, title: budget_envelope.yaml not loaded}
+    - {id: B-12, status: open_unfiled, title: README formulation errors}
+    - {id: B-13, status: open_unfiled, title: MILP duals integrality caveat}
+    - {id: B-14, status: open_unfiled, title: Cent truncation undocumented}
+  module_c:
+    - {id: C-1, status: verified_closed, finding: F-036}
+    - {id: C-2, status: superseded, finding: F-040, note: metadata wiring done; analytical coupling see C-10}
+    - {id: C-3, status: verified_closed, finding: F-034}
+    - {id: C-4, status: open_finding, finding: F-045, title: Synthetic battleground dept probs}
+    - {id: C-5, status: verified_closed, finding: F-040, note: golden_metrics.json CI-gated}
+    - {id: C-6, status: verified_closed, finding: F-023}
+    - {id: C-7, status: verified_closed, finding: F-034}
+    - {id: C-8, status: verified_closed, finding: F-034}
+    - {id: C-9, status: open_unfiled, title: Series A|B switch rollup validation}
+    - {id: C-10, status: deferred, title: MC scenarios do not feed back into forecasts}
+    - {id: C-11, status: open_unfiled, title: house_effect_seed_matrix naming}
+    - {id: C-12, status: open_unfiled, title: Posterior bracket test weak tolerance}
+    - {id: C-13, status: open_finding, finding: F-042, title: MCMC gates xfail}
+    - {id: C-14, status: verified_closed, finding: F-034}
+  eda_flow:
+    - {id: E-1, status: verified_closed, finding: F-040}
+    - {id: E-2, status: verified_closed, finding: F-040}
+    - {id: E-3, status: verified_closed, finding: F-040}
+    - {id: E-4, status: verified_closed, finding: F-038}
+    - {id: E-5, status: open_unfiled, title: generate_eda counterfactual CSV deps}
+    - {id: E-6, status: verified_closed, finding: F-023}
+    - {id: E-7, status: deferred, title: S1 chart prorates not solver output}
+    - {id: E-8, status: open_unfiled, title: Schema/doc segment_id drift}
+    - {id: E-9, status: verified_closed, finding: F-033}
+    - {id: E-10, status: open_unfiled, title: Worst EDA plots portfolio-grade}
+    - {id: E-11, status: superseded, finding: F-040}
+  narrative:
+    - {id: N-1, status: verified_closed, finding: F-021}
+    - {id: N-2, status: verified_closed, finding: F-023}
+    - {id: N-3, status: verified_closed, finding: F-023}
+    - {id: N-4, status: verified_closed, finding: F-023}
+    - {id: N-5, status: verified_closed, finding: F-035}
+    - {id: N-6, status: verified_closed, finding: F-023}
+    - {id: N-7, status: verified_closed, finding: F-023}
+    - {id: N-8, status: verified_closed, finding: F-023}
+    - {id: N-9, status: verified_closed, finding: F-023}
+    - {id: N-10, status: verified_closed, note: README rebuild}
+    - {id: N-11, status: verified_closed, finding: F-023}
+    - {id: N-12, status: verified_closed, finding: F-032}
+    - {id: N-13, status: verified_closed, finding: F-023}
+    - {id: N-14, status: open_unfiled, title: Test-count drift across docs}
+    - {id: N-15, status: open_finding, finding: F-041, title: Terminology in flagship docs}
+
+# ─── Project_Evaluation.md PHASE N* (net-new audit) ─────────────────────────────
+
+project_evaluation:
+  - {id: N1.1, status: obsolete, note: KMeans n_jobs removed from kmeans section; test exists}
+  - {id: N1.2, status: obsolete, note: CI uses poetry install not --no-root}
+  - {id: N1.3, status: open_unfiled, title: rural_inet unused; whatsapp_pen magic}
+  - {id: N1.4, status: open_unfiled, title: max_noise_rate comment contradiction}
+  - {id: N2.1, status: obsolete, note: Makefile uses poetry run}
+  - {id: N2.2, status: obsolete, note: data dirs exist; pipeline-full works}
+  - {id: N3.1, status: superseded, note: transformation_log archived}
+  - {id: N3.2, status: obsolete, note: IMPLEMENTATION_PLAN in maintainer/archive}
+  - {id: N4.1, status: deferred, title: _rake_categorical memory at 4.26M scale}
+  - {id: N4.2, status: open_unfiled, title: inject_flaws duplicate entity_id}
+  - {id: N5.1, status: deferred, title: MLflow optional not initialized}
+  - {id: N5.2, status: obsolete, note: dvc.yaml exists and pipeline-full runs}
+  - {id: N6.1, status: open_unfiled, title: _generate_names return type inconsistency}
+  - {id: N6.2, status: open_unfiled, title: rng.random mask scalar typing}
+  - {id: N7.1, status: open_unfiled, title: graphify-out local paths if tracked}
+  - {id: N8.1, status: open_unfiled, title: schema contract status field undocumented}
+  - {id: N9.1, status: obsolete, note: app/ and docker/ exist; Streamlit deployed}
+  - {id: N9.2, status: superseded, note: replaced by governance findings + this triage file}
+
+# ─── audit_task_execution_plan.md (2026-05-27) ────────────────────────────────
+
+audit_tasks:
+  blockers:
+    - {id: T0-01, status: verified_closed, merged_into: F-021}
+    - {id: T0-02, status: open_unfiled, finding: F-043, title: Untrack maintainer operator tree}
+    - {id: T0-03, status: open_finding, finding: F-043, title: ruvector.db tracked in git}
+    - {id: T0-04, status: insufficient_fix, note: AGENTS.md+CLAUDE.md still tracked; .cursor untracked}
+    - {id: T0-05, status: obsolete, note: Phantom Mermaid artifacts removed}
+    - {id: T0-06, status: reframe_sufficient, finding: F-023}
+    - {id: T0-07, status: superseded, finding: F-032, CASE_STUDY.md}
+    - {id: T0-08, status: open_unfiled, title: docs/assets ChatGPT images hygiene}
+  tier1:
+    - {id: T1-01, status: open_unfiled, title: Byte-identical reproduction claim vs tolerance}
+    - {id: T1-02, status: open_unfiled, title: calibration_anchors VERIFIED tags for 14 depts}
+    - {id: T1-03, status: open_unfiled, title: wet_election_week naming in public API}
+    - {id: T1-04, status: deferred, note: Analytical B→C coupling; F-040 wired metadata only}
+    - {id: T1-05, status: verified_closed, finding: F-023}
+    - {id: T1-06, status: open_unfiled, title: DBSCAN theater at eps=2.0}
+    - {id: T1-07, status: open_unfiled, finding: F-017, title: 13th flaw type NUL_rural_flag}
+    - {id: T1-08, status: open_unfiled, title: transaction-gate pre-commit hooks in clean clone}
+    - {id: T1-09, status: open_finding, finding: F-042}
+  tier2:
+    - {id: T2-01, status: open_unfiled, finding: F-027}
+    - {id: T2-02, status: open_unfiled, finding: F-025, F-026}
+    - {id: T2-03, status: superseded, finding: F-032}
+    - {id: T2-04, status: insufficient_fix, note: README rewritten but voice pass optional}
+    - {id: T2-05, status: open_unfiled, title: walk-forward sparse fixture disclosure}
+    - {id: T2-06, status: open_unfiled, title: persuasion weight provenance constants.py}
+    - {id: T2-07, status: verified_closed, finding: F-021}
+    - {id: T2-08, status: deferred, title: German README hook for DACH}
+    - {id: T2-09, status: open_unfiled, title: CI byte-identical artifact test}
+  tier3_low:
+    - {id: T3-01, status: deferred}
+    - {id: T3-02, status: verified_closed, finding: F-033}
+    - {id: T3-03, status: open_unfiled, title: DVC repro smoke in CI not dry-only}
+    - {id: T3-04, status: open_unfiled, title: UNDEFINED solver status handling}
+    - {id: T3-05, status: open_unfiled, title: MCMC vs MC scenario draw naming}
+    - {id: T3-06, status: deferred, related: F-042}
+    - {id: T3-07, status: deferred}
+    - {id: T3-08, status: open_unfiled, title: Vanity metric unit tests}
+    - {id: T3-09, status: open_unfiled, title: notebooklm-sources cleanup}
+
+doc_debt:
+  - {id: DEBT-001, status: verified_closed}
+  - {id: DEBT-003, status: open_unfiled, finding: F-031, title: project_scope hydration}
+
+post_publish_backlog:
+  - Non-circular propensity evaluation (A-3 deep)
+  - MC scenario → forecast coupling (C-10)
+  - Stratified Bayesian battleground model (C-4 deep)
+  - MMM-grade empirical response curves (B priors)
+  - A-11 reliability deviation enforcement
+  - E-7 segment-level allocation truth in charts
+
+recommended_next_findings:
+  priority_0_chart_audit:
+    - F-050
+    - F-051
+    - F-052
+  priority_1:
+    - F-008
+    - F-041
+    - F-042
+    - F-043
+  priority_1b_after_p0:
+    - F-053
+    - F-054
+    - F-055
+    - F-056
+  priority_2_file_when_started:
+    - F-025
+    - F-026
+    - F-027
+    - F-031
+    - F-012
+    - F-013
+  priority_3_deferred_or_batch:
+    - E-10 plot polish
+    - T2-08 German README
+    - C-10 analytical coupling
