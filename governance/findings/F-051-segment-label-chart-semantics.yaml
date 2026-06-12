@@ -1,0 +1,19 @@
+id: F-051
+title: "Canonical chart population must earn segment label semantics"
+category: statistical-rigor
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-12
+closed_at: 2026-06-12
+recurrence_count: 0
+evidence: |
+  F-039 closed profile-derived assignment on a fresh 6k fit, but chart audit A6/A4 on
+  data/processed/population_master_clean.parquet (N=50,000) shows rural_committed is
+  95% urban, committed_opposition is 100% urban, and rural_committed exists only in
+  metro departments. A-charts, S1 ($871K to rural_committed in Central), and Module B
+  targeting inherit these inverted names until the canonical export is regenerated.
+verification_script: scripts/check_segment_label_chart_semantics.py
+notes: |
+  Triage: extends F-039 on artifact surface (insufficient_fix on processed bundle).
+  Chart audit AUD-A4, AUD-A6, AUD-A8, AUD-XCUT-001. Fix order: after F-050 lineage,
+  re-run module A export and regenerate A/B/C charts.
