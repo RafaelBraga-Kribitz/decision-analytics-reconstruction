@@ -35,14 +35,14 @@ make module-b-api
 
 ## Live API
 
-Module B ships as a FastAPI service. Run it locally:
+**Hosted (Railway):** [Swagger UI](https://decision-analytics-module-b-production.up.railway.app/docs) ·
+[`/healthz`](https://decision-analytics-module-b-production.up.railway.app/healthz)
+
+Run locally:
 
 ```bash
 make module-b-api   # docs at http://127.0.0.1:8088/docs, health at /healthz
 ```
-
-A hosted deployment is tracked as open finding `F-021` and will be linked
-here once it is verifiably live.
 
 ## Source surface
 

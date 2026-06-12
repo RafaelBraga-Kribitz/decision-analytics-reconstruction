@@ -32,6 +32,9 @@ streamlit run module_a_population_segmentation/app/streamlit_dashboard.py
 
 Optional container flow (see repo root `docker-compose.yml`): Colima + `docker compose up module_a` locally.
 
+**Hosted (Render):** [decision-analytics-module-a.onrender.com](https://decision-analytics-module-a.onrender.com)
+(first request after idle may cold-start ~30s on the free tier).
+
 ---
 
 ## Key outputs

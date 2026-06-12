@@ -57,9 +57,10 @@ make deploy-module-c
 
 ## Live report
 
-Quarto-rendered posterior report: build locally with the Pages workflow steps
-(`.github/workflows/deploy-module-c-pages.yml`). The hosted GitHub Pages link
-is tracked as open finding `F-021` and will be added once verifiably live.
+**Hosted (GitHub Pages):**
+[decision-analytics-reconstruction report](https://RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction/)
+
+Build or refresh locally via `.github/workflows/deploy-module-c-pages.yml` or `make deploy-module-c`.
 
 ## Source surface
 

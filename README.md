@@ -16,8 +16,15 @@ analysis — wired as a single reproducible pipeline with governance ratchets.
 [![Governance](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/governance.yml/badge.svg)](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/governance.yml)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue)](.python-version)
 
-Hosted demos are tracked as open finding **F-021** — this README does not claim
-URLs that CI has not verified live.
+## Live demos (verified F-021)
+
+| Module | Hosted surface | URL |
+|---|---|---|
+| **A** — Streamlit | Segment explorer + propensity | [decision-analytics-module-a.onrender.com](https://decision-analytics-module-a.onrender.com) |
+| **B** — FastAPI | Swagger UI + `/healthz` | [Railway docs](https://decision-analytics-module-b-production.up.railway.app/docs) |
+| **C** — Quarto | Posterior report (GitHub Pages) | [GitHub Pages report](https://RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction/) |
+
+Render free tier may cold-start ~30s on first load. Re-check anytime: `poetry run python scripts/check_live_deployment_urls.py`.
 
 ## Three differentiators
 
@@ -95,8 +102,8 @@ Authority: `PROJECT_CHARTER.md`, `governance/AUDIT_PROCEDURE.md`, `governance/fi
 
 ## Deployment
 
-See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). Live URL verification: finding **F-021**
-(human platform auth required).
+See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) for platform configs (Render, Railway, Pages).
+Live URL verification: `scripts/check_live_deployment_urls.py` (finding **F-021**, closed 2026-06-11).
 
 ## Author
 

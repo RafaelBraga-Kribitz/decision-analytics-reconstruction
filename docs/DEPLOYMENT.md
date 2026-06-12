@@ -4,6 +4,22 @@ Production deployment architecture for Module A (Streamlit) and Module B (FastAP
 
 ---
 
+## Portfolio live deployments (verified 2026-06-11)
+
+These are the **current hosted demos** checked by `scripts/check_live_deployment_urls.py` (F-021):
+
+| Module | Platform | Public URL | Health / entry |
+|---|---|---|---|
+| A — Streamlit | [Render](render.yaml) | https://decision-analytics-module-a.onrender.com | `/_stcore/health` |
+| B — FastAPI | [Railway](railway.toml) | https://decision-analytics-module-b-production.up.railway.app/docs | `/healthz` (GET) |
+| C — Quarto report | GitHub Pages | https://RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction/ | workflow: `.github/workflows/deploy-module-c-pages.yml` |
+
+**Notes:** Render free tier sleeps after inactivity; Railway hostname follows the service name in the dashboard. Module B `/healthz` returns 405 on HEAD — use GET.
+
+The sections below describe an **optional GCP Cloud Run** path (Makefile + `deploy-cloudrun.yml`); it is not required for the portfolio demos above.
+
+---
+
 ## Architecture Overview
 
 ```
