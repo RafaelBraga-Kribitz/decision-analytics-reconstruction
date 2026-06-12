@@ -142,6 +142,69 @@ def _pick(items: Iterable, rng: np.random.Generator):
     return seq[idx]
 
 
+def _pick_currency_pool(
+    canonical_channel: str, rng: np.random.Generator, currency_swap_rate: float
+) -> tuple[str, float]:
+    currency_pairs = [
+        ("USD", 1.0),
+        ("US$", 1.0),
+        ("$", 1.0),
+        ("PYG", 1.0),
+        ("Gs.", 1.0),
+        ("₲", 1.0),
+    ]
+    ch_type = CHANNEL_TYPES[canonical_channel]
+    if ch_type in {"bilateral", "broadcast"} and rng.random() < 0.55:
+        currency_pool = [c for c in currency_pairs if c[0] in {"USD", "US$", "$"}]
+    else:
+        currency_pool = [c for c in currency_pairs if c[0] in {"PYG", "Gs.", "₲"}]
+    currency, _ = currency_pool[int(rng.integers(0, len(currency_pool)))]
+    if rng.random() < currency_swap_rate:
+        currency, _ = currency_pairs[int(rng.integers(0, len(currency_pairs)))]
+    return currency, _
+
+
+def _build_budget_row(
+    i: int,
+    cfg: DirtyGenConfig,
+    rng: np.random.Generator,
+    channel_alias_keys: list[str],
+    dept_alias_keys: list[str],
+) -> dict[str, str]:
+    channel_alias = _pick(channel_alias_keys, rng)
+    canonical_channel = CHANNEL_ALIASES[channel_alias]
+    currency, _ = _pick_currency_pool(canonical_channel, rng, cfg.currency_swap_rate)
+
+    amount_native = float(rng.gamma(2.5, 3500.0)) + 200.0
+    if currency in {"PYG", "Gs.", "₲"}:
+        amount_native *= 5600.0
+
+    return {
+        "row_id": f"BUD-{i:05d}",
+        "vendor": f"V{int(rng.integers(0, 80)):03d}",
+        "channel_text": _maybe_with_noise(channel_alias, rng, 0.15),
+        "department_text": _maybe_with_noise(_pick(dept_alias_keys, rng), rng, 0.10),
+        "week_label": WEEK_LABELS[int(rng.integers(0, WEEK_COUNT))],
+        "currency": currency,
+        "amount_text": _maybe_swap_locale(amount_native, rng, cfg.locale_swap_rate),
+        "fx_tier_hint": "REF" if rng.random() < 0.55 else "RETAIL",
+        "notes": "",
+    }
+
+
+def _inject_budget_nulls_and_dups(
+    rows: list[dict[str, str]], cfg: DirtyGenConfig, rng: np.random.Generator
+) -> list[dict[str, str]]:
+    for r in rows:
+        if rng.random() < cfg.null_rate:
+            field = _pick(("channel_text", "department_text", "amount_text"), rng)
+            r[field] = ""
+        if rng.random() < cfg.null_rate / 2:
+            r["amount_text"] = "NULL"
+    dup_targets = rng.choice(len(rows), size=int(len(rows) * cfg.duplicate_rate), replace=False)
+    return rows + [dict(rows[i]) for i in dup_targets]
+
+
 def generate_budget_lines(cfg: DirtyGenConfig, out_path: Path, rng: np.random.Generator) -> Path:
     """Synthesize a noisy ``budget_lines_raw.csv`` fixture for cleaner tests.
 
@@ -163,59 +226,11 @@ def generate_budget_lines(cfg: DirtyGenConfig, out_path: Path, rng: np.random.Ge
     """
     channel_alias_keys = list(CHANNEL_ALIASES.keys())
     dept_alias_keys = list(DEPARTMENT_ALIASES.keys())
-    currency_pairs = [
-        ("USD", 1.0),
-        ("US$", 1.0),
-        ("$", 1.0),
-        ("PYG", 1.0),
-        ("Gs.", 1.0),
-        ("₲", 1.0),
+    rows = [
+        _build_budget_row(i, cfg, rng, channel_alias_keys, dept_alias_keys)
+        for i in range(cfg.n_budget_rows)
     ]
-    rows = []
-    for i in range(cfg.n_budget_rows):
-        channel_alias = _pick(channel_alias_keys, rng)
-        canonical_channel = CHANNEL_ALIASES[channel_alias]
-        # Choose currency: bilateral/digital channels lean USD, in-person lean PYG.
-        ch_type = CHANNEL_TYPES[canonical_channel]
-        if ch_type in {"bilateral", "broadcast"} and rng.random() < 0.55:
-            currency_pool = [c for c in currency_pairs if c[0] in {"USD", "US$", "$"}]
-        else:
-            currency_pool = [c for c in currency_pairs if c[0] in {"PYG", "Gs.", "₲"}]
-        currency, _ = currency_pool[int(rng.integers(0, len(currency_pool)))]
-        if rng.random() < cfg.currency_swap_rate:
-            currency, _ = currency_pairs[int(rng.integers(0, len(currency_pairs)))]
-
-        amount_native = float(rng.gamma(2.5, 3500.0)) + 200.0
-        if currency in {"PYG", "Gs.", "₲"}:
-            amount_native *= 5600.0
-
-        amount_str = _maybe_swap_locale(amount_native, rng, cfg.locale_swap_rate)
-        dept_alias = _pick(dept_alias_keys, rng)
-        week_label = WEEK_LABELS[int(rng.integers(0, WEEK_COUNT))]
-
-        row = {
-            "row_id": f"BUD-{i:05d}",
-            "vendor": f"V{int(rng.integers(0, 80)):03d}",
-            "channel_text": _maybe_with_noise(channel_alias, rng, 0.15),
-            "department_text": _maybe_with_noise(dept_alias, rng, 0.10),
-            "week_label": week_label,
-            "currency": currency,
-            "amount_text": amount_str,
-            "fx_tier_hint": "REF" if rng.random() < 0.55 else "RETAIL",
-            "notes": "",
-        }
-        rows.append(row)
-
-    # Inject NULLs and duplicates.
-    for r in rows:
-        if rng.random() < cfg.null_rate:
-            field = _pick(("channel_text", "department_text", "amount_text"), rng)
-            r[field] = ""
-        if rng.random() < cfg.null_rate / 2:
-            r["amount_text"] = "NULL"
-
-    dup_targets = rng.choice(len(rows), size=int(len(rows) * cfg.duplicate_rate), replace=False)
-    rows_with_dups = rows + [dict(rows[i]) for i in dup_targets]
+    rows_with_dups = _inject_budget_nulls_and_dups(rows, cfg, rng)
 
     fieldnames = list(rows[0].keys())
     with open(out_path, "w", newline="", encoding="utf-8") as f:

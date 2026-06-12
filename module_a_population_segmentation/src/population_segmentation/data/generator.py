@@ -175,6 +175,52 @@ def _validated_department_sampling_probs(
     return dept_names, probs
 
 
+def _sample_rural_flags(
+    dept_names: list[str],
+    dept_indices: np.ndarray,
+    dept_urban_share: dict[str, float],
+    national_urban_fallback: float,
+    n: int,
+    rng: np.random.Generator,
+) -> np.ndarray:
+    rural_flags = np.zeros(n, dtype=bool)
+    for i, dept in enumerate(dept_names):
+        mask = dept_indices == i
+        urban_p = dept_urban_share.get(dept, national_urban_fallback)
+        rural_flags[mask] = rng.random(mask.sum()) > urban_p
+    return rural_flags
+
+
+def _sample_ages(age_dist: dict[str, Any], n: int, rng: np.random.Generator) -> np.ndarray:
+    bins: list[int] = age_dist["bins"]
+    bin_weights: list[float] = age_dist["bin_weights"]
+    bin_probs = np.array(bin_weights, dtype=float)
+    bin_probs /= bin_probs.sum()
+    bin_indices = rng.choice(len(bin_probs), size=n, p=bin_probs)
+    ages = np.zeros(n, dtype=np.int16)
+    for bi in range(len(bin_probs)):
+        mask = bin_indices == bi
+        lo, hi = bins[bi], bins[bi + 1]
+        ages[mask] = rng.integers(lo, hi, size=int(mask.sum()))
+    return ages
+
+
+def _sample_structural_dependency(
+    departments: np.ndarray,
+    rural_flags: np.ndarray,
+    struct_rural_base: float,
+    struct_urban_base: float,
+    struct_elevated_rural: float,
+    elevated_departments: frozenset[str],
+    n: int,
+    rng: np.random.Generator,
+) -> np.ndarray:
+    base_dep_prob = np.where(rural_flags, struct_rural_base, struct_urban_base)
+    elevated_mask = np.array([d in elevated_departments for d in departments])
+    dep_prob = np.where(elevated_mask & rural_flags, struct_elevated_rural, base_dep_prob)
+    return rng.random(n) < dep_prob
+
+
 def generate_population(
     config: dict[str, Any],
     seed: int | None = None,
@@ -240,51 +286,28 @@ def generate_population(
     dept_indices = rng.choice(len(dept_names), size=n, p=dept_probs)
     departments = np.array(dept_names, dtype=object)[dept_indices]
 
-    # ── rural_flag (preliminary — derived from department urban share) ─────────
-    rural_flags = np.zeros(n, dtype=bool)
-    for i, dept in enumerate(dept_names):
-        mask = dept_indices == i
-        urban_p = dept_urban_share.get(dept, national_urban_fallback)
-        rural_flags[mask] = rng.random(mask.sum()) > urban_p
+    rural_flags = _sample_rural_flags(
+        dept_names, dept_indices, dept_urban_share, national_urban_fallback, n, rng
+    )
     rural_flag_derived = np.ones(n, dtype=bool)
 
-    # ── gender ─────────────────────────────────────────────────────────────────
     gender_split: dict[str, float] = config["gender_split"]
     genders = rng.choice(["M", "F"], size=n, p=[gender_split["M"], gender_split["F"]])
 
-    # ── age_on_event_date ──────────────────────────────────────────────────────
-    age_dist = config["age_distribution"]
-    bins: list[int] = age_dist["bins"]
-    bin_weights: list[float] = age_dist["bin_weights"]
-    bin_probs = np.array(bin_weights, dtype=float)
-    bin_probs /= bin_probs.sum()
-    bin_indices = rng.choice(len(bin_probs), size=n, p=bin_probs)
-    ages = np.zeros(n, dtype=np.int16)
-    for bi in range(len(bin_probs)):
-        mask = bin_indices == bi
-        lo, hi = bins[bi], bins[bi + 1]
-        ages[mask] = rng.integers(lo, hi, size=int(mask.sum()))
+    ages = _sample_ages(config["age_distribution"], n, rng)
 
-    # ── Rake rural_flag to national anchor (see cleaner_synthetic_defaults.rural_flag_true_rate) ──
     rural_flags = _rake_binary(rural_flags, target=national_rural_anchor, rng=rng)
 
-    # ── municipality (placeholder — filled deterministically from dept) ────────
-    # Full municipality lookup is applied in cleaner step 4; here we assign
-    # a synthetic placeholder based on department to keep the raw layer simple.
     municipalities = _assign_municipalities(departments, rng)
 
-    # ── language_census_bucket ─────────────────────────────────────────────────
     lang_priors: dict[str, float] = config["language_priors"]
     language_buckets = _assign_language(departments, rural_flags, lang_priors, rng)
-
-    # ── Rake language to national marginals ───────────────────────────────────
     language_buckets = _rake_categorical(
         language_buckets,
         targets=lang_priors,
         rng=rng,
     )
 
-    # ── preference_proxy ───────────────────────────────────────────────────────
     pref_priors: dict[str, float] = config["preference_proxy_priors"]
     pref_labels = list(pref_priors.keys())
     pref_probs = np.array([pref_priors[k] for k in pref_labels], dtype=float)
@@ -292,7 +315,6 @@ def generate_population(
     preference_proxies = np.array(pref_labels)[rng.choice(len(pref_labels), size=n, p=pref_probs)]
     preference_proxy_strengths = rng.beta(2.0, 2.0, size=n).astype(np.float32)
 
-    # ── internet_access_flag ───────────────────────────────────────────────────
     urban_inet = float(ict.get("whatsapp_urban", 0.74))
     rural_whatsapp = float(ict.get("whatsapp_rural", 0.31))
     inet_rural = float(ict.get("internet_access_rural_rate", 0.279))
@@ -300,12 +322,10 @@ def generate_population(
     inet_prob = np.where(rural_flags, inet_rural, inet_urban)
     internet_access_flags = rng.random(n) < inet_prob
 
-    # ── media penetration ──────────────────────────────────────────────────────
     tv_pen = np.array([tv_by.get(str(d), tv_nat) for d in departments], dtype=np.float32)
     radio_pen = np.array([radio_by.get(str(d), radio_nat) for d in departments], dtype=np.float32)
     whatsapp_pen = np.where(rural_flags, rural_whatsapp, urban_inet).astype(np.float32)
 
-    # ── nbi_stress_prior ───────────────────────────────────────────────────────
     nbi_vals = np.where(
         rural_flags,
         np.array([nbi_rural.get(str(d), nbi_rural_fb) for d in departments]),
@@ -314,22 +334,23 @@ def generate_population(
     nbi_noise = rng.normal(0, nbi_noise_std, size=n).astype(np.float32)
     nbi_vals = np.clip(nbi_vals + nbi_noise, 0.0, 1.0).astype(np.float32)
 
-    # ── structural_dependency_proxy ────────────────────────────────────────────
-    base_dep_prob = np.where(rural_flags, struct_rural_base, struct_urban_base)
-    elevated_mask = np.array([d in elevated_departments for d in departments])
-    dep_prob = np.where(elevated_mask & rural_flags, struct_elevated_rural, base_dep_prob)
-    structural_dependency = rng.random(n) < dep_prob
+    structural_dependency = _sample_structural_dependency(
+        departments,
+        rural_flags,
+        struct_rural_base,
+        struct_urban_base,
+        struct_elevated_rural,
+        elevated_departments,
+        n,
+        rng,
+    )
 
-    # ── ballot blanks ──────────────────────────────────────────────────────────
     ballot_blank_pres = rng.random(n) < p_ballot_pres
     ballot_blank_parl = rng.random(n) < p_ballot_parl
 
-    # ── enc_source_raw (raw contract) ───────────────────────────────────────
-    # Cleaner step 1 promotes this column to ENC_SOURCE and drops ENC_SOURCE_RAW.
     enc_labels, enc_probs = _enc_source_labels_and_probs(config)
     enc_sources = rng.choice(enc_labels, size=n, p=enc_probs)
 
-    # ── jopara_flag ────────────────────────────────────────────────────────────
     jopara_flags = language_buckets == "jopara_bilingual"
 
     df = pd.DataFrame(
@@ -426,6 +447,72 @@ def _rake_binary(
     return arr
 
 
+def _normalize_rake_target_counts(
+    targets: dict[str, float], n: int, labels: list[str]
+) -> dict[str, int]:
+    target_counts = {k: int(round(v * n)) for k, v in targets.items()}
+    delta = n - sum(target_counts.values())
+    if delta != 0:
+        target_counts[labels[0]] += delta
+    return target_counts
+
+
+def _index_rows_by_label(arr: np.ndarray, labels: list[str], n: int) -> dict[str, list[int]]:
+    idx_by_label: dict[str, list[int]] = {k: [] for k in labels}
+    for i in range(n):
+        lab = str(arr[i])
+        if lab in idx_by_label:
+            idx_by_label[lab].append(i)
+    return idx_by_label
+
+
+def _transfer_label_rows(
+    arr: np.ndarray,
+    idx_by_label: dict[str, list[int]],
+    current_counts: dict[str, int],
+    donor: str,
+    recipient: str,
+    to_move: int,
+    rng: np.random.Generator,
+) -> None:
+    pool = idx_by_label[donor]
+    pick = rng.choice(len(pool), size=to_move, replace=False)
+    keep = np.ones(len(pool), dtype=bool)
+    keep[pick] = False
+    idx_by_label[donor] = [pool[i] for i in range(len(pool)) if keep[i]]
+    chosen_pos = [pool[int(j)] for j in pick]
+    for pos in chosen_pos:
+        arr[pos] = recipient
+    idx_by_label[recipient].extend(chosen_pos)
+    current_counts[donor] -= to_move
+    current_counts[recipient] = current_counts.get(recipient, 0) + to_move
+
+
+def _rake_single_label(
+    arr: np.ndarray,
+    idx_by_label: dict[str, list[int]],
+    current_counts: dict[str, int],
+    label: str,
+    target_count: int,
+    target_counts: dict[str, int],
+    labels: list[str],
+    rng: np.random.Generator,
+) -> None:
+    diff = target_count - current_counts.get(label, 0)
+    if diff <= 0:
+        return
+    over = [k for k in labels if current_counts.get(k, 0) > target_counts.get(k, 0)]
+    for donor in over:
+        available = current_counts[donor] - target_counts.get(donor, 0)
+        to_move = min(diff, available)
+        if to_move <= 0:
+            continue
+        _transfer_label_rows(arr, idx_by_label, current_counts, donor, label, to_move, rng)
+        diff -= to_move
+        if diff <= 0:
+            break
+
+
 def _rake_categorical(
     arr: np.ndarray,
     targets: dict[str, float],
@@ -440,44 +527,14 @@ def _rake_categorical(
     arr = arr.copy()
     n = len(arr)
     labels = list(targets.keys())
-    target_counts = {k: int(round(v * n)) for k, v in targets.items()}
-    # Adjust to ensure counts sum to n
-    delta = n - sum(target_counts.values())
-    if delta != 0:
-        target_counts[labels[0]] += delta
-
-    idx_by_label: dict[str, list[int]] = {k: [] for k in labels}
-    for i in range(n):
-        lab = str(arr[i])
-        if lab in idx_by_label:
-            idx_by_label[lab].append(i)
-
+    target_counts = _normalize_rake_target_counts(targets, n, labels)
+    idx_by_label = _index_rows_by_label(arr, labels, n)
     current_counts = {k: len(idx_by_label[k]) for k in labels}
 
     for label, target_count in target_counts.items():
-        diff = target_count - current_counts.get(label, 0)
-        if diff <= 0:
-            continue
-        over = [k for k in labels if current_counts.get(k, 0) > target_counts.get(k, 0)]
-        for donor in over:
-            available = current_counts[donor] - target_counts.get(donor, 0)
-            to_move = min(diff, available)
-            if to_move <= 0:
-                continue
-            pool = idx_by_label[donor]
-            pick = rng.choice(len(pool), size=to_move, replace=False)
-            keep = np.ones(len(pool), dtype=bool)
-            keep[pick] = False
-            idx_by_label[donor] = [pool[i] for i in range(len(pool)) if keep[i]]
-            chosen_pos = [pool[int(j)] for j in pick]
-            for pos in chosen_pos:
-                arr[pos] = label
-            idx_by_label[label].extend(chosen_pos)
-            current_counts[donor] -= to_move
-            current_counts[label] = current_counts.get(label, 0) + to_move
-            diff -= to_move
-            if diff <= 0:
-                break
+        _rake_single_label(
+            arr, idx_by_label, current_counts, label, target_count, target_counts, labels, rng
+        )
     return arr
 
 

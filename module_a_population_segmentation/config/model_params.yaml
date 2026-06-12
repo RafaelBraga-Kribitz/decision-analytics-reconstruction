@@ -11,10 +11,11 @@
 #   - kmeans.k / n_init / max_iter / random_state → segmentation.KMeansSegmenter (hardcoded)
 #   - propensity.C_grid / cv_folds         → propensity.PropensityModel (LogisticRegression
 #                                            uses default C=1.0; no CV grid search)
-#   - propensity.stratify_by               → PropensityModel.train/val split stratification;
-#                                            uses engineered columns age_bin_encoded, gender_encoded
-#                                            (not raw age_on_event_date / gender strings).
+#   - propensity.stratify_by               → wired via export.py → PropensityModel
 #   - propensity.shap_sample_size          → SHAP analysis not yet implemented in src/
+#
+# Wired to runtime:
+#   - reachability_weights                 → features/reachability.load_reachability_weights()
 #
 # Planned: a config-loading adapter in pipeline/export.py to read these
 # values and pass them into model constructors, eliminating the duplication.
@@ -89,11 +90,14 @@ propensity:
   reliability_max_deviation_pp: 3.0  # Gate: max deviation per reliability decile
   shap_sample_size: 10000         # Entities sampled for SHAP analysis
 
-# ─── Reachability index weights ───────────────────────────────────────────────
+# ─── Reachability index weights (wired in features/reachability.py) ───────────
 reachability_weights:
-  digital: 0.40
-  broadcast_tv: 0.35
-  broadcast_radio: 0.25
+  digital: 0.25
+  broadcast_tv: 0.25
+  broadcast_radio: 0.15
+  facebook_ads: 0.15
+  instagram_ads: 0.10
+  google_ads: 0.10
 
 # ─── Feature matrix for segmentation ─────────────────────────────────────────
 segmentation_features:

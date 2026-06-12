@@ -39,44 +39,71 @@ def fm_equal(a: object, b: object) -> bool:
     return a == b
 
 
+def _required_field_problems(
+    path: str,
+    fm: dict[str, Any],
+    required_fields: list[str],
+) -> list[str]:
+    problems: list[str] = []
+    for field in required_fields:
+        if field not in fm or fm[field] is None:
+            problems.append(f"{path}: frontmatter missing required field {field!r}")
+    return problems
+
+
+def _identity_field_problems(path: str, fm: dict[str, Any], d: dict[str, Any]) -> list[str]:
+    problems: list[str] = []
+    did = str(fm.get("doc_id", ""))
+    if did != str(d["doc_id"]):
+        problems.append(f"{path}: frontmatter doc_id {did!r} != registry {d['doc_id']!r}")
+    for key in ("doc_type", "doc_role", "visibility", "status", "owner"):
+        if key in d and key in fm and not fm_equal(fm[key], d[key]):
+            problems.append(
+                f"{path}: frontmatter {key} {fm[key]!r} != registry {d[key]!r}",
+            )
+    return problems
+
+
+def _derived_canonical_problems(path: str, fm: dict[str, Any], d: dict[str, Any]) -> list[str]:
+    if d.get("doc_role") != "derived":
+        return []
+    reg_canon = d.get("canonical_source") or []
+    fm_canon = fm.get("canonical_source")
+    if not reg_canon:
+        return [f"{path}: registry derived doc missing canonical_source"]
+    if fm_canon is None:
+        return [f"{path}: derived doc frontmatter must set canonical_source list"]
+    if sorted(str(x) for x in fm_canon) != sorted(str(x) for x in reg_canon):
+        return [
+            f"{path}: frontmatter canonical_source mismatch vs registry "
+            f"{reg_canon!r} vs {fm_canon!r}",
+        ]
+    return []
+
+
+def _validate_document(
+    d: dict[str, Any],
+    required_fields: list[str],
+) -> list[str]:
+    path = str(d["path"])
+    if not d.get("frontmatter_required", True):
+        return []
+    fm = extract_frontmatter(ROOT / path)
+    if fm is None:
+        return [f"{path}: missing YAML frontmatter block"]
+    problems: list[str] = []
+    problems.extend(_required_field_problems(path, fm, required_fields))
+    problems.extend(_identity_field_problems(path, fm, d))
+    problems.extend(_derived_canonical_problems(path, fm, d))
+    return problems
+
+
 def main() -> int:
     tax = yaml.safe_load(TAX_YAML.read_text(encoding="utf-8"))
     required_fields = cast(list[str], tax["frontmatter_required_fields"])
     problems: list[str] = []
-
     for d in load_registry_documents():
-        path = ROOT / str(d["path"])
-        if not d.get("frontmatter_required", True):
-            continue
-        fm = extract_frontmatter(path)
-        if fm is None:
-            problems.append(f"{d['path']}: missing YAML frontmatter block")
-            continue
-        for field in required_fields:
-            if field not in fm or fm[field] is None:
-                problems.append(f"{d['path']}: frontmatter missing required field {field!r}")
-        did = str(fm.get("doc_id", ""))
-        if did != str(d["doc_id"]):
-            problems.append(f"{d['path']}: frontmatter doc_id {did!r} != registry {d['doc_id']!r}")
-        for key in ("doc_type", "doc_role", "visibility", "status", "owner"):
-            if key in d and key in fm and not fm_equal(fm[key], d[key]):
-                problems.append(
-                    f"{d['path']}: frontmatter {key} {fm[key]!r} != registry {d[key]!r}",
-                )
-        if d.get("doc_role") == "derived":
-            reg_canon = d.get("canonical_source") or []
-            fm_canon = fm.get("canonical_source")
-            if not reg_canon:
-                problems.append(f"{d['path']}: registry derived doc missing canonical_source")
-            elif fm_canon is None:
-                problems.append(
-                    f"{d['path']}: derived doc frontmatter must set canonical_source list",
-                )
-            elif sorted(str(x) for x in fm_canon) != sorted(str(x) for x in reg_canon):
-                problems.append(
-                    f"{d['path']}: frontmatter canonical_source mismatch vs registry "
-                    f"{reg_canon!r} vs {fm_canon!r}",
-                )
+        problems.extend(_validate_document(d, required_fields))
 
     if problems:
         print("check_doc_frontmatter FAILED:\n" + "\n".join(problems[:200]))

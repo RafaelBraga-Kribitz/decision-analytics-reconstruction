@@ -60,18 +60,18 @@ This is a **solver comparator on the reconstruction envelope**, not a verified h
 | MC draws (default) | 10,000 | 600 when `MC_FAST=1` |
 | Scenario buckets | 3 canonical (`baseline`, `extreme_tracker`, `compounded_herd`) | equal-weight stratified sampling |
 | NUTS divergences (full run) | 14 measured | **does not block** portfolio delivery; tracked in README diagnostics |
-| Walk-forward coverage | sparse fixture | not "validated" on withheld real polls |
+| Walk-forward coverage | sparse fixture | not "validated" on withheld real survey measurements |
 | Battleground win probability (fixture posterior) | **~0.49–0.51** per department | illustrative; not a verified outcome forecast |
 
 ## Forbidden headline claims
 
 - Causal "with/without analytics → +3.70 pp" or "underperformed by 2–4 pp" counterfactuals (unverifiable)
-- Posterior tracking margin as substitute for verified +3.70 pp without "illustrative fixture polls" disclaimer
+- Posterior tracking margin as substitute for verified +3.70 pp without "illustrative fixture survey measurements" disclaimer
 - Win probability ">79%" when artifacts show ~0.49–0.51
 - Any alternate historical budget figure in public narrative (use **$6M** only)
 - AUC as generalization evidence
 - 75% extreme-tracker draw share (legacy equal-weight misread; use live bucket counts)
-- "CONFIDENTIAL campaign memo" fiction tone in generated briefs
+- "CONFIDENTIAL program memo" fiction tone in generated briefs
 
 ## Provenance
 

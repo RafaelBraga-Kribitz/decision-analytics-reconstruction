@@ -66,6 +66,107 @@ def _routing_feasible_in_week(routing_cost: pd.DataFrame, week_index: int, depar
     return bool(out_mask.any())
 
 
+def _build_dr_lookup(reach_caps: pd.DataFrame) -> dict[tuple[str, str], tuple[float, float]]:
+    return {
+        (str(r["department"]), str(r["channel"])): (
+            float(r["diminishing_returns_k"]),
+            float(r["diminishing_returns_inflection_pct"]),
+        )
+        for _, r in reach_caps.iterrows()
+    }
+
+
+def _reduce_broadcast_spend(
+    cf: pd.DataFrame, dept: str, week_index: int, shift_share: float
+) -> float:
+    donors = cf[
+        (cf["department"] == dept)
+        & (cf["week_index"] == week_index)
+        & (cf["channel"].isin(list(_BROADCAST_DONORS)))
+    ]
+    donor_pot = float(donors["budget_allocation_usd"].sum()) * shift_share
+    if donor_pot <= 0:
+        return 0.0
+    for ch in _BROADCAST_DONORS:
+        mask = (cf["department"] == dept) & (cf["week_index"] == week_index) & (cf["channel"] == ch)
+        cf.loc[mask, "budget_allocation_usd"] = cf.loc[mask, "budget_allocation_usd"] * (
+            1.0 - shift_share
+        )
+    return donor_pot
+
+
+def _distribute_to_direct_channels(
+    cf: pd.DataFrame,
+    dept: str,
+    week_index: int,
+    donor_pot: float,
+    saturation_pct: float,
+) -> None:
+    remaining_pot = donor_pot
+    for ch in _DIRECT_RECEIVERS:
+        if remaining_pot <= 0:
+            break
+        recv_mask = (
+            (cf["department"] == dept) & (cf["week_index"] == week_index) & (cf["channel"] == ch)
+        )
+        if not recv_mask.any():
+            continue
+        row = cf.loc[recv_mask].iloc[0]
+        audience = float(row["reach_cap_population_proxy"])
+        current_usd = float(row["budget_allocation_usd"])
+        current_contacts = float(row["expected_contacts"])
+        unit_cost_usd = current_usd / max(current_contacts, 1e-09) if current_contacts > 0 else 0.5
+        cap_usd_saturation = saturation_pct * audience * unit_cost_usd - current_usd
+        absorb = max(min(remaining_pot, cap_usd_saturation), 0.0)
+        cf.loc[recv_mask, "budget_allocation_usd"] = current_usd + absorb
+        remaining_pot -= absorb
+
+
+def _recompute_row_contacts(
+    row: pd.Series, base: pd.DataFrame, dr_lookup: dict[tuple[str, str], tuple[float, float]]
+) -> tuple[float, float, float]:
+    audience = float(row["reach_cap_population_proxy"])
+    spend_usd = float(row["budget_allocation_usd"])
+    baseline_contacts = float(row["expected_contacts"])
+    baseline_spend = float(
+        base.loc[
+            (base["department"] == row["department"])
+            & (base["channel"] == row["channel"])
+            & (base["week_index"] == row["week_index"]),
+            "budget_allocation_usd",
+        ].iloc[0]
+    )
+    if baseline_spend > 0 and baseline_contacts > 0:
+        unit_cost_usd = baseline_spend / baseline_contacts
+    else:
+        unit_cost_usd = 0.50
+    units = spend_usd / unit_cost_usd if unit_cost_usd > 0 else 0.0
+    reach_used = min(units / audience if audience > 0 else 0.0, 1.0)
+    k, infl = dr_lookup.get((str(row["department"]), str(row["channel"])), (1.0, 0.5))
+    contacts = _expected_contacts(audience, reach_used, k, infl)
+    attn_ratio = (
+        float(row["persuasion_adjusted_contacts"]) / max(baseline_contacts, 1e-9)
+        if baseline_contacts > 0
+        else 1.0
+    )
+    return contacts, contacts * attn_ratio, round(reach_used, 4)
+
+
+def _build_deltas_frame(base: pd.DataFrame, cf: pd.DataFrame) -> pd.DataFrame:
+    left = base[["department", "channel", "week_index"]].copy()
+    left["baseline_expected_contacts"] = base["expected_contacts"].to_numpy()
+    left["baseline_budget_usd"] = base["budget_allocation_usd"].to_numpy()
+    right = cf[["department", "channel", "week_index"]].copy()
+    right["cf_expected_contacts"] = cf["expected_contacts"].to_numpy()
+    right["cf_budget_usd"] = cf["budget_allocation_usd"].to_numpy()
+    deltas = left.merge(right, on=["department", "channel", "week_index"], how="left")
+    deltas["delta_expected_contacts"] = (
+        deltas["cf_expected_contacts"] - deltas["baseline_expected_contacts"]
+    )
+    deltas["delta_budget_usd"] = deltas["cf_budget_usd"] - deltas["baseline_budget_usd"]
+    return deltas
+
+
 def run_broadcast_to_direct(
     baseline: AllocationResult,
     routing_cost: pd.DataFrame,
@@ -119,17 +220,9 @@ def run_broadcast_to_direct(
 
     if reach_caps is None:
         reach_caps = build_allocation_features()
-    dr_lookup: dict[tuple[str, str], tuple[float, float]] = {
-        (str(r["department"]), str(r["channel"])): (
-            float(r["diminishing_returns_k"]),
-            float(r["diminishing_returns_inflection_pct"]),
-        )
-        for _, r in reach_caps.iterrows()
-    }
+    dr_lookup = _build_dr_lookup(reach_caps)
 
     base = baseline.allocation.copy()
-
-    # Group baseline by (department, week_index) to compute the donor pot.
     cf = base.copy()
     cf["scenario_id"] = SCENARIO_BROADCAST_TO_DIRECT
 
@@ -143,7 +236,7 @@ def run_broadcast_to_direct(
     n_feasible = 0
     n_total = 0
 
-    for group_key, block in cf.groupby(["department", "week_index"]):
+    for group_key, _block in cf.groupby(["department", "week_index"]):
         if not isinstance(group_key, tuple) or len(group_key) != 2:
             msg = f"expected 2-tuple group key, got {type(group_key)!r}"
             raise TypeError(msg)
@@ -152,105 +245,26 @@ def run_broadcast_to_direct(
         if not _is_routing_feasible(dept):
             continue
         n_feasible += 1
-        donors = block[block["channel"].isin(list(_BROADCAST_DONORS))]
-        donor_pot = float(donors["budget_allocation_usd"].sum()) * shift_share
-        if donor_pot <= 0:
-            continue
+        donor_pot = _reduce_broadcast_spend(cf, dept, wi, shift_share)
+        if donor_pot > 0:
+            _distribute_to_direct_channels(cf, dept, wi, donor_pot, saturation_pct)
 
-        # Reduce donor spends proportionally.
-        for ch in _BROADCAST_DONORS:
-            mask = (cf["department"] == dept) & (cf["week_index"] == wi) & (cf["channel"] == ch)
-            cf.loc[mask, "budget_allocation_usd"] = cf.loc[mask, "budget_allocation_usd"] * (
-                1.0 - shift_share
-            )
-
-        # Distribute donor pot across direct channels in priority order.
-        remaining_pot = donor_pot
-        for ch in _DIRECT_RECEIVERS:
-            if remaining_pot <= 0:
-                break
-            recv_mask = (
-                (cf["department"] == dept) & (cf["week_index"] == wi) & (cf["channel"] == ch)
-            )
-            if not recv_mask.any():
-                continue
-            row = cf.loc[recv_mask].iloc[0]
-            audience = float(row["reach_cap_population_proxy"])
-            # The receiving channel's per-USD contact value is fixed at
-            # 1 / unit_cost_usd via the LP's reach utilization; we recover
-            # unit_cost_usd from the row's existing reach + spend if any,
-            # else fall back to a conservative prior of $0.25 per contact.
-            current_usd = float(row["budget_allocation_usd"])
-            current_contacts = float(row["expected_contacts"])
-            if current_contacts > 0:
-                unit_cost_usd = current_usd / max(current_contacts, 1e-9)
-            else:
-                # Fallback: spend $0.50 per audience-unit when no baseline anchor.
-                unit_cost_usd = 0.50
-
-            cap_usd_saturation = saturation_pct * audience * unit_cost_usd - current_usd
-            absorb = max(min(remaining_pot, cap_usd_saturation), 0.0)
-            cf.loc[recv_mask, "budget_allocation_usd"] = current_usd + absorb
-            remaining_pot -= absorb
-
-    # Recompute spend-derived columns.
     cf["budget_allocation_pyg"] = cf["budget_allocation_usd"] * cf["tc_rate_pyg_per_usd"]
 
-    # Recompute expected/persuasion contacts under the new spend.
     new_contacts: list[float] = []
     new_persuasion: list[float] = []
     new_reach_util: list[float] = []
     for _, row in cf.iterrows():
-        audience = float(row["reach_cap_population_proxy"])
-        spend_usd = float(row["budget_allocation_usd"])
-        baseline_contacts = float(row["expected_contacts"])
-        baseline_spend = float(
-            base.loc[
-                (base["department"] == row["department"])
-                & (base["channel"] == row["channel"])
-                & (base["week_index"] == row["week_index"]),
-                "budget_allocation_usd",
-            ].iloc[0]
-        )
-        if baseline_spend > 0 and baseline_contacts > 0:
-            unit_cost_usd = baseline_spend / baseline_contacts
-        else:
-            unit_cost_usd = 0.50
-        units = spend_usd / unit_cost_usd if unit_cost_usd > 0 else 0.0
-        reach_used = min(units / audience if audience > 0 else 0.0, 1.0)
-        # Row-level diminishing-returns parameters (same curve the baseline
-        # solve reported with); generic fallback only for unknown pairs.
-        k, infl = dr_lookup.get((str(row["department"]), str(row["channel"])), (1.0, 0.5))
-        contacts = _expected_contacts(audience, reach_used, k, infl)
-        attn_ratio = (
-            float(row["persuasion_adjusted_contacts"]) / max(baseline_contacts, 1e-9)
-            if baseline_contacts > 0
-            else 1.0
-        )
+        contacts, persuasion, reach_util = _recompute_row_contacts(row, base, dr_lookup)
         new_contacts.append(contacts)
-        new_persuasion.append(contacts * attn_ratio)
-        new_reach_util.append(round(reach_used, 4))
+        new_persuasion.append(persuasion)
+        new_reach_util.append(reach_util)
 
     cf["expected_contacts"] = new_contacts
     cf["persuasion_adjusted_contacts"] = new_persuasion
     cf["reach_utilization"] = new_reach_util
 
-    # Build deltas frame (avoid pandas .rename stubs that confuse pyright).
-    left = base[["department", "channel", "week_index"]].copy()
-    left["baseline_expected_contacts"] = base["expected_contacts"].to_numpy()
-    left["baseline_budget_usd"] = base["budget_allocation_usd"].to_numpy()
-    right = cf[["department", "channel", "week_index"]].copy()
-    right["cf_expected_contacts"] = cf["expected_contacts"].to_numpy()
-    right["cf_budget_usd"] = cf["budget_allocation_usd"].to_numpy()
-    deltas = left.merge(
-        right,
-        on=["department", "channel", "week_index"],
-        how="left",
-    )
-    deltas["delta_expected_contacts"] = (
-        deltas["cf_expected_contacts"] - deltas["baseline_expected_contacts"]
-    )
-    deltas["delta_budget_usd"] = deltas["cf_budget_usd"] - deltas["baseline_budget_usd"]
+    deltas = _build_deltas_frame(base, cf)
 
     result = CounterfactualResult(
         counterfactual_allocation=cf,

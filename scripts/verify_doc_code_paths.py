@@ -51,21 +51,29 @@ def _iter_markdown_files() -> list[Path]:
     return out
 
 
+def _has_invalid_path_chars(t: str) -> bool:
+    return any(c in t for c in ("<", ">", "*", "${"))
+
+
+def _is_rejected_path_token(t: str) -> bool:
+    if not t or "\n" in t or " " in t or len(t) > 400:
+        return True
+    if t.startswith(("http://", "https://", "mailto:", "#")):
+        return True
+    if "/" not in t:
+        return True
+    if ".." in t.split("/"):
+        return True
+    return bool("{" in t or "}" in t)
+
+
 def _looks_like_repo_py_path(s: str) -> bool:
     t = s.strip()
-    if not t or "\n" in t or " " in t or len(t) > 400:
-        return False
-    if t.startswith(("http://", "https://", "mailto:", "#")):
-        return False
-    if "/" not in t:
-        return False
-    if ".." in t.split("/"):
-        return False
-    if "{" in t or "}" in t:
+    if _is_rejected_path_token(t):
         return False
     if not t.endswith(".py"):
         return False
-    if any(c in t for c in ("<", ">", "*", "${")):
+    if _has_invalid_path_chars(t):
         return False
     return any(t.startswith(p) for p in _REPO_PATH_PREFIXES)
 

@@ -1167,37 +1167,39 @@ cells.append(
     )
 )
 
-# ── C2 — Final-Day Posterior Margin Distribution ─────────────────────────────
+# ── C2 — Final-Day Posterior Margin ───────────────────────────────────────────
 cells.append(code("""
-# C2 — Histogram: Final-Day Posterior Margin Distribution
-final_day_data = (forecast.sort_values("date")
-                          .groupby("series_tag").last()
-                          .reset_index())
-# Use MC shock_scale as proxy for margin distribution
-margin_proxy = mc["shock_scale"].values
-pct5, pct50, pct95 = np.percentile(margin_proxy, [5, 50, 95])
+# C2 — Final-Day Posterior Margin (mean + 94% HDI)
+last_row = forecast.sort_values("date").iloc[-1]
+last_date = last_row["date"]
+mean_v = float(last_row["posterior_mean_preference_margin_pp"])
+hdi_lo = float(last_row["posterior_hdi_low_pp"])
+hdi_hi = float(last_row["posterior_hdi_high_pp"])
 
-fig, ax = plt.subplots(figsize=(11, 5), facecolor="white")
-ax.hist(margin_proxy, bins=60, color=COLOR["BLUE"], alpha=0.8,
-        edgecolor="white", linewidth=0.5)
-for pct, label, color in [(pct5,"5th", COLOR["RED"]), (pct50,"50th", COLOR["CHARCOAL"]),
-                           (pct95,"95th", COLOR["GREEN"])]:
-    ax.axvline(pct, color=color, lw=2, ls="--",
-               label=f"{label} pctl: {pct:.2f}")
-ax.set_xlabel("Shock Scale (MC Draw)")
-ax.set_ylabel("Frequency")
-ax.set_title("C2 — MC Posterior Distribution: Shock Scale (proxy for scenario severity)",
-             fontweight=700)
-ax.legend(fontsize=9)
+fig, ax = plt.subplots(figsize=(11, 4), facecolor="white")
+ax.axvspan(hdi_lo, hdi_hi, color=COLOR["RED"], alpha=0.25, label="94% HDI")
+ax.axvline(mean_v, color=COLOR["CHARCOAL"], lw=2.5, label=f"Posterior mean: {mean_v:.1f} pp")
+ax.axvline(0, color=COLOR["GREY"], lw=1.2, ls="--", label="Toss-up (0 pp)")
+ax.axvline(3.7, color=COLOR["AMBER"], lw=1.5, ls=":", label="TSJE Series A anchor (+3.70 pp)")
+pad = max(2.0, (hdi_hi - hdi_lo) * 0.35)
+ax.set_xlim(min(hdi_lo, 0, 3.7) - pad, max(hdi_hi, mean_v, 3.7) + pad)
+ax.set_ylim(0, 1)
+ax.set_yticks([])
+ax.set_xlabel("Preference Margin (pp, Candidate A vs B)")
+ax.set_title(
+    f"C2 — Final-Day Posterior Margin (mean + 94% HDI)\\n({last_date.strftime('%d %b %Y')})",
+    fontweight=700,
+)
+ax.legend(fontsize=9, loc="upper left")
 plt.tight_layout()
 plt.show()
 """))
 
 cells.append(
     md(
-        """**Finding:** The MC shock scale distribution is bimodal, reflecting the two scenario buckets (baseline median ~1.00, extreme tracker median ~2.43). The 5th percentile sits at 0.59 (benign scenario) while the 95th percentile reaches 2.43 (full extreme-tracker shock). The 50th percentile across all draws is 1.83, meaning the campaign's median planning scenario already incorporates substantial shock amplification.
+        """**Finding:** The final-day posterior mean and 94% HDI are read directly from `daily_posterior_forecast.parquet` (illustrative fixture posterior — not verified outcome; TSJE Series A anchor is +3.70 pp). This chart is the same estimand as the canonical PNG emitted by `generate_eda.py`.
 
-**Strategic implication:** The campaign's risk planning should use the 75th percentile shock scale (2.43) as the stress test scenario, not the median — a surprise-event in the final two weeks would push the campaign into the extreme tracker regime, requiring rapid-response capacity."""
+**Strategic implication:** Narrow the HDI with additional survey measurement waves before the final sprint; the interval width drives how aggressively the campaign can reallocate in weeks 11–13."""
     )
 )
 
@@ -1217,8 +1219,12 @@ for bar, v in zip(bars, battle_sorted["win_probability_a"]):
             f"{v:.1%}", va="center", ha="left", fontsize=9)
 ax.axvline(0.5, color=COLOR["CHARCOAL"], lw=1.5, ls="--", label="50% threshold")
 ax.set_xlabel("Win Probability (Candidate A)")
-ax.set_title("C3 — Battleground Win Probability by Department", fontweight=700)
-ax.set_xlim(0, 1.08)
+ax.set_title(
+    "C3 — Battleground Win Probability by Department\\n"
+    "(Series A · synthetic dept mapping (illustrative))",
+    fontweight=700,
+)
+ax.set_xlim(0.47, 0.53)
 ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x,_: f"{x:.0%}"))
 ax.legend()
 ax.spines["left"].set_visible(False)
@@ -1366,20 +1372,27 @@ cells.append(code("""
 dept_prop = pop.groupby("department")["participation_propensity"].mean().reset_index()
 dept_prop.columns = ["department","mean_propensity"]
 c8_data = battle.merge(dept_prop, on="department", how="left")
+offsets = [(6, 4), (6, -10), (-48, 4), (6, 12), (-48, -10), (14, 0)]
 
 fig, ax = plt.subplots(figsize=(11, 7), facecolor="white")
 ax.scatter(c8_data["mean_propensity"], c8_data["win_probability_a"],
            color=COLOR["BLUE"], s=80, alpha=0.8,
            edgecolors=COLOR["CHARCOAL"], linewidths=0.6)
-for _, row in c8_data.iterrows():
+for i, row in c8_data.iterrows():
+    ox, oy = offsets[i % len(offsets)]
     ax.annotate(row["department"].title(),
                 xy=(row["mean_propensity"], row["win_probability_a"]),
-                xytext=(5, 3), textcoords="offset points", fontsize=8)
+                xytext=(ox, oy), textcoords="offset points", fontsize=7.5)
 ax.axhline(0.5, color=COLOR["RED"], lw=1.2, ls="--", alpha=0.7, label="50% win threshold")
+wp = c8_data["win_probability_a"]
+ax.set_ylim(max(0.485, wp.min() - 0.005), min(0.515, wp.max() + 0.005))
 ax.set_xlabel("Mean Participation Propensity")
 ax.set_ylabel("Win Probability (Candidate A)")
-ax.set_title("C8 — Department Win Probability vs Mean Participation Propensity",
-             fontweight=700)
+ax.set_title(
+    "C8 — Department Win Probability vs Mean Participation Propensity\\n"
+    "(Series A · synthetic dept mapping (illustrative))",
+    fontweight=700,
+)
 ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda y,_: f"{y:.0%}"))
 ax.legend(fontsize=9)
 plt.tight_layout()
@@ -1388,9 +1401,9 @@ plt.show()
 
 cells.append(
     md(
-        """**Finding:** There is no strong correlation between departmental win probability and mean participation propensity in this dataset — win probabilities cluster tightly between 79–80% regardless of propensity level (0.40–0.65 range). This reflects the hierarchical model's pooling of information across departments rather than department-level partisan variation. The propensity axis is therefore the mandate-size lever, not the win-probability lever.
+        """**Finding:** Department win probabilities cluster tightly near 50% (≈49–51% on current artifacts) because `battleground_department_probability.parquet` applies a synthetic illustrative mapping — not department-level partisan variation. Propensity still varies by department and remains the mandate-size lever for mobilisation planning.
 
-**Strategic implication:** Because win probability is effectively constant across departments, campaign resource allocation should be driven entirely by propensity-weighted contact efficiency — departments with higher propensity deserve more mobilisation investment regardless of their electoral competitiveness."""
+**Strategic implication:** Treat win-probability charts as illustrative geography only; allocate marginal spend using propensity × reachability × budget efficiency (S2/S4), not apparent red/blue splits on C3/C8."""
     )
 )
 
@@ -1642,8 +1655,13 @@ for _, row in s4.iterrows():
 
 ax.set_xlabel("Win Probability (Candidate A)")
 ax.set_ylabel("Mean Participation Propensity")
-ax.set_title("S4 — Department Priority Matrix (bubble size = total budget, colour = region)",
-             fontweight=700)
+ax.set_title(
+    "S4 — Department Priority Matrix (bubble size = total budget, colour = region)\\n"
+    "(Series A · synthetic dept mapping (illustrative))",
+    fontweight=700,
+)
+ax.set_xlim(max(0.485, s4["win_probability_a"].min() - 0.005),
+            min(0.515, s4["win_probability_a"].max() + 0.005))
 ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x,_: f"{x:.0%}"))
 legend_patches = [mpatches.Patch(color=c, label=l) for l,c in region_pal.items()]
 ax.legend(handles=legend_patches, loc="lower left")
@@ -1653,9 +1671,9 @@ plt.show()
 
 cells.append(
     md(
-        """**Finding:** Itapua and Caaguazu occupy the high-propensity corridor (>0.60) with win probabilities above 79.5%, but carry smaller bubbles (lower total budget) than Central — suggesting they are under-resourced relative to their combined value score. Central dominates budget allocation but sits at median propensity (~0.55), meaning its large bubble reflects volume rather than per-voter efficiency. Chaco departments cluster at low propensity with small bubbles, justifying their minimal allocation.
+        """**Finding:** Itapua and Caaguazu sit in a higher-propensity band than Chaco departments, but win probabilities remain pooled near 50% under the illustrative battleground mapping. Central carries the largest budget bubble while sitting near median propensity — volume-driven allocation, not per-voter efficiency alone.
 
-**Strategic implication:** The optimal final-sprint reallocation shifts $60–90K from low-propensity, high-budget departments (Central billboard spend) toward high-propensity, under-budgeted departments (Caaguazu canvassing, Itapua radio top-up) — maximising propensity-weighted contacts per marginal dollar."""
+**Strategic implication:** Reallocate marginal spend using propensity-weighted contact efficiency (S2/S5), not apparent win-probability spread on S4."""
     )
 )
 

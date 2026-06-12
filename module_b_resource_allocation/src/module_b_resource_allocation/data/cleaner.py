@@ -87,6 +87,27 @@ def _canonical_currency(raw: object) -> str | None:
 _NUMBER_RE = re.compile(r"\d[\d.,]*")
 
 
+def _extract_number_token(raw: str) -> str | None:
+    match = _NUMBER_RE.search(raw)
+    if match is None:
+        return None
+    text = match.group(0).strip(".,")
+    return text if text else None
+
+
+def _normalize_mixed_separators(text: str) -> str:
+    if text.rfind(",") > text.rfind("."):
+        return text.replace(".", "").replace(",", ".")
+    return text.replace(",", "")
+
+
+def _normalize_comma_only(text: str) -> str:
+    parts = text.split(",")
+    if len(parts[-1]) == 3 and len(parts) > 1:
+        return text.replace(",", "")
+    return text.replace(",", ".")
+
+
 def _parse_locale_number(raw: object) -> float | None:
     """Parse '1.234,56' (es) or '1,234.56' (en) or '1234.56' to float.
 
@@ -100,28 +121,13 @@ def _parse_locale_number(raw: object) -> float | None:
     cleaned = raw.strip()
     if not cleaned or cleaned.upper() in {"NULL", "NAN"}:
         return None
-    match = _NUMBER_RE.search(cleaned)
-    if match is None:
-        return None
-    text = match.group(0).strip(".,")
-    if not text:
+    text = _extract_number_token(cleaned)
+    if text is None:
         return None
     if "," in text and "." in text:
-        # Detect order: the last separator is the decimal mark.
-        if text.rfind(",") > text.rfind("."):
-            text = text.replace(".", "").replace(",", ".")
-        else:
-            text = text.replace(",", "")
+        text = _normalize_mixed_separators(text)
     elif "," in text:
-        # Pure-comma → es-PY/AR decimal mark.  But if there are >=3 trailing
-        # digits, treat as thousands sep instead.
-        parts = text.split(",")
-        if len(parts[-1]) == 3 and len(parts) > 1:
-            text = text.replace(",", "")
-        else:
-            text = text.replace(",", ".")
-    else:
-        text = text  # '.' alone is fine
+        text = _normalize_comma_only(text)
     try:
         return float(text)
     except ValueError:

@@ -1,4 +1,4 @@
-.PHONY: install lint format typecheck test coverage all clean module-a-export module-a-pipeline graphify \
+.PHONY: install lint format typecheck test coverage all clean module-a-export module-a-pipeline module-a-report-charts graphify \
 	module-b-allocate module-b-allocate-sensitivity module-b-routing module-b-api \
 	test-module-a test-module-b test-module-c pipeline-full \
 	module-c-tracking module-c-exit module-c-mc module-c-all module-c-walk-forward module-c-ppc \
@@ -157,6 +157,9 @@ module-a-pipeline:
 		--out-dir data/processed \
 		--sample-size $(or $(SAMPLE),50000)
 
+module-a-report-charts:
+	poetry run python scripts/generate_module_a_report_charts.py
+
 module-b-allocate:
 	poetry run python -m module_b_resource_allocation.pipeline.run_allocation \
 		--scenario $(or $(SCENARIO),baseline) \
@@ -171,6 +174,7 @@ pipeline-full:
 	$(MAKE) module-b-allocate
 	$(MAKE) module-b-routing-schedules
 	$(MAKE) module-c-all
+	$(MAKE) module-a-report-charts
 	poetry run python reports/eda/generate_eda.py
 
 module-b-allocate-sensitivity:

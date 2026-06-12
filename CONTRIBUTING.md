@@ -23,10 +23,13 @@ Before claiming a release-ready branch, run from a clean tree (or fresh clone):
 ```bash
 poetry install
 make test
-make pipeline-full    # optional @pytest.mark.slow; validates A→B→C→EDA
 make verify
+poetry run python scripts/check_fresh_clone_smoke.py
 make graphify         # after any src/ or config change
 ```
+
+`make pipeline-full` is optional and slow (CPU-only); it validates A→B→C→EDA when
+`data/processed/` is populated.
 
 `make verify` re-runs every closed finding's `verification_script` (Adversary locally).
 

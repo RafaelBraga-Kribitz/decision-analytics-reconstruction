@@ -48,8 +48,8 @@ def test_pl_segments_are_concave_chords() -> None:
     segments = _pl_segments(audience=10_000.0, uc_usd=0.5, k_dim=1.2, inflection=0.4)
     assert segments, "no segments built"
     slopes = [s for _, s in segments]
-    assert all(a >= b - 1e-12 for a, b in zip(slopes[:-1], slopes[1:])), (
-        f"segment slopes must be non-increasing (concavity): {slopes}"
-    )
+    assert all(
+        a >= b - 1e-12 for a, b in zip(slopes[:-1], slopes[1:], strict=True)
+    ), f"segment slopes must be non-increasing (concavity): {slopes}"
     # First segment covers the linear region at full efficiency: slope ≈ 1/uc.
     assert slopes[0] == pytest.approx(1.0 / 0.5, rel=1e-9)

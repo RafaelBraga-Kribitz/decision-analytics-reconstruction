@@ -555,8 +555,7 @@ paths:
     tier_shorthand: T0
     canonical_source: []
     derived_from: []
-    supersedes:
-    - DOC-PLAN-001
+    supersedes: []
     numeric_authority: []
     frontmatter_required: false
   CLAUDE.md:

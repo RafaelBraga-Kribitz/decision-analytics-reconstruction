@@ -1,0 +1,18 @@
+id: F-043
+title: "Operator-only artifacts remain publicly tracked"
+category: documentation_entropy
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-12
+closed_at: 2026-06-12
+recurrence_count: 0
+evidence: |
+  maintainer/pre_public_cleanup_manifest.md and audit_task_execution_plan T0-02
+  require untracking operator audits, evidence, and local DB artifacts before
+  public review. git ls-files still includes ruvector.db (1.6MB), 71 maintainer/
+  paths, and internal audit plans. H-08 pre-public pass blocked.
+verification_script: scripts/check_tracked_operator_artifacts.py
+wont_fix_reason: null
+notes: |
+  Triage source: T0-02, T0-03, T0-04, H-08, pre_public manifest M1–M10.
+  Governance may stay visible; operator audits and local DBs must not.

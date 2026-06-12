@@ -251,6 +251,217 @@ _MEDIA_DEPT_REQUIRED_COLUMNS: tuple[str, ...] = (
 
 _VALID_REGIONS: frozenset[str] = frozenset({"ORIENTAL", "CHACO"})
 
+_REACH_PCT_COLUMNS: tuple[str, ...] = (
+    "segment_size_pct",
+    "mean_participation_propensity",
+    "pct_internet_access",
+    "mean_tv_penetration",
+    "mean_radio_penetration",
+    "mean_whatsapp_penetration",
+    "pct_rural",
+    "pct_jopara",
+    "pct_structural_dependency",
+)
+
+_CALIBRATION_DEPARTMENTS: tuple[str, ...] = (
+    "Presidente Hayes",
+    "Alto Parana",
+    "Central",
+    "Guaira",
+)
+
+
+def _check_duplicate_entity_ids(df: pd.DataFrame, artifact_name: str, errors: list[str]) -> None:
+    if df["entity_id"].duplicated().any():
+        n_dup = int(df["entity_id"].duplicated().sum())
+        errors.append(f"{artifact_name}: {n_dup} duplicate entity_id rows")
+
+
+def _check_row_count_alignment(
+    master: pd.DataFrame, prop: pd.DataFrame, labels: pd.DataFrame, errors: list[str]
+) -> None:
+    if len(master) != len(prop):
+        errors.append(f"Row count mismatch: master={len(master)}, prop={len(prop)}")
+    if len(master) != len(labels):
+        errors.append(f"Row count mismatch: master={len(master)}, labels={len(labels)}")
+
+
+def _check_propensity_range(prop: pd.DataFrame, errors: list[str]) -> None:
+    if bool(prop["participation_propensity"].isna().any()):
+        errors.append("participation_propensity contains NaN values")
+    elif not bool(prop["participation_propensity"].between(0.0, 1.0).all()):
+        out_of_range = int((~prop["participation_propensity"].between(0.0, 1.0)).sum())
+        errors.append(f"participation_propensity: {out_of_range} values outside [0, 1]")
+
+
+def _check_department_calibration(
+    master: pd.DataFrame, prop: pd.DataFrame, anchors: dict[str, Any], errors: list[str]
+) -> None:
+    if len(master) != len(prop):
+        return
+    dept_targets = anchors["department_participation_rates"]
+    for dept in _CALIBRATION_DEPARTMENTS:
+        mask = master["department"] == dept
+        if not mask.any():
+            continue
+        actual = float(prop.loc[mask.values, "participation_propensity"].mean())
+        target = float(dept_targets[dept])
+        if abs(actual - target) > 0.005:
+            errors.append(
+                f"Department calibration gate failed: {dept} "
+                f"actual={actual:.4f} target={target:.4f} diff={actual - target:+.4f}"
+            )
+
+
+def _check_pct_columns_bounded(
+    df: pd.DataFrame, cols: tuple[str, ...], prefix: str, errors: list[str]
+) -> None:
+    for col in cols:
+        if col not in df.columns:
+            continue
+        if bool(df[col].isna().any()):
+            errors.append(f"{prefix}: {col} contains NaN")
+        elif not bool(df[col].between(0.0, 1.0).all()):
+            n_bad = int((~df[col].between(0.0, 1.0)).sum())
+            errors.append(f"{prefix}: {col} has {n_bad} values outside [0, 1]")
+
+
+def _validate_media_reachability(
+    reach: pd.DataFrame, valid_labels: set[str], errors: list[str]
+) -> None:
+    from population_segmentation.models.segmentation import SEGMENT_LABEL_MAP
+
+    missing_cols = [c for c in _MEDIA_REQUIRED_COLUMNS if c not in reach.columns]
+    if missing_cols:
+        errors.append(f"media_reachability_by_segment missing columns: {missing_cols}")
+        return
+
+    expected_k = len(SEGMENT_LABEL_MAP)
+    if len(reach) != expected_k:
+        errors.append(
+            f"media_reachability_by_segment: expected {expected_k} rows "
+            f"(one per segment), got {len(reach)}"
+        )
+
+    if reach["segment_label"].duplicated().any():
+        n_dup = int(reach["segment_label"].duplicated().sum())
+        errors.append(f"media_reachability_by_segment: {n_dup} duplicate segment_label rows")
+
+    bad_reach = set(reach["segment_label"].unique()) - valid_labels
+    if bad_reach:
+        errors.append(f"media_reachability_by_segment: non-canonical segment labels: {bad_reach}")
+
+    bad_channel = set(reach["primary_reach_channel"].unique()) - _VALID_REACH_CHANNELS
+    if bad_channel:
+        errors.append(
+            f"media_reachability_by_segment: invalid primary_reach_channel values: "
+            f"{bad_channel} (allowed: {sorted(_VALID_REACH_CHANNELS)})"
+        )
+
+    _check_pct_columns_bounded(reach, _REACH_PCT_COLUMNS, "media_reachability_by_segment", errors)
+
+    if "segment_size" in reach.columns and (reach["segment_size"] <= 0).any():
+        errors.append("media_reachability_by_segment: segment_size must be > 0")
+
+
+def _check_reach_dept_identity_keys(reach_dept: pd.DataFrame, errors: list[str]) -> bool:
+    from population_segmentation.data.segment_reachability_aggregate import (
+        DEPARTMENTS as _DEPARTMENTS,
+    )
+    from population_segmentation.data.segment_reachability_aggregate import (
+        SEGMENT_LABELS as _SEGMENT_LABELS,
+    )
+
+    expected_rows = len(_SEGMENT_LABELS) * len(_DEPARTMENTS)
+    if len(reach_dept) != expected_rows:
+        errors.append(
+            "media_reachability_by_segment_department: expected "
+            f"{expected_rows} rows ((segment, department) cartesian), "
+            f"got {len(reach_dept)}"
+        )
+
+    if reach_dept.duplicated(["segment_label", "department"]).any():
+        n_dup = int(reach_dept.duplicated(["segment_label", "department"]).sum())
+        errors.append(
+            "media_reachability_by_segment_department: "
+            f"{n_dup} duplicate (segment_label, department) rows"
+        )
+
+    bad_seg = set(reach_dept["segment_label"].unique()) - set(_SEGMENT_LABELS)
+    if bad_seg:
+        errors.append(
+            "media_reachability_by_segment_department: "
+            f"non-canonical segment_label values: {bad_seg}"
+        )
+
+    bad_dept = set(reach_dept["department"].unique()) - set(_DEPARTMENTS)
+    if bad_dept:
+        errors.append(
+            "media_reachability_by_segment_department: "
+            f"non-canonical department values: {bad_dept}"
+        )
+
+    bad_region = set(reach_dept["region"].unique()) - _VALID_REGIONS
+    if bad_region:
+        errors.append(
+            "media_reachability_by_segment_department: " f"invalid region values: {bad_region}"
+        )
+    return True
+
+
+def _check_reach_dept_numeric_columns(reach_dept: pd.DataFrame, errors: list[str]) -> None:
+    if (reach_dept["segment_size"] < 0).any():
+        errors.append("media_reachability_by_segment_department: segment_size must be >= 0")
+
+    _check_pct_columns_bounded(
+        reach_dept,
+        ("segment_size_pct_of_department", "segment_size_pct_of_segment"),
+        "media_reachability_by_segment_department",
+        errors,
+    )
+
+    mean_cols = (
+        "mean_participation_propensity",
+        "pct_internet_access",
+        "mean_tv_penetration",
+        "mean_radio_penetration",
+        "mean_whatsapp_penetration",
+        "pct_rural",
+        "pct_jopara",
+    )
+    for col in mean_cols:
+        if col not in reach_dept.columns:
+            continue
+        valid = reach_dept[col].dropna()
+        if not bool(valid.between(0.0, 1.0).all()):
+            n_bad = int((~valid.between(0.0, 1.0)).sum())
+            errors.append(
+                f"media_reachability_by_segment_department: {col} has "
+                f"{n_bad} non-null values outside [0, 1]"
+            )
+
+    if "primary_reach_channel" not in reach_dept.columns:
+        return
+    non_null = reach_dept["primary_reach_channel"].dropna()
+    bad_channel = set(non_null.unique()) - _VALID_REACH_CHANNELS
+    if bad_channel:
+        errors.append(
+            "media_reachability_by_segment_department: "
+            f"invalid primary_reach_channel values: {bad_channel}"
+        )
+
+
+def _validate_media_reachability_dept(reach_dept: pd.DataFrame, errors: list[str]) -> None:
+    missing_cols = [c for c in _MEDIA_DEPT_REQUIRED_COLUMNS if c not in reach_dept.columns]
+    if missing_cols:
+        errors.append(
+            "media_reachability_by_segment_department missing columns: " f"{missing_cols}"
+        )
+        return
+
+    _check_reach_dept_identity_keys(reach_dept, errors)
+    _check_reach_dept_numeric_columns(reach_dept, errors)
+
 
 def _validate_export_contracts(
     master: pd.DataFrame,
@@ -280,48 +491,13 @@ def _validate_export_contracts(
     """
     errors: list[str] = []
 
-    # entity_id must be unique in all three entity-level artifacts
-    if master["entity_id"].duplicated().any():
-        n_dup = int(master["entity_id"].duplicated().sum())
-        errors.append(f"population_master_clean: {n_dup} duplicate entity_id rows")
-    if prop["entity_id"].duplicated().any():
-        n_dup = int(prop["entity_id"].duplicated().sum())
-        errors.append(f"participation_propensity: {n_dup} duplicate entity_id rows")
-    if labels["entity_id"].duplicated().any():
-        n_dup = int(labels["entity_id"].duplicated().sum())
-        errors.append(f"segment_labels: {n_dup} duplicate entity_id rows")
+    _check_duplicate_entity_ids(master, "population_master_clean", errors)
+    _check_duplicate_entity_ids(prop, "participation_propensity", errors)
+    _check_duplicate_entity_ids(labels, "segment_labels", errors)
+    _check_row_count_alignment(master, prop, labels, errors)
+    _check_propensity_range(prop, errors)
+    _check_department_calibration(master, prop, anchors, errors)
 
-    # Row counts must agree across all three entity-level artifacts
-    if len(master) != len(prop):
-        errors.append(f"Row count mismatch: master={len(master)}, prop={len(prop)}")
-    if len(master) != len(labels):
-        errors.append(f"Row count mismatch: master={len(master)}, labels={len(labels)}")
-
-    # Propensity scores must lie in [0, 1]
-    if bool(prop["participation_propensity"].isna().any()):
-        errors.append("participation_propensity contains NaN values")
-    elif not bool(prop["participation_propensity"].between(0.0, 1.0).all()):
-        out_of_range = int((~prop["participation_propensity"].between(0.0, 1.0)).sum())
-        errors.append(f"participation_propensity: {out_of_range} values outside [0, 1]")
-
-    # Department-level calibration gate (verified TSJE anchors; ± 0.5 pp).
-    # Only run when master and prop have the same row count; a mismatch is already
-    # recorded above, and applying a master-length boolean mask to a shorter prop
-    # frame would raise an unrelated IndexError.
-    dept_targets = anchors["department_participation_rates"]
-    if len(master) == len(prop):
-        for dept in ["Presidente Hayes", "Alto Parana", "Central", "Guaira"]:
-            mask = master["department"] == dept
-            if mask.any():
-                actual = float(prop.loc[mask.values, "participation_propensity"].mean())
-                target = float(dept_targets[dept])
-                if abs(actual - target) > 0.005:
-                    errors.append(
-                        f"Department calibration gate failed: {dept} "
-                        f"actual={actual:.4f} target={target:.4f} diff={actual - target:+.4f}"
-                    )
-
-    # Segment labels must be from the canonical set
     from population_segmentation.models.segmentation import SEGMENT_LABEL_MAP
 
     valid_labels = set(SEGMENT_LABEL_MAP.values())
@@ -329,170 +505,10 @@ def _validate_export_contracts(
     if bad_seg:
         errors.append(f"segment_labels contains non-canonical labels: {bad_seg}")
 
-    # --- media_reachability_by_segment contract (when frame is provided) ---
     if reach is not None:
-        # Required columns
-        missing_cols = [c for c in _MEDIA_REQUIRED_COLUMNS if c not in reach.columns]
-        if missing_cols:
-            errors.append(f"media_reachability_by_segment missing columns: {missing_cols}")
-        else:
-            # Exactly k=6 rows, one per segment
-            expected_k = len(SEGMENT_LABEL_MAP)
-            if len(reach) != expected_k:
-                errors.append(
-                    f"media_reachability_by_segment: expected {expected_k} rows "
-                    f"(one per segment), got {len(reach)}"
-                )
-
-            # segment_label must be unique
-            if reach["segment_label"].duplicated().any():
-                n_dup = int(reach["segment_label"].duplicated().sum())
-                errors.append(
-                    f"media_reachability_by_segment: {n_dup} duplicate segment_label rows"
-                )
-
-            # segment_label values must be canonical
-            bad_reach = set(reach["segment_label"].unique()) - valid_labels
-            if bad_reach:
-                errors.append(
-                    f"media_reachability_by_segment: non-canonical segment labels: {bad_reach}"
-                )
-
-            # primary_reach_channel must be in allowed set
-            bad_channel = set(reach["primary_reach_channel"].unique()) - _VALID_REACH_CHANNELS
-            if bad_channel:
-                errors.append(
-                    f"media_reachability_by_segment: invalid primary_reach_channel values: "
-                    f"{bad_channel} (allowed: {sorted(_VALID_REACH_CHANNELS)})"
-                )
-
-            # Proportion columns must be in [0, 1]
-            pct_cols = [
-                "segment_size_pct",
-                "mean_participation_propensity",
-                "pct_internet_access",
-                "mean_tv_penetration",
-                "mean_radio_penetration",
-                "mean_whatsapp_penetration",
-                "pct_rural",
-                "pct_jopara",
-                "pct_structural_dependency",
-            ]
-            for col in pct_cols:
-                if col in reach.columns:
-                    if bool(reach[col].isna().any()):
-                        errors.append(f"media_reachability_by_segment: {col} contains NaN")
-                    elif not bool(reach[col].between(0.0, 1.0).all()):
-                        n_bad = int((~reach[col].between(0.0, 1.0)).sum())
-                        errors.append(
-                            f"media_reachability_by_segment: {col} has {n_bad} values "
-                            f"outside [0, 1]"
-                        )
-
-            # segment_size must be positive
-            if "segment_size" in reach.columns and (reach["segment_size"] <= 0).any():
-                errors.append("media_reachability_by_segment: segment_size must be > 0")
-
-    # --- media_reachability_by_segment_department contract ---
+        _validate_media_reachability(reach, valid_labels, errors)
     if reach_dept is not None:
-        from population_segmentation.data.segment_reachability_aggregate import (
-            DEPARTMENTS as _DEPARTMENTS,
-        )
-        from population_segmentation.data.segment_reachability_aggregate import (
-            SEGMENT_LABELS as _SEGMENT_LABELS,
-        )
-
-        missing_cols = [c for c in _MEDIA_DEPT_REQUIRED_COLUMNS if c not in reach_dept.columns]
-        if missing_cols:
-            errors.append(
-                "media_reachability_by_segment_department missing columns: " f"{missing_cols}"
-            )
-        else:
-            expected_rows = len(_SEGMENT_LABELS) * len(_DEPARTMENTS)
-            if len(reach_dept) != expected_rows:
-                errors.append(
-                    "media_reachability_by_segment_department: expected "
-                    f"{expected_rows} rows ((segment, department) cartesian), "
-                    f"got {len(reach_dept)}"
-                )
-
-            if reach_dept.duplicated(["segment_label", "department"]).any():
-                n_dup = int(reach_dept.duplicated(["segment_label", "department"]).sum())
-                errors.append(
-                    "media_reachability_by_segment_department: "
-                    f"{n_dup} duplicate (segment_label, department) rows"
-                )
-
-            bad_seg = set(reach_dept["segment_label"].unique()) - set(_SEGMENT_LABELS)
-            if bad_seg:
-                errors.append(
-                    "media_reachability_by_segment_department: "
-                    f"non-canonical segment_label values: {bad_seg}"
-                )
-
-            bad_dept = set(reach_dept["department"].unique()) - set(_DEPARTMENTS)
-            if bad_dept:
-                errors.append(
-                    "media_reachability_by_segment_department: "
-                    f"non-canonical department values: {bad_dept}"
-                )
-
-            bad_region = set(reach_dept["region"].unique()) - _VALID_REGIONS
-            if bad_region:
-                errors.append(
-                    "media_reachability_by_segment_department: "
-                    f"invalid region values: {bad_region}"
-                )
-
-            if (reach_dept["segment_size"] < 0).any():
-                errors.append(
-                    "media_reachability_by_segment_department: " "segment_size must be >= 0"
-                )
-
-            pct_cols = (
-                "segment_size_pct_of_department",
-                "segment_size_pct_of_segment",
-            )
-            for col in pct_cols:
-                if col in reach_dept.columns:
-                    if bool(reach_dept[col].isna().any()):
-                        errors.append(
-                            f"media_reachability_by_segment_department: {col} contains NaN"
-                        )
-                    elif not bool(reach_dept[col].between(0.0, 1.0).all()):
-                        n_bad = int((~reach_dept[col].between(0.0, 1.0)).sum())
-                        errors.append(
-                            f"media_reachability_by_segment_department: {col} has "
-                            f"{n_bad} values outside [0, 1]"
-                        )
-
-            mean_cols = (
-                "mean_participation_propensity",
-                "pct_internet_access",
-                "mean_tv_penetration",
-                "mean_radio_penetration",
-                "mean_whatsapp_penetration",
-                "pct_rural",
-                "pct_jopara",
-            )
-            for col in mean_cols:
-                if col in reach_dept.columns:
-                    valid = reach_dept[col].dropna()
-                    if not bool(valid.between(0.0, 1.0).all()):
-                        n_bad = int((~valid.between(0.0, 1.0)).sum())
-                        errors.append(
-                            f"media_reachability_by_segment_department: {col} has "
-                            f"{n_bad} non-null values outside [0, 1]"
-                        )
-
-            if "primary_reach_channel" in reach_dept.columns:
-                non_null = reach_dept["primary_reach_channel"].dropna()
-                bad_channel = set(non_null.unique()) - _VALID_REACH_CHANNELS
-                if bad_channel:
-                    errors.append(
-                        "media_reachability_by_segment_department: "
-                        f"invalid primary_reach_channel values: {bad_channel}"
-                    )
+        _validate_media_reachability_dept(reach_dept, errors)
 
     if errors:
         msg = "\n".join(f"  • {e}" for e in errors)

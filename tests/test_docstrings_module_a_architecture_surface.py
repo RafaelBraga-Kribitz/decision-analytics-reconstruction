@@ -32,20 +32,23 @@ _REQUIRED_UNDER_SRC = [
 _GOOGLE_MARKERS = ("Args:", "Returns:", "Raises:", "Example:")
 
 
+def _is_public_method(item: ast.AST) -> bool:
+    if not isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+        return False
+    if item.name.startswith("__") and item.name.endswith("__"):
+        return item.name == "__init__"
+    return not item.name.startswith("_")
+
+
 def _iter_public_functions(tree: ast.AST):
     for node in tree.body:
-        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            if not node.name.startswith("_"):
-                yield node
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and not node.name.startswith(
+            "_"
+        ):
+            yield node
         elif isinstance(node, ast.ClassDef):
             for item in node.body:
-                if not isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                    continue
-                if item.name.startswith("__") and item.name.endswith("__"):
-                    if item.name == "__init__":
-                        yield item
-                    continue
-                if not item.name.startswith("_"):
+                if _is_public_method(item):
                     yield item
 
 

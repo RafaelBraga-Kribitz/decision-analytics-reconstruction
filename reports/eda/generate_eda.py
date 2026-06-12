@@ -77,6 +77,8 @@ plt.rcParams.update(
 )
 
 SOURCE = "Source: Paraguay Campaign Data Pipeline 2018 | April 2026"
+ILLUSTRATIVE_BATTLE_SUB = "Series A · synthetic dept mapping (illustrative)"
+CHACO_DEPARTMENTS = frozenset({"Presidente Hayes", "Boqueron", "Alto Paraguay"})
 DPI = 160
 
 # ── Manifest tracker ────────────────────────────────────────────────────────
@@ -100,6 +102,33 @@ def annotate_source(ax: plt.Axes) -> None:
     ax.annotate(
         SOURCE, xy=(0.5, -0.13), xycoords="axes fraction", ha="center", fontsize=7.5, color=GREY
     )
+
+
+def _region_for_department(department: str) -> str:
+    return "CHACO" if department in CHACO_DEPARTMENTS else "ORIENTAL"
+
+
+def _stagger_annotate(
+    ax: plt.Axes,
+    df: pd.DataFrame,
+    x_col: str,
+    y_col: str,
+    label_col: str,
+    *,
+    fontsize: float = 7.5,
+) -> None:
+    """Place department labels with alternating offsets to reduce overlap."""
+    offsets = [(6, 4), (6, -10), (-48, 4), (6, 12), (-48, -10), (14, 0)]
+    for i, row in enumerate(df.itertuples(index=False)):
+        ox, oy = offsets[i % len(offsets)]
+        ax.annotate(
+            getattr(row, label_col),
+            (getattr(row, x_col), getattr(row, y_col)),
+            textcoords="offset points",
+            xytext=(ox, oy),
+            fontsize=fontsize,
+            ha="left",
+        )
 
 
 def safe_chart(label: str):
@@ -557,30 +586,33 @@ def chart_a9():
     num_cols = [c for c in num_cols if c in pop.columns]
     corr = pop[num_cols].corr()
 
-    fig, ax = plt.subplots(figsize=(13, 11))
+    fig, ax = plt.subplots(figsize=(11, 9))
     cmap = LinearSegmentedColormap.from_list("rw_rb", ["#1a6eb5", "#ffffff", "#e60000"])
-    mask = np.zeros_like(corr, dtype=bool)
-    mask[np.triu_indices_from(mask, k=1)] = True
+    mask = np.triu(np.ones_like(corr, dtype=bool), k=1)
 
-    im = ax.imshow(corr.values, cmap=cmap, vmin=-1, vmax=1, aspect="auto")
-    plt.colorbar(im, ax=ax, fraction=0.03, pad=0.02)
+    im = ax.imshow(np.ma.array(corr.values, mask=mask), cmap=cmap, vmin=-1, vmax=1, aspect="auto")
+    plt.colorbar(im, ax=ax, fraction=0.03, pad=0.02, label="Pearson r")
 
     ax.set_xticks(range(len(corr.columns)))
-    ax.set_xticklabels(corr.columns, rotation=45, ha="right", fontsize=9)
+    ax.set_xticklabels(
+        [c.replace("_", " ")[:18] for c in corr.columns], rotation=45, ha="right", fontsize=8
+    )
     ax.set_yticks(range(len(corr.index)))
-    ax.set_yticklabels(corr.index, fontsize=9)
+    ax.set_yticklabels([c.replace("_", " ")[:18] for c in corr.index], fontsize=8)
 
     for i in range(corr.shape[0]):
-        for j in range(corr.shape[1]):
+        for j in range(i + 1):
             val = corr.values[i, j]
+            if abs(val) < 0.15:
+                continue
             ax.text(
                 j,
                 i,
                 f"{val:.2f}",
                 ha="center",
                 va="center",
-                fontsize=7.5,
-                color=WHITE if abs(val) > 0.5 else CHARCOAL,
+                fontsize=7,
+                color=WHITE if abs(val) > 0.55 else CHARCOAL,
             )
 
     ax.set_title("A9 — Correlation Heatmap of Numeric Features")
@@ -1080,15 +1112,23 @@ def chart_b7():
     )
     piv = piv.fillna(0)
 
-    fig, ax = plt.subplots(figsize=(14, 12))
-    cmap = LinearSegmentedColormap.from_list("wr", ["#ffffff", RED])
-    im = ax.imshow(piv.values, aspect="auto", cmap=cmap)
-    plt.colorbar(im, ax=ax, label="Avg Travel Time (minutes)")
+    fig, ax = plt.subplots(figsize=(12, 10))
+    vals = piv.values.astype(float)
+    vmax = np.percentile(vals[vals > 0], 95) if (vals > 0).any() else 1.0
+    im = ax.imshow(
+        vals,
+        aspect="auto",
+        cmap=LinearSegmentedColormap.from_list("wr", ["#ffffff", RED]),
+        vmax=vmax,
+    )
+    plt.colorbar(im, ax=ax, label="Avg travel time (minutes)")
 
-    ax.set_xticks(range(len(piv.columns)))
-    ax.set_xticklabels(piv.columns, rotation=45, ha="right", fontsize=8)
-    ax.set_yticks(range(len(piv.index)))
-    ax.set_yticklabels(piv.index, fontsize=8)
+    step = max(1, len(piv.columns) // 9)
+    tick_idx = list(range(0, len(piv.columns), step))
+    ax.set_xticks(tick_idx)
+    ax.set_xticklabels([piv.columns[i] for i in tick_idx], rotation=55, ha="right", fontsize=7)
+    ax.set_yticks(tick_idx)
+    ax.set_yticklabels([piv.index[i] for i in tick_idx], fontsize=7)
     ax.set_title(
         "B7 — Routing Cost Matrix: Travel Time by Department Pair\n(Dry Standard Conditions)"
     )
@@ -1208,39 +1248,29 @@ chart_c1()
 
 @safe_chart("C2")
 def chart_c2():
-    """C2: Posterior margin distribution at final date (histogram + VaR lines)."""
+    """C2: Final-day posterior margin — mean + 94% HDI (no simulated draws)."""
     last_date = forecast["date"].max()
     last_row = forecast[forecast["date"] == last_date].iloc[0]
 
-    mean_v = last_row["posterior_mean_preference_margin_pp"]
-    hdi_lo = last_row["posterior_hdi_low_pp"]
-    hdi_hi = last_row["posterior_hdi_high_pp"]
+    mean_v = float(last_row["posterior_mean_preference_margin_pp"])
+    hdi_lo = float(last_row["posterior_hdi_low_pp"])
+    hdi_hi = float(last_row["posterior_hdi_high_pp"])
 
-    # Simulate draws from approximate normal
-    sigma_approx = (hdi_hi - hdi_lo) / (2 * 1.645)  # 94% HDI ≈ ±1.645σ
-    np.random.seed(42)
-    draws = np.random.normal(mean_v, sigma_approx, 20000)
+    fig, ax = plt.subplots(figsize=(10, 4))
+    ax.axvspan(hdi_lo, hdi_hi, color=RED, alpha=0.25, label="94% HDI")
+    ax.axvline(mean_v, color=CHARCOAL, lw=2.5, label=f"Posterior mean: {mean_v:.1f} pp")
+    ax.axvline(0, color=GREY, lw=1.2, ls="--", label="Toss-up (0 pp)")
+    ax.axvline(3.7, color=GOLD, lw=1.5, ls=":", label="TSJE Series A anchor (+3.70 pp)")
 
-    fig, ax = plt.subplots(figsize=(10, 5))
-    ax.hist(draws, bins=80, density=True, color=RED, alpha=0.65, edgecolor=WHITE, lw=0.3)
-
-    p5, p25, p75, p95 = np.percentile(draws, [5, 25, 75, 95])
-    for pct, label, color in [
-        (p5, "5th pct", PURPLE),
-        (p25, "25th pct", BLUE),
-        (mean_v, "Mean", CHARCOAL),
-        (p75, "75th pct", BLUE),
-        (p95, "95th pct", PURPLE),
-    ]:
-        ax.axvline(pct, color=color, lw=1.5, ls="--", label=f"{label}: {pct:.1f} pp")
-
-    ax.axvline(0, color=CHARCOAL, lw=2, ls="-", alpha=0.5, label="Toss-up")
-    ax.set_xlabel("Preference Margin (pp)")
-    ax.set_ylabel("Density")
+    pad = max(2.0, (hdi_hi - hdi_lo) * 0.35)
+    ax.set_xlim(min(hdi_lo, 0, 3.7) - pad, max(hdi_hi, mean_v, 3.7) + pad)
+    ax.set_ylim(0, 1)
+    ax.set_yticks([])
+    ax.set_xlabel("Preference Margin (pp, Candidate A vs B)")
     ax.set_title(
-        f"C2 — Final Day Posterior Margin Distribution\n({last_date.strftime('%d %b %Y')})"
+        f"C2 — Final-Day Posterior Margin (mean + 94% HDI)\n({last_date.strftime('%d %b %Y')})"
     )
-    ax.legend(fontsize=9)
+    ax.legend(fontsize=9, loc="upper left")
     annotate_source(ax)
     fig.tight_layout()
     save_fig(fig, "C2_posterior_margin_final.png")
@@ -1277,7 +1307,9 @@ def chart_c3():
     )
     ax.set_xlim(0, 1.05)
     ax.set_xlabel("P(Win — Candidate A)")
-    ax.set_title("C3 — Battleground Department Win Probability (Candidate A)")
+    ax.set_title(
+        f"C3 — Battleground Department Win Probability (Candidate A)\n({ILLUSTRATIVE_BATTLE_SUB})"
+    )
     annotate_source(ax)
     fig.tight_layout()
     save_fig(fig, "C3_battleground_win_probability.png")
@@ -1449,21 +1481,17 @@ def chart_c8():
         alpha=0.85,
     )
 
-    for _, row in merged_c8.iterrows():
-        ax.annotate(
-            row["department"],
-            (row["mean_propensity"], row["win_probability_a"]),
-            textcoords="offset points",
-            xytext=(5, 3),
-            fontsize=8,
-        )
+    _stagger_annotate(ax, merged_c8, "mean_propensity", "win_probability_a", "department")
 
     ax.axhline(0.5, color=CHARCOAL, lw=1.2, ls="--", label="50% win threshold")
+    wp = merged_c8["win_probability_a"]
+    ax.set_ylim(max(0.48, wp.min() - 0.004), min(0.52, wp.max() + 0.004))
     plt.colorbar(sc, ax=ax, label="Total Budget (USD)")
     ax.set_xlabel("Mean Participation Propensity (Department)")
     ax.set_ylabel("P(Win — Candidate A)")
     ax.set_title(
-        "C8 — Win Probability vs Participation Propensity\n(bubble size = budget allocated)"
+        "C8 — Win Probability vs Participation Propensity\n"
+        f"(bubble size = budget · {ILLUSTRATIVE_BATTLE_SUB})"
     )
     ax.legend()
     annotate_source(ax)
@@ -1795,11 +1823,17 @@ def chart_s4():
         )
 
     plt.colorbar(sc, ax=ax, label="Priority Score (win_prob × propensity × log_budget)")
-    ax.axvline(0.795, color=GREY, lw=1, ls="--")
-    ax.axhline(merged_s4["mean_propensity"].median(), color=GREY, lw=1, ls="--")
+    ax.axvline(0.5, color=GREY, lw=1.2, ls="--", label="50% win threshold")
+    ax.axhline(
+        merged_s4["mean_propensity"].median(), color=GREY, lw=1, ls="--", label="Median propensity"
+    )
     ax.set_xlabel("P(Win — Candidate A)")
     ax.set_ylabel("Mean Participation Propensity")
-    ax.set_title("S4 — Department Priority Matrix\n(Win Prob × Participation Propensity × Budget)")
+    ax.set_title(
+        "S4 — Department Priority Matrix\n"
+        f"(Win Prob × Propensity × Budget · {ILLUSTRATIVE_BATTLE_SUB})"
+    )
+    ax.legend(fontsize=8, loc="lower right")
     annotate_source(ax)
     fig.tight_layout()
     save_fig(fig, "S4_department_priority_matrix.png")
@@ -1865,6 +1899,220 @@ def chart_s5():
 
 
 chart_s5()
+
+
+# ════════════════════════════════════════════════════════════════════════════
+# COMPOSITE / ENHANCED CHARTS (regenerated with canonical pipeline data)
+# ════════════════════════════════════════════════════════════════════════════
+print("\n── Composite charts ──")
+
+
+@safe_chart("C8v2")
+def chart_c8_v2():
+    """C8_v2: Win probability vs propensity with region colour + ranked table."""
+    dept_prop = pop.groupby("department")["participation_propensity"].mean().reset_index()
+    dept_prop.columns = ["department", "mean_propensity"]
+    merged = battleground.merge(dept_prop, on="department", how="left")
+    merged["region"] = merged["department"].map(_region_for_department)
+    merged = merged.sort_values("mean_propensity", ascending=False).reset_index(drop=True)
+
+    fig = plt.figure(figsize=(14, 7))
+    gs = fig.add_gridspec(1, 2, width_ratios=[1.35, 1.0], wspace=0.28)
+    ax = fig.add_subplot(gs[0, 0])
+    ax_tbl = fig.add_subplot(gs[0, 1])
+    ax_tbl.axis("off")
+
+    region_colors = {"ORIENTAL": BLUE, "CHACO": ORANGE}
+    for region, grp in merged.groupby("region"):
+        ax.scatter(
+            grp["mean_propensity"],
+            grp["win_probability_a"],
+            s=90,
+            color=region_colors.get(region, GREY),
+            edgecolors=CHARCOAL,
+            lw=0.6,
+            alpha=0.9,
+            label=region.title(),
+            zorder=3,
+        )
+
+    _stagger_annotate(ax, merged, "mean_propensity", "win_probability_a", "department")
+    mean_wp = merged["win_probability_a"].mean()
+    ax.axhline(0.5, color=CHARCOAL, lw=1.2, ls="--", label="50% threshold")
+    ax.axhline(mean_wp, color=GREY, lw=1.0, ls=":", label=f"Mean win prob ({mean_wp:.1%})")
+    wp = merged["win_probability_a"]
+    ax.set_ylim(max(0.485, wp.min() - 0.005), min(0.515, wp.max() + 0.005))
+    ax.set_xlabel("Mean Participation Propensity (Department)")
+    ax.set_ylabel("Win Probability — Candidate A")
+    ax.set_title(
+        "C8 — Win Probability vs Participation Propensity by Department\n"
+        f"({ILLUSTRATIVE_BATTLE_SUB})"
+    )
+    ax.legend(fontsize=8, loc="lower right")
+
+    tbl_rows = [
+        [
+            str(i + 1),
+            row.department,
+            f"{row.mean_propensity:.3f}",
+            f"{row.win_probability_a:.1%}",
+        ]
+        for i, row in enumerate(merged.itertuples(index=False))
+    ]
+    table = ax_tbl.table(
+        cellText=tbl_rows,
+        colLabels=["#", "Department", "Propensity", "P(Win)"],
+        loc="center",
+        cellLoc="left",
+    )
+    table.auto_set_font_size(False)
+    table.set_fontsize(8)
+    table.scale(1.0, 1.15)
+    ax_tbl.set_title("Ranked by Propensity", fontsize=11, fontweight="bold", pad=12)
+
+    fig.text(0.5, 0.01, SOURCE, ha="center", fontsize=7.5, color=GREY)
+    fig.suptitle("Department-Level Electoral Intelligence", fontsize=14, fontweight="bold", y=0.98)
+    fig.tight_layout(rect=(0, 0.03, 1, 0.94))
+    save_fig(fig, "C8_v2.png")
+
+
+chart_c8_v2()
+
+
+@safe_chart("OVERVIEW")
+def chart_eda_overview():
+    """eda_overview: multi-panel snapshot from current pipeline artifacts."""
+    fig = plt.figure(figsize=(18, 14))
+    gs = fig.add_gridspec(3, 4, hspace=0.45, wspace=0.35)
+    fig.suptitle("PARAGUAY ELECTION — DATA OVERVIEW", fontsize=16, fontweight="bold", y=0.98)
+
+    # 1 — segment sizes
+    ax1 = fig.add_subplot(gs[0, 0])
+    counts = pop["segment_label"].value_counts().reindex(SEG_ORDER, fill_value=0)
+    colors = [SEG_COLORS.get(s, GREY) for s in counts.index]
+    ax1.barh(counts.index, counts.values, color=colors, edgecolor=WHITE, lw=0.4)
+    ax1.set_title("Population Segments", fontsize=10)
+    ax1.set_xlabel("# Records")
+    ax1.invert_yaxis()
+
+    # 2 — age by gender
+    ax2 = fig.add_subplot(gs[0, 1])
+    for gender, color in [("F", RED), ("M", BLUE)]:
+        ages = pop.loc[pop["gender"] == gender, "age_on_event_date"].dropna()
+        ax2.hist(ages, bins=30, alpha=0.45, color=color, label=gender, density=True)
+    ax2.set_title("Age Distribution by Gender", fontsize=10)
+    ax2.set_xlabel("Age")
+    ax2.legend(fontsize=8)
+
+    # 3 — propensity by segment
+    ax3 = fig.add_subplot(gs[0, 2])
+    seg_props = [pop.loc[pop["segment_label"] == s, "participation_propensity"].dropna() for s in SEG_ORDER]
+    bp = ax3.boxplot(seg_props, vert=True, patch_artist=True, labels=[s.replace("_", "\n") for s in SEG_ORDER])
+    for patch, seg in zip(bp["boxes"], SEG_ORDER):
+        patch.set_facecolor(SEG_COLORS.get(seg, GREY))
+        patch.set_alpha(0.65)
+    ax3.set_title("Participation Propensity by Segment", fontsize=10)
+    ax3.set_ylabel("Propensity")
+    ax3.tick_params(axis="x", labelsize=7)
+
+    # 4 — media penetration by segment
+    ax4 = fig.add_subplot(gs[0, 3])
+    media_cols = ["media_penetration_tv", "media_penetration_radio", "media_penetration_whatsapp"]
+    media_means = pop.groupby("segment_label")[media_cols].mean().reindex(SEG_ORDER)
+    x = np.arange(len(SEG_ORDER))
+    w = 0.25
+    for i, col in enumerate(media_cols):
+        ax4.bar(x + (i - 1) * w, media_means[col], width=w, label=col.replace("media_penetration_", "").upper())
+    ax4.set_xticks(x)
+    ax4.set_xticklabels([s[:8] for s in SEG_ORDER], rotation=45, ha="right", fontsize=7)
+    ax4.set_title("Media Penetration by Segment", fontsize=10)
+    ax4.set_ylabel("Mean rate")
+    ax4.legend(fontsize=7)
+
+    # 5 — reachability tier pie
+    ax5 = fig.add_subplot(gs[1, 0])
+    tier_counts = pop["reachability_tier"].value_counts()
+    ax5.pie(
+        tier_counts.values,
+        labels=[f"{k}\n{v/len(pop):.1%}" for k, v in tier_counts.items()],
+        colors=[RED, BLUE, GREEN][: len(tier_counts)],
+        startangle=90,
+    )
+    ax5.set_title("Reachability Tiers", fontsize=10)
+
+    # 6 — forecast timeline
+    ax6 = fig.add_subplot(gs[1, 1:3])
+    fc = forecast.sort_values("date")
+    ax6.plot(fc["date"], fc["posterior_mean_preference_margin_pp"], color=RED, lw=2)
+    ax6.fill_between(
+        fc["date"],
+        fc["posterior_hdi_low_pp"],
+        fc["posterior_hdi_high_pp"],
+        color=RED,
+        alpha=0.2,
+    )
+    ax6.axhline(0, color=CHARCOAL, ls="--", lw=1)
+    ax6.set_title("Daily Posterior Forecast — Preference Margin (pp)", fontsize=10)
+    ax6.set_ylabel("Margin (pp)")
+
+    # 7 — battleground (illustrative)
+    ax7 = fig.add_subplot(gs[1, 3])
+    bg = battleground.sort_values("win_probability_a", ascending=True)
+    ax7.barh(bg["department"], bg["win_probability_a"], color=RED, edgecolor=WHITE, lw=0.3)
+    ax7.axvline(0.5, color=CHARCOAL, ls="--", lw=1)
+    ax7.set_xlim(0.48, 0.52)
+    ax7.set_title(f"Battleground Win Prob\n({ILLUSTRATIVE_BATTLE_SUB})", fontsize=9)
+    ax7.tick_params(axis="y", labelsize=6)
+
+    # 8 — MC shock scale
+    ax8 = fig.add_subplot(gs[2, 0])
+    ax8.hist(mc_draws["shock_scale"], bins=40, color=BLUE, alpha=0.75, edgecolor=WHITE, lw=0.3)
+    ax8.set_title("MC Shock Scale Distribution", fontsize=10)
+    ax8.set_xlabel("Shock scale")
+
+    # 9 — budget by region × channel type
+    ax9 = fig.add_subplot(gs[2, 1:3])
+    if "region" in alloc_base.columns:
+        reg_ch = (
+            alloc_base.groupby(["region", "channel_type"])["budget_allocation_usd"]
+            .sum()
+            .unstack(fill_value=0)
+        )
+        reg_ch.plot(kind="bar", ax=ax9, color=[RED, BLUE, GREEN, ORANGE][: reg_ch.shape[1]])
+        ax9.set_title("Budget Allocation by Region & Channel Type (USD)", fontsize=10)
+        ax9.set_ylabel("Total USD")
+        ax9.tick_params(axis="x", rotation=0)
+        ax9.legend(fontsize=7, title="Channel")
+    else:
+        ax9.text(0.5, 0.5, "Region column missing", ha="center", va="center")
+        ax9.set_axis_off()
+
+    # 10 — NBI stress vs propensity (sample)
+    ax10 = fig.add_subplot(gs[2, 3])
+    sample = pop.sample(n=min(4000, len(pop)), random_state=42)
+    for seg in SEG_ORDER:
+        sub = sample[sample["segment_label"] == seg]
+        if sub.empty:
+            continue
+        ax10.scatter(
+            sub["nbi_stress_prior"],
+            sub["participation_propensity"],
+            s=8,
+            alpha=0.35,
+            color=SEG_COLORS.get(seg, GREY),
+            label=seg.replace("_", " ")[:12],
+        )
+    ax10.set_title("NBI Stress vs Participation", fontsize=10)
+    ax10.set_xlabel("NBI stress prior")
+    ax10.set_ylabel("Propensity")
+    ax10.legend(fontsize=6, loc="upper right")
+
+    fig.text(0.5, 0.01, SOURCE, ha="center", fontsize=7.5, color=GREY)
+    fig.tight_layout(rect=(0, 0.02, 1, 0.96))
+    save_fig(fig, "eda_overview.png")
+
+
+chart_eda_overview()
 
 # ════════════════════════════════════════════════════════════════════════════
 # EDA REPORT
@@ -1956,6 +2204,7 @@ if _manifest_path.is_file():
 def _dept_win_prob(dept: str) -> float:
     rows = battleground.loc[battleground["department"] == dept, "win_probability_a"]
     return float(rows.iloc[0]) if len(rows) else float("nan")
+
 
 null_counts = pop.isnull().sum()
 null_pct = (null_counts / len(pop) * 100).round(1)

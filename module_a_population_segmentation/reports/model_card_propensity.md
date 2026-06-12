@@ -7,7 +7,7 @@
 
 ## Explainability (SHAP)
 
-Run `poetry install --extras explainability` (adds SHAP) then `poetry run python scripts/generate_module_a_shap.py` to emit `reports/module_a/shap_summary.png` (toy linear demo for pipeline wiring; swap in your exported feature matrix for production-style review).
+Run `poetry install --extras explainability` (adds SHAP) then `poetry run python scripts/generate_module_a_report_charts.py` (or `make module-a-report-charts`) to emit `reports/module_a/shap_summary.png` and `reports/module_a/reliability_diagram.png` from pipeline artifacts.
 
 ## Quality gates (measured at n=15k, seed=42 — no masking applied)
 

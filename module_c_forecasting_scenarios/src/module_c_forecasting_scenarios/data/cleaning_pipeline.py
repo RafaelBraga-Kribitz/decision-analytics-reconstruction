@@ -4,7 +4,7 @@ transparency → dedupe → split tracking vs exit.
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import date, timedelta
 
 import pandas as pd
 import yaml
@@ -56,99 +56,103 @@ def _load_m_star(calibration_series: str) -> float:
     return float(cal["anchors"][s]["margin_m_star_pp"])
 
 
-def clean_raw_polls(
-    raw: pd.DataFrame,
+def _parse_publication_date(pub: object) -> object:
+    if hasattr(pub, "date"):
+        return pub.date()  # type: ignore[union-attr]
+    return pub
+
+
+def _parse_preference_pcts(r: pd.Series) -> tuple[float, float, float | None]:
+    a = (
+        float(r["preference_proxy_a_pct"])
+        if bool(pd.notna(r.get("preference_proxy_a_pct")))
+        else 0.0
+    )
+    b = (
+        float(r["preference_proxy_b_pct"])
+        if bool(pd.notna(r.get("preference_proxy_b_pct")))
+        else 0.0
+    )
+    und = r.get("undecided_pct")
+    und_f = float(und) if bool(pd.notna(und)) else None  # type: ignore[arg-type]
+    return a, b, und_f
+
+
+def _resolve_field_window(r: pd.Series, pub: date) -> tuple[date, date]:
+    fw_known = bool(r.get("field_window_known", False))
+    if fw_known and bool(pd.notna(r.get("field_window_start"))):
+        fws = pd.to_datetime(r["field_window_start"]).date()  # type: ignore[union-attr]
+        fwe = pd.to_datetime(r["field_window_end"]).date()  # type: ignore[union-attr]
+        return fws, fwe
+    return pub - timedelta(days=7), pub
+
+
+def _optional_bool(value: object) -> bool | None:
+    if bool(pd.notna(value)):
+        return bool(value)
+    return None
+
+
+def _build_clean_poll_row(
+    r: pd.Series,
     calibration_series: str,
-    *,
-    default_redistribution: str = "proportional_AB",
-    m_star_pp: float | None = None,
+    m_star: float,
+    default_redistribution: str,
+) -> dict[str, object]:
+    pub = _parse_publication_date(r["publication_date"])
+    pollster_id, bias_fam = normalize_pollster_id(str(r["pollster_display_name"]))
+    a, b, und_f = _parse_preference_pcts(r)
+    a2, b2, rule = _redistribute_ab(a, b, und_f, default_redistribution)
+    fws, fwe = _resolve_field_window(r, pub)
+    sample_size_known = bool(r.get("sample_size_known", False))
+    mode_known = bool(r.get("mode_known", False))
+    fw_known = bool(r.get("field_window_known", False))
+    phi = compute_phi_transparency(
+        bool(r["has_ficha"]),
+        sample_size_known,
+        fw_known or True,
+        mode_known,
+    )
+    tau = compute_tau_eff(phi)
+    wave = str(r["wave_type"]).strip().lower()
+    if wave not in {"tracking", "exit"}:
+        raise QAGateFailure(f"invalid wave_type {wave!r}")
+    carrier = r.get("conglomerate_carrier")
+    carrier_s = None if bool(pd.isna(carrier)) else str(carrier)
+    row: dict[str, object] = {
+        "poll_wave_id": str(r["poll_raw_id"]).replace("raw_", "wave_"),
+        "pollster_id": pollster_id,
+        "pollster_bias_family": bias_fam,
+        "publication_date": pub,
+        "field_window_start": fws,
+        "field_window_end": fwe,
+        "preference_proxy_a_pct": a2,
+        "preference_proxy_b_pct": b2,
+        "m_poll_pp": a2 - b2,
+        "redistribution_rule": rule,
+        "phi_transparency": phi,
+        "tau_eff": tau,
+        "calibration_series": calibration_series,
+        "series_tag": calibration_series,
+        "conglomerate_id": carrier_s,
+        "media_holding": carrier_s,
+        "sample_size_known": sample_size_known,
+        "firm_wave_month": f"{pub.year:04d}-{pub.month:02d}",  # type: ignore[union-attr]
+        "wave_type": wave,
+        "oea_timing_compliant": _optional_bool(r.get("oea_timing_compliant")),
+        "eu_release_window_flag": _optional_bool(r.get("eu_release_window_flag")),
+        "has_ficha": bool(r["has_ficha"]),
+    }
+    rho = rho_herd_for_row(pub, carrier_s)  # type: ignore[arg-type]
+    row["scenario_bucket"] = scenario_bucket_for_margin(row["m_poll_pp"], m_star, phi, rho)  # type: ignore[arg-type]
+    return row
+
+
+def _split_tracking_and_exit(
+    all_df: pd.DataFrame, m_star: float
 ) -> tuple[pd.DataFrame, pd.DataFrame]:
-    missing = [c for c in REQUIRED_RAW if c not in raw.columns]
-    if missing:
-        raise QAGateFailure(f"raw polls missing {missing}")
-
-    m_star = float(m_star_pp) if m_star_pp is not None else _load_m_star(calibration_series)
-
-    rows: list[dict] = []
-    for _, r in raw.iterrows():
-        pub = r["publication_date"]
-        if hasattr(pub, "date"):
-            pub = pub.date()  # type: ignore[union-attr]  # hasattr guard on L75 ensures .date() exists at runtime
-        pollster_id, bias_fam = normalize_pollster_id(str(r["pollster_display_name"]))
-        a = (
-            float(r["preference_proxy_a_pct"])
-            if bool(pd.notna(r.get("preference_proxy_a_pct")))
-            else 0.0
-        )
-        b = (
-            float(r["preference_proxy_b_pct"])
-            if bool(pd.notna(r.get("preference_proxy_b_pct")))
-            else 0.0
-        )
-        und = r.get("undecided_pct")
-        und_f = float(und) if bool(pd.notna(und)) else None  # type: ignore[arg-type]  # iterrows item typed as object; runtime is numeric
-        a2, b2, rule = _redistribute_ab(a, b, und_f, default_redistribution)
-        fw_known = bool(r.get("field_window_known", False))
-        if fw_known and bool(pd.notna(r.get("field_window_start"))):
-            fws = pd.to_datetime(r["field_window_start"]).date()  # type: ignore[union-attr]  # pandas stubs miss .date() on Timestamp
-            fwe = pd.to_datetime(r["field_window_end"]).date()  # type: ignore[union-attr]  # pandas stubs miss .date() on Timestamp
-        else:
-            fwe = pub
-            fws = pub - timedelta(days=7)
-        sample_size_known = bool(r.get("sample_size_known", False))
-        mode_known = bool(r.get("mode_known", False))
-        phi = compute_phi_transparency(
-            bool(r["has_ficha"]),
-            sample_size_known,
-            fw_known or True,
-            mode_known,
-        )
-        tau = compute_tau_eff(phi)
-        wave = str(r["wave_type"]).strip().lower()
-        if wave not in {"tracking", "exit"}:
-            raise QAGateFailure(f"invalid wave_type {wave!r}")
-        carrier = r.get("conglomerate_carrier")
-        carrier_s = None if bool(pd.isna(carrier)) else str(carrier)
-        oea = r.get("oea_timing_compliant")
-        oea_b = bool(oea) if bool(pd.notna(oea)) else None
-        eu = r.get("eu_release_window_flag")
-        eu_b = bool(eu) if bool(pd.notna(eu)) else None
-        row = {
-            "poll_wave_id": str(r["poll_raw_id"]).replace("raw_", "wave_"),
-            "pollster_id": pollster_id,
-            "pollster_bias_family": bias_fam,
-            "publication_date": pub,
-            "field_window_start": fws,
-            "field_window_end": fwe,
-            "preference_proxy_a_pct": a2,
-            "preference_proxy_b_pct": b2,
-            "m_poll_pp": a2 - b2,
-            "redistribution_rule": rule,
-            "phi_transparency": phi,
-            "tau_eff": tau,
-            "calibration_series": calibration_series,
-            "series_tag": calibration_series,
-            "conglomerate_id": carrier_s,
-            "media_holding": carrier_s,
-            "sample_size_known": sample_size_known,
-            "firm_wave_month": f"{pub.year:04d}-{pub.month:02d}",  # type: ignore[union-attr]  # pub is date after L75-76 hasattr assignment
-            "wave_type": wave,
-            "oea_timing_compliant": oea_b,
-            "eu_release_window_flag": eu_b,
-            "has_ficha": bool(r["has_ficha"]),
-        }
-        rho = rho_herd_for_row(pub, carrier_s)  # type: ignore[arg-type]  # pub is date after L75-76 hasattr assignment
-        row["scenario_bucket"] = scenario_bucket_for_margin(row["m_poll_pp"], m_star, phi, rho)
-        rows.append(row)
-
-    all_df = pd.DataFrame(rows)
-    all_df = all_df.drop_duplicates(subset=["pollster_id", "publication_date"], keep="first")
     track_part = all_df[all_df["wave_type"] == "tracking"].drop(columns=["wave_type"]).copy()
     exit_part = all_df[all_df["wave_type"] == "exit"].copy()
-    if len(track_part):
-        track_part = attach_shock_scores(track_part.reset_index(drop=True), m_star)  # type: ignore[arg-type]  # track_part is DataFrame; .reset_index() returns DataFrame at runtime
-    else:
-        track_part = pd.DataFrame()
     exit_keep = [
         "poll_wave_id",
         "pollster_id",
@@ -162,12 +166,38 @@ def clean_raw_polls(
         "eu_release_window_flag",
         "calibration_series",
     ]
+    if len(track_part):
+        tracking = attach_shock_scores(track_part.reset_index(drop=True), m_star)  # type: ignore[arg-type]
+    else:
+        tracking = pd.DataFrame()
     if len(exit_part):
-        exit_df = exit_part[exit_keep].reset_index(drop=True)  # type: ignore[union-attr]  # pandas stubs: bool-indexed subscript returns DataFrame at runtime
+        exit_df = exit_part[exit_keep].reset_index(drop=True)  # type: ignore[union-attr]
     else:
         exit_df = pd.DataFrame.from_records([], columns=exit_keep)
-    tracking = track_part.reset_index(drop=True)
-    return tracking, exit_df  # type: ignore[return-value]  # both are DataFrames after reset_index
+    return tracking.reset_index(drop=True), exit_df  # type: ignore[return-value]
+
+
+def clean_raw_polls(
+    raw: pd.DataFrame,
+    calibration_series: str,
+    *,
+    default_redistribution: str = "proportional_AB",
+    m_star_pp: float | None = None,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    missing = [c for c in REQUIRED_RAW if c not in raw.columns]
+    if missing:
+        raise QAGateFailure(f"raw polls missing {missing}")
+
+    m_star = float(m_star_pp) if m_star_pp is not None else _load_m_star(calibration_series)
+
+    rows = [
+        _build_clean_poll_row(r, calibration_series, m_star, default_redistribution)
+        for _, r in raw.iterrows()
+    ]
+
+    all_df = pd.DataFrame(rows)
+    all_df = all_df.drop_duplicates(subset=["pollster_id", "publication_date"], keep="first")
+    return _split_tracking_and_exit(all_df, m_star)
 
 
 def attach_shock_scores(tracking: pd.DataFrame, m_star_pp: float) -> pd.DataFrame:

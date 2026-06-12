@@ -1,0 +1,18 @@
+id: F-045
+title: "Battleground department probabilities must stay explicitly illustrative"
+category: fake_completion
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-12
+closed_at: 2026-06-12
+recurrence_count: 0
+evidence: |
+  geo/heatmap.py derives department win probabilities from synthetic noise around
+  a national margin — not a stratified posterior. epistemic_boundaries.md must
+  keep ILLUSTRATIVE classification visible. MASTERPLAN C-4; deep Bayesian fix
+  deferred to post-publish backlog.
+verification_script: scripts/check_battleground_illustrative_label.py
+wont_fix_reason: null
+notes: |
+  Closure does not require rebuilding the model — only consistent labeling in
+  epistemic_boundaries, heatmap module docstring, and any portfolio copy.

@@ -147,9 +147,9 @@ def test_unanchored_fit_follows_polls_not_m_star(fits: dict[str, float]) -> None
         f"unanchored terminal margin {fits['unanchored']:.2f} should track the "
         f"poll level {POLL_LEVEL_PP:.1f}"
     )
-    assert abs(fits["unanchored"] - fits["A"]) > 3.0, (
-        "unanchored fit landed on m_star anyway — anchor test has no power"
-    )
+    assert (
+        abs(fits["unanchored"] - fits["A"]) > 3.0
+    ), "unanchored fit landed on m_star anyway — anchor test has no power"
 
 
 def test_anchor_is_series_aware(fits: dict[str, float]) -> None:

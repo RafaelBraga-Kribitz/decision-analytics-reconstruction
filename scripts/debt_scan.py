@@ -98,102 +98,108 @@ def detect_languages() -> list[str]:
 # ── Python tools ────────────────────────────────────────────────────────────
 
 
+def _scan_ruff() -> dict:
+    if not _have("ruff"):
+        return {"ruff_unused": _metric(None, False, "ruff")}
+    _rc, out = _run(["ruff", "check", "--select", "F401,F811,F841", "--output-format", "json", "."])
+    try:
+        n = len(json.loads(out)) if out.strip().startswith("[") else 0
+    except json.JSONDecodeError:
+        n = 0
+    return {"ruff_unused": _metric(n, True, "ruff")}
+
+
+def _scan_vulture() -> dict:
+    if not _have("vulture"):
+        return {"vulture_dead_code": _metric(None, False, "vulture")}
+    _rc, out = _run(["vulture", ".", "--min-confidence", "80"])
+    n = sum(1 for line in out.splitlines() if ":" in line and "unused" in line.lower())
+    return {"vulture_dead_code": _metric(n, True, "vulture")}
+
+
+def _scan_radon(thresholds: dict) -> dict:
+    if not _have("radon"):
+        return {"radon_complex_blocks": _metric(None, False, "radon")}
+    _rc, out = _run(["radon", "cc", "-j", "-n", "C", "."])
+    try:
+        data = json.loads(out) if out.strip().startswith("{") else {}
+        n = sum(
+            1
+            for blocks in data.values()
+            for b in blocks
+            if isinstance(b, dict) and b.get("complexity", 0) > thresholds["complexity_cc_max"]
+        )
+    except json.JSONDecodeError:
+        n = 0
+    return {"radon_complex_blocks": _metric(n, True, "radon")}
+
+
 def scan_python(thresholds: dict) -> dict[str, dict]:
     m: dict[str, dict] = {}
-
-    # ruff — unused imports (F401), unused vars (F841), redefinition (F811)
-    if _have("ruff"):
-        rc, out = _run(
-            ["ruff", "check", "--select", "F401,F811,F841", "--output-format", "json", "."]
-        )
-        try:
-            n = len(json.loads(out)) if out.strip().startswith("[") else 0
-        except json.JSONDecodeError:
-            n = 0
-        m["ruff_unused"] = _metric(n, True, "ruff")
-    else:
-        m["ruff_unused"] = _metric(None, False, "ruff")
-
-    # vulture — dead code (functions, classes, attrs, vars)
-    if _have("vulture"):
-        rc, out = _run(["vulture", ".", "--min-confidence", "80"])
-        # vulture prints one finding per line; rc=1 when it finds something
-        n = sum(1 for line in out.splitlines() if ":" in line and "unused" in line.lower())
-        m["vulture_dead_code"] = _metric(n, True, "vulture")
-    else:
-        m["vulture_dead_code"] = _metric(None, False, "vulture")
-
-    # radon — cyclomatic complexity blocks worse than threshold
-    if _have("radon"):
-        rc, out = _run(["radon", "cc", "-j", "-n", "C", "."])
-        try:
-            data = json.loads(out) if out.strip().startswith("{") else {}
-            n = sum(
-                1
-                for blocks in data.values()
-                for b in blocks
-                if isinstance(b, dict) and b.get("complexity", 0) > thresholds["complexity_cc_max"]
-            )
-        except json.JSONDecodeError:
-            n = 0
-        m["radon_complex_blocks"] = _metric(n, True, "radon")
-    else:
-        m["radon_complex_blocks"] = _metric(None, False, "radon")
-
+    m.update(_scan_ruff())
+    m.update(_scan_vulture())
+    m.update(_scan_radon(thresholds))
     return m
 
 
 # ── TS/JS tools ─────────────────────────────────────────────────────────────
 
 
-def scan_ts_js(thresholds: dict) -> dict[str, dict]:
-    m: dict[str, dict] = {}
-
-    # Fallow supersedes knip+jscpd for TS/JS if installed.
-    if _have("fallow"):
-        rc, out = _run(["fallow", "scan", "--json"])
-        try:
-            data = json.loads(out) if out.strip().startswith("{") else {}
-            m["fallow_dead_code"] = _metric(int(data.get("dead_code_count", 0)), True, "fallow")
-            m["fallow_duplication_pct"] = _metric(
+def _scan_fallow() -> dict[str, dict] | None:
+    if not _have("fallow"):
+        return None
+    _rc, out = _run(["fallow", "scan", "--json"])
+    try:
+        data = json.loads(out) if out.strip().startswith("{") else {}
+        return {
+            "fallow_dead_code": _metric(int(data.get("dead_code_count", 0)), True, "fallow"),
+            "fallow_duplication_pct": _metric(
                 float(data.get("duplication_pct", 0.0)), True, "fallow"
-            )
-            return m
-        except (json.JSONDecodeError, ValueError):
-            pass  # fall through to knip/jscpd
+            ),
+        }
+    except (json.JSONDecodeError, ValueError):
+        return None
 
-    # knip — unused files, exports, dependencies
-    if _have("knip"):
-        rc, out = _run(["knip", "--reporter", "json"])
+
+def _scan_knip() -> dict:
+    if not _have("knip"):
+        return {"knip_unused_files": _metric(None, False, "knip")}
+    _rc, out = _run(["knip", "--reporter", "json"])
+    try:
+        data = json.loads(out) if out.strip().startswith("{") else {}
+        files = len(data.get("files", []))
+        issues = data.get("issues", [])
+        exports = sum(len(i.get("exports", [])) for i in issues) if isinstance(issues, list) else 0
+        return {
+            "knip_unused_files": _metric(files, True, "knip"),
+            "knip_unused_exports": _metric(exports, True, "knip"),
+        }
+    except json.JSONDecodeError:
+        return {"knip_unused_files": _metric(None, False, "knip")}
+
+
+def _scan_jscpd() -> dict:
+    if not _have("jscpd"):
+        return {"jscpd_duplication_pct": _metric(None, False, "jscpd")}
+    _rc, out = _run(["jscpd", "--silent", "--reporters", "json", "--output", "/tmp/jscpd", "."])
+    report = Path("/tmp/jscpd/jscpd-report.json")
+    pct = 0.0
+    if report.exists():
         try:
-            data = json.loads(out) if out.strip().startswith("{") else {}
-            files = len(data.get("files", []))
-            issues = data.get("issues", [])
-            exports = (
-                sum(len(i.get("exports", [])) for i in issues) if isinstance(issues, list) else 0
-            )
-            m["knip_unused_files"] = _metric(files, True, "knip")
-            m["knip_unused_exports"] = _metric(exports, True, "knip")
-        except json.JSONDecodeError:
-            m["knip_unused_files"] = _metric(None, False, "knip")
-    else:
-        m["knip_unused_files"] = _metric(None, False, "knip")
+            stats = json.loads(report.read_text()).get("statistics", {})
+            pct = float(stats.get("total", {}).get("percentage", 0.0))
+        except (json.JSONDecodeError, ValueError):
+            pct = 0.0
+    return {"jscpd_duplication_pct": _metric(pct, True, "jscpd")}
 
-    # jscpd — duplication percentage (language-agnostic)
-    if _have("jscpd"):
-        rc, out = _run(["jscpd", "--silent", "--reporters", "json", "--output", "/tmp/jscpd", "."])
-        report = Path("/tmp/jscpd/jscpd-report.json")
-        pct = 0.0
-        if report.exists():
-            try:
-                stats = json.loads(report.read_text()).get("statistics", {})
-                pct = float(stats.get("total", {}).get("percentage", 0.0))
-            except (json.JSONDecodeError, ValueError):
-                pct = 0.0
-        m["jscpd_duplication_pct"] = _metric(pct, True, "jscpd")
-    else:
-        m["jscpd_duplication_pct"] = _metric(None, False, "jscpd")
 
+def scan_ts_js(thresholds: dict) -> dict[str, dict]:
+    fallow = _scan_fallow()
+    if fallow is not None:
+        return fallow
+    m: dict[str, dict] = {}
+    m.update(_scan_knip())
+    m.update(_scan_jscpd())
     return m
 
 

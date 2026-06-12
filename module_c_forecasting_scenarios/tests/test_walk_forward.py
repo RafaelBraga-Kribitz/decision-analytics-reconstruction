@@ -56,6 +56,31 @@ def _synthetic_tracking(n: int = 5) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+_HOLDOUT_COLUMNS = (
+    "hdi80_low_pp",
+    "hdi80_high_pp",
+    "hdi95_low_pp",
+    "hdi95_high_pp",
+    "prob_margin_positive",
+    "observed_positive",
+    "in_hdi80",
+    "in_hdi95",
+)
+
+
+def _assert_walk_forward_metrics(result) -> None:
+    assert result.per_holdout.shape[0] == 3
+    assert {"brier_score", "log_loss", "coverage_80pct", "coverage_95pct"} <= set(result.metrics)
+    assert set(result.per_holdout.columns) >= set(_HOLDOUT_COLUMNS)
+    m = result.metrics
+    assert 0.0 <= m["coverage_80pct"] <= 1.0
+    assert 0.0 <= m["coverage_95pct"] <= 1.0
+    assert m["coverage_95pct"] >= m["coverage_80pct"] - 1e-9
+    assert m["brier_score"] >= 0.0 and m["log_loss"] >= 0.0
+    # Predictive 95% interval must cover most holdouts on well-specified synthetic data.
+    assert m["coverage_95pct"] >= 2.0 / 3.0
+
+
 def test_walk_forward_runs_and_reports_metrics() -> None:
     tracking = _synthetic_tracking(n=5)
     result = walk_forward_tracking_validation(
@@ -64,29 +89,7 @@ def test_walk_forward_runs_and_reports_metrics() -> None:
         calibration_series="A",
         min_train_size=2,
     )
-    assert result.per_holdout.shape[0] == 3
-    assert {"brier_score", "log_loss", "coverage_80pct", "coverage_95pct"} <= set(result.metrics)
-    for col in (
-        "hdi80_low_pp",
-        "hdi80_high_pp",
-        "hdi95_low_pp",
-        "hdi95_high_pp",
-        "prob_margin_positive",
-        "observed_positive",
-        "in_hdi80",
-        "in_hdi95",
-    ):
-        assert col in result.per_holdout.columns
-    assert 0.0 <= result.metrics["coverage_80pct"] <= 1.0
-    assert 0.0 <= result.metrics["coverage_95pct"] <= 1.0
-    assert result.metrics["coverage_95pct"] >= result.metrics["coverage_80pct"] - 1e-9
-    assert result.metrics["brier_score"] >= 0.0
-    assert result.metrics["log_loss"] >= 0.0
-    # Estimand regression: holdouts must be scored against the posterior
-    # predictive (latent + house effect + survey noise). On well-specified
-    # synthetic data the predictive 95% interval must cover most holdouts;
-    # the former latent-only scoring produced 0% coverage here.
-    assert result.metrics["coverage_95pct"] >= 2.0 / 3.0
+    _assert_walk_forward_metrics(result)
 
 
 def test_walk_forward_raises_when_too_few_polls() -> None:

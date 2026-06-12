@@ -40,9 +40,7 @@ def fitted() -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     base = generate_population(config, seed=42)
     raw = inject_flaws(base, config, seed=42)
     clean = clean_population(raw, config)
-    feat = build_reachability_features(
-        build_behavioral_features(build_demographic_features(clean))
-    )
+    feat = build_reachability_features(build_behavioral_features(build_demographic_features(clean)))
     labels_df, _ = build_segmentation_frame(feat, k=6, random_state=42)
     merged = feat.merge(labels_df[["entity_id", "segment_label"]], on="entity_id")
     profiles = cluster_profiles(feat, labels_df["segment_id"].to_numpy())
@@ -60,9 +58,7 @@ def test_assignment_is_bijection(fitted) -> None:
 def test_assignment_deterministic(fitted) -> None:
     merged, labels_df, _ = fitted
     feature_cols = [c for c in merged.columns if c != "segment_label"]
-    again = assign_segment_labels(
-        merged[feature_cols], labels_df["segment_id"].to_numpy()
-    )
+    again = assign_segment_labels(merged[feature_cols], labels_df["segment_id"].to_numpy())
     current = dict(
         labels_df.drop_duplicates("segment_id")[["segment_id", "segment_label"]].to_numpy()
     )

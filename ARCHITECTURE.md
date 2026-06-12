@@ -72,8 +72,8 @@ flowchart TB
   end
   aout --> tr
   pcmc --> tr
-  polls[ModuleC_survey_measurement_inputs]
-  polls --> tr
+  sm_inputs[ModuleC_survey_measurement_inputs]
+  sm_inputs --> tr
 ```
 
 ## Diagrams: module graph

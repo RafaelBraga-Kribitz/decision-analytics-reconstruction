@@ -1,0 +1,18 @@
+id: F-042
+title: "MCMC diagnostic claims must match aspirational enforcement"
+category: fake_completion
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-12
+closed_at: 2026-06-12
+recurrence_count: 0
+evidence: |
+  module_c_forecasting_scenarios/tests/test_mcmc_diagnostics_summary.py marks
+  R-hat, ESS, and divergence checks as xfail under MC_FAST. Public docs must
+  not imply production-grade MCMC gates until a slow/scheduled CI path enforces
+  them. Audit tasks T1-09, T3-06, MASTERPLAN C-13.
+verification_script: scripts/check_mcmc_diagnostics_disclosure.py
+wont_fix_reason: null
+notes: |
+  Closure path: either (a) scheduled full-NUTS CI job removes xfails, or
+  (b) all narrative surfaces state aspirational / non-blocking explicitly.

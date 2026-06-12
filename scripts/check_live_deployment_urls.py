@@ -20,7 +20,7 @@ URLS = {
 def _status(url: str) -> int | str:
     req = Request(url, headers={"User-Agent": "decision-analytics-governance-check/1.0"})
     try:
-        with urlopen(req, timeout=15) as response:  # noqa: S310 - fixed public URLs.
+        with urlopen(req, timeout=15) as response:
             return int(response.status)
     except HTTPError as exc:
         return int(exc.code)
@@ -39,4 +39,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-

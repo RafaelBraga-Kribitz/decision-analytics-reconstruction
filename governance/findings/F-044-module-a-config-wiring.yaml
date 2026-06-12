@@ -1,0 +1,18 @@
+id: F-044
+title: "Module A model_params.yaml not wired to runtime loaders"
+category: fragmented_standards
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-12
+closed_at: 2026-06-12
+recurrence_count: 0
+evidence: |
+  model_params.yaml documents PCA/DBSCAN/KMeans/propensity grids as not yet
+  wired; export.py and segmentation modules use hardcoded values. Reachability
+  weights in YAML (0.40/0.35/0.25) drift from reachability.py (0.25/0.25/0.15).
+  MASTERPLAN A-5, A-12; Project_Evaluation N1.x config drift.
+verification_script: scripts/check_module_a_config_wiring.py
+wont_fix_reason: null
+notes: |
+  Closure: config-loading adapter in pipeline/export.py OR sync YAML to code
+  defaults with CI drift gate. Do not delete YAML honesty header until wired.

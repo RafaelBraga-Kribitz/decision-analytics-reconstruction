@@ -128,6 +128,7 @@ def assign_segment_labels(df: pd.DataFrame, labels: np.ndarray) -> dict[int, str
         mapping.setdefault(int(cluster_id), f"segment_{int(cluster_id)}")
     return mapping
 
+
 FEATURE_COLUMNS = [
     "age_bin_encoded",
     "gender_encoded",

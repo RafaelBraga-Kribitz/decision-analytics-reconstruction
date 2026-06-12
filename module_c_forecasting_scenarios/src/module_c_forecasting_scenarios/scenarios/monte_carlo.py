@@ -97,30 +97,12 @@ def _draw_from_prior(
     ]
 
 
-def run_monte_carlo_scenarios(
+def _write_shock_catalog(
     tracking: pd.DataFrame,
-    allocation_path: Path | None,
-    *,
     out_dir: Path,
-    shock_multiplier: float | None = None,
-    baseline_shock_zero: bool = False,
-    n_draws: int | None = None,
-) -> dict[str, object]:
-    """Stratified MC draws across all canonical buckets."""
-    out_dir.mkdir(parents=True, exist_ok=True)
-    n = int(n_draws) if n_draws is not None else _mc_n()
-    rng = np.random.default_rng(42)
-    p = yaml.safe_load((module_config_dir() / "shock_params.yaml").read_text())
-    mult = float(
-        shock_multiplier if shock_multiplier is not None else p.get("shock_multiplier", 1.0)
-    )
-    baseline_zero = baseline_shock_zero or bool(p.get("baseline_shock_zero", False))
-    bucket_priors = p.get("bucket_priors", {})
-
-    if "shock_score_s" not in tracking.columns:
-        raise ValueError("tracking must include shock_score_s (run cleaning attach_shock_scores)")
-
-    # Catalog from tracking (one entry per poll wave).
+    mult: float,
+    baseline_zero: bool,
+) -> None:
     shocks: list[dict[str, object]] = []
     for _i, row in tracking.iterrows():
         sid = f"shock_{row['poll_wave_id']}"
@@ -144,29 +126,40 @@ def run_monte_carlo_scenarios(
     with open(cat_path, "w") as f:
         yaml.safe_dump({"shocks": shocks}, f, sort_keys=False)
 
-    # Allocation handshake. A passed-but-missing path is a wiring error and
-    # must fail loudly — silently degrading to 0.0 hid a dead B→C link.
-    alloc_mean_contacts = 0.0
-    if allocation_path is not None:
-        if not allocation_path.exists():
-            raise FileNotFoundError(
-                f"allocation parquet not found at {allocation_path}; "
-                "run the Module B pipeline first (make module-b-allocate)"
-            )
-        adf = pd.read_parquet(allocation_path)
-        handshake_cols = ("persuasion_adjusted_contacts", "expected_contacts", "scenario_id")
-        for c in handshake_cols:
-            if c not in adf.columns:
-                raise ValueError(f"allocation_output missing handshake column {c!r}")
-        alloc_mean_contacts = float(adf["persuasion_adjusted_contacts"].mean())
-        if alloc_mean_contacts <= 0.0:
-            raise ValueError(
-                f"allocation parquet {allocation_path} has non-positive mean persuasion "
-                "contacts — the B→C handshake would be a silent zero"
-            )
 
-    # Stratified per-bucket draws.
+def _load_allocation_mean_contacts(allocation_path: Path | None) -> float:
+    if allocation_path is None:
+        return 0.0
+    if not allocation_path.exists():
+        raise FileNotFoundError(
+            f"allocation parquet not found at {allocation_path}; "
+            "run the Module B pipeline first (make module-b-allocate)"
+        )
+    adf = pd.read_parquet(allocation_path)
+    handshake_cols = ("persuasion_adjusted_contacts", "expected_contacts", "scenario_id")
+    for c in handshake_cols:
+        if c not in adf.columns:
+            raise ValueError(f"allocation_output missing handshake column {c!r}")
+    alloc_mean_contacts = float(adf["persuasion_adjusted_contacts"].mean())
+    if alloc_mean_contacts <= 0.0:
+        raise ValueError(
+            f"allocation parquet {allocation_path} has non-positive mean persuasion "
+            "contacts — the B→C handshake would be a silent zero"
+        )
+    return alloc_mean_contacts
+
+
+def _stratified_bucket_draws(
+    tracking: pd.DataFrame,
+    n: int,
+    mult: float,
+    baseline_zero: bool,
+    rng: np.random.Generator,
+    alloc_mean_contacts: float,
+    bucket_priors: dict[str, object],
+) -> list[dict[str, object]]:
     bucket_quota = _bucket_share(n, len(CANONICAL_BUCKETS))
+    effective_mult = 0.0 if baseline_zero else mult
     all_draws: list[dict[str, object]] = []
     cursor = 0
     for bucket, quota in zip(CANONICAL_BUCKETS, bucket_quota, strict=True):
@@ -175,7 +168,7 @@ def run_monte_carlo_scenarios(
             chunk = _draw_from_tracking(
                 bucket_rows,
                 n=quota,
-                mult=0.0 if baseline_zero else mult,
+                mult=effective_mult,
                 rng=rng,
                 alloc_mean_contacts=alloc_mean_contacts,
                 start_idx=cursor,
@@ -189,18 +182,56 @@ def run_monte_carlo_scenarios(
             chunk = _draw_from_prior(
                 bucket=bucket,
                 n=quota,
-                prior=prior,
-                mult=0.0 if baseline_zero else mult,
+                prior=cast(dict[str, float], prior),
+                mult=effective_mult,
                 rng=rng,
                 alloc_mean_contacts=alloc_mean_contacts,
                 start_idx=cursor,
             )
         all_draws.extend(chunk)
         cursor += quota
+    return all_draws
+
+
+def run_monte_carlo_scenarios(
+    tracking: pd.DataFrame,
+    allocation_path: Path | None,
+    *,
+    out_dir: Path,
+    shock_multiplier: float | None = None,
+    baseline_shock_zero: bool = False,
+    n_draws: int | None = None,
+) -> dict[str, object]:
+    """Stratified MC draws across all canonical buckets."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    n = int(n_draws) if n_draws is not None else _mc_n()
+    rng = np.random.default_rng(42)
+    p = yaml.safe_load((module_config_dir() / "shock_params.yaml").read_text())
+    mult = float(
+        shock_multiplier if shock_multiplier is not None else p.get("shock_multiplier", 1.0)
+    )
+    baseline_zero = baseline_shock_zero or bool(p.get("baseline_shock_zero", False))
+    bucket_priors = p.get("bucket_priors", {})
+
+    if "shock_score_s" not in tracking.columns:
+        raise ValueError("tracking must include shock_score_s (run cleaning attach_shock_scores)")
+
+    _write_shock_catalog(tracking, out_dir, mult, baseline_zero)
+    alloc_mean_contacts = _load_allocation_mean_contacts(allocation_path)
+    all_draws = _stratified_bucket_draws(
+        tracking,
+        n,
+        mult,
+        baseline_zero,
+        rng,
+        alloc_mean_contacts,
+        bucket_priors,
+    )
 
     draws_df = pd.DataFrame(all_draws)
     draws_df.to_parquet(out_dir / "monte_carlo_draws.parquet", index=False)
 
+    bucket_quota = _bucket_share(n, len(CANONICAL_BUCKETS))
     manifest = {
         "n_draws": n,
         "seed": 42,
