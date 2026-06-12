@@ -1,0 +1,19 @@
+id: F-052
+title: "Participation propensity must vary within departments and segments"
+category: statistical-rigor
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-12
+closed_at: 2026-06-12
+recurrence_count: 0
+evidence: |
+  Chart audit A5/A11: propensity violins collapse to thin atoms (~0.62) for metro
+  segments; Central row constant at 0.62 across all six segments in A4; reliability
+  diagram wild swings explained by dept-level constants vs Bernoulli national labels.
+  Canonical parquet: Central propensity std≈0.0026; rural_committed segment std≈0.023.
+  Module B S2/S4 targeting operates on near-constant scores without individual signal.
+verification_script: scripts/check_propensity_individual_variation.py
+notes: |
+  Triage: chart_audit AUD-A4, AUD-A5, AUD-A11, AUD-PUB-003; blocks trustworthy S1/S4.
+  Remediation: reduce department_logit_offset dominance or regenerate individual-level
+  propensity with documented within-dept variance; regenerate dependent B/C charts.

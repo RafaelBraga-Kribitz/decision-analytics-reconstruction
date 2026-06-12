@@ -88,6 +88,7 @@ propensity:
   brier_threshold: 0.237
   auc_floor: 0.70                 # Gate A8: enforced in CI (see test_auc_floor)
   reliability_max_deviation_pp: 3.0  # Gate: max deviation per reliability decile
+  individual_spread_std: 0.065      # Post-rake within-dept std from raw-logit z-scores (F-052)
   shap_sample_size: 10000         # Entities sampled for SHAP analysis
 
 # ─── Reachability index weights (wired in features/reachability.py) ───────────

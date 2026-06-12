@@ -41,6 +41,7 @@ class PropensityModel:
     """
 
     random_state: int = 42
+    individual_spread_std: float = 0.065
     stratify_by: tuple[str, ...] = field(
         default_factory=lambda: ("department", "age_bin_encoded", "gender_encoded")
     )
@@ -118,14 +119,17 @@ class PropensityModel:
         prob_test = platt.predict_proba(raw_test.reshape(-1, 1))[:, 1]
         prob_all = platt.predict_proba(raw_all.reshape(-1, 1))[:, 1]
 
-        # Two-pass rake: national first, then per-department (IPF one iteration)
+        # Per-department rake, then restore individual spread from raw logits.
         prob_raked, dept_multipliers = self._rake(prob_all, pd.Series(df["department"]), a)
+        prob_final = self._spread_within_departments(
+            prob_raked, raw_all, pd.Series(df["department"])
+        )
 
         # Build metrics on test partition
         auc = float(roc_auc_score(y_test, prob_test))
         brier = float(brier_score_loss(y_test, prob_test))
 
-        pred = pd.Series(prob_raked, index=df.index, name="participation_propensity")
+        pred = pd.Series(prob_final, index=df.index, name="participation_propensity")
         calibration = self._calibration_report(pred, df, a)
 
         feature_names = list(FEATURES) + ["department_logit_offset", "gender_youth_interaction"]
@@ -239,6 +243,37 @@ class PropensityModel:
                 out[free_idx] = np.clip(out[free_idx] + delta, 0.0, 1.0)
 
         return out, pd.Series(dept.map(multipliers).to_numpy(), index=dept.index)
+
+    def _spread_within_departments(
+        self,
+        prob: np.ndarray,
+        individual_signal: np.ndarray,
+        dept: pd.Series,
+    ) -> np.ndarray:
+        """Affine remap within departments using zero-mean raw-logit z-scores.
+
+        Platt scaling collapses raw logit dispersion; this step re-spreads
+        propensity around each department's raked mean while preserving means.
+        """
+        out = prob.copy()
+        spread_std = self.individual_spread_std
+        for dept_name in dept.unique():
+            mask_idx = np.where(dept == dept_name)[0]
+            mu = float(out[mask_idx].mean())
+            z = individual_signal[mask_idx] - individual_signal[mask_idx].mean()
+            z_std = float(z.std())
+            if z_std > 1e-9:
+                z = z / z_std
+            out[mask_idx] = np.clip(mu + z * spread_std, 0.0, 1.0)
+            for _ in range(8):
+                residual = mu - float(out[mask_idx].mean())
+                if abs(residual) < 1e-5:
+                    break
+                free = out[mask_idx] < 0.9999
+                if not free.any():
+                    break
+                out[mask_idx][free] = np.clip(out[mask_idx][free] + residual, 0.0, 1.0)
+        return out
 
     def _calibration_report(
         self, pred: pd.Series, df: pd.DataFrame, anchors: dict[str, Any]
