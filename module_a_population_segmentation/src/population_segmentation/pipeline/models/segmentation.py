@@ -37,12 +37,12 @@ SEGMENT_LABEL_MAP: dict[int, str] = {
 # preference_proxy encoding (features/behavioral.py): A=0, B=1, other=2, none=3;
 # "opposition" below is the share of preference B, "no_preference" the share of none.
 LABEL_SCORE_WEIGHTS: dict[str, dict[str, float]] = {
-    "rural_committed": {"rural": 1.0, "strength": 1.0, "opposition": -0.5},
-    "urban_high_volatility": {"metro": 1.0, "strength": -1.0, "no_preference": 0.5},
+    "rural_committed": {"rural": 2.5, "strength": 1.5, "metro": -2.0, "opposition": -0.5},
+    "urban_high_volatility": {"metro": 1.5, "strength": -1.0, "no_preference": 0.5, "rural": -0.5},
     "youth_volatile": {"youth": 1.5, "strength": -0.5},
     "structurally_dependent_bloc": {"dependency": 1.5, "nbi_stress": 0.5},
-    "rural_low_propensity": {"rural": 1.0, "strength": -1.0, "nbi_stress": 0.5},
-    "committed_opposition": {"opposition": 1.5, "strength": 0.5},
+    "rural_low_propensity": {"rural": 2.0, "strength": -2.0, "nbi_stress": 0.5},
+    "committed_opposition": {"opposition": 2.0, "strength": 0.5, "rural": 0.8, "metro": -0.5},
 }
 
 #: Interpretable profile features used for label assignment.
@@ -90,6 +90,49 @@ def cluster_profiles(df: pd.DataFrame, labels: np.ndarray) -> pd.DataFrame:
     return cast(pd.DataFrame, prof.groupby("cluster").mean())
 
 
+def _cluster_rural_share(df: pd.DataFrame, labels: np.ndarray, cluster_id: int) -> float:
+    mask = labels == cluster_id
+    if not mask.any():
+        return 0.0
+    return float(df.loc[mask, "rural_flag"].astype(bool).mean())
+
+
+def _swap_cluster_labels(mapping: dict[int, str], a: int, b: int) -> None:
+    mapping[a], mapping[b] = mapping[b], mapping[a]
+
+
+def _repair_label_mapping(
+    df: pd.DataFrame,
+    labels: np.ndarray,
+    mapping: dict[int, str],
+    profiles: pd.DataFrame,
+) -> dict[int, str]:
+    """Swap cluster names when Hungarian tie-breaks invert opposition/rural semantics."""
+    out = dict(mapping)
+    reverse = {label: cluster_id for cluster_id, label in out.items()}
+
+    co_id = reverse.get("committed_opposition")
+    if co_id is not None and _cluster_rural_share(df, labels, co_id) < 0.01:
+        rural_clusters = [
+            int(cluster_id)
+            for cluster_id in profiles.index
+            if float(profiles.loc[cluster_id, "rural"]) >= 0.01
+        ]
+        if rural_clusters:
+            best = max(rural_clusters, key=lambda cid: float(profiles.loc[cid, "opposition"]))
+            if best != co_id:
+                _swap_cluster_labels(out, co_id, best)
+                reverse = {label: cluster_id for cluster_id, label in out.items()}
+
+    sdb_id = reverse.get("structurally_dependent_bloc")
+    if sdb_id is not None:
+        best_dep = int(max(profiles.index, key=lambda cid: float(profiles.loc[cid, "dependency"])))
+        if best_dep != sdb_id:
+            _swap_cluster_labels(out, sdb_id, best_dep)
+
+    return out
+
+
 def assign_segment_labels(df: pd.DataFrame, labels: np.ndarray) -> dict[int, str]:
     """Profile-derived one-to-one mapping of cluster index → canonical name.
 
@@ -127,7 +170,7 @@ def assign_segment_labels(df: pd.DataFrame, labels: np.ndarray) -> dict[int, str
     mapping = {int(cluster_ids[r]): label_names[c] for r, c in zip(rows, cols, strict=False)}
     for cluster_id in profiles.index:
         mapping.setdefault(int(cluster_id), f"segment_{int(cluster_id)}")
-    return mapping
+    return _repair_label_mapping(df, labels, mapping, profiles)
 
 
 FEATURE_COLUMNS = [
