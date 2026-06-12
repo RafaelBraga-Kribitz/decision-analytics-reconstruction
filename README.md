@@ -111,6 +111,7 @@ See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). Live URL verification: finding *
     </td>
     <td>
       <strong>Rafael Braga-Kribitz</strong><br />
+      Seiersberg-Pirka, Austria · Portfolio project, 2026<br />
       <a href="https://www.linkedin.com/in/rafaelbragakribitz/">LinkedIn</a>
       ·
       <a href="mailto:rafaelbragakribitz@gmail.com">rafaelbragakribitz@gmail.com</a>

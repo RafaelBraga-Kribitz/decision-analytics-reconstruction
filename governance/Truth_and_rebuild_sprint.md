@@ -18,7 +18,7 @@
 | `make lint` (ruff + black --check) | **PASS** |
 | F-008 (`check_radon_complexity_zero.py`) | **CL owns** — sprint note: possible regression `radon_complex_blocks=1` (do not fix in Sprint Agent pass) |
 | `make debt-scan` | **PASS** — baseline locked at 0 |
-| `make typecheck` | **18 pyright errors** (pre-existing pandas stubs; not introduced by F-008 work) |
+| `make typecheck` | **PASS** (pyright on module src) |
 | `make verify` | **FAIL** — F-021 deploy timeout (Deploy Agent); other sprint findings cleared |
 
 ### F-008 remediation (CL Agent)

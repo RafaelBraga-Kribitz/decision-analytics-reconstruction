@@ -15,15 +15,12 @@ import re
 from pathlib import Path
 
 import yaml
-
 from _governance_check import REPO_ROOT, gate
 
 MANIFEST_PATH = REPO_ROOT / "governance" / "FIGURE_MANIFEST.yaml"
 MODEL_MANIFEST = REPO_ROOT / "data" / "processed" / "model_run_manifest.json"
 EDA_GENERATOR = REPO_ROOT / "reports" / "eda" / "generate_eda.py"
-STREAMLIT_APP = (
-    REPO_ROOT / "module_a_population_segmentation" / "app" / "streamlit_dashboard.py"
-)
+STREAMLIT_APP = REPO_ROOT / "module_a_population_segmentation" / "app" / "streamlit_dashboard.py"
 SEGMENT_LABELS = REPO_ROOT / "data" / "processed" / "segment_labels.parquet"
 REPORT_DIRS = (
     REPO_ROOT / "reports" / "eda",
@@ -69,9 +66,7 @@ def main() -> int:
         model_doc = json.loads(MODEL_MANIFEST.read_text(encoding="utf-8"))
         model_commit = model_doc.get("git_commit")
         if manifest.get("git_commit") != model_commit:
-            gaps.append(
-                "FIGURE_MANIFEST git_commit does not match model_run_manifest.json"
-            )
+            gaps.append("FIGURE_MANIFEST git_commit does not match model_run_manifest.json")
         if manifest.get("run_id") != str(model_commit or "")[:12]:
             gaps.append("FIGURE_MANIFEST run_id must equal first 12 chars of git_commit")
 
@@ -105,7 +100,10 @@ def main() -> int:
 
     if EDA_GENERATOR.is_file():
         src = EDA_GENERATOR.read_text(encoding="utf-8")
-        if 'population_master_clean.parquet"' not in src and "population_master_clean.parquet" not in src:
+        has_parquet = (
+            'population_master_clean.parquet"' in src or "population_master_clean.parquet" in src
+        )
+        if not has_parquet:
             gaps.append("generate_eda.py must read data/processed/population_master_clean.parquet")
     else:
         gaps.append("missing reports/eda/generate_eda.py")
@@ -121,8 +119,10 @@ def main() -> int:
         gaps.append("missing module_a_population_segmentation/app/streamlit_dashboard.py")
 
     ok = not gaps
-    detail = "; ".join(gaps) if gaps else (
-        f"FIGURE_MANIFEST binds {len(on_disk)} PNGs to run_id={manifest.get('run_id')}"
+    detail = (
+        "; ".join(gaps)
+        if gaps
+        else (f"FIGURE_MANIFEST binds {len(on_disk)} PNGs to run_id={manifest.get('run_id')}")
     )
     return gate("F-050", Path(__file__).name, ok, detail)
 

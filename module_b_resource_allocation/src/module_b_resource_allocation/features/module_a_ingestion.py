@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Final
+from typing import Final, cast
 
 import numpy as np
 import pandas as pd
@@ -137,4 +137,4 @@ def department_media_profile(seg_dept: pd.DataFrame) -> pd.DataFrame:
         )
 
     profile = populated.groupby("department")[list(_REQUIRED_COLUMNS)].apply(_weighted)
-    return profile.clip(lower=0.0, upper=1.0)
+    return cast(pd.DataFrame, profile.clip(lower=0.0, upper=1.0))

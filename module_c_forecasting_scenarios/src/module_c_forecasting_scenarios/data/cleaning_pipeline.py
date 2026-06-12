@@ -56,10 +56,14 @@ def _load_m_star(calibration_series: str) -> float:
     return float(cal["anchors"][s]["margin_m_star_pp"])
 
 
-def _parse_publication_date(pub: object) -> object:
+def _parse_publication_date(pub: object) -> date:
+    if isinstance(pub, date):
+        return pub
     if hasattr(pub, "date"):
-        return pub.date()  # type: ignore[union-attr]
-    return pub
+        parsed = pub.date()  # type: ignore[union-attr]
+        if isinstance(parsed, date):
+            return parsed
+    return pd.to_datetime(pub).date()  # type: ignore[arg-type]
 
 
 def _parse_preference_pcts(r: pd.Series) -> tuple[float, float, float | None]:

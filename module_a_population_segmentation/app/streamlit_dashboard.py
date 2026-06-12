@@ -177,7 +177,8 @@ def main() -> None:
         else:
             st.info("QA report not found yet. Run cleaning pipeline first.")
         st.write(f"Rows loaded: {len(feat)}")
-        source = "live rebuild" if use_live_rebuild else "data/processed/population_master_clean.parquet"
+        default_path = "data/processed/population_master_clean.parquet"
+        source = "live rebuild" if use_live_rebuild else default_path
         st.write(f"Data source: {source}")
 
     with tab4:

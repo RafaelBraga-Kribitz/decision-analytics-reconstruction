@@ -15,9 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 DENY_PREFIXES: tuple[str, ...] = ("graphify-out/",)
 
 # Other paths under maintainer/ must not be tracked publicly (see manifest M10/M12).
-MAINTAINER_ALLOWED_PREFIXES: tuple[str, ...] = (
-    "maintainer/doc_debt/",
-)
+MAINTAINER_ALLOWED_PREFIXES: tuple[str, ...] = ("maintainer/doc_debt/",)
 
 
 def maintainer_path_allowed(path: str) -> bool:

@@ -27,15 +27,15 @@ Itapúa has the highest mean participation propensity of any department with sig
 
 **Double Down:**
 - **Youth Volatile (13.5% of population, propensity 0.60):** High reachability — the mobilisation opportunity. Digital-first (WhatsApp, Facebook), Jopara-friendly content, peer-to-peer activation via youth networks.
-- **Rural Committed (18.4% of population):** High propensity (0.63) but low reachability. Radio + canvassing investment here delivers premium returns per contact. Do not sacrifice these entities to cut costs.
+- **Rural Committed (9.1% of population):** High propensity (0.32) but low reachability. Radio + canvassing investment here delivers premium returns per contact. Do not sacrifice these entities to cut costs.
 
 **Maintain:**
-- **Urban High Volatility (13.1%):** Good reachability, propensity 0.63. Currently receiving fair budget share. No change needed — the strategy is working.
-- **Structurally Dependent Bloc (9.1%):** High rural, high NBI stress. Sensitive segment requiring careful messaging. Maintain current radio + community organiser approach.
+- **Urban High Volatility (19.2%):** Good reachability, propensity 0.87. Currently receiving fair budget share. No change needed — the strategy is working.
+- **Structurally Dependent Bloc (26.8%):** High rural, high NBI stress. Sensitive segment requiring careful messaging. Maintain current radio + community organiser approach.
 
 **Deprioritise:**
-- **Committed Opposition (19.2%):** Mean propensity 0.87, high B-preference strength. These are locked opposition-aligned entities. Any persuasion spend here is waste. Reallocate immediately.
-- **Rural Low Propensity (26.8%):** Propensity 0.53 — the hardest cohort to mobilise. Passive presence only — no active spend increases warranted.
+- **Committed Opposition (13.1%):** Mean propensity 0.63, high B-preference strength. These are locked opposition-aligned entities. Any persuasion spend here is waste. Reallocate immediately.
+- **Rural Low Propensity (18.4%):** Propensity 0.63 — the hardest cohort to mobilise. Passive presence only — no active spend increases warranted.
 
 ---
 
