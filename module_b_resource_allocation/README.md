@@ -1,3 +1,11 @@
+<p align="center">
+  <img
+    src="../docs/assets/module-b-deploy/module-b-hero-banner.png"
+    alt="Module B — Resource Allocation Engine: MILP allocation, department heatmaps, and FastAPI docs"
+    width="100%"
+  />
+</p>
+
 # Module B — Resource Allocation Engine
 
 Constrained linear/integer program (PuLP + CBC) allocating a multi-week budget across **18 geographic departments × 11 media channels**, maximizing persuasion-adjusted contact volume subject to reach caps, FX corridors, and municipality coverage constraints.

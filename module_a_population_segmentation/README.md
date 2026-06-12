@@ -1,3 +1,11 @@
+<p align="center">
+  <img
+    src="../docs/assets/module-a-deploy/module-a-hero-banner.png"
+    alt="Module A — Population Modeling and Segmentation: segment explorer, propensity calibration, and data-quality gates"
+    width="100%"
+  />
+</p>
+
 # Module A — Population Modeling and Segmentation
 
 Flagship module of the decision analytics reconstruction project.

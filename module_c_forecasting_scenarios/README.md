@@ -1,3 +1,11 @@
+<p align="center">
+  <img
+    src="../docs/assets/module-c-deploy/module-c-hero-banner.png"
+    alt="Module C — Probabilistic Forecasting and Scenario Analysis: posterior margin track, house effects, and Monte Carlo scenarios"
+    width="100%"
+  />
+</p>
+
 # Module C — Probabilistic Forecasting & Scenario Analysis
 
 Bayesian hierarchical aggregation of noisy, structurally biased survey measurements into a daily preference-proxy track with uncertainty bands. Monte Carlo shock-score engine maps posterior draws to interpretable decision scenarios.

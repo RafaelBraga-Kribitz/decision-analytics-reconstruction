@@ -97,3 +97,23 @@ Authority: `PROJECT_CHARTER.md`, `governance/AUDIT_PROCEDURE.md`, `governance/fi
 
 See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). Live URL verification: finding **F-021**
 (human platform auth required).
+
+## Author
+
+<table>
+  <tr>
+    <td width="110">
+      <img
+        src="docs/assets/Author_MDS_Rafael_Braga-Kribitz_kroped.png"
+        alt="Rafael Braga-Kribitz"
+        width="96"
+      />
+    </td>
+    <td>
+      <strong>Rafael Braga-Kribitz</strong><br />
+      <a href="https://www.linkedin.com/in/rafaelbragakribitz/">LinkedIn</a>
+      ·
+      <a href="mailto:rafaelbragakribitz@gmail.com">rafaelbragakribitz@gmail.com</a>
+    </td>
+  </tr>
+</table>
