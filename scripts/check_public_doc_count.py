@@ -26,6 +26,9 @@ OPERATOR_FILES = {
     "governance/SESSION_END.md",
     "governance/SESSION_HANDOUT.md",
     "governance/Truth_and_rebuild_sprint.md",
+    # Gate-evidence trail consumed by test_architecture_module_c_surface, not
+    # reviewer-facing narrative.
+    "module_c_forecasting_scenarios/reports/C_research_proof_table.md",
 }
 
 
