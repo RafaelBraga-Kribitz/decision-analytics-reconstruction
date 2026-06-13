@@ -1126,9 +1126,9 @@ The Monte Carlo module then propagates uncertainty through 10,000 draws across t
 - Department win probabilities are model outputs (~0.49–0.51 on current artifacts)
 - Committed Opposition segment's high B-preference strength is the primary persuasion-efficiency tail risk"""))
 
-# ── C1 — Forecast Timeline ───────────────────────────────────────────────────
+# ── C1 — Tracking Retrodiction ───────────────────────────────────────────────
 cells.append(code("""
-# C1 — Full Forecast Timeline: Posterior Mean + 94% HDI Band
+# C1 — Bayesian Tracking Retrodiction (2018 Series A): Posterior Mean + 94% HDI
 forecast["date"] = pd.to_datetime(forecast["date"])
 series_list = forecast["series_tag"].unique()
 palette_c   = {s: SEG_COLORS[i % 6] for i, s in enumerate(series_list)}
@@ -1150,7 +1150,7 @@ ax.axvline(election_date, color=COLOR["RED"], ls="--", lw=1.8, label="Election D
 ax.axhline(0, color=COLOR["CHARCOAL"], lw=0.8, ls=":")
 ax.set_xlabel("Date")
 ax.set_ylabel("Posterior Preference Margin (pp)")
-ax.set_title("C1 — Bayesian Tracking: Posterior Mean Preference Margin + 94% HDI",
+ax.set_title("C1 — Bayesian Tracking Retrodiction: Posterior Mean Preference Margin + 94% HDI",
              fontweight=700)
 ax.legend(fontsize=9)
 ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%b %d"))

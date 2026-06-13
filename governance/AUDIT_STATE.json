@@ -101,12 +101,12 @@
     },
     {
       "category": "fake_completion",
-      "closed_at": "2026-06-11",
+      "closed_at": null,
       "id": "F-021",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-08",
       "path": "governance/findings/F-021-live-deployment-urls.yaml",
-      "status": "closed",
+      "status": "open",
       "title": "Public deployment badges point to non-live URLs",
       "verification_script": "scripts/check_live_deployment_urls.py"
     },
@@ -373,23 +373,34 @@
       "status": "open",
       "title": "Severe chart/inference issues sit unfiled while the queue reports empty",
       "verification_script": "scripts/check_triage_backlog_filed.py"
+    },
+    {
+      "category": "misleading_visualization",
+      "closed_at": "2026-06-13",
+      "id": "F-055",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-13",
+      "path": "governance/findings/F-055-module-c-forecast-retrodiction-label.yaml",
+      "status": "closed",
+      "title": "Module C C1 timeline mislabelled a retrodiction as a forecast with the verified anchor undrawn",
+      "verification_script": "scripts/check_module_c_forecast_retrodiction.py"
     }
   ],
-  "generated_at": "2026-06-13T02:15:00.822417+00:00",
-  "git_branch": "claude/great-brahmagupta-pkbqac",
-  "git_head_sha": "31ef0635896eccd71cbac1d36567c96e96362135",
+  "generated_at": "2026-06-13T12:14:34.073150+00:00",
+  "git_branch": "claude/funny-heisenberg-w3mw7h",
+  "git_head_sha": "6e6a749572ba7e5df6c40d8850ec9d33fa5d9fa7",
   "migrations": [],
   "summary": {
     "findings_closed": 31,
     "findings_closed_historical": 2,
     "findings_in_progress": 0,
-    "findings_open": 1,
-    "findings_total": 34,
+    "findings_open": 2,
+    "findings_total": 35,
     "findings_wont_fix": 0,
     "migrations_in_progress": 0,
     "migrations_total": 0,
     "open_by_category": {
-      "fake_completion": 1
+      "fake_completion": 2
     }
   },
   "validation_errors": [],

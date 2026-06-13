@@ -172,8 +172,8 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 ## Module C: Forecasting & Scenarios
 
-### C1 — Full Forecast Timeline
-**What it shows:** 142-day Bayesian preference margin timeline with 94% HDI bands.
+### C1 — Bayesian Tracking Retrodiction (2018 Series A)
+**What it shows:** 142-day Bayesian preference-margin *retrodiction* — in-sample tracking of the past 2018 Series A window, read against the verified +3.70 pp TSJE outcome anchor (drawn on the panel), **not** an out-of-sample forecast — with 94% HDI bands.
 **Key finding:** Candidate A's posterior mean preference margin closes near **3.7 pp** on fixture polls (Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp). The 94% HDI is wide (2.9 to 4.6 pp), reflecting only 4 survey measurement waves.
 **Strategic implication:** The lead is robust but the HDI is wide — more polling waves would dramatically tighten the uncertainty bounds. The campaign should commission 2–3 additional poll waves in the final 6 weeks.
 

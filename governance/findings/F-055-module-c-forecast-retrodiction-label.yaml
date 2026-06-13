@@ -1,0 +1,41 @@
+id: F-055
+title: "Module C C1 timeline mislabelled a retrodiction as a forecast with the verified anchor undrawn"
+category: misleading_visualization
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-13
+closed_at: 2026-06-13
+recurrence_count: 0
+evidence: |
+  governance/ISSUE_TRIAGE_MASTER.yaml AUD-C1 (severity critical, blocks AUD-C2):
+  reports/eda/generate_eda.py chart_c1 titled the panel "C1 — Bayesian Forecast
+  Timeline" and drew the terminal posterior mean as an unlabelled gold line. The
+  series is an in-sample Bayesian *tracking retrodiction* of the 2018 Series A
+  window — a past election whose verified outcome (+3.70 pp, the TSJE anchor) is
+  the calibration target — not an out-of-sample forecast. Calling it a "forecast"
+  overstates predictive power, and leaving the verified anchor undrawn hides the
+  retrodiction-vs-truth relationship a senior reviewer would demand. This is the
+  prerequisite for AUD-C2 (terminal posterior borrowed from anchor).
+verification_script: scripts/check_module_c_forecast_retrodiction.py
+notes: |
+  Fix (reports/eda/generate_eda.py chart_c1 + C1 narrative):
+  - Title is now "Bayesian Tracking Retrodiction ... (in-sample reconstruction of
+    a past election, not an out-of-sample forecast)"; the phrase "Forecast
+    Timeline" no longer appears in the generator.
+  - The verified TSJE Series A outcome (+3.70 pp, shared TSJE_ANCHOR_PP constant)
+    is drawn as a labelled gold reference line, replacing the unlabelled
+    terminal posterior-mean line.
+  - An on-chart disclosure states the panel is a retrodiction on fixture polls,
+    not a forward forecast.
+
+  Sibling generator reports/eda/build_notebook.py and the committed
+  reports/eda/eda_report.md / paraguay_election_eda.ipynb headings were
+  de-mislabelled to match. The canonical PNG is rebuilt from the fixed generator
+  by `make pipeline-full` and bound by F-050 lineage (same regeneration model as
+  F-053 — the chart fix is the source edit; data/processed is gitignored).
+
+  Verification is a source-level static check (no data dependency): negative
+  test confirms the pre-fix generator fails all five invariants.
+
+  Resolves the AUD-C1 row of ISSUE_TRIAGE_MASTER. AUD-C2 (the borrowed-anchor
+  terminal posterior it blocks) remains open and is a separate one-finding PR.
