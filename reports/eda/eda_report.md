@@ -139,7 +139,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 **Strategic implication:** The front-loaded direct spend may be losing impact by the time election day arrives. Consider shifting 10–15% of bilateral budget from weeks 1–3 to weeks 11–13 to maintain turnout pressure in the final push.
 
 ### B3 — Broadcast vs Direct Budget Split
-**What it shows:** Stacked area chart comparing broadcast vs. bilateral budget by week, and scenario comparison.
+**What it shows:** Left: the two budget scenarios (Baseline vs Broadcast→Direct) compared as separate lines — they are mutually exclusive, so they are never stacked into a meaningless total. Right: the within-baseline broadcast vs bilateral split (legitimate components of one budget) as a stacked area.
 **Key finding:** Baseline allocates 47.5% broadcast / 52.5% bilateral. The broadcast-to-direct scenario shifts this further but does not produce additional persuasion contacts (alloc_mean_persuasion_contacts = 0 in all MC draws), suggesting a possible pipeline data gap.
 **Strategic implication:** Until the persuasion contact column is validated for the broadcast-to-direct scenario, treat that scenario's efficiency claims with caution. The baseline split appears operationally sound.
 
@@ -177,9 +177,9 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 **Key finding:** Candidate A's posterior mean preference margin closes near **3.7 pp** on fixture polls (Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp). The 94% HDI is wide (2.9 to 4.6 pp), reflecting only 4 survey measurement waves.
 **Strategic implication:** The lead is robust but the HDI is wide — more polling waves would dramatically tighten the uncertainty bounds. The campaign should commission 2–3 additional poll waves in the final 6 weeks.
 
-### C2 — Final Day Posterior Distribution
-**What it shows:** Approximate posterior margin distribution at election date (April 21, 2018).
-**Key finding:** Final mean margin is 3.7 pp. The 5th percentile is still positive (approximately +3 pp), indicating Candidate A wins under virtually all plausible scenarios. The 95th percentile margin exceeds 30 pp.
+### C2 — Calibrated Terminal Posterior Distribution
+**What it shows:** Terminal (election-eve) posterior margin — mean + 94% HDI. The terminal latent margin is *pinned to the verified outcome anchor* m★ = +3.70 pp by a soft likelihood term (σ = 0.5 pp; `models/tracking/hierarchical.py`), so the posterior sits near m★ **by construction**, not by independent out-of-sample agreement.
+**Key finding:** Calibrated final mean margin is 3.7 pp (illustrative fixture model output — not a verified outcome). Read the proximity to +3.70 pp as a calibration target the model was pinned to, not a forecast that independently recovered the result. Out-of-sample skill is evaluated separately in walk-forward, where the anchor is withheld.
 **Strategic implication:** The campaign is in a "protecting the lead" posture. The strategic priority shifts from persuasion to turnout maximisation among A-leaning segments, particularly Youth Volatile and Rural Committed.
 
 ### C3 — Battleground Department Win Probability
@@ -192,13 +192,13 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 **Key finding:** ATI/Snead has a large negative bias (−5.1 pp, HDI entirely negative), meaning their polls systematically understate A's lead. ICA has positive bias (+3.8 pp). CAPLI is the most neutral pollster.
 **Strategic implication:** Never cite raw ATI/Snead polls in communications — they will appear worse than reality. CAPLI should be the reference pollster for public-facing narratives. The campaign analytics team should routinely adjust all external poll reports for these biases.
 
-### C5 — Monte Carlo Scenario Fan Chart
-**What it shows:** Percentile bands of shock scale over 10,000 Monte Carlo draws.
+### C5 — Shock Scale Distribution by Scenario
+**What it shows:** Shock-scale distribution per scenario bucket (box + jittered draws). Monte-Carlo draws are *exchangeable*, so a percentile fan over a draw index would be a meaningless x-axis.
 **Key finding:** Baseline scenario draws cluster tightly around shock_scale ≈ 0.987 (low volatility). Extreme Tracker scenario has draws at shock_scale ≈ 1.83 and 2.43, indicating significantly higher electoral volatility assumed in that scenario.
 **Strategic implication:** The extreme tracker scenario requires campaign stress-testing — if late-breaking events cause a 2x shock scale swing, what is the impact on persuasion contacts and turnout? Model this explicitly for contingency planning.
 
 ### C6 — Shock Scale Distribution by Scenario
-**What it shows:** Overlaid KDE of shock_scale for each scenario bucket.
+**What it shows:** Histogram of shock_scale per scenario bucket with dotted markers at each discrete point mass — no KDE, because smoothing would fabricate continuous density that is not in the data.
 **Key finding:** Baseline has two point-mass clusters at 0.987 and 0.590, suggesting a discrete scenario design rather than continuous draws. Extreme Tracker similarly clusters at 1.83 and 2.43. The MC architecture uses deterministic scenario parameters with draw-level randomness elsewhere.
 **Strategic implication:** The shock scale design is scenario-discrete, not continuously random — this limits the model's ability to capture smooth intermediate risk scenarios. A continuous shock prior would be more realistic for final-week planning.
 
@@ -213,12 +213,12 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 **Strategic implication:** The combination of high propensity + high win probability identifies "safe yield" departments (San Pedro, Cordillera, Misiones). These departments can deliver high turnout at low persuasion cost — mobilisation spend here has the best ROI.
 
 ### C9 — Polling Transparency Audit
-**What it shows:** Transparency score vs. house effect magnitude for each pollster.
-**Key finding:** ATI/Snead has the highest transparency (phi=1.0) but the largest house effect magnitude (5.1 pp). ICA has intermediate transparency (0.79) and 3.8 pp bias. CAPLI has low transparency (0.37) but near-zero bias.
-**Strategic implication:** Transparency does not predict bias — ATI/Snead is the most methodologically transparent yet most biased. The campaign should apply bias corrections independent of transparency ratings.
+**What it shows:** Transparency score vs. house-effect magnitude, one point per pollster (n=3 pollsters — a per-pollster audit, not a fitted trend).
+**Key finding:** Across the three fixture pollsters, ATI/Snead pairs the highest transparency (phi=1.0) with the largest |house effect| (5.1 pp), while CAPLI pairs low transparency (0.37) with near-zero bias. With n=3, no transparency–bias relationship can be inferred — read this as an audit, not evidence of a rule.
+**Strategic implication:** Apply bias corrections per pollster regardless of transparency rating; do not infer a transparency→bias rule from three points.
 
-### C10 — MC Win Probability Histogram
-**What it shows:** Distribution of shock_scale across all 10,000 MC draws by scenario bucket.
+### C10 — MC Shock-Scale Distribution (legacy filename)
+**What it shows:** Distribution of shock_scale across all MC draws by scenario bucket. The committed filename references "win probability", but this panel does **not** derive P(win) — Candidate-A win probability is C3 / C8.
 **Key finding:** Draws are split across 3 canonical buckets (baseline (3,334), extreme_tracker (3,333), compounded_herd (3,333)); shock-scale distributions are multimodal by design of the discrete scenario catalog.
 **Strategic implication:** Resource buffers and contingency plans should be stress-tested against the extreme-tracker bucket (1.8–2.4× baseline shock sensitivity) — not just the ±10% band around baseline.
 
@@ -246,10 +246,10 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 **Key finding:** Central, Caaguazu, and Itapúa score highest on the composite priority index. Misiones, Neembucú, and Caazapá score lowest despite reasonable win probabilities, primarily due to lower propensity and smaller budget allocations.
 **Strategic implication:** Caaguazu is underweighted relative to its priority score — it ranks 3rd in composite priority but only 5th in total budget. A budget rebalancing toward Caaguazu would improve overall campaign efficiency.
 
-### S5 — Campaign Efficiency Frontier
-**What it shows:** Reach utilisation vs. total persuasion contacts by department, bubble = budget.
-**Key finding:** Most departments cluster in the low-utilisation / low-contacts quadrant, with Central and Alto Paraná as positive outliers. No department achieves both high reach utilisation AND high persuasion contacts simultaneously.
-**Strategic implication:** The efficiency frontier is not being achieved. Departments with moderate reach utilisation but very few persuasion contacts (e.g., Concepción, Misiones) may be experiencing a channel-segment mismatch — channels selected are not penetrating the dominant behavioral segments in those areas.
+### S5 — Reach Utilisation vs Persuasion Contacts (descriptive)
+**What it shows:** Reach utilisation vs. total persuasion-adjusted contacts by department (bubble = budget), with a descriptive OLS trend line — *not* a Pareto efficiency frontier (the non-dominated envelope).
+**Key finding:** Most departments cluster in the low-utilisation / low-contacts region, with Central and Alto Paraná as positive outliers. No department reaches both high reach utilisation AND high persuasion contacts.
+**Strategic implication:** Departments with moderate reach utilisation but very few persuasion contacts (e.g., Concepción, Misiones) may have a channel–segment mismatch — the channels selected are not penetrating the dominant behavioural segments there. (Descriptive trend, not a frontier-optimality claim.)
 
 ---
 
