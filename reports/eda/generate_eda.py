@@ -1404,47 +1404,48 @@ chart_c4()
 
 @safe_chart("C5")
 def chart_c5():
-    """C5: Monte Carlo scenario fan chart (percentile bands by scenario bucket)."""
-    # Use shock_scale as the x-axis proxy across draws, grouping by scenario
-    buckets = mc_draws["scenario_bucket"].unique()
-    bucket_colors = {b: c for b, c in zip(buckets, [RED, BLUE, GREEN, ORANGE])}
+    """C5: shock-scale distribution by scenario bucket.
+
+    Monte-Carlo draws are *exchangeable* — they carry no temporal or otherwise
+    meaningful ordering — so a percentile "fan" over a draw-block index is a
+    meaningless x-axis (AUD-C5). This panel shows the shock-scale distribution
+    per scenario bucket (box + jittered draws); near-deterministic scenarios
+    collapse to a point, which is the honest signal.
+    """
+    buckets = list(mc_draws["scenario_bucket"].unique())
+    colors = [[RED, BLUE, GREEN, ORANGE, PURPLE][i % 5] for i in range(len(buckets))]
+    series = [
+        mc_draws.loc[mc_draws["scenario_bucket"] == b, "shock_scale"].to_numpy() for b in buckets
+    ]
+    positions = list(range(1, len(buckets) + 1))
 
     fig, ax = plt.subplots(figsize=(11, 5))
+    bp = ax.boxplot(series, positions=positions, widths=0.5, showfliers=False, patch_artist=True)
+    for patch, color in zip(bp["boxes"], colors):
+        patch.set_facecolor(color)
+        patch.set_alpha(0.35)
+    rng = np.random.default_rng(42)
+    for pos, vals, color in zip(positions, series, colors):
+        jitter = (rng.random(len(vals)) - 0.5) * 0.3
+        ax.scatter(np.full(len(vals), pos) + jitter, vals, s=6, color=color, alpha=0.35, zorder=3)
 
-    # Sort draws by draw_id and compute running percentiles of shock_scale
-    mc_sorted = mc_draws.sort_values("draw_id")
-    chunk_size = 250
-    chunks = [mc_sorted.iloc[i : i + chunk_size] for i in range(0, len(mc_sorted), chunk_size)]
-
-    for bucket in buckets:
-        chunk_medians = []
-        chunk_p10, chunk_p90 = [], []
-        chunk_p25, chunk_p75 = [], []
-        xs = []
-        for ci, chunk in enumerate(chunks):
-            sub = chunk[chunk["scenario_bucket"] == bucket]["shock_scale"]
-            if len(sub) == 0:
-                continue
-            chunk_medians.append(np.median(sub))
-            chunk_p10.append(np.percentile(sub, 10))
-            chunk_p90.append(np.percentile(sub, 90))
-            chunk_p25.append(np.percentile(sub, 25))
-            chunk_p75.append(np.percentile(sub, 75))
-            xs.append(ci)
-
-        if not xs:
-            continue
-        color = bucket_colors.get(bucket, GREY)
-        ax.plot(xs, chunk_medians, color=color, lw=2, label=bucket)
-        ax.fill_between(xs, chunk_p25, chunk_p75, color=color, alpha=0.25)
-        ax.fill_between(xs, chunk_p10, chunk_p90, color=color, alpha=0.10)
-
-    ax.set_xlabel("Draw Chunk (250-draw blocks)")
+    ax.set_xticks(positions)
+    ax.set_xticklabels(buckets, rotation=20, ha="right")
+    ax.set_xlabel("Scenario Bucket")
     ax.set_ylabel("Shock Scale")
     ax.set_title(
-        "C5 — Monte Carlo Scenario Fan Chart\n(Shock Scale Percentile Bands by Scenario Bucket)"
+        "C5 — Shock Scale by Scenario Bucket\n"
+        "(MC draws are exchangeable — distribution per scenario, not a time fan)"
     )
-    ax.legend(title="Scenario")
+    ax.annotate(
+        "Monte-Carlo draws have no temporal order, so a percentile fan over a draw index "
+        "would be meaningless. Near-deterministic scenarios collapse to a point.",
+        xy=(0.5, -0.28),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
+    )
     annotate_source(ax)
     fig.tight_layout()
     save_fig(fig, "C5_mc_scenario_fan_chart.png")
@@ -1455,28 +1456,40 @@ chart_c5()
 
 @safe_chart("C6")
 def chart_c6():
-    """C6: Shock scale distribution per scenario bucket (overlaid KDE)."""
-    from scipy.stats import gaussian_kde
+    """C6: shock-scale distribution per scenario bucket (discrete-aware, no KDE).
 
+    Scenario shock_scale draws cluster at a few point masses (near-deterministic
+    scenario design), so a smooth Gaussian KDE invented continuous density that
+    is not in the data (AUD-C6). This panel uses a plain histogram plus an
+    explicit dotted marker at each actual point mass instead.
+    """
     buckets = mc_draws["scenario_bucket"].unique()
     bucket_colors = dict(zip(buckets, [RED, BLUE, GREEN, ORANGE, PURPLE]))
 
     fig, ax = plt.subplots(figsize=(10, 5))
     for bucket in buckets:
-        data = mc_draws.loc[mc_draws["scenario_bucket"] == bucket, "shock_scale"].values
+        data = mc_draws.loc[mc_draws["scenario_bucket"] == bucket, "shock_scale"].to_numpy()
         color = bucket_colors.get(bucket, GREY)
-        ax.hist(data, bins=40, density=True, alpha=0.35, color=color)
-        if len(np.unique(data)) > 2:
-            kde = gaussian_kde(data)
-            xs = np.linspace(data.min() - 0.2, data.max() + 0.2, 300)
-            ax.plot(xs, kde(xs), color=color, lw=2.5, label=bucket)
-        else:
-            ax.axvline(data[0], color=color, lw=2.5, label=f"{bucket} (point mass={data[0]:.3f})")
+        ax.hist(data, bins=40, density=True, alpha=0.35, color=color, label=bucket)
+        # Mark the discrete point mass(es) honestly instead of KDE-smoothing them.
+        for value in np.unique(data)[:6]:
+            ax.axvline(value, color=color, lw=1.2, ls=":", alpha=0.9)
 
     ax.set_xlabel("Shock Scale")
-    ax.set_ylabel("Density")
-    ax.set_title("C6 — Shock Scale Distribution by Scenario Bucket (KDE)")
+    ax.set_ylabel("Density (histogram)")
+    ax.set_title(
+        "C6 — Shock Scale Distribution by Scenario Bucket\n(discrete point masses — no KDE smoothing)"
+    )
     ax.legend(title="Scenario Bucket")
+    ax.annotate(
+        "Scenario shock_scale is near-deterministic (discrete point masses); a smooth KDE would "
+        "fabricate continuous density. Dotted lines mark the actual point masses.",
+        xy=(0.5, -0.24),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
+    )
     annotate_source(ax)
     fig.tight_layout()
     save_fig(fig, "C6_shock_scale_distribution.png")
@@ -1605,12 +1618,25 @@ def chart_c9():
 
     ax.set_xlabel("Mean Transparency Score (phi)")
     ax.set_ylabel("|House Effect| (pp)")
-    ax.set_title("C9 — Polling Transparency vs House Effect Magnitude")
+    n_pollsters = len(he_merged)
+    ax.set_title(
+        f"C9 — Polling Transparency vs House Effect Magnitude\n"
+        f"(per-pollster audit, n={n_pollsters} pollsters — not a fitted trend)"
+    )
     ax.set_xlim(-0.05, 1.15)
 
     red_p = mpatches.Patch(color=RED, label="|HE| > 3 pp (high bias risk)")
     blue_p = mpatches.Patch(color=BLUE, label="|HE| <= 3 pp (moderate)")
     ax.legend(handles=[red_p, blue_p])
+    ax.annotate(
+        f"n = {n_pollsters} pollsters — far too few to infer a transparency-bias relationship; "
+        "read as a per-pollster audit, not a trend.",
+        xy=(0.5, -0.2),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
+    )
     annotate_source(ax)
     fig.tight_layout()
     save_fig(fig, "C9_polling_transparency_audit.png")
@@ -1621,13 +1647,16 @@ chart_c9()
 
 @safe_chart("C10")
 def chart_c10():
-    """C10: Monte Carlo win-probability histogram across all draws."""
-    # Derive win probability per draw: win if shock_scale > median baseline
+    """C10: Monte Carlo shock-scale distribution by scenario (NOT win probability).
+
+    The committed filename (``C10_mc_win_probability_histogram.png``) is a legacy
+    misnomer: this panel histograms shock_scale per scenario — it does not derive
+    P(win). Candidate-A win probability lives in C3 / C8 (AUD-C10).
+    """
     baseline_median = mc_draws.loc[
         mc_draws["scenario_bucket"] == "baseline", "shock_scale"
     ].median()
 
-    # Use a simple proxy: fraction of draws above baseline level per scenario
     buckets = mc_draws["scenario_bucket"].unique()
     bucket_colors = dict(zip(buckets, [RED, BLUE, GREEN, ORANGE, PURPLE]))
 
@@ -1655,9 +1684,19 @@ def chart_c10():
     ax.set_xlabel("Shock Scale")
     ax.set_ylabel("Density")
     ax.set_title(
-        f"C10 — Monte Carlo Scenario Draw Distribution\n(Shock Scale across {len(mc_draws):,} Draws)"
+        f"C10 — Monte Carlo Shock-Scale Distribution by Scenario\n"
+        f"(shock scale across {len(mc_draws):,} draws — not win probability; P(win) → C3/C8)"
     )
     ax.legend(title="Scenario Bucket")
+    ax.annotate(
+        "Legacy filename says 'win_probability', but this panel shows the shock-scale "
+        "distribution. Candidate-A win probability is C3 / C8, not derived here.",
+        xy=(0.5, -0.22),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
+    )
     annotate_source(ax)
     fig.tight_layout()
     save_fig(fig, "C10_mc_win_probability_histogram.png")
@@ -2456,13 +2495,13 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 **Key finding:** ATI/Snead has a large negative bias (−5.1 pp, HDI entirely negative), meaning their polls systematically understate A's lead. ICA has positive bias (+3.8 pp). CAPLI is the most neutral pollster.
 **Strategic implication:** Never cite raw ATI/Snead polls in communications — they will appear worse than reality. CAPLI should be the reference pollster for public-facing narratives. The campaign analytics team should routinely adjust all external poll reports for these biases.
 
-### C5 — Monte Carlo Scenario Fan Chart
-**What it shows:** Percentile bands of shock scale over 10,000 Monte Carlo draws.
-**Key finding:** Baseline scenario draws cluster tightly around shock_scale ≈ 0.987 (low volatility). Extreme Tracker scenario has draws at shock_scale ≈ 1.83 and 2.43, indicating significantly higher electoral volatility assumed in that scenario.
+### C5 — Shock Scale Distribution by Scenario
+**What it shows:** Shock-scale distribution per scenario bucket (box + jittered draws). Monte-Carlo draws are *exchangeable*, so a percentile fan over a draw index would be a meaningless x-axis.
+**Key finding:** Baseline scenario draws cluster tightly around shock_scale ≈ 0.987 (low volatility); the Extreme Tracker scenario sits at ≈ 1.83 and 2.43. Near-deterministic scenarios collapse to a point — the honest signal of a discrete scenario catalogue.
 **Strategic implication:** The extreme tracker scenario requires campaign stress-testing — if late-breaking events cause a 2x shock scale swing, what is the impact on persuasion contacts and turnout? Model this explicitly for contingency planning.
 
 ### C6 — Shock Scale Distribution by Scenario
-**What it shows:** Overlaid KDE of shock_scale for each scenario bucket.
+**What it shows:** Histogram of shock_scale per scenario bucket with dotted markers at each discrete point mass — no KDE, because smoothing would fabricate continuous density that is not in the data.
 **Key finding:** Baseline has two point-mass clusters at 0.987 and 0.590, suggesting a discrete scenario design rather than continuous draws. Extreme Tracker similarly clusters at 1.83 and 2.43. The MC architecture uses deterministic scenario parameters with draw-level randomness elsewhere.
 **Strategic implication:** The shock scale design is scenario-discrete, not continuously random — this limits the model's ability to capture smooth intermediate risk scenarios. A continuous shock prior would be more realistic for final-week planning.
 
@@ -2477,12 +2516,12 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 **Strategic implication:** The combination of high propensity + high win probability identifies "safe yield" departments (San Pedro, Cordillera, Misiones). These departments can deliver high turnout at low persuasion cost — mobilisation spend here has the best ROI.
 
 ### C9 — Polling Transparency Audit
-**What it shows:** Transparency score vs. house effect magnitude for each pollster.
-**Key finding:** ATI/Snead has the highest transparency (phi=1.0) but the largest house effect magnitude (5.1 pp). ICA has intermediate transparency (0.79) and 3.8 pp bias. CAPLI has low transparency (0.37) but near-zero bias.
-**Strategic implication:** Transparency does not predict bias — ATI/Snead is the most methodologically transparent yet most biased. The campaign should apply bias corrections independent of transparency ratings.
+**What it shows:** Transparency score vs. house-effect magnitude, one point per pollster (n=3 pollsters — a per-pollster audit, not a fitted trend).
+**Key finding:** Across the three fixture pollsters, ATI/Snead pairs the highest transparency (phi=1.0) with the largest |house effect| (5.1 pp), while CAPLI pairs low transparency (0.37) with near-zero bias. With n=3, no transparency–bias relationship can be inferred — read this as an audit, not evidence of a rule.
+**Strategic implication:** Apply bias corrections per pollster regardless of transparency rating; do not infer a transparency→bias rule from three points.
 
-### C10 — MC Win Probability Histogram
-**What it shows:** Distribution of shock_scale across all 10,000 MC draws by scenario bucket.
+### C10 — MC Shock-Scale Distribution (legacy filename)
+**What it shows:** Distribution of shock_scale across all MC draws by scenario bucket. The committed filename references "win probability", but this panel does **not** derive P(win) — Candidate-A win probability is C3 / C8.
 **Key finding:** Draws are split across {len(_mc_bucket_counts)} canonical buckets ({_mc_bucket_desc}); shock-scale distributions are multimodal by design of the discrete scenario catalog.
 **Strategic implication:** Resource buffers and contingency plans should be stress-tested against the extreme-tracker bucket (1.8–2.4× baseline shock sensitivity) — not just the ±10% band around baseline.
 

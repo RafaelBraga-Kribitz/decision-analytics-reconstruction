@@ -175,12 +175,12 @@ chart_audit_2026_06:
     - {id: AUD-C2, status: verified_closed, finding: F-056, severity: critical, title: C2 terminal posterior borrowed from anchor}
     - {id: AUD-C3, status: verified_closed, finding: F-053, title: C3 dept win prob (full 0-1 axis, illustrative label)}
     - {id: AUD-C4, status: open_unfiled, severity: rework, title: C4 vs table house-effect inconsistency}
-    - {id: AUD-C5, status: open_unfiled, severity: reject, title: C5 fan chart meaningless x-axis}
-    - {id: AUD-C6, status: open_unfiled, severity: reject, title: C6 KDE on point masses}
+    - {id: AUD-C5, status: verified_closed, finding: F-057, severity: reject, title: C5 fan chart meaningless x-axis}
+    - {id: AUD-C6, status: verified_closed, finding: F-057, severity: reject, title: C6 KDE on point masses}
     - {id: AUD-C7, status: open_unfiled, severity: rework, title: C7 exit model null coefficients unlabeled}
     - {id: AUD-C8, status: verified_closed, finding: F-053, title: C8/C8_v2 win-prob axis widened to 0-1 (F-053)}
-    - {id: AUD-C9, status: open_unfiled, severity: reject, title: C9 n=3 transparency scatter}
-    - {id: AUD-C10, status: open_unfiled, severity: reject, title: C10 filename promises P(win) histogram}
+    - {id: AUD-C9, status: verified_closed, finding: F-058, severity: reject, title: C9 n=3 transparency scatter}
+    - {id: AUD-C10, status: verified_closed, finding: F-059, severity: reject, title: C10 filename promises P(win) histogram}
     - {id: AUD-PPC, status: open_unfiled, severity: approved_revisions, title: PPC n=4 promote with firm labels}
     - {id: AUD-REL, status: open_unfiled, severity: rework, title: Reliability diagram missing disclaimer on PNG}
   module_b:
