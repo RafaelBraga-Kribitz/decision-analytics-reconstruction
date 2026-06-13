@@ -1,0 +1,22 @@
+id: F-046
+title: "Stale orphan EDA PNGs contradict canonical pipeline outputs"
+category: fake_completion
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-12
+closed_at: 2026-06-12
+recurrence_count: 0
+evidence: |
+  Phase 2 chart audit (2026-06-12): reports/eda/eda_overview.png and C8_v2.png
+  exist on disk but are not emitted by reports/eda/generate_eda.py.
+  eda_overview panel "Battleground" shows P(Win) ≈ 79–80% and margin ≈ 15 pp;
+  canonical C3/C1 from current data/processed show P(Win) ≈ 49–51% and margin
+  ≈ 3.7 pp. C8_v2 uses the same stale ~80% win-probability band and flat
+  propensity 0.613 — misleading if committed beside regenerated A/B/C/S charts.
+  No repo reference generates or documents these files (grep: zero hits).
+verification_script: scripts/check_eda_stale_orphan_pngs.py
+notes: |
+  Triage: distinct from F-040 (pipeline wiring closed). Remediation: regenerate
+  orphans from generate_eda.py manifest; never commit hand-exported dashboards.
+  2026-06-12 rebuild: eda_overview is empirical-inputs-only (no model panels,
+  no truncated battleground axis); gated by check_eda_stale_orphan_pngs.py.

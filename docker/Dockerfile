@@ -21,7 +21,6 @@ COPY module_b_resource_allocation /app/module_b_resource_allocation
 COPY module_c_forecasting_scenarios /app/module_c_forecasting_scenarios
 COPY schema_contracts /app/schema_contracts
 COPY reports /app/reports
-COPY appendix /app/appendix
 COPY scripts /app/scripts
 COPY tests /app/tests
 

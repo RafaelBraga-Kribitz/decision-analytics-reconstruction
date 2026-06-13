@@ -14,7 +14,7 @@ Run `poetry install --extras explainability` (adds SHAP) then `poetry run python
 Gate targets are the verified TSJE 2018 departmental rates (T11-1 full table)
 and MUST match `config/calibration_anchors.yaml` and
 `schema_contracts/participation_propensity.yaml` — synced by CI test
-`tests/test_anchor_schema_sync.py`. Department means are rake-exact by
+`module_a_population_segmentation/tests/test_anchor_schema_sync.py`. Department means are rake-exact by
 construction (see Known limitations), so A10 verifies the rake executed, not
 model skill.
 

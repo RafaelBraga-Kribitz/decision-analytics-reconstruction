@@ -238,7 +238,9 @@ jobs:
         run: poetry install --extras tracking
       - name: DVC version
         run: poetry run dvc version
-      - name: DVC pipeline dry-run (validates dvc.yaml syntax)
-        run: poetry run dvc repro --dry
+      - name: DVC pipeline structure (dag + dvc.yaml lock)
+        run: |
+          poetry run dvc dag
+          poetry run pytest tests/test_dvc_pipeline_config.py -q --no-header
       - name: Terminology sample check
         run: poetry run python scripts/check_terminology.py

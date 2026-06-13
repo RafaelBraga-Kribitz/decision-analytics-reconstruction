@@ -1,0 +1,22 @@
+id: F-047
+title: "Module A model-card chart artifacts missing from reports/"
+category: fake_completion
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-12
+closed_at: 2026-06-12
+recurrence_count: 0
+evidence: |
+  module_a_population_segmentation/reports/model_card_propensity.md:10 instructs
+  readers to emit reports/module_a/shap_summary.png via
+  scripts/generate_module_a_shap.py — file absent on disk after pipeline-full.
+  Model card § Limitations cites the reliability diagram as the most meaningful
+  calibration signal, but only Streamlit renders it; no
+  reports/module_a/reliability_diagram.png export exists. Makefile pipeline-full
+  runs generate_eda.py but does not wire Module A explainability/calibration PNGs.
+  Maintainer acceptance (Project_Action_list_full.md) expected saved SHAP plot.
+verification_script: scripts/check_module_a_report_charts.py
+notes: |
+  Remediation options: (1) add make module-a-report-charts target called from
+  pipeline-full; (2) export reliability via calibration_curves.py; (3) upgrade
+  generate_module_a_shap.py to use exported feature matrix (not toy linear demo).

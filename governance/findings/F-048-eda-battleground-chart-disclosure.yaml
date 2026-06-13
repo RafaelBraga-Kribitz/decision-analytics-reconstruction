@@ -1,0 +1,22 @@
+id: F-048
+title: "EDA battleground charts omit illustrative-mapping disclosure in titles"
+category: fake_completion
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-12
+closed_at: 2026-06-12
+recurrence_count: 0
+evidence: |
+  F-045 closed epistemic_boundaries.md + geo/heatmap.py labeling only.
+  reports/eda/generate_eda.py chart_c3/chart_c8 titles read "Battleground
+  Department Win Probability" with red/blue above/below 50% styling while
+  battleground spread is σ≈0.006 (49.1%–51.0%) from synthetic noise in
+  geo/heatmap.py — visually implying geographic differentiation that is not
+  model-identified. build_notebook.py mirrors the same titles for Quarto/notebook
+  consumers. S4 department priority matrix also consumes win_probability_a without
+  subtitle disclosure (extend fix consistently).
+verification_script: scripts/check_eda_battleground_chart_labels.py
+notes: |
+  Triage: extends MASTERPLAN C-4 / F-045 without reopening F-045. Do not
+  duplicate E-7 (S1 proration deferred). Add subtitle e.g. "Series A ·
+  synthetic dept mapping (illustrative)" to C3, C8, S4 titles.
