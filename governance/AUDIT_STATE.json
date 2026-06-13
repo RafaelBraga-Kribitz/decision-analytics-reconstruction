@@ -439,18 +439,29 @@
       "status": "closed",
       "title": "Module B charts stacked exclusive scenarios, half-labelled routing, and faked an efficiency frontier",
       "verification_script": "scripts/check_module_b_allocation_chart_integrity.py"
+    },
+    {
+      "category": "misleading_visualization",
+      "closed_at": "2026-06-13",
+      "id": "F-061",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-13",
+      "path": "governance/findings/F-061-module-a-overview-readability.yaml",
+      "status": "closed",
+      "title": "Module A A12 was an unreadable overplot and eda_overview mislabelled its data/model scope",
+      "verification_script": "scripts/check_module_a_overview_readability.py"
     }
   ],
-  "generated_at": "2026-06-13T17:15:46.754818+00:00",
+  "generated_at": "2026-06-13T17:22:55.424707+00:00",
   "git_branch": "claude/funny-heisenberg-w3mw7h",
-  "git_head_sha": "262221be929556c8e5927e94786e0baba03cb6e9",
+  "git_head_sha": "bc8d16f536cc206ce3425b9708d2196b581fba4a",
   "migrations": [],
   "summary": {
-    "findings_closed": 36,
+    "findings_closed": 37,
     "findings_closed_historical": 2,
     "findings_in_progress": 0,
     "findings_open": 2,
-    "findings_total": 40,
+    "findings_total": 41,
     "findings_wont_fix": 0,
     "migrations_in_progress": 0,
     "migrations_total": 0,

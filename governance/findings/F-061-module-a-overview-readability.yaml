@@ -1,0 +1,27 @@
+id: F-061
+title: "Module A A12 was an unreadable overplot and eda_overview mislabelled its data/model scope"
+category: misleading_visualization
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-13
+closed_at: 2026-06-13
+recurrence_count: 0
+evidence: |
+  governance/ISSUE_TRIAGE_MASTER.yaml AUD-A12 + AUD-PUB-004 (severity reject;
+  shared theme = Module A / public-layer chart presentation).
+  - reports/eda/generate_eda.py chart_a12 overlaid six translucent filled
+    histograms (alpha=0.45) on a single axis — an unreadable overplot.
+  - chart_eda_overview was titled "EMPIRICAL DATA OVERVIEW" with a footnote
+    "Empirical pipeline inputs only", while panel 3 plots participation_propensity
+    (a Module A model output, not an empirical input), and panel 4 truncated
+    segment names to 8 characters (s[:8]).
+verification_script: scripts/check_module_a_overview_readability.py
+notes: |
+  Fix (reports/eda/generate_eda.py):
+  - A12 now uses step-outline histograms (histtype="step", lw=2) so the six
+    per-segment distributions are legible instead of overplotted fills.
+  - eda_overview retitled "POPULATION DATA OVERVIEW"; the footnote now states
+    "Empirical population inputs plus the Module A participation-propensity
+    output", and panel 4 shows full multi-line segment names (no s[:8]).
+  One themed finding resolving two reject rows. Static gate, negative-tested.
+  Part of governance/chart_audit_completion_sprint.md.

@@ -37,6 +37,7 @@ Run `poetry run python scripts/generate_doc_index.py --write` after registry cha
 - **DOC-ROOT-002** — `governance/CHANGELOG.md` — *narrative* / *canonical*
 - **DOC-DOC-001** — `governance/Truth_and_rebuild_sprint.md` — *narrative* / *canonical*
 - **DOC-DOC-002** — `governance/adrs/0001-completion-sprint-cadence.md` — *narrative* / *canonical*
+- **DOC-DOC-003** — `governance/chart_audit_completion_sprint.md` — *narrative* / *canonical*
 - **DOC-MODA-001** — `module_a_population_segmentation/README.md` — *narrative* / *canonical*
 - **DOC-MODA-002** — `module_a_population_segmentation/reports/model_card_propensity.md` — *narrative* / *canonical*
 - **DOC-MODA-003** — `module_a_population_segmentation/reports/model_card_segmentation.md` — *narrative* / *canonical*

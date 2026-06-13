@@ -761,14 +761,15 @@ def chart_a12():
             data,
             bins=bins,
             density=True,
-            alpha=0.45,
+            histtype="step",
+            lw=2.0,
             color=SEG_COLORS.get(seg, GREY),
             label=seg.replace("_", " ").title(),
         )
 
     ax.set_xlabel("Reachability Index")
     ax.set_ylabel("Density")
-    ax.set_title("A12 — Reachability Index Distribution by Segment")
+    ax.set_title("A12 — Reachability Index Distribution by Segment (step outlines for legibility)")
     ax.legend(title="Segment", bbox_to_anchor=(1.01, 1), loc="upper left", fontsize=9)
     annotate_source(ax)
     fig.tight_layout()
@@ -2148,7 +2149,7 @@ def chart_eda_overview():
     """
     fig = plt.figure(figsize=(18, 10))
     gs = fig.add_gridspec(2, 3, hspace=0.45, wspace=0.35)
-    fig.suptitle("EMPIRICAL DATA OVERVIEW", fontsize=16, fontweight="bold", y=0.98)
+    fig.suptitle("POPULATION DATA OVERVIEW", fontsize=16, fontweight="bold", y=0.98)
 
     # 1 — segment sizes
     ax1 = fig.add_subplot(gs[0, 0])
@@ -2197,7 +2198,7 @@ def chart_eda_overview():
             label=col.replace("media_penetration_", "").upper(),
         )
     ax4.set_xticks(x)
-    ax4.set_xticklabels([s[:8] for s in SEG_ORDER], rotation=45, ha="right", fontsize=7)
+    ax4.set_xticklabels([s.replace("_", "\n") for s in SEG_ORDER], rotation=0, ha="center", fontsize=6)
     ax4.set_title("Media Penetration by Segment", fontsize=10)
     ax4.set_ylabel("Mean rate")
     ax4.legend(fontsize=7)
@@ -2222,8 +2223,8 @@ def chart_eda_overview():
     fig.text(
         0.5,
         0.035,
-        "Empirical pipeline inputs only. Model outputs: C1–C10 (posterior forecast, "
-        "win probabilities, MC scenarios).",
+        "Empirical population inputs plus the Module A participation-propensity output. "
+        "Downstream model outputs (C1–C10 forecast / win-probability / MC) are shown separately.",
         ha="center",
         fontsize=9,
         color=CHARCOAL,

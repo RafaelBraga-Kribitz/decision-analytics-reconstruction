@@ -210,14 +210,14 @@ chart_audit_2026_06:
     - {id: AUD-A9, status: open_unfiled, severity: rework, title: A9 correlation QA internal only}
     - {id: AUD-A10, status: open_unfiled, severity: reject, title: A10 PCA lattice proves dept constants}
     - {id: AUD-A11, status: open_finding, finding: F-052, title: A11 NBI bimodality misdrawn as outliers}
-    - {id: AUD-A12, status: open_unfiled, severity: reject, title: A12 reachability histogram unreadable}
+    - {id: AUD-A12, status: verified_closed, finding: F-061, severity: reject, title: A12 reachability histogram unreadable}
     - {id: AUD-A13, status: deferred, title: A13 preference proxy null — drop feature}
     - {id: AUD-SHAP, status: open_unfiled, severity: rework, title: SHAP missing model/target label}
   public_layer:
     - {id: AUD-PUB-001, status: open_unfiled, severity: reject, title: Dashboard QA tab empty}
     - {id: AUD-PUB-002, status: open_finding, finding: F-050, title: GitHub Pages report 280px capture useless}
     - {id: AUD-PUB-003, status: open_unfiled, severity: rework, title: Calibration tab disclaimer stripped from PNG}
-    - {id: AUD-PUB-004, status: open_unfiled, severity: reject, title: eda_overview data/model scope mislabel + truncated bars}
+    - {id: AUD-PUB-004, status: verified_closed, finding: F-061, severity: reject, title: eda_overview data/model scope mislabel + truncated bars}
     - {id: AUD-PUB-005, status: open_unfiled, severity: appendix, title: Module B API OpenAPI schemas absent}
 
 # ─── Decoder-proposed findings never filed (deduped) ───────────────────────────
