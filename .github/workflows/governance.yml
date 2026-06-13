@@ -37,7 +37,7 @@ jobs:
       - name: Install project deps
         run: poetry install --no-interaction
       - name: Re-verify closed findings
-        run: python scripts/check_closed_findings.py
+        run: poetry run python scripts/check_closed_findings.py
 
   # Debt ratchet: re-scan technical debt and fail if any metric grew past the
   # committed baseline (governance/DEBT_BASELINE.json). This is the "remediate
