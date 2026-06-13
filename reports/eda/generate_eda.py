@@ -924,17 +924,29 @@ def chart_b3():
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
-    # Left: scenario comparison
+    # Left: scenario comparison. The two scenarios are MUTUALLY EXCLUSIVE (the
+    # campaign runs one or the other), so plot them as separate lines — never
+    # stack, which would sum two alternatives into a meaningless total (AUD-B3).
     ax = axes[0]
-    ax.stackplot(
+    ax.plot(
         combined.index,
         combined["Baseline (Broadcast)"],
-        combined["Broadcast-to-Direct"],
-        labels=["Baseline", "Broadcast→Direct"],
-        colors=[RED, BLUE],
-        alpha=0.7,
+        color=RED,
+        lw=2.5,
+        marker="o",
+        ms=4,
+        label="Baseline (Broadcast)",
     )
-    ax.set_title("B3a — Weekly Budget: Scenario Comparison")
+    ax.plot(
+        combined.index,
+        combined["Broadcast-to-Direct"],
+        color=BLUE,
+        lw=2.5,
+        marker="s",
+        ms=4,
+        label="Broadcast→Direct",
+    )
+    ax.set_title("B3a — Weekly Budget by Scenario\n(mutually exclusive — compared, not summed)")
     ax.set_xlabel("Week")
     ax.set_ylabel("Budget (USD)")
     ax.legend(loc="upper left")
@@ -1116,7 +1128,10 @@ def chart_b7():
         values="travel_time_minutes",
         aggfunc="mean",
     )
-    piv = piv.fillna(0)
+    # Square the matrix on the union of departments so neither axis carries an
+    # orphan department, then label every origin/destination below (AUD-B7).
+    depts = sorted(set(routing["origin_department"]) | set(routing["destination_department"]))
+    piv = piv.reindex(index=depts, columns=depts).fillna(0)
 
     fig, ax = plt.subplots(figsize=(12, 10))
     vals = piv.values.astype(float)
@@ -1129,14 +1144,13 @@ def chart_b7():
     )
     plt.colorbar(im, ax=ax, label="Avg travel time (minutes)")
 
-    step = max(1, len(piv.columns) // 9)
-    tick_idx = list(range(0, len(piv.columns), step))
-    ax.set_xticks(tick_idx)
-    ax.set_xticklabels([piv.columns[i] for i in tick_idx], rotation=55, ha="right", fontsize=7)
-    ax.set_yticks(tick_idx)
-    ax.set_yticklabels([piv.index[i] for i in tick_idx], fontsize=7)
+    ax.set_xticks(range(len(piv.columns)))
+    ax.set_xticklabels(piv.columns, rotation=55, ha="right", fontsize=6)
+    ax.set_yticks(range(len(piv.index)))
+    ax.set_yticklabels(piv.index, fontsize=6)
     ax.set_title(
-        "B7 — Routing Cost Matrix: Travel Time by Department Pair\n(Dry Standard Conditions)"
+        "B7 — Routing Cost Matrix: Travel Time by Department Pair\n"
+        "(Dry Standard Conditions · every origin→destination labelled)"
     )
     fig.text(0.5, -0.02, SOURCE, ha="center", fontsize=7.5, color=GREY)
     fig.tight_layout()
@@ -1988,19 +2002,36 @@ def chart_s5():
 
     plt.colorbar(sc, ax=ax, label="Total Budget (USD)")
 
-    # Efficiency frontier line
+    # Descriptive OLS trend — NOT a Pareto / efficiency frontier (which would be
+    # the non-dominated upper envelope, not a regression line) (AUD-S5).
     xf = np.linspace(dept_eff["mean_reach_util"].min(), dept_eff["mean_reach_util"].max(), 100)
     coeffs = np.polyfit(dept_eff["mean_reach_util"], dept_eff["total_persuasion"], 1)
     ax.plot(
-        xf, np.polyval(coeffs, xf), color=CHARCOAL, lw=1.2, ls="--", alpha=0.6, label="Linear trend"
+        xf,
+        np.polyval(coeffs, xf),
+        color=CHARCOAL,
+        lw=1.2,
+        ls="--",
+        alpha=0.6,
+        label="OLS linear trend (descriptive)",
     )
 
     ax.set_xlabel("Mean Reach Utilisation")
     ax.set_ylabel("Total Persuasion-Adjusted Contacts")
     ax.set_title(
-        "S5 — Campaign Efficiency Frontier by Department\n(Reach Utilisation vs Persuasion Contacts)"
+        "S5 — Reach Utilisation vs Persuasion-Adjusted Contacts by Department\n"
+        "(descriptive scatter + OLS trend — not a Pareto efficiency frontier)"
     )
     ax.legend()
+    ax.annotate(
+        "Dashed line is an OLS trend, not a Pareto efficiency frontier (the non-dominated "
+        "envelope). Legacy filename 'efficiency_frontier' retained for lineage.",
+        xy=(0.5, -0.16),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
+    )
     annotate_source(ax)
     fig.tight_layout()
     save_fig(fig, "S5_efficiency_frontier.png")
@@ -2442,7 +2473,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 **Strategic implication:** The front-loaded direct spend may be losing impact by the time election day arrives. Consider shifting 10–15% of bilateral budget from weeks 1–3 to weeks 11–13 to maintain turnout pressure in the final push.
 
 ### B3 — Broadcast vs Direct Budget Split
-**What it shows:** Stacked area chart comparing broadcast vs. bilateral budget by week, and scenario comparison.
+**What it shows:** Left: the two budget scenarios (Baseline vs Broadcast→Direct) compared as separate lines — they are mutually exclusive, so they are never stacked into a meaningless total. Right: the within-baseline broadcast vs bilateral split (legitimate components of one budget) as a stacked area.
 **Key finding:** Baseline allocates 47.5% broadcast / 52.5% bilateral. The broadcast-to-direct scenario shifts this further but does not produce additional persuasion contacts (alloc_mean_persuasion_contacts = 0 in all MC draws), suggesting a possible pipeline data gap.
 **Strategic implication:** Until the persuasion contact column is validated for the broadcast-to-direct scenario, treat that scenario's efficiency claims with caution. The baseline split appears operationally sound.
 
@@ -2549,10 +2580,10 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 **Key finding:** Central, Caaguazu, and Itapúa score highest on the composite priority index. Misiones, Neembucú, and Caazapá score lowest despite reasonable win probabilities, primarily due to lower propensity and smaller budget allocations.
 **Strategic implication:** Caaguazu is underweighted relative to its priority score — it ranks 3rd in composite priority but only 5th in total budget. A budget rebalancing toward Caaguazu would improve overall campaign efficiency.
 
-### S5 — Campaign Efficiency Frontier
-**What it shows:** Reach utilisation vs. total persuasion contacts by department, bubble = budget.
-**Key finding:** Most departments cluster in the low-utilisation / low-contacts quadrant, with Central and Alto Paraná as positive outliers. No department achieves both high reach utilisation AND high persuasion contacts simultaneously.
-**Strategic implication:** The efficiency frontier is not being achieved. Departments with moderate reach utilisation but very few persuasion contacts (e.g., Concepción, Misiones) may be experiencing a channel-segment mismatch — channels selected are not penetrating the dominant behavioral segments in those areas.
+### S5 — Reach Utilisation vs Persuasion Contacts (descriptive)
+**What it shows:** Reach utilisation vs. total persuasion-adjusted contacts by department (bubble = budget), with a descriptive OLS trend line — *not* a Pareto efficiency frontier (the non-dominated envelope).
+**Key finding:** Most departments cluster in the low-utilisation / low-contacts region, with Central and Alto Paraná as positive outliers. No department reaches both high reach utilisation AND high persuasion contacts.
+**Strategic implication:** Departments with moderate reach utilisation but very few persuasion contacts (e.g., Concepción, Misiones) may have a channel–segment mismatch — the channels selected are not penetrating the dominant behavioural segments there. (Descriptive trend, not a frontier-optimality claim.)
 
 ---
 

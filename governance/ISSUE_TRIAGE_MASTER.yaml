@@ -186,17 +186,17 @@ chart_audit_2026_06:
   module_b:
     - {id: AUD-B1, status: open_unfiled, severity: approved_revisions, title: B1 needs per-capita normalization}
     - {id: AUD-B2, status: open_unfiled, severity: rework, title: B2 missing in_person channel / not burn-down}
-    - {id: AUD-B3, status: open_unfiled, severity: reject, title: B3a stacks mutually exclusive scenarios}
+    - {id: AUD-B3, status: verified_closed, finding: F-060, severity: reject, title: B3a stacks mutually exclusive scenarios}
     - {id: AUD-B4, status: open_unfiled, severity: rework, title: B4 blank broadcast columns / 100% saturation}
     - {id: AUD-B5, status: open_unfiled, severity: reject, title: B5 ratio self-correlation / 3.5¢ contacts}
     - {id: AUD-B6, status: open_unfiled, severity: approved_revisions, title: B6 synthetic FX unlabeled}
-    - {id: AUD-B7, status: open_unfiled, severity: reject, title: B7 routing matrix half-labeled / orphan channel}
+    - {id: AUD-B7, status: verified_closed, finding: F-060, severity: reject, title: B7 routing matrix half-labeled / orphan channel}
     - {id: AUD-B8, status: open_unfiled, severity: reject, title: B8 contacts exceed caps 5× (allocation-data dependent — triaged in completion sprint)}
     - {id: AUD-S1, status: open_unfiled, severity: rework, title: S1 committed segments funded incoherently}
     - {id: AUD-S2, status: open_unfiled, severity: approved_revisions, title: S2 quadrant labels wrong}
     - {id: AUD-S3, status: open_unfiled, severity: rework, title: S3 ROI inherits contact inflation}
     - {id: AUD-S4, status: open_unfiled, severity: reject, title: S4 priority score circular / MC noise}
-    - {id: AUD-S5, status: open_unfiled, severity: reject, title: S5 mislabeled efficiency frontier}
+    - {id: AUD-S5, status: verified_closed, finding: F-060, severity: reject, title: S5 mislabeled efficiency frontier}
     - {id: AUD-BMC, status: open_unfiled, severity: reject, title: MC contacts flat across scenarios (MC coupling — deferred, see completion sprint)}
   module_a:
     - {id: AUD-A1, status: insufficient_fix, finding: F-050, title: A1 segment sizes contradict dashboard shares}
