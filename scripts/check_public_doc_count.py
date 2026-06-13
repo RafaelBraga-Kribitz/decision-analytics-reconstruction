@@ -15,6 +15,7 @@ OPERATOR_PREFIXES = (
     ".claude/",
     ".cursor/",
     "docs/registry/",
+    "governance/adrs/",
     "maintainer/",
 )
 
