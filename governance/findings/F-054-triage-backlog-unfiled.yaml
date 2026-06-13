@@ -2,9 +2,9 @@ id: F-054
 title: "Severe chart/inference issues sit unfiled while the queue reports empty"
 category: fake_completion
 kind: recurrence_invariant
-status: open
+status: closed
 opened_at: 2026-06-13
-closed_at: null
+closed_at: 2026-06-13
 recurrence_count: 0
 evidence: |
   governance/ISSUE_TRIAGE_MASTER.yaml carries (at filing) 17 rows graded
@@ -27,3 +27,12 @@ notes: |
   to batch them.
 
   AUD-C3 and AUD-C8 were the first two cleared (see F-053).
+
+  CLOSED 2026-06-13: every reject/critical ISSUE_TRIAGE_MASTER row is now
+  verified_closed against its own filed finding — F-053 (AUD-C3/C8), F-055..F-061
+  (the Module C/B/A chart-presentation tranche), and F-062..F-067 (the deep-fix
+  tranche: B5 ratio decoupling, B8 contacts-vs-cap disclosure, S4 priority
+  decircularization, BMC handshake scenario-invariance, A10 PCA dept-constant
+  disclosure, PUB-001 dashboard QA glob). check_triage_backlog_filed.py confirms
+  no reject/critical row remains open_unfiled. The multi-finding tranches were
+  authorised by governance/chart_audit_completion_sprint.md per ADR-0001.
