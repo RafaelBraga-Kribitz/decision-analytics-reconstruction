@@ -365,12 +365,12 @@
     },
     {
       "category": "fake_completion",
-      "closed_at": null,
+      "closed_at": "2026-06-13",
       "id": "F-054",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-13",
       "path": "governance/findings/F-054-triage-backlog-unfiled.yaml",
-      "status": "open",
+      "status": "closed",
       "title": "Severe chart/inference issues sit unfiled while the queue reports empty",
       "verification_script": "scripts/check_triage_backlog_filed.py"
     },
@@ -518,21 +518,21 @@
       "verification_script": "scripts/check_pub001_dashboard_qa_tab.py"
     }
   ],
-  "generated_at": "2026-06-13T22:17:53.032700+00:00",
+  "generated_at": "2026-06-13T22:26:16.748346+00:00",
   "git_branch": "claude/funny-heisenberg-w3mw7h",
-  "git_head_sha": "df74d67c42561bea6163335f97361a53cb826f79",
+  "git_head_sha": "dcb33fa640a299f2bf978be4ad2c930e40b4777c",
   "migrations": [],
   "summary": {
-    "findings_closed": 43,
+    "findings_closed": 44,
     "findings_closed_historical": 2,
     "findings_in_progress": 0,
-    "findings_open": 2,
+    "findings_open": 1,
     "findings_total": 47,
     "findings_wont_fix": 0,
     "migrations_in_progress": 0,
     "migrations_total": 0,
     "open_by_category": {
-      "fake_completion": 2
+      "fake_completion": 1
     }
   },
   "validation_errors": [],
