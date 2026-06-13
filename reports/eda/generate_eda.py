@@ -10,6 +10,7 @@ import sys
 import warnings
 import traceback
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -98,10 +99,27 @@ def save_fig(fig: plt.Figure, fname: str) -> None:
     print(f"  [OK] {fname}  ({size/1024:.1f} KB)")
 
 
-def annotate_source(ax: plt.Axes) -> None:
+def annotate_source(ax: plt.Axes, *, y: float = -0.11) -> None:
     ax.annotate(
-        SOURCE, xy=(0.5, -0.13), xycoords="axes fraction", ha="center", fontsize=7.5, color=GREY
+        SOURCE, xy=(0.5, y), xycoords="axes fraction", ha="center", fontsize=7.5, color=GREY
     )
+
+
+def finalize_figure(
+    fig: plt.Figure,
+    ax: plt.Axes,
+    fname: str,
+    *,
+    footer_y: float = -0.11,
+    subtitle: str | None = None,
+) -> None:
+    """Apply consistent source footer and save."""
+    if subtitle:
+        title = ax.get_title()
+        ax.set_title(f"{title}\n{subtitle}", fontsize=11)
+    annotate_source(ax, y=footer_y)
+    fig.tight_layout()
+    save_fig(fig, fname)
 
 
 def _region_for_department(department: str) -> str:
@@ -169,6 +187,10 @@ routing = pd.read_csv(DATA / "module_b" / "routing_cost_matrix_dry_standard.csv"
 forecast = pd.read_parquet(
     DATA / "module_c" / "run_all" / "tracking" / "daily_posterior_forecast.parquet"
 )
+_filtered_path = (
+    DATA / "module_c" / "run_all" / "tracking" / "daily_posterior_forecast_filtered.parquet"
+)
+forecast_filtered = pd.read_parquet(_filtered_path) if _filtered_path.is_file() else None
 house_eff = pd.read_parquet(
     DATA / "module_c" / "run_all" / "tracking" / "posterior_house_effects.parquet"
 )
@@ -1216,8 +1238,18 @@ def chart_c1():
         fc["posterior_mean_preference_margin_pp"],
         color=RED,
         lw=2.5,
-        label="Posterior Mean (Margin pp)",
+        label="Anchored posterior mean (Series A)",
     )
+    if forecast_filtered is not None and len(forecast_filtered):
+        fc_f = forecast_filtered.sort_values("date")
+        ax.plot(
+            fc_f["date"],
+            fc_f["posterior_mean_preference_margin_pp"],
+            color=BLUE,
+            lw=1.8,
+            ls="--",
+            label="Filtered track (no outcome anchor)",
+        )
     ax.fill_between(
         fc["date"],
         fc["posterior_hdi_low_pp"],
@@ -1228,7 +1260,12 @@ def chart_c1():
     )
     ax.axhline(0, color=CHARCOAL, lw=1.2, ls="--", label="Toss-up line (0 pp)")
     ax.axhline(
-        fc["posterior_mean_preference_margin_pp"].iloc[-1], color=GOLD, lw=1.0, ls=":", alpha=0.8
+        fc["posterior_mean_preference_margin_pp"].iloc[-1],
+        color=GOLD,
+        lw=1.0,
+        ls=":",
+        alpha=0.8,
+        label="Terminal anchored mean",
     )
 
     ax.set_xlabel("Date")
@@ -1238,9 +1275,7 @@ def chart_c1():
     ax.xaxis.set_major_locator(matplotlib.dates.MonthLocator())
     ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%b %Y"))
     plt.setp(ax.xaxis.get_majorticklabels(), rotation=30, ha="right")
-    annotate_source(ax)
-    fig.tight_layout()
-    save_fig(fig, "C1_forecast_timeline.png")
+    finalize_figure(fig, ax, "C1_forecast_timeline.png")
 
 
 chart_c1()
@@ -1338,11 +1373,11 @@ def chart_c4():
     ax.set_yticks(list(y))
     ax.set_yticklabels(he["pollster_id"])
     ax.set_xlabel("House Effect (pp bias toward Candidate A)")
-    ax.set_title("C4 — Pollster House Effects: Posterior Mean ± 94% HDI")
+    ax.set_title(
+        "C4 — Pollster House Effects (retrospective, Series A)\nPosterior mean ± 94% HDI"
+    )
     ax.legend()
-    annotate_source(ax)
-    fig.tight_layout()
-    save_fig(fig, "C4_house_effects_forest.png")
+    finalize_figure(fig, ax, "C4_house_effects_forest.png")
 
 
 chart_c4()
@@ -1401,31 +1436,32 @@ chart_c5()
 
 @safe_chart("C6")
 def chart_c6():
-    """C6: Shock scale distribution per scenario bucket (overlaid KDE)."""
-    from scipy.stats import gaussian_kde
-
+    """C6: Shock scale ECDF by scenario bucket (discrete masses — no KDE)."""
     buckets = mc_draws["scenario_bucket"].unique()
     bucket_colors = dict(zip(buckets, [RED, BLUE, GREEN, ORANGE, PURPLE]))
 
     fig, ax = plt.subplots(figsize=(10, 5))
     for bucket in buckets:
-        data = mc_draws.loc[mc_draws["scenario_bucket"] == bucket, "shock_scale"].values
-        color = bucket_colors.get(bucket, GREY)
-        ax.hist(data, bins=40, density=True, alpha=0.35, color=color)
-        if len(np.unique(data)) > 2:
-            kde = gaussian_kde(data)
-            xs = np.linspace(data.min() - 0.2, data.max() + 0.2, 300)
-            ax.plot(xs, kde(xs), color=color, lw=2.5, label=bucket)
-        else:
-            ax.axvline(data[0], color=color, lw=2.5, label=f"{bucket} (point mass={data[0]:.3f})")
+        data = np.sort(
+            mc_draws.loc[mc_draws["scenario_bucket"] == bucket, "shock_scale"].to_numpy()
+        )
+        if len(data) == 0:
+            continue
+        ys = np.arange(1, len(data) + 1) / len(data)
+        ax.step(
+            data,
+            ys,
+            where="post",
+            color=bucket_colors.get(bucket, GREY),
+            lw=2.0,
+            label=f"{bucket} (n={len(data):,})",
+        )
 
     ax.set_xlabel("Shock Scale")
-    ax.set_ylabel("Density")
-    ax.set_title("C6 — Shock Scale Distribution by Scenario Bucket (KDE)")
+    ax.set_ylabel("ECDF")
+    ax.set_title("C6 — Shock Scale ECDF by Scenario Bucket")
     ax.legend(title="Scenario Bucket")
-    annotate_source(ax)
-    fig.tight_layout()
-    save_fig(fig, "C6_shock_scale_distribution.png")
+    finalize_figure(fig, ax, "C6_shock_scale_ecdf.png")
 
 
 chart_c6()
@@ -1552,19 +1588,16 @@ chart_c9()
 
 @safe_chart("C10")
 def chart_c10():
-    """C10: Monte Carlo win-probability histogram across all draws."""
-    # Derive win probability per draw: win if shock_scale > median baseline
-    baseline_median = mc_draws.loc[
-        mc_draws["scenario_bucket"] == "baseline", "shock_scale"
-    ].median()
+    """C10: Monte Carlo national P(win A) histogram across all draws."""
+    if "p_win_a" not in mc_draws.columns:
+        raise KeyError("monte_carlo_draws missing p_win_a — rerun Module C MC pipeline")
 
-    # Use a simple proxy: fraction of draws above baseline level per scenario
     buckets = mc_draws["scenario_bucket"].unique()
     bucket_colors = dict(zip(buckets, [RED, BLUE, GREEN, ORANGE, PURPLE]))
 
     fig, ax = plt.subplots(figsize=(10, 5))
     for bucket in buckets:
-        sub = mc_draws[mc_draws["scenario_bucket"] == bucket]["shock_scale"]
+        sub = mc_draws.loc[mc_draws["scenario_bucket"] == bucket, "p_win_a"]
         ax.hist(
             sub,
             bins=40,
@@ -1576,22 +1609,23 @@ def chart_c10():
             lw=0.3,
         )
 
+    baseline_median = float(
+        mc_draws.loc[mc_draws["scenario_bucket"] == "baseline", "p_win_a"].median()
+    )
     ax.axvline(
         baseline_median,
         color=CHARCOAL,
         lw=2,
         ls="--",
-        label=f"Baseline median: {baseline_median:.3f}",
+        label=f"Baseline median P(win A): {baseline_median:.1%}",
     )
-    ax.set_xlabel("Shock Scale")
+    ax.set_xlabel("National P(Candidate A wins)")
     ax.set_ylabel("Density")
     ax.set_title(
-        f"C10 — Monte Carlo Scenario Draw Distribution\n(Shock Scale across {len(mc_draws):,} Draws)"
+        f"C10 — Monte Carlo National Win Probability\n({len(mc_draws):,} stratified draws)"
     )
     ax.legend(title="Scenario Bucket")
-    annotate_source(ax)
-    fig.tight_layout()
-    save_fig(fig, "C10_mc_win_probability_histogram.png")
+    finalize_figure(fig, ax, "C10_mc_win_probability_histogram.png")
 
 
 chart_c10()
@@ -1649,10 +1683,13 @@ def chart_s1():
                     color=WHITE if val > pivot_s1.values.max() * 0.6 else CHARCOAL,
                 )
 
-    ax.set_title("S1 — Segment × Department Budget Allocation Matrix")
-    fig.text(0.5, -0.02, SOURCE, ha="center", fontsize=7.5, color=GREY)
-    fig.tight_layout()
-    save_fig(fig, "S1_segment_budget_heatmap.png")
+    ax.set_title("S1 — Segment × Department Budget Matrix (Prorated Display)")
+    finalize_figure(
+        fig,
+        ax,
+        "S1_segment_budget_heatmap.png",
+        subtitle="Population proration within department — not MILP segment allocation",
+    )
 
 
 chart_s1()
@@ -1791,11 +1828,9 @@ def chart_s4():
         how="left",
     )
 
-    # Composite priority score
-    merged_s4["priority_score"] = (
-        merged_s4["win_probability_a"]
-        * merged_s4["mean_propensity"]
-        * np.log1p(merged_s4["budget_allocation_usd"].fillna(0))
+    # Composite priority score (propensity × budget; excludes illustrative win prob)
+    merged_s4["priority_score"] = merged_s4["mean_propensity"] * np.log1p(
+        merged_s4["budget_allocation_usd"].fillna(0)
     )
 
     merged_s4 = merged_s4.sort_values("priority_score", ascending=True)
@@ -1979,14 +2014,7 @@ def chart_c8_v2():
 chart_c8_v2()
 
 
-@safe_chart("OVERVIEW")
-def chart_eda_overview():
-    """eda_overview: multi-panel snapshot from current pipeline artifacts."""
-    fig = plt.figure(figsize=(18, 14))
-    gs = fig.add_gridspec(3, 4, hspace=0.45, wspace=0.35)
-    fig.suptitle("PARAGUAY ELECTION — DATA OVERVIEW", fontsize=16, fontweight="bold", y=0.98)
-
-    # 1 — segment sizes
+def _overview_row0_panels(fig: plt.Figure, gs: Any, pop: pd.DataFrame) -> None:
     ax1 = fig.add_subplot(gs[0, 0])
     counts = pop["segment_label"].value_counts().reindex(SEG_ORDER, fill_value=0)
     colors = [SEG_COLORS.get(s, GREY) for s in counts.index]
@@ -1995,7 +2023,6 @@ def chart_eda_overview():
     ax1.set_xlabel("# Records")
     ax1.invert_yaxis()
 
-    # 2 — age by gender
     ax2 = fig.add_subplot(gs[0, 1])
     for gender, color in [("F", RED), ("M", BLUE)]:
         ages = pop.loc[pop["gender"] == gender, "age_on_event_date"].dropna()
@@ -2004,10 +2031,13 @@ def chart_eda_overview():
     ax2.set_xlabel("Age")
     ax2.legend(fontsize=8)
 
-    # 3 — propensity by segment
     ax3 = fig.add_subplot(gs[0, 2])
-    seg_props = [pop.loc[pop["segment_label"] == s, "participation_propensity"].dropna() for s in SEG_ORDER]
-    bp = ax3.boxplot(seg_props, vert=True, patch_artist=True, labels=[s.replace("_", "\n") for s in SEG_ORDER])
+    seg_props = [
+        pop.loc[pop["segment_label"] == s, "participation_propensity"].dropna() for s in SEG_ORDER
+    ]
+    bp = ax3.boxplot(
+        seg_props, vert=True, patch_artist=True, labels=[s.replace("_", "\n") for s in SEG_ORDER]
+    )
     for patch, seg in zip(bp["boxes"], SEG_ORDER):
         patch.set_facecolor(SEG_COLORS.get(seg, GREY))
         patch.set_alpha(0.65)
@@ -2015,21 +2045,32 @@ def chart_eda_overview():
     ax3.set_ylabel("Propensity")
     ax3.tick_params(axis="x", labelsize=7)
 
-    # 4 — media penetration by segment
     ax4 = fig.add_subplot(gs[0, 3])
     media_cols = ["media_penetration_tv", "media_penetration_radio", "media_penetration_whatsapp"]
     media_means = pop.groupby("segment_label")[media_cols].mean().reindex(SEG_ORDER)
     x = np.arange(len(SEG_ORDER))
     w = 0.25
     for i, col in enumerate(media_cols):
-        ax4.bar(x + (i - 1) * w, media_means[col], width=w, label=col.replace("media_penetration_", "").upper())
+        ax4.bar(
+            x + (i - 1) * w,
+            media_means[col],
+            width=w,
+            label=col.replace("media_penetration_", "").upper(),
+        )
     ax4.set_xticks(x)
     ax4.set_xticklabels([s[:8] for s in SEG_ORDER], rotation=45, ha="right", fontsize=7)
     ax4.set_title("Media Penetration by Segment", fontsize=10)
     ax4.set_ylabel("Mean rate")
     ax4.legend(fontsize=7)
 
-    # 5 — reachability tier pie
+
+def _overview_row1_panels(
+    fig: plt.Figure,
+    gs: Any,
+    pop: pd.DataFrame,
+    forecast: pd.DataFrame,
+    battleground: pd.DataFrame,
+) -> None:
     ax5 = fig.add_subplot(gs[1, 0])
     tier_counts = pop["reachability_tier"].value_counts()
     ax5.pie(
@@ -2040,7 +2081,6 @@ def chart_eda_overview():
     )
     ax5.set_title("Reachability Tiers", fontsize=10)
 
-    # 6 — forecast timeline
     ax6 = fig.add_subplot(gs[1, 1:3])
     fc = forecast.sort_values("date")
     ax6.plot(fc["date"], fc["posterior_mean_preference_margin_pp"], color=RED, lw=2)
@@ -2055,7 +2095,6 @@ def chart_eda_overview():
     ax6.set_title("Daily Posterior Forecast — Preference Margin (pp)", fontsize=10)
     ax6.set_ylabel("Margin (pp)")
 
-    # 7 — battleground (illustrative)
     ax7 = fig.add_subplot(gs[1, 3])
     bg = battleground.sort_values("win_probability_a", ascending=True)
     ax7.barh(bg["department"], bg["win_probability_a"], color=RED, edgecolor=WHITE, lw=0.3)
@@ -2064,13 +2103,19 @@ def chart_eda_overview():
     ax7.set_title(f"Battleground Win Prob\n({ILLUSTRATIVE_BATTLE_SUB})", fontsize=9)
     ax7.tick_params(axis="y", labelsize=6)
 
-    # 8 — MC shock scale
+
+def _overview_row2_panels(
+    fig: plt.Figure,
+    gs: Any,
+    pop: pd.DataFrame,
+    alloc_base: pd.DataFrame,
+    mc_draws: pd.DataFrame,
+) -> None:
     ax8 = fig.add_subplot(gs[2, 0])
     ax8.hist(mc_draws["shock_scale"], bins=40, color=BLUE, alpha=0.75, edgecolor=WHITE, lw=0.3)
     ax8.set_title("MC Shock Scale Distribution", fontsize=10)
     ax8.set_xlabel("Shock scale")
 
-    # 9 — budget by region × channel type
     ax9 = fig.add_subplot(gs[2, 1:3])
     if "region" in alloc_base.columns:
         reg_ch = (
@@ -2087,7 +2132,6 @@ def chart_eda_overview():
         ax9.text(0.5, 0.5, "Region column missing", ha="center", va="center")
         ax9.set_axis_off()
 
-    # 10 — NBI stress vs propensity (sample)
     ax10 = fig.add_subplot(gs[2, 3])
     sample = pop.sample(n=min(4000, len(pop)), random_state=42)
     for seg in SEG_ORDER:
@@ -2106,6 +2150,18 @@ def chart_eda_overview():
     ax10.set_xlabel("NBI stress prior")
     ax10.set_ylabel("Propensity")
     ax10.legend(fontsize=6, loc="upper right")
+
+
+@safe_chart("OVERVIEW")
+def chart_eda_overview():
+    """eda_overview: multi-panel snapshot from current pipeline artifacts."""
+    fig = plt.figure(figsize=(18, 14))
+    gs = fig.add_gridspec(3, 4, hspace=0.45, wspace=0.35)
+    fig.suptitle("PARAGUAY ELECTION — DATA OVERVIEW", fontsize=16, fontweight="bold", y=0.98)
+
+    _overview_row0_panels(fig, gs, pop)
+    _overview_row1_panels(fig, gs, pop, forecast, battleground)
+    _overview_row2_panels(fig, gs, pop, alloc_base, mc_draws)
 
     fig.text(0.5, 0.01, SOURCE, ha="center", fontsize=7.5, color=GREY)
     fig.tight_layout(rect=(0, 0.02, 1, 0.96))

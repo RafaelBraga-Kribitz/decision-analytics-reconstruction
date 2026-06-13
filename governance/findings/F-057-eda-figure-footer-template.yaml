@@ -1,0 +1,14 @@
+id: F-057
+title: "EDA charts use shared finalize_figure footer template"
+category: documentation
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-12
+closed_at: 2026-06-12
+recurrence_count: 0
+evidence: |
+  Chart audit AUD-XCUT-004: inconsistent source footer placement (y=-0.13 collisions);
+  C1 anchor line unlabeled. Mixed annotate_source vs fig.text patterns across charts.
+verification_script: scripts/check_eda_figure_footer_layout.py
+notes: |
+  finalize_figure helper with configurable footer_y; roll through C10/S1 first.
