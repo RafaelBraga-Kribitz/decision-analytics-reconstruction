@@ -1,0 +1,25 @@
+id: F-059
+title: "Module C C10 promised a win-probability histogram but plots shock scale"
+category: misleading_visualization
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-13
+closed_at: 2026-06-13
+recurrence_count: 0
+evidence: |
+  governance/ISSUE_TRIAGE_MASTER.yaml AUD-C10 (severity reject).
+  reports/eda/generate_eda.py chart_c10 saves to
+  C10_mc_win_probability_histogram.png and its docstring claimed a "Monte Carlo
+  win-probability histogram", but the panel histograms shock_scale per scenario
+  and never derives P(win) — a chart whose name/docstring promise a quantity the
+  content does not deliver.
+verification_script: scripts/check_module_c_shock_scale_filename.py
+notes: |
+  Fix (chart_c10 + C10 narrative): docstring and title now state plainly this is
+  a "Shock-Scale Distribution ... not win probability", with an on-chart
+  disclosure flagging the legacy filename and pointing P(win) to C3 / C8 (the
+  actual win-probability charts). The filename is deliberately kept — a rename
+  would orphan the committed PNG under the F-050 lineage gate; the honest
+  on-chart label is the fix. Future deliverable cull (AUD-XCUT-007) may retire
+  C10 as redundant with C5/C6. Static gate; canonical PNG regenerates via make
+  pipeline-full (F-050). Part of governance/chart_audit_completion_sprint.md.
