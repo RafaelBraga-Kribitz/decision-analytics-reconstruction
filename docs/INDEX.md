@@ -59,6 +59,7 @@ Run `poetry run python scripts/generate_doc_index.py --write` after registry cha
 ## Evidence and internal artifacts
 
 - **DOC-GOV-SESSION-END-001** — `governance/SESSION_END.md` — *active*
+- **DOC-MODC-002** — `module_c_forecasting_scenarios/reports/C_research_proof_table.md` — *active*
 
 ## Research inputs (reference only)
 
