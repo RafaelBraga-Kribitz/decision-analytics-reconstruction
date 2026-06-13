@@ -110,6 +110,14 @@ def test_mc_alloc_contacts_positive():
     )
 
 
+def test_mc_contacts_and_pwin_vary():
+    """F-056: shock_scale must modulate contacts and p_win_a across draws."""
+    mc = pd.read_parquet(_require(MC_DRAWS))
+    assert "p_win_a" in mc.columns, "monte_carlo_draws missing p_win_a column"
+    assert float(mc["alloc_mean_persuasion_contacts"].std()) > 0.0
+    assert float(mc["p_win_a"].std()) > 0.0
+
+
 def test_mc_golden_reproduction(golden):
     mc = pd.read_parquet(_require(MC_DRAWS))
     g = golden["module_c"]

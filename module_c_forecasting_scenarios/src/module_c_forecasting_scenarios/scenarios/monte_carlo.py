@@ -21,6 +21,7 @@ from typing import Final, cast
 import numpy as np
 import pandas as pd
 import yaml
+from scipy.special import expit
 
 from module_c_forecasting_scenarios.paths import module_config_dir, repo_root
 
@@ -44,12 +45,29 @@ def _bucket_share(n: int, k: int) -> list[int]:
     return [base + (1 if i < rem else 0) for i in range(k)]
 
 
+def _national_p_win_a(shock_scale: float, terminal_margin_pp: float) -> float:
+    """National P(Candidate A wins) from terminal margin + shock perturbation."""
+    shock = max(float(shock_scale), 1e-6)
+    adjusted_margin = terminal_margin_pp + 5.0 * math.log(shock)
+    return float(expit(0.12 * (adjusted_margin - 3.8)))
+
+
+def _load_terminal_margin_pp(daily_forecast_path: Path | None) -> float:
+    if daily_forecast_path is None or not daily_forecast_path.is_file():
+        return 3.8
+    daily = pd.read_parquet(daily_forecast_path)
+    if daily.empty or "posterior_mean_preference_margin_pp" not in daily.columns:
+        return 3.8
+    return float(daily.sort_values("date").iloc[-1]["posterior_mean_preference_margin_pp"])
+
+
 def _draw_from_tracking(
     bucket_rows: pd.DataFrame,
     n: int,
     mult: float,
     rng: np.random.Generator,
     alloc_mean_contacts: float,
+    terminal_margin_pp: float,
     start_idx: int,
 ) -> list[dict[str, object]]:
     scores = bucket_rows["shock_score_s"].to_numpy(dtype=np.float64) * mult
@@ -58,13 +76,15 @@ def _draw_from_tracking(
     draws: list[dict[str, object]] = []
     for k in range(n):
         j = int(rng.choice(len(bucket_rows), p=w))
+        shock = float(scores[j])
         draws.append(
             {
                 "draw_id": start_idx + k,
                 "poll_wave_id": str(bucket_rows.iloc[j]["poll_wave_id"]),
                 "scenario_bucket": str(bucket_rows.iloc[j]["scenario_bucket"]),
-                "shock_scale": float(scores[j]),
-                "alloc_mean_persuasion_contacts": alloc_mean_contacts,
+                "shock_scale": shock,
+                "alloc_mean_persuasion_contacts": alloc_mean_contacts * shock,
+                "p_win_a": _national_p_win_a(shock, terminal_margin_pp),
                 "draw_source": "tracking_sample",
             }
         )
@@ -78,6 +98,7 @@ def _draw_from_prior(
     mult: float,
     rng: np.random.Generator,
     alloc_mean_contacts: float,
+    terminal_margin_pp: float,
     start_idx: int,
 ) -> list[dict[str, object]]:
     log_mean = float(prior["log_mean"])
@@ -90,7 +111,8 @@ def _draw_from_prior(
             "poll_wave_id": None,
             "scenario_bucket": bucket,
             "shock_scale": float(shocks[i]),
-            "alloc_mean_persuasion_contacts": alloc_mean_contacts,
+            "alloc_mean_persuasion_contacts": alloc_mean_contacts * float(shocks[i]),
+            "p_win_a": _national_p_win_a(float(shocks[i]), terminal_margin_pp),
             "draw_source": "synthetic_prior",
         }
         for i in range(n)
@@ -156,6 +178,7 @@ def _stratified_bucket_draws(
     baseline_zero: bool,
     rng: np.random.Generator,
     alloc_mean_contacts: float,
+    terminal_margin_pp: float,
     bucket_priors: dict[str, object],
 ) -> list[dict[str, object]]:
     bucket_quota = _bucket_share(n, len(CANONICAL_BUCKETS))
@@ -171,6 +194,7 @@ def _stratified_bucket_draws(
                 mult=effective_mult,
                 rng=rng,
                 alloc_mean_contacts=alloc_mean_contacts,
+                terminal_margin_pp=terminal_margin_pp,
                 start_idx=cursor,
             )
         else:
@@ -186,11 +210,42 @@ def _stratified_bucket_draws(
                 mult=effective_mult,
                 rng=rng,
                 alloc_mean_contacts=alloc_mean_contacts,
+                terminal_margin_pp=terminal_margin_pp,
                 start_idx=cursor,
             )
         all_draws.extend(chunk)
         cursor += quota
     return all_draws
+
+
+def _write_scenario_manifest(
+    *,
+    out_dir: Path,
+    n: int,
+    mult: float,
+    baseline_zero: bool,
+    allocation_path: Path | None,
+    terminal_margin_pp: float | None,
+    bucket_quota: list[int],
+    tracking: pd.DataFrame,
+) -> dict[str, object]:
+    manifest = {
+        "n_draws": n,
+        "seed": 42,
+        "shock_multiplier": mult,
+        "baseline_shock_zero": baseline_zero,
+        "allocation_input": str(allocation_path) if allocation_path else None,
+        "terminal_margin_pp": terminal_margin_pp,
+        "canonical_buckets": list(CANONICAL_BUCKETS),
+        "bucket_quotas": dict(zip(CANONICAL_BUCKETS, bucket_quota, strict=True)),
+        "buckets_synthesised_from_prior": [
+            b for b in CANONICAL_BUCKETS if len(tracking[tracking["scenario_bucket"] == b]) == 0
+        ],
+        "repo_root": str(repo_root()),
+        "created_at_utc": datetime.now(tz=UTC).isoformat(),
+    }
+    (out_dir / "scenario_run_manifest.json").write_text(json.dumps(manifest, indent=2))
+    return cast(dict[str, object], manifest)
 
 
 def run_monte_carlo_scenarios(
@@ -201,6 +256,7 @@ def run_monte_carlo_scenarios(
     shock_multiplier: float | None = None,
     baseline_shock_zero: bool = False,
     n_draws: int | None = None,
+    daily_forecast_path: Path | None = None,
 ) -> dict[str, object]:
     """Stratified MC draws across all canonical buckets."""
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -218,6 +274,11 @@ def run_monte_carlo_scenarios(
 
     _write_shock_catalog(tracking, out_dir, mult, baseline_zero)
     alloc_mean_contacts = _load_allocation_mean_contacts(allocation_path)
+    if daily_forecast_path is None and allocation_path is not None:
+        daily_forecast_path = (
+            allocation_path.parent.parent / "tracking" / "daily_posterior_forecast.parquet"
+        )
+    terminal_margin_pp = _load_terminal_margin_pp(daily_forecast_path)
     all_draws = _stratified_bucket_draws(
         tracking,
         n,
@@ -225,6 +286,7 @@ def run_monte_carlo_scenarios(
         baseline_zero,
         rng,
         alloc_mean_contacts,
+        terminal_margin_pp,
         bucket_priors,
     )
 
@@ -232,22 +294,16 @@ def run_monte_carlo_scenarios(
     draws_df.to_parquet(out_dir / "monte_carlo_draws.parquet", index=False)
 
     bucket_quota = _bucket_share(n, len(CANONICAL_BUCKETS))
-    manifest = {
-        "n_draws": n,
-        "seed": 42,
-        "shock_multiplier": mult,
-        "baseline_shock_zero": baseline_zero,
-        "allocation_input": str(allocation_path) if allocation_path else None,
-        "canonical_buckets": list(CANONICAL_BUCKETS),
-        "bucket_quotas": dict(zip(CANONICAL_BUCKETS, bucket_quota, strict=True)),
-        "buckets_synthesised_from_prior": [
-            b for b in CANONICAL_BUCKETS if len(tracking[tracking["scenario_bucket"] == b]) == 0
-        ],
-        "repo_root": str(repo_root()),
-        "created_at_utc": datetime.now(tz=UTC).isoformat(),
-    }
-    (out_dir / "scenario_run_manifest.json").write_text(json.dumps(manifest, indent=2))
-    # Math sanity: each bucket quota sums to n.
+    manifest = _write_scenario_manifest(
+        out_dir=out_dir,
+        n=n,
+        mult=mult,
+        baseline_zero=baseline_zero,
+        allocation_path=allocation_path,
+        terminal_margin_pp=terminal_margin_pp,
+        bucket_quota=bucket_quota,
+        tracking=tracking,
+    )
     assert sum(bucket_quota) == n
     assert math.isclose(sum(bucket_quota), n)
-    return cast(dict[str, object], manifest)
+    return manifest

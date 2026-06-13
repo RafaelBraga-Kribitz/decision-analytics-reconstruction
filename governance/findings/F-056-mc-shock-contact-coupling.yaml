@@ -1,0 +1,15 @@
+id: F-056
+title: "Monte Carlo shock_scale must couple to contacts and emit p_win_a"
+category: statistical-rigor
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-12
+closed_at: 2026-06-12
+recurrence_count: 0
+evidence: |
+  Chart audit AUD-BMC: identical scenario boxplots because alloc_mean_persuasion_contacts
+  was constant across draws; shock_scale unused. C10 filename promised win probability
+  but plotted shock_scale only.
+verification_script: scripts/check_mc_shock_contact_coupling.py
+notes: |
+  B-C8, B-C9. Multiply baseline contacts by shock_scale; derive national p_win_a per draw.

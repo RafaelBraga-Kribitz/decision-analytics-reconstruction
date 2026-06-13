@@ -33,8 +33,14 @@ fields:
     type: float64
     nullable: false
     description: >
-      Mean persuasion-adjusted contacts from the allocation_baseline
-      handshake (0.0 when no allocation parquet supplied).
+      Persuasion-adjusted contacts for this draw (baseline allocation mean
+      multiplied by shock_scale).
+  p_win_a:
+    type: float64
+    nullable: false
+    description: >
+      National P(Candidate A wins) derived from terminal posterior margin
+      and shock_scale perturbation.
   draw_source:
     type: string
     nullable: false
