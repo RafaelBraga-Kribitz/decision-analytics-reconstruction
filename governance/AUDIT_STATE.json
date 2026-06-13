@@ -384,18 +384,29 @@
       "status": "closed",
       "title": "Module C C1 timeline mislabelled a retrodiction as a forecast with the verified anchor undrawn",
       "verification_script": "scripts/check_module_c_forecast_retrodiction.py"
+    },
+    {
+      "category": "misleading_visualization",
+      "closed_at": "2026-06-13",
+      "id": "F-056",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-13",
+      "path": "governance/findings/F-056-module-c-terminal-anchor-disclosure.yaml",
+      "status": "closed",
+      "title": "Module C C2 showed an anchor-pinned terminal posterior as if it independently matched the outcome",
+      "verification_script": "scripts/check_module_c_terminal_anchor_disclosure.py"
     }
   ],
-  "generated_at": "2026-06-13T12:14:34.073150+00:00",
+  "generated_at": "2026-06-13T16:59:21.830719+00:00",
   "git_branch": "claude/funny-heisenberg-w3mw7h",
-  "git_head_sha": "6e6a749572ba7e5df6c40d8850ec9d33fa5d9fa7",
+  "git_head_sha": "5c4ee93f86abe1e7816d01c14cc35c21df02ca5f",
   "migrations": [],
   "summary": {
-    "findings_closed": 31,
+    "findings_closed": 32,
     "findings_closed_historical": 2,
     "findings_in_progress": 0,
     "findings_open": 2,
-    "findings_total": 35,
+    "findings_total": 36,
     "findings_wont_fix": 0,
     "migrations_in_progress": 0,
     "migrations_total": 0,
