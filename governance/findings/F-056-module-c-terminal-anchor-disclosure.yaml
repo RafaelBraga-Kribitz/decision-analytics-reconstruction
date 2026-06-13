@@ -1,0 +1,35 @@
+id: F-056
+title: "Module C C2 showed an anchor-pinned terminal posterior as if it independently matched the outcome"
+category: misleading_visualization
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-13
+closed_at: 2026-06-13
+recurrence_count: 0
+evidence: |
+  governance/ISSUE_TRIAGE_MASTER.yaml AUD-C2 (severity critical, blocked by
+  AUD-C1): reports/eda/generate_eda.py chart_c2 drew the terminal posterior mean
+  beside a "TSJE Series A anchor (+3.70 pp)" reference line, implying the
+  posterior independently landed on the verified outcome. In fact the terminal
+  latent margin is pinned to that anchor by a soft likelihood term
+  (outcome_anchor ~ Normal(mu_margin[-1], sigma=0.5) in
+  models/tracking/hierarchical.py:135) — the proximity is by construction, not
+  out-of-sample validation. Presenting calibration as independent agreement is a
+  statistical-honesty defect a senior reviewer would flag immediately.
+verification_script: scripts/check_module_c_terminal_anchor_disclosure.py
+notes: |
+  Fix (reports/eda/generate_eda.py chart_c2 + C2 narrative):
+  - Anchor line now drawn from the shared TSJE_ANCHOR_PP constant (no bare 3.7
+    magic literal) and labelled "Calibration target m★ (... entered likelihood
+    σ=0.5)".
+  - Title is "C2 — Calibrated Terminal Posterior Margin".
+  - On-chart disclosure: "Terminal margin is pinned to the verified outcome
+    anchor (σ=0.5 pp) — proximity to m★ is by construction, not out-of-sample
+    validation." Narrative points out-of-sample skill at walk-forward (anchor
+    withheld).
+
+  This completes the AUD-C1 → AUD-C2 critical pair. The model itself is honest
+  (the anchor is a documented, intentional calibration term, F-036); the defect
+  was purely the chart presenting calibration as validation. Static gate; the
+  canonical PNG regenerates via make pipeline-full (F-050). Part of the
+  governance/chart_audit_completion_sprint.md sprint.

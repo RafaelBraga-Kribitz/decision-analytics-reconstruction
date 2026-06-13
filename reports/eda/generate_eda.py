@@ -1279,7 +1279,14 @@ chart_c1()
 
 @safe_chart("C2")
 def chart_c2():
-    """C2: Final-day posterior margin — mean + 94% HDI (no simulated draws)."""
+    """C2: calibrated terminal posterior margin — mean + 94% HDI.
+
+    The terminal latent margin is pinned to the verified outcome anchor
+    m★ = +3.70 pp by a soft likelihood term (``outcome_anchor ~
+    Normal(mu_margin[-1], sigma=0.5)`` in models/tracking/hierarchical.py). The
+    posterior therefore sits near the anchor **by construction**, not by
+    independent agreement — disclosing that is the AUD-C2 / F-056 invariant.
+    """
     last_date = forecast["date"].max()
     last_row = forecast[forecast["date"] == last_date].iloc[0]
 
@@ -1287,21 +1294,37 @@ def chart_c2():
     hdi_lo = float(last_row["posterior_hdi_low_pp"])
     hdi_hi = float(last_row["posterior_hdi_high_pp"])
 
-    fig, ax = plt.subplots(figsize=(10, 4))
+    fig, ax = plt.subplots(figsize=(10, 4.4))
     ax.axvspan(hdi_lo, hdi_hi, color=RED, alpha=0.25, label="94% HDI")
-    ax.axvline(mean_v, color=CHARCOAL, lw=2.5, label=f"Posterior mean: {mean_v:.1f} pp")
+    ax.axvline(mean_v, color=CHARCOAL, lw=2.5, label=f"Calibrated posterior mean: {mean_v:.1f} pp")
     ax.axvline(0, color=GREY, lw=1.2, ls="--", label="Toss-up (0 pp)")
-    ax.axvline(3.7, color=GOLD, lw=1.5, ls=":", label="TSJE Series A anchor (+3.70 pp)")
+    ax.axvline(
+        TSJE_ANCHOR_PP,
+        color=GOLD,
+        lw=1.5,
+        ls=":",
+        label=f"Calibration target m★ (+{TSJE_ANCHOR_PP:.2f} pp, entered likelihood σ=0.5)",
+    )
 
     pad = max(2.0, (hdi_hi - hdi_lo) * 0.35)
-    ax.set_xlim(min(hdi_lo, 0, 3.7) - pad, max(hdi_hi, mean_v, 3.7) + pad)
+    ax.set_xlim(min(hdi_lo, 0, TSJE_ANCHOR_PP) - pad, max(hdi_hi, mean_v, TSJE_ANCHOR_PP) + pad)
     ax.set_ylim(0, 1)
     ax.set_yticks([])
     ax.set_xlabel("Preference Margin (pp, Candidate A vs B)")
     ax.set_title(
-        f"C2 — Final-Day Posterior Margin (mean + 94% HDI)\n({last_date.strftime('%d %b %Y')})"
+        f"C2 — Calibrated Terminal Posterior Margin (mean + 94% HDI)\n"
+        f"({last_date.strftime('%d %b %Y')})"
     )
     ax.legend(fontsize=9, loc="upper left")
+    ax.annotate(
+        "Terminal margin is pinned to the verified outcome anchor (σ=0.5 pp) — "
+        "proximity to m★ is by construction, not out-of-sample validation.",
+        xy=(0.5, -0.3),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
+    )
     annotate_source(ax)
     fig.tight_layout()
     save_fig(fig, "C2_posterior_margin_final.png")
@@ -2418,9 +2441,9 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 **Key finding:** Candidate A's posterior mean preference margin closes near **{forecast_final_mean:.1f} pp** on fixture polls ({_illustrative_tracking_note}). The 94% HDI is wide ({forecast_final_hdi_lo:.1f} to {forecast_final_hdi_hi:.1f} pp), reflecting only 4 survey measurement waves.
 **Strategic implication:** The lead is robust but the HDI is wide — more polling waves would dramatically tighten the uncertainty bounds. The campaign should commission 2–3 additional poll waves in the final 6 weeks.
 
-### C2 — Final Day Posterior Distribution
-**What it shows:** Approximate posterior margin distribution at election date (April 21, 2018).
-**Key finding:** Final mean margin is {forecast_final_mean:.1f} pp. The 5th percentile is still positive (approximately +3 pp), indicating Candidate A wins under virtually all plausible scenarios. The 95th percentile margin exceeds 30 pp.
+### C2 — Calibrated Terminal Posterior Distribution
+**What it shows:** Terminal (election-eve) posterior margin — mean + 94% HDI. The terminal latent margin is *pinned to the verified outcome anchor* m★ = +3.70 pp by a soft likelihood term (σ = 0.5 pp; `models/tracking/hierarchical.py`), so the posterior sits near m★ **by construction**, not by independent out-of-sample agreement.
+**Key finding:** Calibrated final mean margin is {forecast_final_mean:.1f} pp ({_illustrative_tracking_note}). Read the proximity to +3.70 pp as a calibration target the model was pinned to — not a forecast that independently recovered the result. Out-of-sample skill is evaluated separately in walk-forward, where the anchor is withheld.
 **Strategic implication:** The campaign is in a "protecting the lead" posture. The strategic priority shifts from persuasion to turnout maximisation among A-leaning segments, particularly Youth Volatile and Rural Committed.
 
 ### C3 — Battleground Department Win Probability
