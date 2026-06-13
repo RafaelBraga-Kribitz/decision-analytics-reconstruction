@@ -1485,7 +1485,22 @@ def chart_c8():
 
     ax.axhline(0.5, color=CHARCOAL, lw=1.2, ls="--", label="50% win threshold")
     wp = merged_c8["win_probability_a"]
-    ax.set_ylim(max(0.48, wp.min() - 0.004), min(0.52, wp.max() + 0.004))
+    # Full [0,1] axis (not a zoomed 0.48–0.52 band): every department sits on
+    # the 50% line. The sub-1pp spread is deterministic illustrative jitter,
+    # not signal — a zoomed axis would amplify noise into a false ranking.
+    ax.set_ylim(0, 1)
+    spread_pp = float((wp.max() - wp.min()) * 100)
+    ax.text(
+        0.5,
+        0.92,
+        f"All departments within {spread_pp:.2f} pp of 50% — spread is "
+        f"illustrative noise, not a ranking",
+        transform=ax.transAxes,
+        ha="center",
+        fontsize=8,
+        fontstyle="italic",
+        color=CHARCOAL,
+    )
     plt.colorbar(sc, ax=ax, label="Total Budget (USD)")
     ax.set_xlabel("Mean Participation Propensity (Department)")
     ax.set_ylabel("P(Win — Candidate A)")
@@ -1941,7 +1956,8 @@ def chart_c8_v2():
     ax.axhline(0.5, color=CHARCOAL, lw=1.2, ls="--", label="50% threshold")
     ax.axhline(mean_wp, color=GREY, lw=1.0, ls=":", label=f"Mean win prob ({mean_wp:.1%})")
     wp = merged["win_probability_a"]
-    ax.set_ylim(max(0.485, wp.min() - 0.005), min(0.515, wp.max() + 0.005))
+    # Full [0,1] axis: do not zoom into a sub-pp band that amplifies noise.
+    ax.set_ylim(0, 1)
     ax.set_xlabel("Mean Participation Propensity (Department)")
     ax.set_ylabel("Win Probability — Candidate A")
     ax.set_title(

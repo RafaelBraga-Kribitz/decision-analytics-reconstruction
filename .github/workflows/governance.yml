@@ -41,6 +41,8 @@ jobs:
         run: pip install poetry pyyaml
       - name: Install project deps
         run: poetry install --no-interaction
+      - name: Install debt tools (F-008 radon, F-009 vulture verification)
+        run: poetry run pip install radon vulture
       - name: Regenerate Module A artifacts (for data-dependent findings)
         run: |
           poetry run python -m population_segmentation.pipeline \

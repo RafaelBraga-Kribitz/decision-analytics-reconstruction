@@ -2,10 +2,10 @@ id: F-021
 title: "Public deployment badges point to non-live URLs"
 category: fake_completion
 kind: recurrence_invariant
-status: closed
+status: open
 opened_at: 2026-06-08
-closed_at: 2026-06-11
-recurrence_count: 0
+closed_at: null
+recurrence_count: 1
 evidence: |
   README badges advertise Module A Streamlit, Module B FastAPI docs, and Module C
   Quarto report URLs as public artifacts. A live check on 2026-06-08 returned
@@ -14,7 +14,13 @@ evidence: |
 verification_script: scripts/check_live_deployment_urls.py
 wont_fix_reason: null
 notes: |
-  Human deployment setup is required before closure: provision or repair the
-  Module A and B services, enable the Module C Pages report, then run the script
-  until it reports [PASS]. Do not complete documentation-density consolidation
-  before this honesty blocker is resolved or deliberately reframed.
+  Reopened 2026-06-13 (recurrence 1): the Adversary job observed the Module A
+  Streamlit demo time out (Render free tier sleeps after 15 min idle), while
+  Module B and C returned 200. Per the README's deployment note, a demo being
+  down means this finding has regressed — so it is reopened rather than left
+  falsely closed.
+
+  Durable closure needs the demo to be reliably reachable: either move Module A
+  off a sleeping free tier, or verify it from a scheduled (cron) workflow with
+  a cold-start-tolerant timeout rather than the per-PR Adversary gate. Human
+  deployment setup (platform auth) is required.
