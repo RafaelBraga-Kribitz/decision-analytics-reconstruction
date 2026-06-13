@@ -376,12 +376,12 @@
     },
     {
       "category": "documentation",
-      "closed_at": null,
+      "closed_at": "2026-06-12",
       "id": "F-057",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-12",
       "path": "governance/findings/F-057-eda-figure-footer-template.yaml",
-      "status": "open",
+      "status": "closed",
       "title": "EDA charts use shared finalize_figure footer template",
       "verification_script": "scripts/check_eda_figure_footer_layout.py"
     },
@@ -398,23 +398,23 @@
     },
     {
       "category": "documentation",
-      "closed_at": null,
+      "closed_at": "2026-06-12",
       "id": "F-071",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-12",
       "path": "governance/findings/F-071-dashboard-canonical-bundle.yaml",
-      "status": "open",
+      "status": "closed",
       "title": "Module A dashboard must default to canonical export bundle",
       "verification_script": "scripts/check_dashboard_canonical_mode.py"
     },
     {
       "category": "documentation",
-      "closed_at": null,
+      "closed_at": "2026-06-12",
       "id": "F-073",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-12",
       "path": "governance/findings/F-073-eda-overview-signoff.yaml",
-      "status": "open",
+      "status": "closed",
       "title": "eda_overview sign-off after pipeline and layout fixes",
       "verification_script": "scripts/check_eda_overview_signoff.py"
     },
@@ -474,22 +474,20 @@
       "verification_script": "scripts/check_battleground_illustrative_mapping.py"
     }
   ],
-  "generated_at": "2026-06-13T00:49:11.191375+00:00",
+  "generated_at": "2026-06-13T00:52:51.284793+00:00",
   "git_branch": "fix/F-052-propensity-individual-variation",
-  "git_head_sha": "6e0a80e43f65d484f10eec131f6d86fe40219235",
+  "git_head_sha": "64074b951a74766c7095ed2892e6268dba719d09",
   "migrations": [],
   "summary": {
-    "findings_closed": 38,
+    "findings_closed": 41,
     "findings_closed_historical": 2,
     "findings_in_progress": 0,
-    "findings_open": 3,
+    "findings_open": 0,
     "findings_total": 43,
     "findings_wont_fix": 0,
     "migrations_in_progress": 0,
     "migrations_total": 0,
-    "open_by_category": {
-      "documentation": 3
-    }
+    "open_by_category": {}
   },
   "validation_errors": [],
   "writer": "scripts/write_audit_state.py"
