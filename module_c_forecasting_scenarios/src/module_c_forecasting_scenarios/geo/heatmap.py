@@ -11,7 +11,8 @@ import pandas as pd
 from module_b_resource_allocation.constants import DEPARTMENTS
 from scipy.special import expit
 
-MODEL_VERSION = "c_battleground_v0.1"
+MODEL_VERSION = "c_battleground_v0.1_illustrative"
+MAPPING_METHOD = "illustrative_national_jitter"
 
 _DEPT_POLYGONS_PATH = Path(__file__).parent / "paraguay_departments.geojson"
 
@@ -77,6 +78,7 @@ def export_battleground_department_table(
                 "department": r["department"],
                 "win_probability_a": r["win_probability_a"],
                 "calibration_series": calibration_series,
+                "mapping_method": MAPPING_METHOD,
             },
             "geometry": None,
         }
@@ -97,6 +99,7 @@ def export_battleground_department_table(
                 "hdi_low": float(r["_hdi_low"]),
                 "hdi_high": float(r["_hdi_high"]),
                 "calibration_series": calibration_series,
+                "mapping_method": MAPPING_METHOD,
             },
             "geometry": dept_polys.get(str(r["department"])),
         }

@@ -1,0 +1,14 @@
+id: F-078
+title: "Battleground dept win prob must disclose illustrative mapping"
+category: statistical-rigor
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-12
+closed_at: 2026-06-12
+recurrence_count: 0
+evidence: |
+  Chart audit AUD-C3, AUD-S4: heatmap.py applies national margin + noise → all depts
+  ~49–51%; S4 priority_score circularly multiplies win_prob × budget × propensity.
+verification_script: scripts/check_battleground_illustrative_mapping.py
+notes: |
+  mapping_method on geojson; model_version illustrative; S4 drops win_prob from score.
