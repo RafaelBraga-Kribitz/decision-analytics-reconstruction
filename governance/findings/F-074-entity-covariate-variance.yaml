@@ -1,0 +1,18 @@
+id: F-074
+title: "Entity covariates must vary within departments; dashboard must not refit on load"
+category: data-quality
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-12
+closed_at: 2026-06-12
+recurrence_count: 0
+evidence: |
+  Chart audit A9/A10: TV/radio penetration is department-constant in generator.py;
+  PCA lattice and NBI bimodality misread. youth_flag schema says 18-29 but code uses
+  18-24. preference_proxy_encoded omitted from propensity FEATURES. Dashboard refits
+  propensity on canonical load causing segment/propensity drift vs committed charts.
+verification_script: scripts/check_entity_covariate_variance.py
+notes: |
+  Triage: chart_audit AUD-A9, AUD-A10, AUD-A13, AUD-PUB-003 (dashboard refit).
+  Remediation: entity noise on media penetrations; schema sync; wire preference_proxy_encoded;
+  canonical dashboard loads frozen parquet only; SHAP lazy refit.

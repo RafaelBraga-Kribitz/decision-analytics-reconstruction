@@ -72,6 +72,7 @@ def _generator_dept_media_nbi_tables(
     float,
     float,
     float,
+    float,
 ]:
     """Load department TV/radio/NBI tables from ``generator_dept_media_nbi``."""
     gdm = config.get("generator_dept_media_nbi")
@@ -97,9 +98,19 @@ def _generator_dept_media_nbi_tables(
     nbi_scale = float(urb_raw.get("scale", 0.35))
     nbi_urban = _nbi_urban_stress_from_rural(nbi_rural, nbi_floor, nbi_scale)
     nbi_noise_std = float(cast(Any, gdm.get("nbi_noise_std", 0.03)))
+    media_noise_std = float(cast(Any, gdm.get("media_penetration_noise_std", 0.04)))
     nbi_rural_fb = float(cast(Any, gdm.get("nbi_rural_unknown_department", 0.659)))
     nbi_urban_fb = float(cast(Any, gdm.get("nbi_urban_unknown_department", 0.252)))
-    return tv_by, radio_by, nbi_rural, nbi_urban, nbi_noise_std, nbi_rural_fb, nbi_urban_fb
+    return (
+        tv_by,
+        radio_by,
+        nbi_rural,
+        nbi_urban,
+        nbi_noise_std,
+        media_noise_std,
+        nbi_rural_fb,
+        nbi_urban_fb,
+    )
 
 
 def _elevated_departments_frozenset(gsd: dict[str, Any]) -> frozenset[str]:
@@ -275,9 +286,16 @@ def generate_population(
     ict = config.get("media_penetration_defaults", {})
     tv_nat = float(ict.get("tv_national", 0.89))
     radio_nat = float(ict.get("radio_national", 0.82))
-    tv_by, radio_by, nbi_rural, nbi_urban, nbi_noise_std, nbi_rural_fb, nbi_urban_fb = (
-        _generator_dept_media_nbi_tables(config)
-    )
+    (
+        tv_by,
+        radio_by,
+        nbi_rural,
+        nbi_urban,
+        nbi_noise_std,
+        media_noise_std,
+        nbi_rural_fb,
+        nbi_urban_fb,
+    ) = _generator_dept_media_nbi_tables(config)
 
     # ── entity_id ──────────────────────────────────────────────────────────────
     entity_ids = np.arange(1, n + 1, dtype=np.int64)
@@ -324,6 +342,10 @@ def generate_population(
 
     tv_pen = np.array([tv_by.get(str(d), tv_nat) for d in departments], dtype=np.float32)
     radio_pen = np.array([radio_by.get(str(d), radio_nat) for d in departments], dtype=np.float32)
+    tv_pen = np.clip(tv_pen + rng.normal(0, media_noise_std, size=n), 0.0, 1.0).astype(np.float32)
+    radio_pen = np.clip(radio_pen + rng.normal(0, media_noise_std, size=n), 0.0, 1.0).astype(
+        np.float32
+    )
     whatsapp_pen = np.where(rural_flags, rural_whatsapp, urban_inet).astype(np.float32)
 
     nbi_vals = np.where(

@@ -199,6 +199,7 @@ def run_export(
         "auc_roc": float(prop_metrics.get("auc_roc", 0.0)),
         "brier_score": float(prop_metrics.get("brier_score", 0.0)),
     }
+    manifest_payload["propensity_calibration"] = prop_out.get("calibration") or {}
     write_model_run_manifest(manifest_path, manifest_payload)
     mlflow_metrics: dict[str, float] = {
         "segmentation_silhouette": float(seg_metrics.get("silhouette", 0.0)),

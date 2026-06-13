@@ -145,7 +145,7 @@ FEATURE_FRAME_SCHEMA = DataFrameSchema(
             nullable=False,
             title="Gender encoding: 0=M, 1=F, 2=unknown",
         ),
-        "youth_flag": Column(pa.Bool, nullable=False, title="Age 18–29 indicator"),
+        "youth_flag": Column(pa.Bool, nullable=False, title="Age 18–24 indicator"),
         "senior_flag": Column(pa.Bool, nullable=False, title="Age 65+ indicator"),
         "language_jopara_encoded": Column(pa.Int, checks=Check.isin([0, 1]), nullable=False),
         "nbi_stress_prior_scaled": Column(

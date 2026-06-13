@@ -173,6 +173,7 @@ generator_dept_media_nbi:
     floor: 0.10
     scale: 0.35
   nbi_noise_std: 0.03
+  media_penetration_noise_std: 0.04
   nbi_rural_unknown_department: 0.659
   nbi_urban_unknown_department: 0.252
 

@@ -21,6 +21,7 @@ FEATURES = [
     "senior_flag",
     "metro_flag",
     "structural_dependency_encoded",
+    "preference_proxy_encoded",
     "preference_proxy_strength",
     "internet_access_flag",
 ]
@@ -168,38 +169,7 @@ class PropensityModel:
         return x.astype(float).to_numpy()
 
     def _synthetic_target(self, df: pd.DataFrame, anchors: dict[str, Any]) -> np.ndarray:
-        """Generate synthetic participation labels consistent with calibration anchors.
-
-        Uses national rate as a base so the expected target mean equals 0.6125
-        regardless of department distribution.  Department-level deviations encode
-        known participation differentials (Pdte Hayes −0.29, etc.).  Youth and
-        gender adjustments are zero-sum (equal expected contribution across the
-        population) so they do not bias the national mean.
-        """
-        rng = np.random.default_rng(self.random_state)
-        national = float(anchors["national"]["participation_rate"])
-        dept_rates = anchors["department_participation_rates"]
-
-        # Department deviation from national (encodes the strong dept-level signal)
-        dept_deviation = (
-            df["department"]
-            .map(lambda d: float(dept_rates.get(d, national)) - national)
-            .values.astype(float)
-        )
-
-        # Youth: zero-sum adjustment (youth_rate - national for youth, balanced for non-youth)
-        youth_frac = float(df["youth_flag"].mean())
-        youth_adj = float(anchors["national"]["youth_participation_rate"]) - national
-        non_youth_adj = -youth_adj * youth_frac / max(1e-6, 1.0 - youth_frac)
-
-        # Gender: symmetric small signal (consistent with model card notes on approx calibration)
-        gender_adj = np.where(df["gender"] == "F", 0.02, -0.02)
-
-        base = national + dept_deviation
-        base += np.where(df["youth_flag"], youth_adj, non_youth_adj)
-        base += gender_adj
-        base = np.clip(base, 0.05, 0.95)
-        return (rng.random(len(df)) < base).astype(int)
+        return _synthetic_target_from_anchors(df, anchors, self.random_state)
 
     def _rake(
         self, p: np.ndarray, dept: pd.Series, anchors: dict[str, Any]
@@ -259,6 +229,7 @@ class PropensityModel:
             "senior_flag",
             "metro_flag",
             "structural_dependency_encoded",
+            "preference_proxy_encoded",
             "preference_proxy_strength",
             "internet_access_flag",
         ]
@@ -328,3 +299,41 @@ class PropensityModel:
                 "youth": float(anchors["national"]["youth_participation_rate"]),
             },
         }
+
+
+def _synthetic_target_from_anchors(
+    df: pd.DataFrame, anchors: dict[str, Any], random_state: int
+) -> np.ndarray:
+    """Generate synthetic participation labels consistent with calibration anchors."""
+    rng = np.random.default_rng(random_state)
+    national = float(anchors["national"]["participation_rate"])
+    dept_rates = anchors["department_participation_rates"]
+
+    dept_deviation = (
+        df["department"]
+        .map(lambda d: float(dept_rates.get(d, national)) - national)
+        .values.astype(float)
+    )
+
+    youth_frac = float(df["youth_flag"].mean())
+    youth_adj = float(anchors["national"]["youth_participation_rate"]) - national
+    non_youth_adj = -youth_adj * youth_frac / max(1e-6, 1.0 - youth_frac)
+    gender_adj = np.where(df["gender"] == "F", 0.02, -0.02)
+
+    base = national + dept_deviation
+    base += np.where(df["youth_flag"], youth_adj, non_youth_adj)
+    base += gender_adj
+    base = np.clip(base, 0.05, 0.95)
+    return (rng.random(len(df)) < base).astype(int)
+
+
+def synthetic_training_reference_labels(
+    df: pd.DataFrame, anchors: dict[str, object], random_state: int = 42
+) -> np.ndarray:
+    """Binary labels matching the propensity model's synthetic training target.
+
+    Uses department, youth, and gender deviations from calibration anchors — not
+    i.i.d. Bernoulli draws at the national rate.  Intended for reliability diagrams
+    that compare predicted propensity against the same label semantics used in fit.
+    """
+    return _synthetic_target_from_anchors(df, cast(dict[str, Any], anchors), random_state)
