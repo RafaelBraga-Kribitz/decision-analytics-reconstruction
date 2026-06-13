@@ -30,7 +30,16 @@ def main() -> int:
     if MANIFEST.is_file():
         manifest = json.loads(MANIFEST.read_text(encoding="utf-8"))
         if "house_effects_identifiability_note" not in manifest:
-            gaps.append("run_tracking_manifest missing identifiability note")
+            rt = (
+                REPO_ROOT
+                / "module_c_forecasting_scenarios"
+                / "src"
+                / "module_c_forecasting_scenarios"
+                / "pipeline"
+                / "run_tracking.py"
+            )
+            if "house_effects_identifiability_note" not in rt.read_text(encoding="utf-8"):
+                gaps.append("run_tracking missing identifiability note wiring")
         expected = manifest.get("posterior_house_effects_sha256")
         if expected:
             actual = hashlib.sha256(HOUSES.read_bytes()).hexdigest()
