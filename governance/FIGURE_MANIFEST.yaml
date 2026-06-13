@@ -1,5 +1,5 @@
-run_id: 13ffc7a3dcf0
-git_commit: 13ffc7a3dcf07a7e5e368612697fa02859250ce8
+run_id: b3ac297bc612
+git_commit: b3ac297bc612cdbec2df47f5bd272bd3cf4d81e0
 generated_at: '2026-06-12'
 data_manifest: data/processed/model_run_manifest.json
 canonical_sample_size: 50000
