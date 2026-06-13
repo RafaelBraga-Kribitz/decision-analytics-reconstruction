@@ -91,7 +91,18 @@ def main(argv: list[str] | None = None) -> None:
         "outcome_event_date": outcome.isoformat(),
         "repo_root": str(repo_root()),
         "n_tracking_waves": len(tracking),
+        "house_effects_identifiability_note": (
+            "House offsets are retrospective vs Series A outcome anchor; "
+            "pollster sum is not constrained to zero."
+        ),
     }
+    houses_path = args.out_dir / "posterior_house_effects.parquet"
+    if houses_path.is_file():
+        import hashlib
+
+        manifest["posterior_house_effects_sha256"] = hashlib.sha256(
+            houses_path.read_bytes()
+        ).hexdigest()
     (args.out_dir / "run_tracking_manifest.json").write_text(json.dumps(manifest, indent=2))
     log_run_params(cast(dict[str, object], manifest))
     logger.info("wrote outputs under %s", args.out_dir)

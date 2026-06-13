@@ -1,0 +1,15 @@
+id: F-061
+title: "House effects forest and table must share single posterior export"
+category: statistical-rigor
+kind: recurrence_invariant
+status: open
+opened_at: 2026-06-12
+closed_at: null
+recurrence_count: 0
+evidence: |
+  Chart audit AUD-C4: C4 forest vs table showed 94% vs 95% HDI and different means;
+  house effects anchored to known outcome (retrospective identifiability). PPC points
+  lacked firm labels.
+verification_script: scripts/check_house_effects_reconciliation.py
+notes: |
+  C-C6, C-C7, C-C8. Manifest sha256 for posterior_house_effects; C4 retrospective subtitle.
