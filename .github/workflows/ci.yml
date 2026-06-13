@@ -217,12 +217,22 @@ jobs:
       - name: Build image with dev deps
         run: docker build -f docker/Dockerfile --build-arg INSTALL_DEV=1 -t decision-analytics-ci:smoke .
 
-      - name: Run make test inside container
+      # Smoke-test the shipped application code inside the image. The full
+      # `make test` also runs repo-structure contract tests (dvc.yaml,
+      # ARCHITECTURE.md, .github/workflows, .gitignore, governance findings)
+      # that assert on repo-root files the runtime image intentionally does
+      # not COPY — those belong to the full-checkout "Repo — make test" job,
+      # not to a container smoke test.
+      - name: Run module unit tests inside container
         run: >
           docker run --rm
           -e MC_FAST=1
           decision-analytics-ci:smoke
-          make test
+          poetry run pytest
+          module_a_population_segmentation/tests
+          module_b_resource_allocation/tests
+          module_c_forecasting_scenarios/tests
+          -m "not slow" -o addopts=""
 
   tier3-smoke:
     name: Tier 3 — DVC + terminology scripts

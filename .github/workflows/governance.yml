@@ -15,13 +15,20 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Install deps
-        run: pip install pyyaml pytest
+      - name: Install Poetry
+        run: pip install poetry
+      - name: Install project deps
+        run: poetry install --no-interaction
       - name: make audit
         run: make audit
 
   # Adversary: re-verify every closed finding's verification_script on a clean
   # checkout. A closed finding that regresses fails the PR.
+  #
+  # Several findings (F-050/051/052) assert invariants on Module A pipeline
+  # artifacts that live under data/processed (gitignored, DVC-tracked). The
+  # job regenerates them deterministically (seeded) before verifying, so the
+  # closure is genuinely re-checked rather than skipped for missing files.
   adversary:
     runs-on: ubuntu-latest
     needs: governance-audit
@@ -30,10 +37,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Install deps
-        run: pip install pyyaml pytest
+      - name: Install Poetry
+        run: pip install poetry pyyaml
+      - name: Install project deps
+        run: poetry install --no-interaction
+      - name: Install debt tools (F-008 radon, F-009 vulture verification)
+        run: poetry run pip install radon vulture
+      - name: Regenerate Module A artifacts (for data-dependent findings)
+        run: |
+          poetry run python -m population_segmentation.pipeline \
+            --sample-size 50000 --out-dir data/processed
+          poetry run python scripts/generate_figure_manifest.py
       - name: Re-verify closed findings
-        run: python scripts/check_closed_findings.py
+        run: poetry run python scripts/check_closed_findings.py
 
   # Debt ratchet: re-scan technical debt and fail if any metric grew past the
   # committed baseline (governance/DEBT_BASELINE.json). This is the "remediate
@@ -47,8 +63,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - name: Install Poetry and governance deps
+        run: pip install poetry pyyaml
+      - name: Install project deps
+        run: poetry install --no-interaction
       - name: Install Python debt tools
-        run: pip install pyyaml ruff vulture radon
+        run: pip install ruff vulture radon
       # Uncomment for TS/JS projects:
       # - uses: actions/setup-node@v4
       #   with: { node-version: "20" }

@@ -15,7 +15,6 @@ PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
 
 SCAN_DIRS = [
     ROOT / "README.md",
-    ROOT / "ROADMAP.md",
     ROOT / "ARCHITECTURE.md",
     ROOT / "reports",
     ROOT / "module_a_population_segmentation" / "reports",

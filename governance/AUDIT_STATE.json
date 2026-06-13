@@ -351,22 +351,46 @@
       "status": "closed",
       "title": "Participation propensity must vary within departments and segments",
       "verification_script": "scripts/check_propensity_individual_variation.py"
+    },
+    {
+      "category": "misleading_visualization",
+      "closed_at": "2026-06-13",
+      "id": "F-053",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-13",
+      "path": "governance/findings/F-053-winprob-chart-noise-axis.yaml",
+      "status": "closed",
+      "title": "Department win-probability charts zoomed a noise band into false signal",
+      "verification_script": "scripts/check_winprob_chart_noise_axis.py"
+    },
+    {
+      "category": "fake_completion",
+      "closed_at": null,
+      "id": "F-054",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-13",
+      "path": "governance/findings/F-054-triage-backlog-unfiled.yaml",
+      "status": "open",
+      "title": "Severe chart/inference issues sit unfiled while the queue reports empty",
+      "verification_script": "scripts/check_triage_backlog_filed.py"
     }
   ],
-  "generated_at": "2026-06-13T00:02:38.096400+00:00",
-  "git_branch": "fix/F-052-propensity-individual-variation",
-  "git_head_sha": "a6675fd0b0df1fec9b612b4feb2acccee705bdc0",
+  "generated_at": "2026-06-13T02:15:00.822417+00:00",
+  "git_branch": "claude/great-brahmagupta-pkbqac",
+  "git_head_sha": "31ef0635896eccd71cbac1d36567c96e96362135",
   "migrations": [],
   "summary": {
-    "findings_closed": 30,
+    "findings_closed": 31,
     "findings_closed_historical": 2,
     "findings_in_progress": 0,
-    "findings_open": 0,
-    "findings_total": 32,
+    "findings_open": 1,
+    "findings_total": 34,
     "findings_wont_fix": 0,
     "migrations_in_progress": 0,
     "migrations_total": 0,
-    "open_by_category": {}
+    "open_by_category": {
+      "fake_completion": 1
+    }
   },
   "validation_errors": [],
   "writer": "scripts/write_audit_state.py"

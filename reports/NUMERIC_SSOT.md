@@ -39,6 +39,11 @@ This is a **solver comparator on the reconstruction envelope**, not a verified h
 
 ## Module A quality gates (enforced in CI)
 
+These are **regression locks, not external-quality claims**: thresholds sit just
+below values measured on the synthetic reference run, so they guarantee output
+stability under the fixed seed — they do not certify model quality against any
+held-out real data.
+
 | Metric | Gate | Measured (reference run) | Do not headline |
 |---|---|---|---|
 | Silhouette | **> 0.22** | 0.2566 | 0.35 aspirational gate is retired |

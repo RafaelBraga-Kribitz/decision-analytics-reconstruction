@@ -26,16 +26,16 @@ Itapúa has the highest mean participation propensity of any department with sig
 ## Segment Strategy: Double Down vs Deprioritise
 
 **Double Down:**
-- **Youth Volatile (13.5% of population, propensity 0.60):** High reachability — the mobilisation opportunity. Digital-first (WhatsApp, Facebook), Jopara-friendly content, peer-to-peer activation via youth networks.
-- **Rural Committed (9.1% of population):** High propensity (0.32) but low reachability. Radio + canvassing investment here delivers premium returns per contact. Do not sacrifice these entities to cut costs.
+- **Youth Volatile (11.7% of population, propensity 0.57):** High reachability — the mobilisation opportunity. Digital-first (WhatsApp, Facebook), Jopara-friendly content, peer-to-peer activation via youth networks.
+- **Rural Committed (17.9% of population):** High propensity (0.65) but low reachability. Radio + canvassing investment here delivers premium returns per contact. Do not sacrifice these entities to cut costs.
 
 **Maintain:**
-- **Urban High Volatility (19.2%):** Good reachability, propensity 0.87. Currently receiving fair budget share. No change needed — the strategy is working.
-- **Structurally Dependent Bloc (26.8%):** High rural, high NBI stress. Sensitive segment requiring careful messaging. Maintain current radio + community organiser approach.
+- **Urban High Volatility (31.2%):** Good reachability, propensity 0.65. Currently receiving fair budget share. No change needed — the strategy is working.
+- **Structurally Dependent Bloc (19.2%):** High rural, high NBI stress. Sensitive segment requiring careful messaging. Maintain current radio + community organiser approach.
 
 **Deprioritise:**
-- **Committed Opposition (13.1%):** Mean propensity 0.63, high B-preference strength. These are locked opposition-aligned entities. Any persuasion spend here is waste. Reallocate immediately.
-- **Rural Low Propensity (18.4%):** Propensity 0.63 — the hardest cohort to mobilise. Passive presence only — no active spend increases warranted.
+- **Committed Opposition (9.1%):** Mean propensity 0.65, high B-preference strength. These are locked opposition-aligned entities. Any persuasion spend here is waste. Reallocate immediately.
+- **Rural Low Propensity (10.9%):** Propensity 0.56 — the hardest cohort to mobilise. Passive presence only — no active spend increases warranted.
 
 ---
 
@@ -74,7 +74,7 @@ Itapúa has the highest mean participation propensity of any department with sig
 
 **Medium risk (requires contingency planning):**
 - Late-breaking adverse events: The extreme-tracker bucket (3,333 of 10,000 draws) assumes 1.83–2.43× shock scale. A major scandal or crisis event in weeks 12–14 could compress the margin by 5–8 pp. Pre-position a rapid-response team.
-- Participation depression in Youth Volatile: this segment's propensity is 0.60. If youth registration or turnout infrastructure fails (long queues, administrative errors), the mandate could shrink materially.
+- Participation depression in Youth Volatile: this segment's propensity is 0.57. If youth registration or turnout infrastructure fails (long queues, administrative errors), the mandate could shrink materially.
 
 **Low but non-zero systemic risk:**
 - Model miscalibration: Only 4 poll waves feed the tracking model. If all four pollsters share an unmeasured systematic bias not captured by the house effect model, the posterior could be significantly wrong. Diversify polling sources.

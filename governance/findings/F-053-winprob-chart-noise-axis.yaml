@@ -1,0 +1,28 @@
+id: F-053
+title: "Department win-probability charts zoomed a noise band into false signal"
+category: misleading_visualization
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-13
+closed_at: 2026-06-13
+recurrence_count: 0
+evidence: |
+  governance/ISSUE_TRIAGE_MASTER.yaml AUD-C8 / AUD-C3 (severity reject):
+  reports/eda/generate_eda.py:1488 — chart_c8 set_ylim(0.48, 0.52)
+  reports/eda/generate_eda.py:1959 — chart_c8_v2 set_ylim(0.485, 0.515)
+  All departments' win probabilities sit within ~1 pp of 50% (deterministic
+  per-department jitter, seed=42, documented illustrative in
+  reports/epistemic_boundaries.md). Zooming the probability axis into a
+  ~0.48–0.52 band turned that sub-1pp noise into an apparent department
+  ranking — a Class-D "correct data, misleading chart" problem a reviewer
+  would read as a fabricated signal.
+verification_script: scripts/check_winprob_chart_noise_axis.py
+notes: |
+  Fix: both charts now use set_ylim(0, 1) so every department visibly
+  collapses onto the 50% line, with an on-chart annotation stating the spread
+  is illustrative noise, not a ranking. The verification script fails any
+  set_xlim/set_ylim that straddles 0.5 with a span < 0.20.
+
+  Resolves the AUD-C8 row of ISSUE_TRIAGE_MASTER. The remaining chart-audit
+  rows (AUD-C5/C6/C9, AUD-B3/B5, etc.) remain tracked there and should be
+  filed as their own findings before being claimed fixed.

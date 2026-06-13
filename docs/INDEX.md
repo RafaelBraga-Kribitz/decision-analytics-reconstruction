@@ -36,6 +36,7 @@ Run `poetry run python scripts/generate_doc_index.py --write` after registry cha
 - **DOC-GOV-AUDIT-001** — `governance/AUDIT_PROCEDURE.md` — *policy* / *canonical*
 - **DOC-ROOT-002** — `governance/CHANGELOG.md` — *narrative* / *canonical*
 - **DOC-DOC-001** — `governance/Truth_and_rebuild_sprint.md` — *narrative* / *canonical*
+- **DOC-DOC-002** — `governance/adrs/0001-completion-sprint-cadence.md` — *narrative* / *canonical*
 - **DOC-MODA-001** — `module_a_population_segmentation/README.md` — *narrative* / *canonical*
 - **DOC-MODA-002** — `module_a_population_segmentation/reports/model_card_propensity.md` — *narrative* / *canonical*
 - **DOC-MODA-003** — `module_a_population_segmentation/reports/model_card_segmentation.md` — *narrative* / *canonical*
@@ -59,6 +60,7 @@ Run `poetry run python scripts/generate_doc_index.py --write` after registry cha
 ## Evidence and internal artifacts
 
 - **DOC-GOV-SESSION-END-001** — `governance/SESSION_END.md` — *active*
+- **DOC-MODC-002** — `module_c_forecasting_scenarios/reports/C_research_proof_table.md` — *active*
 
 ## Research inputs (reference only)
 

@@ -1,0 +1,29 @@
+id: F-054
+title: "Severe chart/inference issues sit unfiled while the queue reports empty"
+category: fake_completion
+kind: recurrence_invariant
+status: open
+opened_at: 2026-06-13
+closed_at: null
+recurrence_count: 0
+evidence: |
+  governance/ISSUE_TRIAGE_MASTER.yaml carries (at filing) 17 rows graded
+  reject/critical with status open_unfiled — e.g. AUD-C1 (anchor unlabeled
+  retrodiction-vs-forecast), AUD-C2 (terminal posterior borrowed from anchor),
+  AUD-C5 (fan chart meaningless x-axis), AUD-C6 (KDE on point masses),
+  AUD-C9 (n=3 transparency scatter), AUD-B3 (stacks mutually exclusive
+  scenarios), AUD-B5 (ratio self-correlation). None were filed as findings, so
+  governance/SESSION_HANDOUT.md reported "The queue is empty" while these
+  shipped. That contradiction is the exact fake-completion failure mode the
+  governance system exists to prevent.
+verification_script: scripts/check_triage_backlog_filed.py
+notes: |
+  This finding is deliberately OPEN so the findings queue — and therefore the
+  session handout — stays honestly non-empty until the backlog is cleared.
+  Closure requires every reject/critical ISSUE_TRIAGE_MASTER row to be promoted
+  to its own filed finding (open_finding / verified_closed) or downgraded with
+  a documented reason (obsolete / superseded / reframe_sufficient). Each chart
+  fix is a separate one-finding PR; this is the umbrella tracker, not a licence
+  to batch them.
+
+  AUD-C3 and AUD-C8 were the first two cleared (see F-053).

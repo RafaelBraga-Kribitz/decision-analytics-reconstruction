@@ -318,46 +318,6 @@ paths:
     - summarization
     forbidden_content:
     - novel_metrics
-  reports/case_study_business.md:
-    doc_id: DOC-BIZ-002
-    doc_type: narrative
-    doc_role: derived
-    visibility: public
-    audience:
-    - portfolio
-    - hiring
-    authority: derived
-    canonical_source:
-    - DOC-BIZ-001
-    derived_from:
-    - DOC-BIZ-001
-    allowed_content:
-    - interpretation
-    - summarization
-    forbidden_content:
-    - novel_metrics
-    - novel_claims
-  reports/case_study_technical.md:
-    doc_id: DOC-BIZ-003
-    doc_type: narrative
-    doc_role: derived
-    visibility: public
-    audience:
-    - portfolio
-    - technical
-    authority: derived
-    canonical_source:
-    - DOC-CHARTER-001
-    - DOC-EPI-001
-    derived_from:
-    - DOC-ARCH-001
-    - DOC-EPI-001
-    allowed_content:
-    - interpretation
-    - summarization
-    forbidden_content:
-    - novel_metrics
-    - novel_claims
   reports/competitive_positioning.md:
     doc_id: DOC-BIZ-004
     doc_type: narrative

@@ -16,8 +16,10 @@ analysis — wired as a single reproducible pipeline with governance ratchets.
 [![Governance](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/governance.yml/badge.svg)](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/governance.yml)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue)](.python-version)
 
-Hosted demos are tracked as open finding **F-021** — this README does not claim
-URLs that CI has not verified live.
+Hosted demo availability is governed by finding **F-021** and its verification
+script (`scripts/check_live_deployment_urls.py`) — this README does not claim
+URLs that the script has not verified live. Free-tier hosts sleep; if a demo is
+down, F-021 has regressed and must be reopened.
 
 ## Three differentiators
 

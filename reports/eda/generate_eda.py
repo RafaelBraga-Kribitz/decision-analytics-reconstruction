@@ -1485,7 +1485,22 @@ def chart_c8():
 
     ax.axhline(0.5, color=CHARCOAL, lw=1.2, ls="--", label="50% win threshold")
     wp = merged_c8["win_probability_a"]
-    ax.set_ylim(max(0.48, wp.min() - 0.004), min(0.52, wp.max() + 0.004))
+    # Full [0,1] axis (not a zoomed 0.48–0.52 band): every department sits on
+    # the 50% line. The sub-1pp spread is deterministic illustrative jitter,
+    # not signal — a zoomed axis would amplify noise into a false ranking.
+    ax.set_ylim(0, 1)
+    spread_pp = float((wp.max() - wp.min()) * 100)
+    ax.text(
+        0.5,
+        0.92,
+        f"All departments within {spread_pp:.2f} pp of 50% — spread is "
+        f"illustrative noise, not a ranking",
+        transform=ax.transAxes,
+        ha="center",
+        fontsize=8,
+        fontstyle="italic",
+        color=CHARCOAL,
+    )
     plt.colorbar(sc, ax=ax, label="Total Budget (USD)")
     ax.set_xlabel("Mean Participation Propensity (Department)")
     ax.set_ylabel("P(Win — Candidate A)")
@@ -1941,7 +1956,8 @@ def chart_c8_v2():
     ax.axhline(0.5, color=CHARCOAL, lw=1.2, ls="--", label="50% threshold")
     ax.axhline(mean_wp, color=GREY, lw=1.0, ls=":", label=f"Mean win prob ({mean_wp:.1%})")
     wp = merged["win_probability_a"]
-    ax.set_ylim(max(0.485, wp.min() - 0.005), min(0.515, wp.max() + 0.005))
+    # Full [0,1] axis: do not zoom into a sub-pp band that amplifies noise.
+    ax.set_ylim(0, 1)
     ax.set_xlabel("Mean Participation Propensity (Department)")
     ax.set_ylabel("Win Probability — Candidate A")
     ax.set_title(
@@ -1979,12 +1995,36 @@ def chart_c8_v2():
 chart_c8_v2()
 
 
+def _overview_nbi_panel(ax10):
+    sample = pop.sample(n=min(4000, len(pop)), random_state=42)
+    for seg in SEG_ORDER:
+        sub = sample[sample["segment_label"] == seg]
+        if sub.empty:
+            continue
+        ax10.scatter(
+            sub["nbi_stress_prior"],
+            sub["participation_propensity"],
+            s=8,
+            alpha=0.35,
+            color=SEG_COLORS.get(seg, GREY),
+            label=seg.replace("_", " ")[:12],
+        )
+    ax10.set_title("NBI Stress vs Participation", fontsize=10)
+    ax10.set_xlabel("NBI stress prior")
+    ax10.set_ylabel("Propensity")
+    ax10.legend(fontsize=6, loc="upper right")
+
+
 @safe_chart("OVERVIEW")
 def chart_eda_overview():
-    """eda_overview: multi-panel snapshot from current pipeline artifacts."""
-    fig = plt.figure(figsize=(18, 14))
-    gs = fig.add_gridspec(3, 4, hspace=0.45, wspace=0.35)
-    fig.suptitle("PARAGUAY ELECTION — DATA OVERVIEW", fontsize=16, fontweight="bold", y=0.98)
+    """eda_overview: empirical-only snapshot of the population dataset.
+
+    Model outputs (posterior forecast, win probabilities, MC shocks) are
+    deliberately excluded per F-046 — see the C-series charts for those.
+    """
+    fig = plt.figure(figsize=(18, 10))
+    gs = fig.add_gridspec(2, 3, hspace=0.45, wspace=0.35)
+    fig.suptitle("EMPIRICAL DATA OVERVIEW", fontsize=16, fontweight="bold", y=0.98)
 
     # 1 — segment sizes
     ax1 = fig.add_subplot(gs[0, 0])
@@ -2006,8 +2046,12 @@ def chart_eda_overview():
 
     # 3 — propensity by segment
     ax3 = fig.add_subplot(gs[0, 2])
-    seg_props = [pop.loc[pop["segment_label"] == s, "participation_propensity"].dropna() for s in SEG_ORDER]
-    bp = ax3.boxplot(seg_props, vert=True, patch_artist=True, labels=[s.replace("_", "\n") for s in SEG_ORDER])
+    seg_props = [
+        pop.loc[pop["segment_label"] == s, "participation_propensity"].dropna() for s in SEG_ORDER
+    ]
+    bp = ax3.boxplot(
+        seg_props, vert=True, patch_artist=True, labels=[s.replace("_", "\n") for s in SEG_ORDER]
+    )
     for patch, seg in zip(bp["boxes"], SEG_ORDER):
         patch.set_facecolor(SEG_COLORS.get(seg, GREY))
         patch.set_alpha(0.65)
@@ -2016,99 +2060,53 @@ def chart_eda_overview():
     ax3.tick_params(axis="x", labelsize=7)
 
     # 4 — media penetration by segment
-    ax4 = fig.add_subplot(gs[0, 3])
+    ax4 = fig.add_subplot(gs[1, 0])
     media_cols = ["media_penetration_tv", "media_penetration_radio", "media_penetration_whatsapp"]
     media_means = pop.groupby("segment_label")[media_cols].mean().reindex(SEG_ORDER)
     x = np.arange(len(SEG_ORDER))
     w = 0.25
     for i, col in enumerate(media_cols):
-        ax4.bar(x + (i - 1) * w, media_means[col], width=w, label=col.replace("media_penetration_", "").upper())
+        ax4.bar(
+            x + (i - 1) * w,
+            media_means[col],
+            width=w,
+            label=col.replace("media_penetration_", "").upper(),
+        )
     ax4.set_xticks(x)
     ax4.set_xticklabels([s[:8] for s in SEG_ORDER], rotation=45, ha="right", fontsize=7)
     ax4.set_title("Media Penetration by Segment", fontsize=10)
     ax4.set_ylabel("Mean rate")
     ax4.legend(fontsize=7)
 
-    # 5 — reachability tier pie
-    ax5 = fig.add_subplot(gs[1, 0])
+    # 5 — reachability tiers (bar, counts with shares)
+    ax5 = fig.add_subplot(gs[1, 1])
     tier_counts = pop["reachability_tier"].value_counts()
-    ax5.pie(
+    ax5.barh(
+        [f"{k} ({v/len(pop):.1%})" for k, v in tier_counts.items()],
         tier_counts.values,
-        labels=[f"{k}\n{v/len(pop):.1%}" for k, v in tier_counts.items()],
-        colors=[RED, BLUE, GREEN][: len(tier_counts)],
-        startangle=90,
+        color=[RED, BLUE, GREEN][: len(tier_counts)],
+        edgecolor=WHITE,
+        lw=0.4,
     )
     ax5.set_title("Reachability Tiers", fontsize=10)
+    ax5.set_xlabel("# Records")
+    ax5.invert_yaxis()
 
-    # 6 — forecast timeline
-    ax6 = fig.add_subplot(gs[1, 1:3])
-    fc = forecast.sort_values("date")
-    ax6.plot(fc["date"], fc["posterior_mean_preference_margin_pp"], color=RED, lw=2)
-    ax6.fill_between(
-        fc["date"],
-        fc["posterior_hdi_low_pp"],
-        fc["posterior_hdi_high_pp"],
-        color=RED,
-        alpha=0.2,
+    # 6 — NBI stress vs propensity (sample)
+    _overview_nbi_panel(fig.add_subplot(gs[1, 2]))
+
+    fig.text(
+        0.5,
+        0.035,
+        "Empirical pipeline inputs only. Model outputs: C1–C10 (posterior forecast, "
+        "win probabilities, MC scenarios).",
+        ha="center",
+        fontsize=9,
+        color=CHARCOAL,
+        fontstyle="italic",
     )
-    ax6.axhline(0, color=CHARCOAL, ls="--", lw=1)
-    ax6.set_title("Daily Posterior Forecast — Preference Margin (pp)", fontsize=10)
-    ax6.set_ylabel("Margin (pp)")
-
-    # 7 — battleground (illustrative)
-    ax7 = fig.add_subplot(gs[1, 3])
-    bg = battleground.sort_values("win_probability_a", ascending=True)
-    ax7.barh(bg["department"], bg["win_probability_a"], color=RED, edgecolor=WHITE, lw=0.3)
-    ax7.axvline(0.5, color=CHARCOAL, ls="--", lw=1)
-    ax7.set_xlim(0.48, 0.52)
-    ax7.set_title(f"Battleground Win Prob\n({ILLUSTRATIVE_BATTLE_SUB})", fontsize=9)
-    ax7.tick_params(axis="y", labelsize=6)
-
-    # 8 — MC shock scale
-    ax8 = fig.add_subplot(gs[2, 0])
-    ax8.hist(mc_draws["shock_scale"], bins=40, color=BLUE, alpha=0.75, edgecolor=WHITE, lw=0.3)
-    ax8.set_title("MC Shock Scale Distribution", fontsize=10)
-    ax8.set_xlabel("Shock scale")
-
-    # 9 — budget by region × channel type
-    ax9 = fig.add_subplot(gs[2, 1:3])
-    if "region" in alloc_base.columns:
-        reg_ch = (
-            alloc_base.groupby(["region", "channel_type"])["budget_allocation_usd"]
-            .sum()
-            .unstack(fill_value=0)
-        )
-        reg_ch.plot(kind="bar", ax=ax9, color=[RED, BLUE, GREEN, ORANGE][: reg_ch.shape[1]])
-        ax9.set_title("Budget Allocation by Region & Channel Type (USD)", fontsize=10)
-        ax9.set_ylabel("Total USD")
-        ax9.tick_params(axis="x", rotation=0)
-        ax9.legend(fontsize=7, title="Channel")
-    else:
-        ax9.text(0.5, 0.5, "Region column missing", ha="center", va="center")
-        ax9.set_axis_off()
-
-    # 10 — NBI stress vs propensity (sample)
-    ax10 = fig.add_subplot(gs[2, 3])
-    sample = pop.sample(n=min(4000, len(pop)), random_state=42)
-    for seg in SEG_ORDER:
-        sub = sample[sample["segment_label"] == seg]
-        if sub.empty:
-            continue
-        ax10.scatter(
-            sub["nbi_stress_prior"],
-            sub["participation_propensity"],
-            s=8,
-            alpha=0.35,
-            color=SEG_COLORS.get(seg, GREY),
-            label=seg.replace("_", " ")[:12],
-        )
-    ax10.set_title("NBI Stress vs Participation", fontsize=10)
-    ax10.set_xlabel("NBI stress prior")
-    ax10.set_ylabel("Propensity")
-    ax10.legend(fontsize=6, loc="upper right")
-
     fig.text(0.5, 0.01, SOURCE, ha="center", fontsize=7.5, color=GREY)
-    fig.tight_layout(rect=(0, 0.02, 1, 0.96))
+    fig.tight_layout(rect=(0, 0.05, 1, 0.96))
     save_fig(fig, "eda_overview.png")
 
 
