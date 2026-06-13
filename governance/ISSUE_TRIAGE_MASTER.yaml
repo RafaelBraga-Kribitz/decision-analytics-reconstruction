@@ -188,16 +188,16 @@ chart_audit_2026_06:
     - {id: AUD-B2, status: open_unfiled, severity: rework, title: B2 missing in_person channel / not burn-down}
     - {id: AUD-B3, status: verified_closed, finding: F-060, severity: reject, title: B3a stacks mutually exclusive scenarios}
     - {id: AUD-B4, status: open_unfiled, severity: rework, title: B4 blank broadcast columns / 100% saturation}
-    - {id: AUD-B5, status: open_unfiled, severity: reject, title: B5 ratio self-correlation / 3.5¢ contacts}
+    - {id: AUD-B5, status: verified_closed, finding: F-062, severity: reject, title: B5 ratio self-correlation / 3.5¢ contacts}
     - {id: AUD-B6, status: open_unfiled, severity: approved_revisions, title: B6 synthetic FX unlabeled}
     - {id: AUD-B7, status: verified_closed, finding: F-060, severity: reject, title: B7 routing matrix half-labeled / orphan channel}
-    - {id: AUD-B8, status: open_unfiled, severity: reject, title: B8 contacts exceed caps 5× (allocation-data dependent — triaged in completion sprint)}
+    - {id: AUD-B8, status: verified_closed, finding: F-063, severity: reject, title: B8 contacts exceed caps 5× (allocation-data dependent — triaged in completion sprint)}
     - {id: AUD-S1, status: open_unfiled, severity: rework, title: S1 committed segments funded incoherently}
     - {id: AUD-S2, status: open_unfiled, severity: approved_revisions, title: S2 quadrant labels wrong}
     - {id: AUD-S3, status: open_unfiled, severity: rework, title: S3 ROI inherits contact inflation}
-    - {id: AUD-S4, status: open_unfiled, severity: reject, title: S4 priority score circular / MC noise}
+    - {id: AUD-S4, status: verified_closed, finding: F-064, severity: reject, title: S4 priority score circular / MC noise}
     - {id: AUD-S5, status: verified_closed, finding: F-060, severity: reject, title: S5 mislabeled efficiency frontier}
-    - {id: AUD-BMC, status: open_unfiled, severity: reject, title: MC contacts flat across scenarios (MC coupling — deferred, see completion sprint)}
+    - {id: AUD-BMC, status: verified_closed, finding: F-065, severity: reject, title: MC contacts flat across scenarios (MC coupling — deferred, see completion sprint)}
   module_a:
     - {id: AUD-A1, status: insufficient_fix, finding: F-050, title: A1 segment sizes contradict dashboard shares}
     - {id: AUD-A2, status: open_unfiled, severity: rework, title: A2 hard age cut at 25 exposes flag-driven segments}
@@ -208,13 +208,13 @@ chart_audit_2026_06:
     - {id: AUD-A7, status: open_unfiled, severity: approved_revisions, title: A7 language after label fix}
     - {id: AUD-A8, status: open_unfiled, severity: approved_revisions, title: A8 structurally_dependent name falsified}
     - {id: AUD-A9, status: open_unfiled, severity: rework, title: A9 correlation QA internal only}
-    - {id: AUD-A10, status: open_unfiled, severity: reject, title: A10 PCA lattice proves dept constants}
+    - {id: AUD-A10, status: verified_closed, finding: F-066, severity: reject, title: A10 PCA lattice proves dept constants}
     - {id: AUD-A11, status: open_finding, finding: F-052, title: A11 NBI bimodality misdrawn as outliers}
     - {id: AUD-A12, status: verified_closed, finding: F-061, severity: reject, title: A12 reachability histogram unreadable}
     - {id: AUD-A13, status: deferred, title: A13 preference proxy null — drop feature}
     - {id: AUD-SHAP, status: open_unfiled, severity: rework, title: SHAP missing model/target label}
   public_layer:
-    - {id: AUD-PUB-001, status: open_unfiled, severity: reject, title: Dashboard QA tab empty}
+    - {id: AUD-PUB-001, status: verified_closed, finding: F-067, severity: reject, title: Dashboard QA tab empty}
     - {id: AUD-PUB-002, status: open_finding, finding: F-050, title: GitHub Pages report 280px capture useless}
     - {id: AUD-PUB-003, status: open_unfiled, severity: rework, title: Calibration tab disclaimer stripped from PNG}
     - {id: AUD-PUB-004, status: verified_closed, finding: F-061, severity: reject, title: eda_overview data/model scope mislabel + truncated bars}

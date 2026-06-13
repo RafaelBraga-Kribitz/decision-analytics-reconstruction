@@ -693,10 +693,20 @@ def chart_a10():
     ev = pca.explained_variance_ratio_
     ax.set_xlabel(f"PC1 ({ev[0]*100:.1f}% var explained)")
     ax.set_ylabel(f"PC2 ({ev[1]*100:.1f}% var explained)")
-    ax.set_title("A10 — PCA Biplot: First Two Principal Components by Segment")
+    ax.set_title("A10 — PCA Biplot: Principal Components by Segment\n(⚠ features are dept-level constants — structure reflects dept assignment)")
     ax.legend(title="Segment", bbox_to_anchor=(1.01, 1), loc="upper left", fontsize=9)
     ax.axhline(0, color=GREY, lw=0.7, ls="--")
     ax.axvline(0, color=GREY, lw=0.7, ls="--")
+    ax.annotate(
+        "Most input features (media penetration, NBI stress, reachability indices) are "
+        "assigned at department level — all voters in a department share the same value. "
+        "The PCA lattice pattern reflects department assignment, not individual-voter variance.",
+        xy=(0.5, -0.14),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
+    )
     fig.text(0.5, -0.01, SOURCE, ha="center", fontsize=7.5, color=GREY)
     fig.tight_layout()
     save_fig(fig, "A10_pca_biplot.png")
@@ -1045,7 +1055,7 @@ def chart_b5():
 
     fig, ax = plt.subplots(figsize=(11, 6))
     sc = ax.scatter(
-        dept_agg["total_budget"],
+        dept_agg["total_persuasion"],
         dept_agg["cpp"],
         s=dept_agg["total_budget"] / 300,
         c=dept_agg["total_persuasion"],
@@ -1058,16 +1068,24 @@ def chart_b5():
     for _, row in dept_agg.iterrows():
         ax.annotate(
             row["department"],
-            (row["total_budget"], row["cpp"]),
+            (row["total_persuasion"], row["cpp"]),
             textcoords="offset points",
             xytext=(5, 3),
             fontsize=8,
         )
 
     plt.colorbar(sc, ax=ax, label="Total Persuasion-Adjusted Contacts")
-    ax.set_xlabel("Total Budget Allocated (USD)")
+    ax.set_xlabel("Total Persuasion-Adjusted Contacts")
     ax.set_ylabel("Cost per Persuasion Contact (USD)")
-    ax.set_title("B5 — Cost per Persuasion Contact by Department\n(bubble size = budget)")
+    ax.set_title("B5 — Cost per Persuasion Contact vs Total Persuasion Contacts\n(bubble size = budget; x-axis decoupled from ratio denominator)")
+    ax.annotate(
+        "x-axis is now total persuasion contacts (not budget) — this decouples the ratio denominator from the horizontal axis; a previous version showed budget on x, creating a tautological self-correlation.",
+        xy=(0.5, -0.22),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
+    )
     annotate_source(ax)
     fig.tight_layout()
     save_fig(fig, "B5_cost_per_persuasion_contact.png")
@@ -1197,7 +1215,7 @@ def chart_b8():
         width=w,
         color=RED,
         alpha=0.85,
-        label="Actual Expected Contacts",
+        label="Expected Contacts (multi-channel cumulative)",
     )
     ax1.set_ylabel("Contacts / Audience Size")
     ax1.set_xticks(list(x))
@@ -1212,7 +1230,15 @@ def chart_b8():
     ax2.tick_params(axis="y", colors=BLUE)
     ax2.legend(loc="upper right")
 
-    ax1.set_title("B8 — Reach Cap vs Expected Contacts vs Budget (Top 10 Departments)")
+    ax1.set_title("B8 — Reach Cap vs Expected Contacts (Top 10 Departments)\n(contacts = cumulative channel touches; cap = unique voter ceiling)")
+    ax1.annotate(
+        "expected_contacts counts cumulative multi-channel exposures (a voter may be touched across TV, radio, and WhatsApp); reach_cap is a unique reachable-voter ceiling. A ratio > 1 reflects multi-channel scheduling, not a constraint violation.",
+        xy=(0.5, -0.18),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
+    )
     fig.text(0.5, -0.02, SOURCE, ha="center", fontsize=7.5, color=GREY)
     fig.tight_layout()
     save_fig(fig, "B8_reach_caps_vs_contacts.png")
@@ -1434,7 +1460,7 @@ def chart_c5():
     ]
     positions = list(range(1, len(buckets) + 1))
 
-    fig, ax = plt.subplots(figsize=(11, 5))
+    fig, ax = plt.subplots(figsize=(11, 6))
     bp = ax.boxplot(series, positions=positions, widths=0.5, showfliers=False, patch_artist=True)
     for patch, color in zip(bp["boxes"], colors):
         patch.set_facecolor(color)
@@ -1456,6 +1482,16 @@ def chart_c5():
         "Monte-Carlo draws have no temporal order, so a percentile fan over a draw index "
         "would be meaningless. Near-deterministic scenarios collapse to a point.",
         xy=(0.5, -0.28),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
+    )
+    ax.annotate(
+        "B→C handshake note: alloc_mean_persuasion_contacts is scenario-invariant — "
+        "Module B allocates a single mean contact count across all scenarios. "
+        "Scenario variation enters only via the shock_scale multiplier, not contact volume.",
+        xy=(0.5, -0.40),
         xycoords="axes fraction",
         ha="center",
         fontsize=7.5,
@@ -1918,7 +1954,6 @@ def chart_s4():
     merged_s4["priority_score"] = (
         merged_s4["win_probability_a"]
         * merged_s4["mean_propensity"]
-        * np.log1p(merged_s4["budget_allocation_usd"].fillna(0))
     )
 
     merged_s4 = merged_s4.sort_values("priority_score", ascending=True)
@@ -1945,7 +1980,7 @@ def chart_s4():
             fontsize=8,
         )
 
-    plt.colorbar(sc, ax=ax, label="Priority Score (win_prob × propensity × log_budget)")
+    plt.colorbar(sc, ax=ax, label="Priority Score (win_prob × propensity — budget removed to avoid circularity)")
     ax.axvline(0.5, color=GREY, lw=1.2, ls="--", label="50% win threshold")
     ax.axhline(
         merged_s4["mean_propensity"].median(), color=GREY, lw=1, ls="--", label="Median propensity"
@@ -1954,7 +1989,15 @@ def chart_s4():
     ax.set_ylabel("Mean Participation Propensity")
     ax.set_title(
         "S4 — Department Priority Matrix\n"
-        f"(Win Prob × Propensity × Budget · {ILLUSTRATIVE_BATTLE_SUB})"
+        f"(Win Prob × Propensity · budget-size on bubble · {ILLUSTRATIVE_BATTLE_SUB})"
+    )
+    ax.annotate(
+        "Budget was excluded from the priority score: it was itself allocated based on win_prob × propensity, so including it would create a tautology. Bubble size still reflects budget for reference.",
+        xy=(0.5, -0.22),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
     )
     ax.legend(fontsize=8, loc="lower right")
     annotate_source(ax)
@@ -2149,7 +2192,7 @@ def chart_eda_overview():
     """
     fig = plt.figure(figsize=(18, 10))
     gs = fig.add_gridspec(2, 3, hspace=0.45, wspace=0.35)
-    fig.suptitle("POPULATION DATA OVERVIEW", fontsize=16, fontweight="bold", y=0.98)
+    fig.suptitle("EMPIRICAL DATA OVERVIEW", fontsize=16, fontweight="bold", y=0.98)
 
     # 1 — segment sizes
     ax1 = fig.add_subplot(gs[0, 0])
@@ -2223,8 +2266,8 @@ def chart_eda_overview():
     fig.text(
         0.5,
         0.035,
-        "Empirical population inputs plus the Module A participation-propensity output. "
-        "Downstream model outputs (C1–C10 forecast / win-probability / MC) are shown separately.",
+        "Empirical population inputs plus the Module A participation-propensity output (panel 3). "
+        "Model outputs: C1–C10 (forecast / win-probability / Monte-Carlo) are shown separately.",
         ha="center",
         fontsize=9,
         color=CHARCOAL,

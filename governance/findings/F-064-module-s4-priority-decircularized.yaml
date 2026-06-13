@@ -1,0 +1,18 @@
+id: F-064
+title: "S4 priority score decircularized (budget removed from formula)"
+category: misleading_visualization
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-13
+closed_at: 2026-06-13
+recurrence_count: 0
+evidence: |
+  governance/ISSUE_TRIAGE_MASTER.yaml AUD-S4 (severity reject).
+  priority_score = win_probability_a * mean_propensity * log1p(budget).
+  Budget was itself allocated using priority (win_prob × propensity),
+  so including it created a tautological self-reinforcing score.
+verification_script: scripts/check_module_s4_priority_decircularized.py
+notes: |
+  Fix: removed log1p(budget) from priority formula.
+  Colorbar label and annotation disclose the circularity concern.
+  Bubble size still reflects budget for visual reference.

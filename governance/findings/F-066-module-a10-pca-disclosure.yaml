@@ -1,0 +1,18 @@
+id: F-066
+title: "A10 PCA lattice disclosed as dept-level constant features"
+category: misleading_visualization
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-13
+closed_at: 2026-06-13
+recurrence_count: 0
+evidence: |
+  governance/ISSUE_TRIAGE_MASTER.yaml AUD-A10 (severity reject).
+  PCA input features (media penetration, NBI stress, reachability indices)
+  are assigned at department level — all voters in a department share the
+  same value. The biplot "lattice" pattern reflects department assignment,
+  not individual-voter variance.
+verification_script: scripts/check_module_a10_pca_disclosure.py
+notes: |
+  Fix: title updated to warn about dept-level constants; annotation added
+  explaining that the PCA lattice reflects department assignment.
