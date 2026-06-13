@@ -79,12 +79,12 @@
     },
     {
       "category": "fragmented_standards",
-      "closed_at": null,
+      "closed_at": "2026-06-12",
       "id": "F-008",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-08",
       "path": "governance/findings/F-008-radon-complexity-baseline.yaml",
-      "status": "open",
+      "status": "closed",
       "title": "High-complexity blocks remain in baseline",
       "verification_script": "scripts/check_radon_complexity_zero.py"
     },
@@ -219,24 +219,154 @@
       "status": "closed",
       "title": "B\u2192C link was narrative: pipeline wiring + golden-metric CI gates",
       "verification_script": "scripts/check_pipeline_golden_metrics.py"
+    },
+    {
+      "category": "fragmented_standards",
+      "closed_at": "2026-06-12",
+      "id": "F-041",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-041-terminology-compliance.yaml",
+      "status": "closed",
+      "title": "Terminology compliance gaps in public markdown",
+      "verification_script": "scripts/check_terminology_compliance.py"
+    },
+    {
+      "category": "fake_completion",
+      "closed_at": "2026-06-12",
+      "id": "F-042",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-042-mcmc-diagnostics-disclosure.yaml",
+      "status": "closed",
+      "title": "MCMC diagnostic claims must match aspirational enforcement",
+      "verification_script": "scripts/check_mcmc_diagnostics_disclosure.py"
+    },
+    {
+      "category": "documentation_entropy",
+      "closed_at": "2026-06-12",
+      "id": "F-043",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-043-operator-surface-tracked.yaml",
+      "status": "closed",
+      "title": "Operator-only artifacts remain publicly tracked",
+      "verification_script": "scripts/check_tracked_operator_artifacts.py"
+    },
+    {
+      "category": "fragmented_standards",
+      "closed_at": "2026-06-12",
+      "id": "F-044",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-044-module-a-config-wiring.yaml",
+      "status": "closed",
+      "title": "Module A model_params.yaml not wired to runtime loaders",
+      "verification_script": "scripts/check_module_a_config_wiring.py"
+    },
+    {
+      "category": "fake_completion",
+      "closed_at": "2026-06-12",
+      "id": "F-045",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-045-battleground-illustrative-label.yaml",
+      "status": "closed",
+      "title": "Battleground department probabilities must stay explicitly illustrative",
+      "verification_script": "scripts/check_battleground_illustrative_label.py"
+    },
+    {
+      "category": "fake_completion",
+      "closed_at": "2026-06-12",
+      "id": "F-046",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-046-eda-stale-orphan-pngs.yaml",
+      "status": "closed",
+      "title": "Stale orphan EDA PNGs contradict canonical pipeline outputs",
+      "verification_script": "scripts/check_eda_stale_orphan_pngs.py"
+    },
+    {
+      "category": "fake_completion",
+      "closed_at": "2026-06-12",
+      "id": "F-047",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-047-module-a-report-charts-missing.yaml",
+      "status": "closed",
+      "title": "Module A model-card chart artifacts missing from reports/",
+      "verification_script": "scripts/check_module_a_report_charts.py"
+    },
+    {
+      "category": "fake_completion",
+      "closed_at": "2026-06-12",
+      "id": "F-048",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-048-eda-battleground-chart-disclosure.yaml",
+      "status": "closed",
+      "title": "EDA battleground charts omit illustrative-mapping disclosure in titles",
+      "verification_script": "scripts/check_eda_battleground_chart_labels.py"
+    },
+    {
+      "category": "fragmented_standards",
+      "closed_at": "2026-06-12",
+      "id": "F-049",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-049-eda-notebook-chart-parity.yaml",
+      "status": "closed",
+      "title": "EDA notebook chart IDs drift from canonical PNG generator (E-10)",
+      "verification_script": "scripts/check_eda_notebook_chart_parity.py"
+    },
+    {
+      "category": "fake_completion",
+      "closed_at": "2026-06-12",
+      "id": "F-050",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-050-figure-artifact-lineage.yaml",
+      "status": "closed",
+      "title": "Committed chart PNGs must bind to a single canonical data run",
+      "verification_script": "scripts/check_figure_artifact_lineage.py"
+    },
+    {
+      "category": "statistical-rigor",
+      "closed_at": "2026-06-12",
+      "id": "F-051",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-051-segment-label-chart-semantics.yaml",
+      "status": "closed",
+      "title": "Canonical chart population must earn segment label semantics",
+      "verification_script": "scripts/check_segment_label_chart_semantics.py"
+    },
+    {
+      "category": "statistical-rigor",
+      "closed_at": "2026-06-12",
+      "id": "F-052",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-052-propensity-individual-variation.yaml",
+      "status": "closed",
+      "title": "Participation propensity must vary within departments and segments",
+      "verification_script": "scripts/check_propensity_individual_variation.py"
     }
   ],
-  "generated_at": "2026-06-11T15:27:26.786964+00:00",
-  "git_branch": "main",
-  "git_head_sha": "aa355b4c7c928ad4a6ad34f13cb272fe473a601e",
+  "generated_at": "2026-06-13T00:02:38.096400+00:00",
+  "git_branch": "fix/F-052-propensity-individual-variation",
+  "git_head_sha": "a6675fd0b0df1fec9b612b4feb2acccee705bdc0",
   "migrations": [],
   "summary": {
-    "findings_closed": 17,
+    "findings_closed": 30,
     "findings_closed_historical": 2,
     "findings_in_progress": 0,
-    "findings_open": 1,
-    "findings_total": 20,
+    "findings_open": 0,
+    "findings_total": 32,
     "findings_wont_fix": 0,
     "migrations_in_progress": 0,
     "migrations_total": 0,
-    "open_by_category": {
-      "fragmented_standards": 1
-    }
+    "open_by_category": {}
   },
   "validation_errors": [],
   "writer": "scripts/write_audit_state.py"

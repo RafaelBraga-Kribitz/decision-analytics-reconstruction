@@ -29,7 +29,7 @@ and `reports/VALIDATION.md` for disclosure.
 ## Monte Carlo scenarios
 
 Stratified draws ingest Module B allocation when present; silent-zero contacts
-are rejected. Proof: `scenarios/monte_carlo.py` + `tests/test_monte_carlo_stratified.py`.
+are rejected. Proof: `module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/scenarios/monte_carlo.py` + `module_c_forecasting_scenarios/tests/test_monte_carlo_stratified.py`.
 
 ## Portfolio outputs
 

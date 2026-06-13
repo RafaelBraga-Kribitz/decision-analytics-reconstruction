@@ -80,6 +80,7 @@ def run_export(
     with open(model_params_path, encoding="utf-8") as f:
         model_params: dict[str, Any] = yaml.safe_load(f)
     stratify_by = tuple(model_params["propensity"]["stratify_by"])
+    individual_spread_std = float(model_params["propensity"]["individual_spread_std"])
 
     if sample_size is not None:
         config = dict(config)
@@ -112,9 +113,11 @@ def run_export(
     merged_feat["dbscan_noise_flag"] = labels_df["dbscan_noise_flag"].to_numpy()
 
     print("[export] Propensity model ...", flush=True)
-    prop_raw = PropensityModel(random_state=42, stratify_by=stratify_by).fit_predict(
-        merged_feat, anchors
-    )
+    prop_raw = PropensityModel(
+        random_state=42,
+        stratify_by=stratify_by,
+        individual_spread_std=individual_spread_std,
+    ).fit_predict(merged_feat, anchors)
     prop_out = cast(dict[str, Any], prop_raw)  # structured propensity bundle from ``fit_predict``
 
     prop_metrics = cast(dict[str, float], prop_out.get("metrics", {}))

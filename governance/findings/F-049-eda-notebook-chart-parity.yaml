@@ -1,0 +1,23 @@
+id: F-049
+title: "EDA notebook chart IDs drift from canonical PNG generator (E-10)"
+category: fragmented_standards
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-12
+closed_at: 2026-06-12
+recurrence_count: 0
+evidence: |
+  ISSUE_TRIAGE_MASTER E-10 (open_unfiled): worst EDA plots not portfolio-grade.
+  Structural drift: reports/eda/generate_eda.py C2 plots final-day posterior
+  margin + 94% HDI (chart_c2 docstring L1222); reports/eda/build_notebook.py
+  C2 cell plots mc["shock_scale"] histogram labeled "C2 — Histogram: Final-Day
+  Posterior Margin Distribution" (L1172–1189) — wrong estimand, same ID.
+  Visual defects in canonical PNGs: C8_win_prob_vs_propensity.png department
+  label overlap; C3 uses red/blue split on ±0.5 pp noise band; C5 x-axis is
+  draw-chunk index not scenario/time (misleading fan chart). A4 heatmap shows
+  large empty dept×segment cells (sparse segments outside top depts).
+verification_script: scripts/check_eda_notebook_chart_parity.py
+notes: |
+  Remediation: align build_notebook.py C2 with generate_eda C2; regenerate
+  paraguay_election_eda.ipynb; fix C8 labels (adjustText or table inset);
+  reconsider C5 x-axis semantics; document S1 proration in chart subtitle (E-7).
