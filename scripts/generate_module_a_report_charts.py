@@ -2,7 +2,7 @@
 """Export Module A portfolio charts to reports/module_a/.
 
 Writes:
-  - reliability_diagram.png — national-rate reference diagnostic (matplotlib)
+  - reliability_diagram.png — training-target reference diagnostic (matplotlib)
   - shap_summary.png — mean |SHAP| bar chart from pipeline propensity model
 
 Requires processed Module A artifacts (``make module-a-pipeline``).
@@ -18,7 +18,6 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import numpy as np
 import pandas as pd
 import yaml
 
@@ -28,16 +27,19 @@ DATA = ROOT / "data" / "processed"
 ANCHORS = ROOT / "module_a_population_segmentation" / "config" / "calibration_anchors.yaml"
 MODEL_PARAMS = ROOT / "module_a_population_segmentation" / "config" / "model_params.yaml"
 
+RELIABILITY_DISCLAIMER = (
+    "Synthetic training labels (dept/youth/gender anchors) — not held-out calibration"
+)
+
 
 def write_reliability_diagram(out_path: Path) -> None:
+    from population_segmentation.models.propensity import synthetic_training_reference_labels
     from population_segmentation.visualization.calibration_curves import reliability_frame
 
     pop = pd.read_parquet(DATA / "population_master_clean.parquet")
     with open(ANCHORS, encoding="utf-8") as f:
         anc = yaml.safe_load(f)
-    national_rate = float(anc["national"]["participation_rate"])
-    rng = np.random.default_rng(42)
-    y_true = (rng.random(len(pop)) < national_rate).astype(int)
+    y_true = synthetic_training_reference_labels(pop, anc, random_state=42)
     y_prob = pop["participation_propensity"].to_numpy()
     frame = reliability_frame(y_true, y_prob)
 
@@ -45,10 +47,11 @@ def write_reliability_diagram(out_path: Path) -> None:
     ax.plot(frame["predicted_mean"], frame["observed_mean"], "o-", label="Model", color="#e60000")
     ax.plot([0, 1], [0, 1], "--", color="#25282b", label="Perfect calibration")
     ax.set_xlabel("Predicted mean propensity (bin)")
-    ax.set_ylabel("Observed rate (national-reference labels)")
-    ax.set_title("Reliability diagram — national-rate reference diagnostic")
-    ax.legend(fontsize=9)
-    fig.tight_layout()
+    ax.set_ylabel("Observed rate (training-target labels)")
+    ax.set_title("Reliability diagram — training-target reference diagnostic")
+    ax.legend(fontsize=9, loc="upper left")
+    fig.text(0.5, 0.01, RELIABILITY_DISCLAIMER, ha="center", fontsize=8, color="#555555")
+    fig.tight_layout(rect=(0, 0.04, 1, 1))
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path, dpi=150, bbox_inches="tight")
     plt.close(fig)

@@ -1,0 +1,18 @@
+id: F-075
+title: "Reliability diagram labels must match propensity training target"
+category: statistical-rigor
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-12
+closed_at: 2026-06-12
+recurrence_count: 0
+evidence: |
+  Chart audit AUD-REL, AUD-PUB-003: reliability PNG and dashboard use i.i.d. Bernoulli
+  draws at national rate against dept-structured raked propensity, producing wild bin
+  swings misread as miscalibration. Training uses _synthetic_target with dept/youth/gender
+  deviations — diagnostic must use the same generator or disclose non-diagnostic status.
+verification_script: scripts/check_reliability_label_semantics.py
+notes: |
+  Triage: A-C9, A-C10 in chart audit remediation plan v2.
+  Remediation: synthetic_training_reference_labels(); disclaimer on static PNG;
+  remove Bernoulli national helper from production dashboard path.
