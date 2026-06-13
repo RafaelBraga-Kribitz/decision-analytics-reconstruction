@@ -48,62 +48,69 @@ def _canonical_save_fig_names() -> set[str]:
     return set(re.findall(r'save_fig\(fig,\s*"([^"]+\.png)"\)', src))
 
 
-def main() -> int:
-    gaps: list[str] = []
+def _manifest_key_gaps(manifest: dict) -> list[str]:
+    required = ("run_id", "git_commit", "data_manifest", "segmentation_label_hash", "figures")
+    return [f"FIGURE_MANIFEST.yaml missing required key: {key}" for key in required if key not in manifest]
 
-    if not MANIFEST_PATH.is_file():
-        gaps.append("missing governance/FIGURE_MANIFEST.yaml")
-        return gate("F-050", Path(__file__).name, False, "; ".join(gaps))
 
-    manifest = yaml.safe_load(MANIFEST_PATH.read_text(encoding="utf-8")) or {}
-    for key in ("run_id", "git_commit", "data_manifest", "segmentation_label_hash", "figures"):
-        if key not in manifest:
-            gaps.append(f"FIGURE_MANIFEST.yaml missing required key: {key}")
-
+def _model_manifest_gaps(manifest: dict) -> list[str]:
     if not MODEL_MANIFEST.is_file():
-        gaps.append("missing data/processed/model_run_manifest.json")
-    else:
-        model_doc = json.loads(MODEL_MANIFEST.read_text(encoding="utf-8"))
-        model_commit = model_doc.get("git_commit")
-        if manifest.get("git_commit") != model_commit:
-            gaps.append("FIGURE_MANIFEST git_commit does not match model_run_manifest.json")
-        if manifest.get("run_id") != str(model_commit or "")[:12]:
-            gaps.append("FIGURE_MANIFEST run_id must equal first 12 chars of git_commit")
+        return ["missing data/processed/model_run_manifest.json"]
+    gaps: list[str] = []
+    model_doc = json.loads(MODEL_MANIFEST.read_text(encoding="utf-8"))
+    model_commit = model_doc.get("git_commit")
+    if manifest.get("git_commit") != model_commit:
+        gaps.append("FIGURE_MANIFEST git_commit does not match model_run_manifest.json")
+    if manifest.get("run_id") != str(model_commit or "")[:12]:
+        gaps.append("FIGURE_MANIFEST run_id must equal first 12 chars of git_commit")
+    return gaps
 
+
+def _label_hash_gaps(manifest: dict) -> list[str]:
     expected_hash = _segmentation_label_hash()
     if expected_hash is None:
-        gaps.append("missing data/processed/segment_labels.parquet for hash check")
-    elif manifest.get("segmentation_label_hash") != expected_hash:
-        gaps.append(
+        return ["missing data/processed/segment_labels.parquet for hash check"]
+    if manifest.get("segmentation_label_hash") != expected_hash:
+        return [
             f"segmentation_label_hash drift (manifest vs parquet): "
             f"{manifest.get('segmentation_label_hash')} != {expected_hash}"
-        )
+        ]
+    return []
 
+
+def _on_disk_pngs() -> list[Path]:
+    pngs: list[Path] = []
+    for report_dir in REPORT_DIRS:
+        if report_dir.is_dir():
+            pngs.extend(sorted(report_dir.glob("*.png")))
+    return pngs
+
+
+def _png_registration_gaps(manifest: dict, on_disk: list[Path]) -> list[str]:
     listed_paths = {
         str((REPO_ROOT / entry["path"]).resolve())
         for entry in manifest.get("figures", [])
         if isinstance(entry, dict) and entry.get("path")
     }
-    on_disk: list[Path] = []
-    for report_dir in REPORT_DIRS:
-        if report_dir.is_dir():
-            on_disk.extend(sorted(report_dir.glob("*.png")))
-
-    for png in on_disk:
-        if str(png.resolve()) not in listed_paths:
-            gaps.append(f"unregistered committed PNG: {png.relative_to(REPO_ROOT)}")
-
+    gaps = [
+        f"unregistered committed PNG: {png.relative_to(REPO_ROOT)}"
+        for png in on_disk
+        if str(png.resolve()) not in listed_paths
+    ]
     canonical = _canonical_save_fig_names()
-    for png in on_disk:
-        if png.parent.name == "eda" and png.name not in canonical:
-            gaps.append(f"orphan EDA PNG not emitted by generate_eda.py: {png.name}")
+    gaps.extend(
+        f"orphan EDA PNG not emitted by generate_eda.py: {png.name}"
+        for png in on_disk
+        if png.parent.name == "eda" and png.name not in canonical
+    )
+    return gaps
 
+
+def _consumer_gaps() -> list[str]:
+    gaps: list[str] = []
     if EDA_GENERATOR.is_file():
         src = EDA_GENERATOR.read_text(encoding="utf-8")
-        has_parquet = (
-            'population_master_clean.parquet"' in src or "population_master_clean.parquet" in src
-        )
-        if not has_parquet:
+        if "population_master_clean.parquet" not in src:
             gaps.append("generate_eda.py must read data/processed/population_master_clean.parquet")
     else:
         gaps.append("missing reports/eda/generate_eda.py")
@@ -117,6 +124,22 @@ def main() -> int:
             )
     else:
         gaps.append("missing module_a_population_segmentation/app/streamlit_dashboard.py")
+    return gaps
+
+
+def main() -> int:
+    if not MANIFEST_PATH.is_file():
+        return gate("F-050", Path(__file__).name, False, "missing governance/FIGURE_MANIFEST.yaml")
+
+    manifest = yaml.safe_load(MANIFEST_PATH.read_text(encoding="utf-8")) or {}
+    on_disk = _on_disk_pngs()
+
+    gaps: list[str] = []
+    gaps.extend(_manifest_key_gaps(manifest))
+    gaps.extend(_model_manifest_gaps(manifest))
+    gaps.extend(_label_hash_gaps(manifest))
+    gaps.extend(_png_registration_gaps(manifest, on_disk))
+    gaps.extend(_consumer_gaps())
 
     ok = not gaps
     detail = (
