@@ -33,7 +33,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install Poetry
-        run: pip install poetry
+        run: pip install poetry pyyaml
       - name: Install project deps
         run: poetry install --no-interaction
       - name: Re-verify closed findings
@@ -51,12 +51,12 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Install Poetry
-        run: pip install poetry
+      - name: Install Poetry and governance deps
+        run: pip install poetry pyyaml
       - name: Install project deps
         run: poetry install --no-interaction
       - name: Install Python debt tools
-        run: pip install pyyaml ruff vulture radon
+        run: pip install ruff vulture radon
       # Uncomment for TS/JS projects:
       # - uses: actions/setup-node@v4
       #   with: { node-version: "20" }
