@@ -101,6 +101,45 @@ def _swap_cluster_labels(mapping: dict[int, str], a: int, b: int) -> None:
     mapping[a], mapping[b] = mapping[b], mapping[a]
 
 
+def _rural_opposition_clusters(profiles: pd.DataFrame) -> list[int]:
+    return [
+        int(cluster_id)
+        for cluster_id in profiles.index
+        if float(profiles.loc[cluster_id, "rural"]) >= 0.01
+    ]
+
+
+def _repair_committed_opposition_label(
+    df: pd.DataFrame,
+    labels: np.ndarray,
+    mapping: dict[int, str],
+    profiles: pd.DataFrame,
+) -> None:
+    reverse = {label: cluster_id for cluster_id, label in mapping.items()}
+    co_id = reverse.get("committed_opposition")
+    if co_id is None or _cluster_rural_share(df, labels, co_id) >= 0.01:
+        return
+    rural_clusters = _rural_opposition_clusters(profiles)
+    if not rural_clusters:
+        return
+    best = max(rural_clusters, key=lambda cid: float(profiles.loc[cid, "opposition"]))
+    if best != co_id:
+        _swap_cluster_labels(mapping, co_id, best)
+
+
+def _repair_structurally_dependent_label(
+    mapping: dict[int, str],
+    profiles: pd.DataFrame,
+) -> None:
+    reverse = {label: cluster_id for cluster_id, label in mapping.items()}
+    sdb_id = reverse.get("structurally_dependent_bloc")
+    if sdb_id is None:
+        return
+    best_dep = int(max(profiles.index, key=lambda cid: float(profiles.loc[cid, "dependency"])))
+    if best_dep != sdb_id:
+        _swap_cluster_labels(mapping, sdb_id, best_dep)
+
+
 def _repair_label_mapping(
     df: pd.DataFrame,
     labels: np.ndarray,
@@ -109,27 +148,8 @@ def _repair_label_mapping(
 ) -> dict[int, str]:
     """Swap cluster names when Hungarian tie-breaks invert opposition/rural semantics."""
     out = dict(mapping)
-    reverse = {label: cluster_id for cluster_id, label in out.items()}
-
-    co_id = reverse.get("committed_opposition")
-    if co_id is not None and _cluster_rural_share(df, labels, co_id) < 0.01:
-        rural_clusters = [
-            int(cluster_id)
-            for cluster_id in profiles.index
-            if float(profiles.loc[cluster_id, "rural"]) >= 0.01
-        ]
-        if rural_clusters:
-            best = max(rural_clusters, key=lambda cid: float(profiles.loc[cid, "opposition"]))
-            if best != co_id:
-                _swap_cluster_labels(out, co_id, best)
-                reverse = {label: cluster_id for cluster_id, label in out.items()}
-
-    sdb_id = reverse.get("structurally_dependent_bloc")
-    if sdb_id is not None:
-        best_dep = int(max(profiles.index, key=lambda cid: float(profiles.loc[cid, "dependency"])))
-        if best_dep != sdb_id:
-            _swap_cluster_labels(out, sdb_id, best_dep)
-
+    _repair_committed_opposition_label(df, labels, out, profiles)
+    _repair_structurally_dependent_label(out, profiles)
     return out
 
 
