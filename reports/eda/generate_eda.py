@@ -81,6 +81,12 @@ ILLUSTRATIVE_BATTLE_SUB = "Series A · synthetic dept mapping (illustrative)"
 CHACO_DEPARTMENTS = frozenset({"Presidente Hayes", "Boqueron", "Alto Paraguay"})
 DPI = 160
 
+# Verified TSJE Series A outcome margin (Candidate A vs B). Module C's tracking
+# timeline is an in-sample *retrodiction* of this past, known-outcome 2018
+# election — read against this anchor, not an out-of-sample forecast
+# (finding F-055 / ISSUE_TRIAGE_MASTER AUD-C1).
+TSJE_ANCHOR_PP = 3.70
+
 # ── Manifest tracker ────────────────────────────────────────────────────────
 manifest: list[dict] = []
 _attempted = 0
@@ -1207,7 +1213,14 @@ print("\n── Module C charts ──")
 
 @safe_chart("C1")
 def chart_c1():
-    """C1: Full forecast timeline with HDI bands."""
+    """C1: in-sample Bayesian tracking retrodiction of the 2018 Series A window.
+
+    This is a *retrodiction* of a past, known-outcome election, not an
+    out-of-sample forecast: the posterior tracks historical poll waves and is
+    read against the verified TSJE outcome anchor (+3.70 pp). Drawing and
+    labelling that anchor — and not titling the panel a "forecast" — is the
+    AUD-C1 / F-055 closure invariant.
+    """
     fig, ax = plt.subplots(figsize=(13, 5))
     fc = forecast.sort_values("date")
 
@@ -1216,7 +1229,7 @@ def chart_c1():
         fc["posterior_mean_preference_margin_pp"],
         color=RED,
         lw=2.5,
-        label="Posterior Mean (Margin pp)",
+        label="Posterior mean margin (in-sample retrodiction)",
     )
     ax.fill_between(
         fc["date"],
@@ -1227,17 +1240,35 @@ def chart_c1():
         label="94% HDI",
     )
     ax.axhline(0, color=CHARCOAL, lw=1.2, ls="--", label="Toss-up line (0 pp)")
+    # Verified outcome anchor — the known Series A result the retrodiction is read
+    # against. Replaces the previously unlabelled terminal posterior-mean line.
     ax.axhline(
-        fc["posterior_mean_preference_margin_pp"].iloc[-1], color=GOLD, lw=1.0, ls=":", alpha=0.8
+        TSJE_ANCHOR_PP,
+        color=GOLD,
+        lw=1.5,
+        ls=":",
+        label=f"Verified TSJE Series A outcome anchor (+{TSJE_ANCHOR_PP:.2f} pp)",
     )
 
-    ax.set_xlabel("Date")
+    ax.set_xlabel("Date (2018 Series A window — past election, known outcome)")
     ax.set_ylabel("Preference Margin (pp, Candidate A vs B)")
-    ax.set_title("C1 — Bayesian Forecast Timeline: Preference Margin with 94% HDI")
-    ax.legend()
+    ax.set_title(
+        "C1 — Bayesian Tracking Retrodiction: Preference Margin with 94% HDI\n"
+        "(in-sample reconstruction of a past election, not an out-of-sample forecast)"
+    )
+    ax.legend(loc="upper left")
     ax.xaxis.set_major_locator(matplotlib.dates.MonthLocator())
     ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%b %Y"))
     plt.setp(ax.xaxis.get_majorticklabels(), rotation=30, ha="right")
+    ax.annotate(
+        "Retrodiction on fixture polls — in-sample tracking of a known 2018 outcome, "
+        "not a forward forecast. Gold line marks the verified outcome anchor.",
+        xy=(0.5, -0.22),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
+    )
     annotate_source(ax)
     fig.tight_layout()
     save_fig(fig, "C1_forecast_timeline.png")
@@ -2181,7 +2212,7 @@ _mc_alloc_note = (
 )
 _min_win_prob = float(battleground["win_probability_a"].min())
 _max_win_prob = float(battleground["win_probability_a"].max())
-_tsje_margin_pp = 3.70
+_tsje_margin_pp = TSJE_ANCHOR_PP
 _illustrative_tracking_note = (
     "Illustrative model output on fixture survey polls — not verified outcome; "
     f"TSJE Series A anchor is +{_tsje_margin_pp:.2f} pp"
@@ -2382,8 +2413,8 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 
 ## Module C: Forecasting & Scenarios
 
-### C1 — Full Forecast Timeline
-**What it shows:** 142-day Bayesian preference margin timeline with 94% HDI bands.
+### C1 — Bayesian Tracking Retrodiction (2018 Series A)
+**What it shows:** 142-day Bayesian preference-margin *retrodiction* — in-sample tracking of the past 2018 Series A window, read against the verified +3.70 pp TSJE outcome anchor (drawn on the panel), **not** an out-of-sample forecast — with 94% HDI bands.
 **Key finding:** Candidate A's posterior mean preference margin closes near **{forecast_final_mean:.1f} pp** on fixture polls ({_illustrative_tracking_note}). The 94% HDI is wide ({forecast_final_hdi_lo:.1f} to {forecast_final_hdi_hi:.1f} pp), reflecting only 4 survey measurement waves.
 **Strategic implication:** The lead is robust but the HDI is wide — more polling waves would dramatically tighten the uncertainty bounds. The campaign should commission 2–3 additional poll waves in the final 6 weeks.
 

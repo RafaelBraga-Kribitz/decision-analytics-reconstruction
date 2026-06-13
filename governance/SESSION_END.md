@@ -1,3 +1,48 @@
+# Session End — 2026-06-13 (F-055 — AUD-C1 retrodiction label)
+
+## Context
+
+Remediator pass on the F-054 chart/inference backlog. Picked the top critical
+unfiled row (AUD-C1) per the prior handout and AUDIT_PROCEDURE: one finding per
+PR, criticals first. A "360° portfolio audit" prompt was reconciled to the
+existing governance system rather than re-run from scratch (the banned
+anti-pattern) — the audit it asks for already lives in ISSUE_TRIAGE_MASTER.yaml.
+
+## Findings touched
+
+- **F-055 (new, closed):** Module C C1 "Bayesian Forecast Timeline" was an
+  in-sample tracking *retrodiction* of the past 2018 Series A election (known
+  outcome; +3.70 pp verified anchor) mislabelled as a forecast, with the verified
+  anchor never drawn. Fix (`reports/eda/generate_eda.py` chart_c1 + narrative):
+  honest "Bayesian Tracking Retrodiction" title, verified outcome anchor drawn +
+  labelled from a shared `TSJE_ANCHOR_PP` constant, on-chart not-a-forecast
+  disclosure. Sibling `build_notebook.py` + committed `eda_report.md` /
+  `paraguay_election_eda.ipynb` headings de-mislabelled to match. Verified by
+  `scripts/check_module_c_forecast_retrodiction.py` (static; negative test
+  confirms the pre-fix generator fails all five invariants).
+- **F-054 (umbrella, still open):** severe-unfiled count 17 → 16; AUD-C1 promoted
+  to `verified_closed (F-055)`. Stays open until the backlog clears.
+
+## Invariants installed
+
+- `scripts/check_module_c_forecast_retrodiction.py` (F-055).
+
+## Verification status
+
+- `make audit` green; F-055 and all static closed findings re-verify.
+- F-050/F-051/F-052 require regenerated `data/processed/` (gitignored); the CI
+  Adversary rebuilds artifacts before verifying, as for F-053. The canonical
+  `C1_forecast_timeline.png` is rebuilt by `make pipeline-full` (F-050 lineage) —
+  this PR fixes the generator, not the committed PNG bytes (same model as F-053).
+
+## Recommended next action
+
+- Continue the F-054 backlog, criticals first: **AUD-C2** (terminal posterior
+  borrowed from the anchor — the row AUD-C1 blocked), then AUD-C5/C6/C9 and
+  AUD-B3/B5/B7/B8.
+
+---
+
 # Session End — 2026-06-13
 
 ## Context

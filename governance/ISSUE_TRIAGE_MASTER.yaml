@@ -171,7 +171,7 @@ chart_audit_2026_06:
     - {id: AUD-XCUT-006, status: open_finding, finding: F-052, title: Individual covariates are dept constants (A5/A10/A11)}
     - {id: AUD-XCUT-007, status: open_unfiled, root_cause: chart_cull, title: Deliverable cull to ~5 Module C + 6 Module B keepers}
   module_c:
-    - {id: AUD-C1, status: open_unfiled, finding: F-053-proposed, severity: critical, title: C1 anchor unlabeled / retrodiction vs forecast, blocks: [AUD-C2]}
+    - {id: AUD-C1, status: verified_closed, finding: F-055, severity: critical, title: C1 anchor unlabeled / retrodiction vs forecast, blocks: [AUD-C2]}
     - {id: AUD-C2, status: open_unfiled, severity: critical, title: C2 terminal posterior borrowed from anchor}
     - {id: AUD-C3, status: verified_closed, finding: F-053, title: C3 dept win prob (full 0-1 axis, illustrative label)}
     - {id: AUD-C4, status: open_unfiled, severity: rework, title: C4 vs table house-effect inconsistency}
@@ -191,13 +191,13 @@ chart_audit_2026_06:
     - {id: AUD-B5, status: open_unfiled, severity: reject, title: B5 ratio self-correlation / 3.5¢ contacts}
     - {id: AUD-B6, status: open_unfiled, severity: approved_revisions, title: B6 synthetic FX unlabeled}
     - {id: AUD-B7, status: open_unfiled, severity: reject, title: B7 routing matrix half-labeled / orphan channel}
-    - {id: AUD-B8, status: open_unfiled, severity: reject, finding: F-055-proposed, title: B8 contacts exceed caps 5×}
+    - {id: AUD-B8, status: open_unfiled, severity: reject, finding: F-056-proposed, title: B8 contacts exceed caps 5×}
     - {id: AUD-S1, status: open_unfiled, severity: rework, title: S1 committed segments funded incoherently}
     - {id: AUD-S2, status: open_unfiled, severity: approved_revisions, title: S2 quadrant labels wrong}
     - {id: AUD-S3, status: open_unfiled, severity: rework, title: S3 ROI inherits contact inflation}
     - {id: AUD-S4, status: open_unfiled, severity: reject, title: S4 priority score circular / MC noise}
     - {id: AUD-S5, status: open_unfiled, severity: reject, title: S5 mislabeled efficiency frontier}
-    - {id: AUD-BMC, status: open_unfiled, severity: reject, finding: F-056-proposed, title: MC contacts flat across scenarios}
+    - {id: AUD-BMC, status: open_unfiled, severity: reject, finding: F-057-proposed, title: MC contacts flat across scenarios}
   module_a:
     - {id: AUD-A1, status: insufficient_fix, finding: F-050, title: A1 segment sizes contradict dashboard shares}
     - {id: AUD-A2, status: open_unfiled, severity: rework, title: A2 hard age cut at 25 exposes flag-driven segments}
@@ -480,10 +480,11 @@ recommended_next_findings:
     - F-042
     - F-043
   priority_1b_after_p0:
-    - F-053
-    - F-054
-    - F-055
-    - F-056
+    - F-053  # AUD-C3/C8 — closed
+    - F-054  # umbrella tracker — open until severe backlog cleared
+    - F-055  # AUD-C1 — closed
+    - F-056  # AUD-B8 — proposed
+    - F-057  # AUD-BMC — proposed
   priority_2_file_when_started:
     - F-025
     - F-026
