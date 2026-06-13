@@ -51,14 +51,37 @@ def main(argv: list[str] | None = None) -> None:
     audit.to_csv(args.out_dir / "polling_transparency_audit.csv", index=False)
     anchor_sigma = float(cal.get("outcome_anchor_sigma_pp", 0.5))
     use_anchor = bool(cal.get("use_outcome_anchor", True))
-    _, daily, houses = run_tracking_fit_and_export(
-        tracking,
-        args.out_dir,
-        outcome_event_date=outcome,
-        calibration_series=series,
-        m_star_pp=m_star if use_anchor else None,
-        anchor_sigma_pp=anchor_sigma,
-    )
+    if use_anchor:
+        _, daily_filtered, _ = run_tracking_fit_and_export(
+            tracking,
+            args.out_dir,
+            outcome_event_date=outcome,
+            calibration_series=series,
+            m_star_pp=None,
+            anchor_sigma_pp=anchor_sigma,
+        )
+        daily_filtered.to_parquet(
+            args.out_dir / "daily_posterior_forecast_filtered.parquet", index=False
+        )
+        _, daily, houses = run_tracking_fit_and_export(
+            tracking,
+            args.out_dir,
+            outcome_event_date=outcome,
+            calibration_series=series,
+            m_star_pp=m_star,
+            anchor_sigma_pp=anchor_sigma,
+        )
+    else:
+        _, daily, houses = run_tracking_fit_and_export(
+            tracking,
+            args.out_dir,
+            outcome_event_date=outcome,
+            calibration_series=series,
+            m_star_pp=None,
+            anchor_sigma_pp=anchor_sigma,
+        )
+        daily.to_parquet(args.out_dir / "daily_posterior_forecast_filtered.parquet", index=False)
+    tracking.to_parquet(args.out_dir / "polls_clean_tracking_wave.parquet", index=False)
     validate_dataframe_contract(daily, "daily_posterior_forecast")
     validate_dataframe_contract(houses, "posterior_house_effects")
     write_scenario_explorer_html(daily, tracking, args.out_dir / "scenario_explorer.html")
