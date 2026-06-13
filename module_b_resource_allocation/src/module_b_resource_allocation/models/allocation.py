@@ -662,7 +662,7 @@ def _build_allocation_row(
         "expected_contacts": round(contacts, 4),
         "persuasion_adjusted_contacts": round(persuasion, 4),
         "reach_cap_population_proxy": audience,
-        "reach_utilization": round(min(reach_used, 1.5), 4),
+        "reach_utilization": round(min(reach_used, 1.0), 4),
         "binding_constraint": row_binding,
         "bundle_id": bundle_id,
         "scenario_id": problem.scenario_id,

@@ -82,6 +82,27 @@ def _validate_coverage_floor(df: pd.DataFrame, gates: dict[str, Any], errors: li
             )
 
 
+def _validate_reach_utilization(df: pd.DataFrame, gates: dict[str, Any], errors: list[str]) -> None:
+    max_util = float(gates.get("reach_utilization_max", 1.0))
+    bad_high = df[df["reach_utilization"] > max_util + 1e-6]
+    if len(bad_high):
+        errors.append(
+            f"reach_utilization: {len(bad_high)} rows exceed max {max_util} "
+            f"(max observed {float(bad_high['reach_utilization'].max()):.4f})"
+        )
+    bad_low = df[df["reach_utilization"] < -1e-9]
+    if len(bad_low):
+        errors.append(f"reach_utilization: {len(bad_low)} rows below zero")
+
+
+def _validate_row_contact_caps(df: pd.DataFrame, errors: list[str]) -> None:
+    over = df[df["expected_contacts"] > df["reach_cap_population_proxy"] * 1.001]
+    if len(over):
+        errors.append(
+            f"contact_cap: {len(over)} rows have expected_contacts above reach_cap_population_proxy"
+        )
+
+
 def validate_allocation_output_df(df: pd.DataFrame, *, enforce_coverage: bool = True) -> None:
     """Validate ``df`` against the ``allocation_output`` schema contract.
 
@@ -108,6 +129,8 @@ def validate_allocation_output_df(df: pd.DataFrame, *, enforce_coverage: bool = 
     _validate_structural_keys(df, errors)
     gates = _quality_gates()
     _validate_budget_envelope(df, gates, errors)
+    _validate_reach_utilization(df, gates, errors)
+    _validate_row_contact_caps(df, errors)
     if enforce_coverage:
         _validate_coverage_floor(df, gates, errors)
 

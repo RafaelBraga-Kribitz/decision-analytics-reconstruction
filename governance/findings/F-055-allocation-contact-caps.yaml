@@ -1,0 +1,15 @@
+id: F-055
+title: "Allocation contacts must respect row caps and reach utilization bounds"
+category: data-quality
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-12
+closed_at: 2026-06-12
+recurrence_count: 0
+evidence: |
+  Chart audit B4/B8: reach_utilization capped at 1.5 in solver output while charts
+  expect [0,1]; dept-level contact sums appear to violate caps due to unit/aggregation
+  confusion. Per-row expected_contacts must not exceed reach_cap_population_proxy.
+verification_script: scripts/check_allocation_contact_caps.py
+notes: |
+  B-C1, B-C2 in chart audit remediation v2. Align reach_utilization to 1.0; gate export.
