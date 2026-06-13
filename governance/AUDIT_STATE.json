@@ -351,22 +351,145 @@
       "status": "closed",
       "title": "Participation propensity must vary within departments and segments",
       "verification_script": "scripts/check_propensity_individual_variation.py"
+    },
+    {
+      "category": "data-quality",
+      "closed_at": "2026-06-12",
+      "id": "F-055",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-055-allocation-contact-caps.yaml",
+      "status": "closed",
+      "title": "Allocation contacts must respect row caps and reach utilization bounds",
+      "verification_script": "scripts/check_allocation_contact_caps.py"
+    },
+    {
+      "category": "statistical-rigor",
+      "closed_at": "2026-06-12",
+      "id": "F-056",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-056-mc-shock-contact-coupling.yaml",
+      "status": "closed",
+      "title": "Monte Carlo shock_scale must couple to contacts and emit p_win_a",
+      "verification_script": "scripts/check_mc_shock_contact_coupling.py"
+    },
+    {
+      "category": "documentation",
+      "closed_at": null,
+      "id": "F-057",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-057-eda-figure-footer-template.yaml",
+      "status": "open",
+      "title": "EDA charts use shared finalize_figure footer template",
+      "verification_script": "scripts/check_eda_figure_footer_layout.py"
+    },
+    {
+      "category": "statistical-rigor",
+      "closed_at": "2026-06-12",
+      "id": "F-061",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-061-house-effects-reconciliation.yaml",
+      "status": "closed",
+      "title": "House effects forest and table must share single posterior export",
+      "verification_script": "scripts/check_house_effects_reconciliation.py"
+    },
+    {
+      "category": "documentation",
+      "closed_at": null,
+      "id": "F-071",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-071-dashboard-canonical-bundle.yaml",
+      "status": "open",
+      "title": "Module A dashboard must default to canonical export bundle",
+      "verification_script": "scripts/check_dashboard_canonical_mode.py"
+    },
+    {
+      "category": "documentation",
+      "closed_at": null,
+      "id": "F-073",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-073-eda-overview-signoff.yaml",
+      "status": "open",
+      "title": "eda_overview sign-off after pipeline and layout fixes",
+      "verification_script": "scripts/check_eda_overview_signoff.py"
+    },
+    {
+      "category": "data-quality",
+      "closed_at": "2026-06-12",
+      "id": "F-074",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-074-entity-covariate-variance.yaml",
+      "status": "closed",
+      "title": "Entity covariates must vary within departments; dashboard must not refit on load",
+      "verification_script": "scripts/check_entity_covariate_variance.py"
+    },
+    {
+      "category": "statistical-rigor",
+      "closed_at": "2026-06-12",
+      "id": "F-075",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-075-reliability-label-semantics.yaml",
+      "status": "closed",
+      "title": "Reliability diagram labels must match propensity training target",
+      "verification_script": "scripts/check_reliability_label_semantics.py"
+    },
+    {
+      "category": "documentation",
+      "closed_at": "2026-06-12",
+      "id": "F-076",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-076-allocation-objective-disclosure.yaml",
+      "status": "closed",
+      "title": "Module B manifest must document MILP objective; S1 proration disclosed",
+      "verification_script": "scripts/check_module_b_objective_manifest.py"
+    },
+    {
+      "category": "statistical-rigor",
+      "closed_at": "2026-06-12",
+      "id": "F-077",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-077-filtered-track-export.yaml",
+      "status": "closed",
+      "title": "Export filtered daily posterior track without outcome anchor",
+      "verification_script": "scripts/check_filtered_track_export.py"
+    },
+    {
+      "category": "statistical-rigor",
+      "closed_at": "2026-06-12",
+      "id": "F-078",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-12",
+      "path": "governance/findings/F-078-battleground-illustrative-mapping.yaml",
+      "status": "closed",
+      "title": "Battleground dept win prob must disclose illustrative mapping",
+      "verification_script": "scripts/check_battleground_illustrative_mapping.py"
     }
   ],
-  "generated_at": "2026-06-13T00:02:38.096400+00:00",
+  "generated_at": "2026-06-13T00:49:11.191375+00:00",
   "git_branch": "fix/F-052-propensity-individual-variation",
-  "git_head_sha": "a6675fd0b0df1fec9b612b4feb2acccee705bdc0",
+  "git_head_sha": "6e0a80e43f65d484f10eec131f6d86fe40219235",
   "migrations": [],
   "summary": {
-    "findings_closed": 30,
+    "findings_closed": 38,
     "findings_closed_historical": 2,
     "findings_in_progress": 0,
-    "findings_open": 0,
-    "findings_total": 32,
+    "findings_open": 3,
+    "findings_total": 43,
     "findings_wont_fix": 0,
     "migrations_in_progress": 0,
     "migrations_total": 0,
-    "open_by_category": {}
+    "open_by_category": {
+      "documentation": 3
+    }
   },
   "validation_errors": [],
   "writer": "scripts/write_audit_state.py"

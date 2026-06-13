@@ -13,9 +13,9 @@
 Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3.70 pp):
 
 - **Tracking posterior on fixtures:** Closes at **3.7 pp** margin (94% HDI: 2.9 to 4.6 pp). Modelled department win probabilities: **49%–51%**. Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp.
-- **Structurally Dependent Bloc is the largest segment (26.8%)** with mean participation propensity 0.59. Youth Volatile (13.5%, propensity 0.57) remains the headline mobilisation cohort in Central and Alto Paraná.
+- **Urban High Volatility is the largest segment (31.5%)** with mean participation propensity 0.65. Youth Volatile (13.7%, propensity 0.56) remains the headline mobilisation cohort in Central and Alto Paraná.
 - **Central and Alto Paraná absorb 45% of the total budget** ($1,920,579 and $783,836 respectively), reflecting their demographic weight. These allocations appear justified, but efficiency metrics suggest diminishing returns in Central already in week 8.
-- **Urban High Volatility is the highest-propensity segment (mean 0.69)** but receives little digital investment due to low internet penetration. Radio is the dominant reach channel for rural segments; any reduction in radio spend directly suppresses participation in Itapúa and San Pedro strongholds.
+- **Urban High Volatility is the highest-propensity segment (mean 0.65)** but receives little digital investment due to low internet penetration. Radio is the dominant reach channel for rural segments; any reduction in radio spend directly suppresses participation in Itapúa and San Pedro strongholds.
 - **Bilateral (direct) channels absorb 52.5% of baseline budget** vs. 47.5% for broadcast. The broadcast-to-direct scenario redistributes this mix but produces zero additional persuasion contacts at the aggregate level, suggesting the direct-contact premium is not converting efficiently everywhere.
 - **Three pollsters show significant house effects:** ATI/Snead has a −5.1 pp negative bias, ICA has +3.8 pp positive bias; only CAPLI is near-neutral. Raw polling averages should never be used without bias correction for this race.
 - **Chaco departments (Alto Paraguay, Boquerón, Presidente Hayes) are negligible-tier** in budget allocation; modelled department win probabilities cluster near **49%–51%** on fixture posteriors (Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp).
@@ -40,8 +40,8 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 ### participation_propensity.parquet
 - **Shape:** 50,000 rows × 4 columns
-- **Range:** [0.4109, 0.8154] — fully bounded in [0,1]
-- **Department rake multiplier:** mean 1.46, range [0.62, 2.92] — large dispersion indicates significant demographic imbalance across departments in the raw sample.
+- **Range:** [0.3037, 1.0000] — fully bounded in [0,1]
+- **Department rake multiplier:** mean 1.46, range [0.62, 2.93] — large dispersion indicates significant demographic imbalance across departments in the raw sample.
 
 ### allocation_baseline.csv / allocation_broadcast_to_direct.csv
 - **Shape:** 2,772 rows × 21 columns each
@@ -61,7 +61,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 ### A1 — Segment Size Bar Chart
 **What it shows:** Absolute count and percentage share of the population dataset for each of the six behavioral segments.
-**Key finding:** Structurally Dependent Bloc is the largest segment at 26.8%, ahead of Urban High Volatility at 19.2%. Rural Committed is the smallest at 9.1%.
+**Key finding:** Urban High Volatility is the largest segment at 31.5%, ahead of Structurally Dependent Bloc at 26.7%. Committed Opposition is the smallest at 8.7%.
 **Strategic implication:** Mobilisation strategy must prioritise youth outreach. Even modest propensity lifts in this cohort deliver outsized turnout gains relative to smaller segments.
 
 ### A2 — Age Distribution by Segment
@@ -255,9 +255,9 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 ## Strategic Recommendations
 
-1. **Accelerate Youth Volatile mobilisation in Central and Alto Paraná.** This is the highest-volume, high-reachability segment. Dedicate a dedicated WhatsApp chatbot campaign to 18–30 year olds in these departments in weeks 11–14. Target propensity lift from 0.57 to 0.62 would add tens of thousands of additional participation-weighted contacts.
+1. **Accelerate Youth Volatile mobilisation in Central and Alto Paraná.** This is the highest-volume, high-reachability segment. Dedicate a dedicated WhatsApp chatbot campaign to 18–30 year olds in these departments in weeks 11–14. Target propensity lift from 0.56 to 0.61 would add tens of thousands of additional participation-weighted contacts.
 
-2. **Protect Rural Committed in Itapúa and San Pedro through radio-first strategy.** Do not allow any radio budget reduction in these departments. Rural Committed has a participation propensity of 0.51 (mean) and is almost exclusively accessible by radio. Even a 15% radio budget cut risks losing 20,000+ high-propensity votes.
+2. **Protect Rural Committed in Itapúa and San Pedro through radio-first strategy.** Do not allow any radio budget reduction in these departments. Rural Committed has a participation propensity of 0.62 (mean) and is almost exclusively accessible by radio. Even a 15% radio budget cut risks losing 20,000+ high-propensity votes.
 
 3. **Reallocate 5–8% of Central budget to Caaguazu and San Pedro.** Central shows diminishing reach returns (reach cap not binding, but cost-per-persuasion-contact is high). Caaguazu and San Pedro have better cost efficiency and meaningful electoral scale. This reallocation would be budget-neutral with a projected +12% increase in total persuasion contacts.
 
@@ -267,7 +267,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 6. **Back-load 15% of bilateral direct spend from weeks 1–4 to weeks 11–14.** Direct contact is most effective when proximate to the outcome event. Current front-loading may be wasting goodwill and persuasion capital on contacts made too early for participating entities to retain.
 
-7. **Do not invest in Committed Opposition persuasion.** This segment has a mean propensity of 0.65 and high preference strength for Candidate B. The cost of persuading even a marginal share of this group far exceeds the returns. Redirect any persuasion budget earmarked for this segment to Youth Volatile micro-targeting.
+7. **Do not invest in Committed Opposition persuasion.** This segment has a mean propensity of 0.57 and high preference strength for Candidate B. The cost of persuading even a marginal share of this group far exceeds the returns. Redirect any persuasion budget earmarked for this segment to Youth Volatile micro-targeting.
 
 8. **Apply bias corrections to all external polling references.** ATI/Snead results understate the lead by ~5 pp; ICA overstates it by ~4 pp. All internal planning documents and public communications should use bias-corrected figures. Share the house effect estimates with the communications team immediately.
 

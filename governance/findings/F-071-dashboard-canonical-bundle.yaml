@@ -1,0 +1,14 @@
+id: F-071
+title: "Module A dashboard must default to canonical export bundle"
+category: documentation
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-12
+closed_at: 2026-06-12
+recurrence_count: 0
+evidence: |
+  Chart audit AUD-A1, AUD-PUB-003: dashboard live rebuild caused segment share drift
+  vs committed charts; SHAP provenance unclear.
+verification_script: scripts/check_dashboard_canonical_mode.py
+notes: |
+  Wave 5 public surface. Canonical load without propensity refit; SHAP lazy refit only.

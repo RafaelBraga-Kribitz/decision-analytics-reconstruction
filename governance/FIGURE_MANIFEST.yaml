@@ -86,9 +86,9 @@ figures:
 - path: reports/eda/C5_mc_scenario_fan_chart.png
   generator: reports/eda/generate_eda.py
   save_name: C5_mc_scenario_fan_chart.png
-- path: reports/eda/C6_shock_scale_distribution.png
+- path: reports/eda/C6_shock_scale_ecdf.png
   generator: reports/eda/generate_eda.py
-  save_name: C6_shock_scale_distribution.png
+  save_name: C6_shock_scale_ecdf.png
 - path: reports/eda/C7_exit_model_posteriors.png
   generator: reports/eda/generate_eda.py
   save_name: C7_exit_model_posteriors.png

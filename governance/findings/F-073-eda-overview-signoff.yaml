@@ -1,0 +1,14 @@
+id: F-073
+title: "eda_overview sign-off after pipeline and layout fixes"
+category: documentation
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-12
+closed_at: 2026-06-12
+recurrence_count: 0
+evidence: |
+  Chart audit F-046 layout pass pending sign-off after R1–R4 production fixes;
+  eda_overview must reflect post-F-052 propensity and honest reliability semantics.
+verification_script: scripts/check_eda_overview_signoff.py
+notes: |
+  Wave 5. Regenerate eda_overview from generate_eda after module A/C artifacts refresh.

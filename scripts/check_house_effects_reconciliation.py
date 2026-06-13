@@ -9,8 +9,9 @@ from pathlib import Path
 
 from _governance_check import REPO_ROOT, gate
 
-HOUSES = REPO_ROOT / "data" / "processed" / "module_c" / "run_all" / "tracking" / "posterior_house_effects.parquet"
-MANIFEST = REPO_ROOT / "data" / "processed" / "module_c" / "run_all" / "tracking" / "run_tracking_manifest.json"
+_TRACKING = REPO_ROOT / "data" / "processed" / "module_c" / "run_all" / "tracking"
+HOUSES = _TRACKING / "posterior_house_effects.parquet"
+MANIFEST = _TRACKING / "run_tracking_manifest.json"
 GEN = REPO_ROOT / "reports" / "eda" / "generate_eda.py"
 
 
@@ -37,7 +38,9 @@ def main() -> int:
                 gaps.append("posterior_house_effects sha256 mismatch vs manifest")
 
     ok = not gaps
-    detail = "; ".join(gaps) if gaps else "house effects single export with identifiability disclosure"
+    detail = (
+        "; ".join(gaps) if gaps else "house effects single export with identifiability disclosure"
+    )
     return gate("F-061", Path(__file__).name, ok, detail)
 
 

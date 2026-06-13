@@ -1441,30 +1441,42 @@ cells.append(
 
 # ── C10 — MC Win Probability Histogram ───────────────────────────────────────
 cells.append(code("""
-# C10 — MC Win Probability Distribution
-# Derive: win if shock_scale <= median(baseline shock_scale)
-baseline_median = mc.loc[mc["scenario_bucket"]=="baseline","shock_scale"].median()
-mc_win = (mc["shock_scale"] <= baseline_median).astype(int)
-win_pct = mc_win.mean()
+# C10 — MC National Win Probability (from pipeline p_win_a column)
+if "p_win_a" not in mc.columns:
+    raise KeyError("monte_carlo_draws missing p_win_a — rerun Module C MC pipeline")
+
+buckets = mc["scenario_bucket"].unique()
+bucket_colors = {"baseline": COLOR["RED"], "extreme_tracker": COLOR["BLUE"], "compounded_herd": COLOR["GREEN"]}
 
 fig, ax = plt.subplots(figsize=(10, 5), facecolor="white")
-ax.hist(mc["shock_scale"], bins=60, color=COLOR["GREY"], alpha=0.6,
-        edgecolor="white", label="All draws")
-ax.hist(mc.loc[mc["shock_scale"]<=baseline_median,"shock_scale"],
-        bins=30, color=COLOR["GREEN"], alpha=0.8,
-        edgecolor="white", label=f"Win condition draws ({win_pct:.1%})")
-ax.axvline(baseline_median, color=COLOR["CHARCOAL"], lw=2, ls="--",
-           label=f"Baseline median threshold ({baseline_median:.2f})")
-ax.set_xlabel("Shock Scale")
-ax.set_ylabel("Number of MC Draws")
-ax.set_title("C10 — MC Win Probability Histogram (Win condition: shock_scale <= baseline median)",
-             fontweight=700)
-ax.legend(fontsize=9)
+for bucket in buckets:
+    sub = mc.loc[mc["scenario_bucket"] == bucket, "p_win_a"]
+    ax.hist(
+        sub,
+        bins=40,
+        density=True,
+        alpha=0.5,
+        color=bucket_colors.get(bucket, COLOR["GREY"]),
+        label=f"{bucket} (n={len(sub):,})",
+        edgecolor="white",
+    )
+
+baseline_median = float(mc.loc[mc["scenario_bucket"] == "baseline", "p_win_a"].median())
+ax.axvline(
+    baseline_median,
+    color=COLOR["CHARCOAL"],
+    lw=2,
+    ls="--",
+    label=f"Baseline median P(win A): {baseline_median:.1%}",
+)
+ax.set_xlabel("National P(Candidate A wins)")
+ax.set_ylabel("Density")
+ax.set_title("C10 — Monte Carlo National Win Probability", fontweight=700)
+ax.legend(fontsize=9, title="Scenario Bucket")
 plt.tight_layout()
 plt.show()
 
-print(f"Win condition satisfied in {win_pct:.1%} of {len(mc):,} MC draws")
-print(f"Baseline median threshold: {baseline_median:.3f}")
+print(f"Baseline median P(win A): {baseline_median:.1%} across {len(mc):,} MC draws")
 """))
 
 cells.append(
