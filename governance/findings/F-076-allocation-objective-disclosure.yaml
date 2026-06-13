@@ -1,0 +1,14 @@
+id: F-076
+title: "Module B manifest must document MILP objective; S1 proration disclosed"
+category: documentation
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-12
+closed_at: 2026-06-12
+recurrence_count: 0
+evidence: |
+  Chart audit B-C4/B-C5: SPECIFICATION.md mentions (1-util/cap) saturation not coded;
+  S1 EDA prorates budget by segment share within department and reads as optimizer output.
+verification_script: scripts/check_module_b_objective_manifest.py
+notes: |
+  Add objective_function to run_manifest; S1 subtitle states proration not MILP.

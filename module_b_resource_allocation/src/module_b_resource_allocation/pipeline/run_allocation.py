@@ -273,6 +273,11 @@ def main(argv: list[str] | None = None) -> int:
         "solver_status": result.solver_status,
         "total_budget_usd": round(result.total_budget_usd, 4),
         "total_persuasion_contacts": round(result.total_persuasion_adjusted_contacts, 2),
+        "objective_function": (
+            "maximize sum(persuasion_adjusted_contacts) over (dept, channel, week) "
+            "subject to budget envelope, bundle constraints, and per-dept expected_contacts "
+            "coverage floor"
+        ),
         "row_count": int(len(result.allocation)),
         "artifacts": artifacts,
         "provenance": (
