@@ -68,8 +68,10 @@ def main() -> int:
         "figures": figures,
     }
     MANIFEST_PATH.write_text(yaml.safe_dump(manifest, sort_keys=False), encoding="utf-8")
-    print(f"[generate_figure_manifest] wrote {MANIFEST_PATH.relative_to(REPO_ROOT)} "
-          f"({len(figures)} figures, run_id={git_commit[:12]})")
+    print(
+        f"[generate_figure_manifest] wrote {MANIFEST_PATH.relative_to(REPO_ROOT)} "
+        f"({len(figures)} figures, run_id={git_commit[:12]})"
+    )
     return 0
 
 

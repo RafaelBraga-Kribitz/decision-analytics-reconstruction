@@ -2046,8 +2046,12 @@ def chart_eda_overview():
 
     # 3 — propensity by segment
     ax3 = fig.add_subplot(gs[0, 2])
-    seg_props = [pop.loc[pop["segment_label"] == s, "participation_propensity"].dropna() for s in SEG_ORDER]
-    bp = ax3.boxplot(seg_props, vert=True, patch_artist=True, labels=[s.replace("_", "\n") for s in SEG_ORDER])
+    seg_props = [
+        pop.loc[pop["segment_label"] == s, "participation_propensity"].dropna() for s in SEG_ORDER
+    ]
+    bp = ax3.boxplot(
+        seg_props, vert=True, patch_artist=True, labels=[s.replace("_", "\n") for s in SEG_ORDER]
+    )
     for patch, seg in zip(bp["boxes"], SEG_ORDER):
         patch.set_facecolor(SEG_COLORS.get(seg, GREY))
         patch.set_alpha(0.65)
@@ -2062,7 +2066,12 @@ def chart_eda_overview():
     x = np.arange(len(SEG_ORDER))
     w = 0.25
     for i, col in enumerate(media_cols):
-        ax4.bar(x + (i - 1) * w, media_means[col], width=w, label=col.replace("media_penetration_", "").upper())
+        ax4.bar(
+            x + (i - 1) * w,
+            media_means[col],
+            width=w,
+            label=col.replace("media_penetration_", "").upper(),
+        )
     ax4.set_xticks(x)
     ax4.set_xticklabels([s[:8] for s in SEG_ORDER], rotation=45, ha="right", fontsize=7)
     ax4.set_title("Media Penetration by Segment", fontsize=10)

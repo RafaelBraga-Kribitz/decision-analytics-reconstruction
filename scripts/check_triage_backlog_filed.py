@@ -17,8 +17,9 @@ backlog is cleared.
 from __future__ import annotations
 
 import sys
+from collections.abc import Iterator
 from pathlib import Path
-from typing import Any, Iterator
+from typing import Any
 
 import yaml
 from _governance_check import REPO_ROOT, gate

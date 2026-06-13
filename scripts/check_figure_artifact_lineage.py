@@ -50,7 +50,11 @@ def _canonical_save_fig_names() -> set[str]:
 
 def _manifest_key_gaps(manifest: dict) -> list[str]:
     required = ("run_id", "git_commit", "data_manifest", "segmentation_label_hash", "figures")
-    return [f"FIGURE_MANIFEST.yaml missing required key: {key}" for key in required if key not in manifest]
+    return [
+        f"FIGURE_MANIFEST.yaml missing required key: {key}"
+        for key in required
+        if key not in manifest
+    ]
 
 
 def _model_manifest_gaps(manifest: dict) -> list[str]:
