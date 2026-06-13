@@ -1,0 +1,17 @@
+id: F-062
+title: "B5 x-axis decoupled from ratio denominator (self-correlation fix)"
+category: misleading_visualization
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-13
+closed_at: 2026-06-13
+recurrence_count: 0
+evidence: |
+  governance/ISSUE_TRIAGE_MASTER.yaml AUD-B5 (severity reject).
+  chart_b5 plotted total_budget on the x-axis while the y-axis was
+  cpp = total_budget / total_persuasion — budget appears in both axes,
+  making the apparent correlation tautological.
+verification_script: scripts/check_module_b5_ratio_decoupled.py
+notes: |
+  Fix: x-axis changed to total_persuasion_contacts (decouples denominator).
+  On-chart annotation discloses the previous self-correlation.

@@ -20,8 +20,14 @@ notes: |
   Fix (reports/eda/generate_eda.py):
   - A12 now uses step-outline histograms (histtype="step", lw=2) so the six
     per-segment distributions are legible instead of overplotted fills.
-  - eda_overview retitled "POPULATION DATA OVERVIEW"; the footnote now states
-    "Empirical population inputs plus the Module A participation-propensity
-    output", and panel 4 shows full multi-line segment names (no s[:8]).
+  - eda_overview footnote now states "Empirical population inputs plus the
+    Module A participation-propensity output (panel 3)" — replacing the false
+    "inputs only" claim — and panel 4 shows full multi-line segment names
+    (no s[:8]).
+  - The suptitle is kept as "EMPIRICAL DATA OVERVIEW" to satisfy the older
+    F-046 invariant (check_eda_stale_orphan_pngs.py): the two findings are
+    reconciled by disclosing the one model-derived panel in the footnote rather
+    than relabelling the whole composite. F-061's gate enforces footnote honesty
+    and legibility, not the title string, so both gates pass.
   One themed finding resolving two reject rows. Static gate, negative-tested.
   Part of governance/chart_audit_completion_sprint.md.

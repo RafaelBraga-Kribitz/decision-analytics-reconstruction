@@ -1,9 +1,9 @@
-run_id: b67ed6036c9a
-git_commit: b67ed6036c9a7f9f367608f38c863aa97b8bc116
+run_id: df74d67c4256
+git_commit: df74d67c42561bea6163335f97361a53cb826f79
 generated_at: '2026-06-13'
 data_manifest: data/processed/model_run_manifest.json
 canonical_sample_size: 50000
-segmentation_label_hash: 9753c964d31c40f3
+segmentation_label_hash: a4e1317f1514db89
 figures:
 - path: reports/eda/A10_pca_biplot.png
   generator: reports/eda/generate_eda.py

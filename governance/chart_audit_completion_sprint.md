@@ -24,11 +24,13 @@ data dependency, matching F-053/F-055); the canonical PNGs regenerate via
 | F-058 | AUD-C6 | C6 shock-scale is discrete point masses — no KDE |
 | F-059 | AUD-C9 | C9 polling-transparency small-n (n=3) disclosure |
 | F-060 | AUD-C10 | C10 content must match its win-probability filename/title |
-| F-061 | AUD-B3 | B3 must not stack mutually exclusive scenarios |
-| F-062 | AUD-B7 | B7 routing matrix fully labelled, no orphan channel |
-| F-063 | AUD-S5 | S5 "efficiency frontier" honestly labelled |
-| F-064 | AUD-A12 | A12 reachability distribution readable |
-| F-065 | AUD-PUB-004 | eda_overview scope label + non-truncated bars |
+| F-060 | AUD-B3 / AUD-B7 / AUD-S5 | Module B allocation charts (consolidated): no stacked exclusive scenarios; routing matrix fully labelled; "efficiency frontier" honestly labelled |
+| F-061 | AUD-A12 / AUD-PUB-004 | A12 reachability readable; eda_overview scope label + non-truncated bars (consolidated) |
+
+> Note: an earlier draft of this table reserved F-062..F-065 for AUD-B7 / AUD-S5
+> / AUD-A12 / AUD-PUB-004 as separate findings. Those rows were instead
+> **consolidated** into F-060 and F-061 (themed multi-row findings). F-062..F-067
+> are therefore free and are used below for the deep-fix tranche.
 
 ## Explicitly deferred — architecturally significant (need a human decision)
 
