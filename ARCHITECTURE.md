@@ -32,7 +32,7 @@ The default `make test` path runs pytest with shared `$(COV_FLAGS)` (terminal an
 
 Mermaid diagrams, detailed contract tables, and the entity walkthrough below are guarded by [`tests/test_architecture_md_content_contract.py`](tests/test_architecture_md_content_contract.py).
 
-The full inventory of YAML contracts lives under [`schema_contracts/`](schema_contracts/) (field specs in each `*.yaml`; maintainer notes in [`maintainer/archives/schema_contracts_README.md`](maintainer/archives/schema_contracts_README.md)).
+The full inventory of YAML contracts lives under [`schema_contracts/`](schema_contracts/) (field specs in each `*.yaml`).
 
 ## Diagrams: artifact flow
 
@@ -152,10 +152,8 @@ decision-analytics-reconstruction/
 │
 ├── schema_contracts/                    Versioned YAML column contracts (cross-module authority)
 ├── appendix/
-│   └── (see maintainer/archives/verified_calibration_anchors_full.md)   source-tagged anchor registry
+│   └── calibration_anchors.yaml                source-tagged anchor registry
 └── reports/
-    ├── case_study_business.md / .pdf    business-audience case study
-    ├── case_study_technical.md / .pdf   technical architecture document
     └── eda/                             36-chart EDA, strategic brief, 153-test suite
 ```
 

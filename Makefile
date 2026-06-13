@@ -14,7 +14,7 @@ MODULE_C_TESTS := module_c_forecasting_scenarios/tests
 ROOT_TESTS := tests
 SCRIPTS := scripts
 MODULE_TEST_ARGS := $(MODULE_A_TESTS) $(MODULE_B_TESTS) $(MODULE_C_TESTS) $(ROOT_TESTS)
-COV_FLAGS := --cov=$(MODULE_A_SRC) --cov=$(MODULE_B_SRC) --cov=$(MODULE_C_SRC) --cov-report=term-missing --cov-report=xml
+COV_FLAGS := --cov=$(MODULE_A_SRC) --cov=$(MODULE_B_SRC) --cov=$(MODULE_C_SRC) --cov-report=term-missing --cov-report=xml --cov-fail-under=80
 
 install:
 	poetry install
@@ -176,6 +176,8 @@ pipeline-full:
 	$(MAKE) module-c-all
 	$(MAKE) module-a-report-charts
 	poetry run python reports/eda/generate_eda.py
+	poetry run python scripts/generate_golden_metrics.py
+	poetry run python scripts/generate_figure_manifest.py
 
 module-b-allocate-sensitivity:
 	poetry run python -m module_b_resource_allocation.pipeline.run_allocation \

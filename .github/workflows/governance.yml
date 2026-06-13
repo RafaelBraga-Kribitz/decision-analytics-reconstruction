@@ -24,6 +24,11 @@ jobs:
 
   # Adversary: re-verify every closed finding's verification_script on a clean
   # checkout. A closed finding that regresses fails the PR.
+  #
+  # Several findings (F-050/051/052) assert invariants on Module A pipeline
+  # artifacts that live under data/processed (gitignored, DVC-tracked). The
+  # job regenerates them deterministically (seeded) before verifying, so the
+  # closure is genuinely re-checked rather than skipped for missing files.
   adversary:
     runs-on: ubuntu-latest
     needs: governance-audit
@@ -36,6 +41,11 @@ jobs:
         run: pip install poetry pyyaml
       - name: Install project deps
         run: poetry install --no-interaction
+      - name: Regenerate Module A artifacts (for data-dependent findings)
+        run: |
+          poetry run python -m population_segmentation.pipeline \
+            --sample-size 50000 --out-dir data/processed
+          poetry run python scripts/generate_figure_manifest.py
       - name: Re-verify closed findings
         run: poetry run python scripts/check_closed_findings.py
 

@@ -123,6 +123,21 @@ def _repair_committed_opposition(
         _swap_cluster_labels(out, co_id, best)
 
 
+def _repair_rural_committed(out: dict[int, str], profiles: pd.DataFrame) -> None:
+    """Ensure rural_committed sits on a genuinely rural cluster (F-051 invariant)."""
+    reverse = {label: cluster_id for cluster_id, label in out.items()}
+    rc_id = reverse.get("rural_committed")
+    if rc_id is None or float(profiles.loc[rc_id, "rural"]) >= 0.2:
+        return
+    donor_labels = ("urban_high_volatility", "youth_volatile", "structurally_dependent_bloc")
+    donors = [reverse[name] for name in donor_labels if name in reverse]
+    if not donors:
+        return
+    best = max(donors, key=lambda cid: float(profiles.loc[cid, "rural"]))
+    if float(profiles.loc[best, "rural"]) > float(profiles.loc[rc_id, "rural"]):
+        _swap_cluster_labels(out, rc_id, best)
+
+
 def _repair_label_mapping(
     df: pd.DataFrame,
     labels: np.ndarray,
@@ -140,6 +155,7 @@ def _repair_label_mapping(
         if best_dep != sdb_id:
             _swap_cluster_labels(out, sdb_id, best_dep)
 
+    _repair_rural_committed(out, profiles)
     return out
 
 

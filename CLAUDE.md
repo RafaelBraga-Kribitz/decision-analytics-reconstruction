@@ -14,7 +14,7 @@ This repository's governance is documented in `governance/AUDIT_PROCEDURE.md`. T
 
 - **Steward** — reads state, regenerates the handout. Read-only. Runs at session start via `make session-start`.
 - **Remediator** — picks one `open` finding, makes the change, closes the YAML, runs `make verify`, opens a PR. The PR title contains the finding ID (`F-NNN`).
-- **Adversary** — the `governance-audit` CI job. Re-runs every closed finding's `verification_script` on every PR. A closed finding that regresses fails the PR and reopens itself.
+- **Adversary** — the `adversary` CI job in `.github/workflows/governance.yml`. Re-runs every closed finding's `verification_script` on every PR. A closed finding that regresses fails the PR; a human (or the next session's Remediator) must then set the YAML back to `status: open` before any other work on that finding.
 
 If you cannot identify which of the three roles you are currently performing, stop and re-read `AUDIT_PROCEDURE.md`.
 

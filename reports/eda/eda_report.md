@@ -13,9 +13,9 @@
 Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3.70 pp):
 
 - **Tracking posterior on fixtures:** Closes at **3.7 pp** margin (94% HDI: 2.9 to 4.6 pp). Modelled department win probabilities: **49%–51%**. Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp.
-- **Structurally Dependent Bloc is the largest segment (26.8%)** with mean participation propensity 0.59. Youth Volatile (13.5%, propensity 0.57) remains the headline mobilisation cohort in Central and Alto Paraná.
-- **Central and Alto Paraná absorb 45% of the total budget** ($1,920,579 and $783,836 respectively), reflecting their demographic weight. These allocations appear justified, but efficiency metrics suggest diminishing returns in Central already in week 8.
-- **Urban High Volatility is the highest-propensity segment (mean 0.69)** but receives little digital investment due to low internet penetration. Radio is the dominant reach channel for rural segments; any reduction in radio spend directly suppresses participation in Itapúa and San Pedro strongholds.
+- **Urban High Volatility is the largest segment (31.2%)** with mean participation propensity 0.65. Youth Volatile (11.7%, propensity 0.57) remains the headline mobilisation cohort in Central and Alto Paraná.
+- **Central and Alto Paraná absorb 45% of the total budget** ($1,920,552 and $783,836 respectively), reflecting their demographic weight. These allocations appear justified, but efficiency metrics suggest diminishing returns in Central already in week 8.
+- **Urban High Volatility is the highest-propensity segment (mean 0.65)** but receives little digital investment due to low internet penetration. Radio is the dominant reach channel for rural segments; any reduction in radio spend directly suppresses participation in Itapúa and San Pedro strongholds.
 - **Bilateral (direct) channels absorb 52.5% of baseline budget** vs. 47.5% for broadcast. The broadcast-to-direct scenario redistributes this mix but produces zero additional persuasion contacts at the aggregate level, suggesting the direct-contact premium is not converting efficiently everywhere.
 - **Three pollsters show significant house effects:** ATI/Snead has a −5.1 pp negative bias, ICA has +3.8 pp positive bias; only CAPLI is near-neutral. Raw polling averages should never be used without bias correction for this race.
 - **Chaco departments (Alto Paraguay, Boquerón, Presidente Hayes) are negligible-tier** in budget allocation; modelled department win probabilities cluster near **49%–51%** on fixture posteriors (Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp).
@@ -27,11 +27,11 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 ### population_master_clean.parquet
 - **Shape:** 50,000 rows × 62 columns
 - **Duplicates:** 0 duplicate entity_ids confirmed
-- **Nulls:** 12,540 total missing values across 1 columns
+- **Nulls:** 12,548 total missing values across 1 columns
 - **Top null columns:**
   - `qualitative_district`: 25.1% missing
 - **Anomalies:** `qualitative_district` shows NaN for ~9% of records; `qualitative_sentiment` missing for ~10%; these appear intentionally unlinked (no linked qualitative interview). `participation_propensity` is well-bounded [0.014, 1.0] with no out-of-range values.
-- **Schema drift flags:** 697 records flagged — negligible (<1%).
+- **Schema drift flags:** 698 records flagged — negligible (<1%).
 
 ### segment_labels.parquet
 - **Shape:** 50,000 rows × 4 columns
@@ -40,8 +40,8 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 ### participation_propensity.parquet
 - **Shape:** 50,000 rows × 4 columns
-- **Range:** [0.4109, 0.8154] — fully bounded in [0,1]
-- **Department rake multiplier:** mean 1.46, range [0.62, 2.92] — large dispersion indicates significant demographic imbalance across departments in the raw sample.
+- **Range:** [0.3077, 1.0000] — fully bounded in [0,1]
+- **Department rake multiplier:** mean 1.45, range [0.62, 2.93] — large dispersion indicates significant demographic imbalance across departments in the raw sample.
 
 ### allocation_baseline.csv / allocation_broadcast_to_direct.csv
 - **Shape:** 2,772 rows × 21 columns each
@@ -52,7 +52,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 ### module_c files
 - **daily_posterior_forecast.parquet:** 142 daily rows, single calibration series A, no gaps.
 - **posterior_house_effects.parquet:** 3 pollsters — small but complete.
-- **battleground_department_probability.parquet:** 18 departments, win_probability_a range [0.4913, 0.5097].
+- **battleground_department_probability.parquet:** 18 departments, win_probability_a range [0.4912, 0.5096].
 - **monte_carlo_draws.parquet:** 10,000 draws across 3 scenario buckets: baseline (3,334), extreme_tracker (3,333), compounded_herd (3,333). alloc_mean_persuasion_contacts populated from the Module B baseline allocation (B-to-C handshake verified non-zero).
 
 ---
@@ -61,7 +61,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 ### A1 — Segment Size Bar Chart
 **What it shows:** Absolute count and percentage share of the population dataset for each of the six behavioral segments.
-**Key finding:** Structurally Dependent Bloc is the largest segment at 26.8%, ahead of Urban High Volatility at 19.2%. Rural Committed is the smallest at 9.1%.
+**Key finding:** Urban High Volatility is the largest segment at 31.2%, ahead of Structurally Dependent Bloc at 19.2%. Committed Opposition is the smallest at 9.1%.
 **Strategic implication:** Mobilisation strategy must prioritise youth outreach. Even modest propensity lifts in this cohort deliver outsized turnout gains relative to smaller segments.
 
 ### A2 — Age Distribution by Segment
@@ -130,7 +130,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 ### B1 — Budget by Department
 **What it shows:** Horizontal sorted bar chart of total USD allocated by department.
-**Key finding:** Central ($1,921K, 31.9%), Alto Paraná ($784K, 13.0%), and Itapúa ($494K, 8.2%) absorb 53% of the total budget. 2 department(s) receive less than $50K each.
+**Key finding:** Central ($1,921K, 31.8%), Alto Paraná ($784K, 13.0%), and Itapúa ($494K, 8.2%) absorb 53% of the total budget. 2 department(s) receive less than $50K each.
 **Strategic implication:** The allocation is demographically rational but should be stress-tested against marginal persuasion value. Chaco departments (Alto Paraguay, Boquerón) receive near-zero budget, which aligns with their high baseline win probability.
 
 ### B2 — Weekly Budget Burn-Down by Channel Type
@@ -257,7 +257,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 1. **Accelerate Youth Volatile mobilisation in Central and Alto Paraná.** This is the highest-volume, high-reachability segment. Dedicate a dedicated WhatsApp chatbot campaign to 18–30 year olds in these departments in weeks 11–14. Target propensity lift from 0.57 to 0.62 would add tens of thousands of additional participation-weighted contacts.
 
-2. **Protect Rural Committed in Itapúa and San Pedro through radio-first strategy.** Do not allow any radio budget reduction in these departments. Rural Committed has a participation propensity of 0.51 (mean) and is almost exclusively accessible by radio. Even a 15% radio budget cut risks losing 20,000+ high-propensity votes.
+2. **Protect Rural Committed in Itapúa and San Pedro through radio-first strategy.** Do not allow any radio budget reduction in these departments. Rural Committed has a participation propensity of 0.65 (mean) and is almost exclusively accessible by radio. Even a 15% radio budget cut risks losing 20,000+ high-propensity votes.
 
 3. **Reallocate 5–8% of Central budget to Caaguazu and San Pedro.** Central shows diminishing reach returns (reach cap not binding, but cost-per-persuasion-contact is high). Caaguazu and San Pedro have better cost efficiency and meaningful electoral scale. This reallocation would be budget-neutral with a projected +12% increase in total persuasion contacts.
 

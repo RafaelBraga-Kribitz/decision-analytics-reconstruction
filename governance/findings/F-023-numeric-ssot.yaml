@@ -23,8 +23,6 @@ verification_script: scripts/check_numeric_ssot.py
 artifacts:
   - reports/NUMERIC_SSOT.md
   - reports/CASE_STUDY.md
-  - reports/case_study_business.md
-  - reports/case_study_technical.md
   - reports/decision_log.md
   - scripts/check_numeric_ssot.py
   - reports/epistemic_boundaries.md
