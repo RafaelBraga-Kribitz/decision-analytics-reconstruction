@@ -82,6 +82,9 @@ project_scope/
 !governance/**
 !tests/governance/
 !tests/governance/**
+# ...but re-ignore bytecode the broad negation above would otherwise expose.
+governance/**/__pycache__/
+tests/governance/**/__pycache__/
 
 # Retired harness docs — private, fully ignored
 docs/ai_harness/
