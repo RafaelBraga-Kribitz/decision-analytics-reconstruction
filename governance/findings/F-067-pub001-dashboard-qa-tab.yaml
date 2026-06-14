@@ -1,0 +1,23 @@
+id: F-067
+title: "Dashboard QA tab resolves the latest qa_report instead of a stale date"
+category: missing_artifact
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-13
+closed_at: 2026-06-13
+recurrence_count: 0
+evidence: |
+  governance/ISSUE_TRIAGE_MASTER.yaml AUD-PUB-001 (severity reject).
+  The QA tab in streamlit_dashboard.py hard-coded qa_report_20260507.md. The
+  cleaning pipeline (cleaner.py:_write_qa_report) writes qa_report_<YYYYMMDD>.md
+  with a fresh date every run, and the file is a gitignored generated artefact,
+  so the hard-coded date never matched a freshly-generated report and the tab
+  was always empty ("QA report not found yet").
+verification_script: scripts/check_pub001_dashboard_qa_tab.py
+notes: |
+  Fix: the QA tab now globs reports/qa_report_*.md and renders the most recent
+  one (with a caption naming the file), rather than reading one hard-coded date.
+  We deliberately do NOT commit a qa_report artefact: it is gitignored and only
+  exists after the cleaning pipeline runs, so the durable fix is the glob, not a
+  hand-written report. Static gate over streamlit_dashboard.py.
+  Part of governance/chart_audit_completion_sprint.md.

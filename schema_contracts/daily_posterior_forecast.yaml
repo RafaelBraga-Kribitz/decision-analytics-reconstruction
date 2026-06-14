@@ -27,9 +27,11 @@ fields:
   posterior_hdi_low_pp:
     type: float64
     nullable: false
+    description: Lower bound of the 94% highest-density interval (az.hdi, hdi_prob=0.94).
   posterior_hdi_high_pp:
     type: float64
     nullable: false
+    description: Upper bound of the 94% highest-density interval (az.hdi, hdi_prob=0.94).
   model_version:
     type: string
     nullable: false

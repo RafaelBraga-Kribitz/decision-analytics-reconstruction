@@ -7,6 +7,7 @@ Run from project root:  python3 reports/eda/generate_eda.py
 
 import os
 import sys
+import json
 import warnings
 import traceback
 from pathlib import Path
@@ -77,9 +78,15 @@ plt.rcParams.update(
 )
 
 SOURCE = "Source: Paraguay Campaign Data Pipeline 2018 | April 2026"
-ILLUSTRATIVE_BATTLE_SUB = "Series A · synthetic dept mapping (illustrative)"
+ILLUSTRATIVE_BATTLE_SUB = "Series A · swing model calibrated to TSJE 2018 returns (illustrative — posterior-dependent)"
 CHACO_DEPARTMENTS = frozenset({"Presidente Hayes", "Boqueron", "Alto Paraguay"})
 DPI = 160
+
+# Verified TSJE Series A outcome margin (Candidate A vs B). Module C's tracking
+# timeline is an in-sample *retrodiction* of this past, known-outcome 2018
+# election — read against this anchor, not an out-of-sample forecast
+# (finding F-055 / ISSUE_TRIAGE_MASTER AUD-C1).
+TSJE_ANCHOR_PP = 3.70
 
 # ── Manifest tracker ────────────────────────────────────────────────────────
 manifest: list[dict] = []
@@ -89,6 +96,17 @@ _succeeded = 0
 
 def save_fig(fig: plt.Figure, fname: str) -> None:
     global _succeeded
+    # Provenance stamp on every figure (run id + model version) — F-073.
+    fig.text(
+        0.995,
+        0.004,
+        FIGURE_STAMP,
+        ha="right",
+        va="bottom",
+        fontsize=5,
+        color=GREY,
+        alpha=0.6,
+    )
     path = OUT / fname
     fig.savefig(path, dpi=DPI, bbox_inches="tight", facecolor=WHITE)
     plt.close(fig)
@@ -188,6 +206,26 @@ forecast["date"] = pd.to_datetime(forecast["date"])
 print(f"  pop: {pop.shape} | segs: {segs.shape} | prop: {prop.shape}")
 print(f"  alloc_base: {alloc_base.shape} | mc_draws: {mc_draws.shape}")
 print("  All datasets loaded successfully.\n")
+
+
+# Provenance stamp applied to EVERY figure (run id + model version) so two
+# artifacts of the same quantity can never silently diverge again, and so a figure
+# can always be traced to the canonical run that produced it (F-073).
+def _figure_run_id() -> str:
+    mrun = DATA / "model_run_manifest.json"
+    if mrun.is_file():
+        try:
+            return str(json.loads(mrun.read_text()).get("git_commit", "uncommitted"))[:12]
+        except (ValueError, OSError):
+            return "uncommitted"
+    return "uncommitted"
+
+
+FIGURE_RUN_ID = _figure_run_id()
+FIGURE_MODEL_VERSION = (
+    str(forecast["model_version"].iloc[0]) if "model_version" in forecast.columns else "unknown"
+)
+FIGURE_STAMP = f"run {FIGURE_RUN_ID} · model {FIGURE_MODEL_VERSION}"
 
 # ════════════════════════════════════════════════════════════════════════════
 # MODULE A — POPULATION & SEGMENTS
@@ -687,10 +725,20 @@ def chart_a10():
     ev = pca.explained_variance_ratio_
     ax.set_xlabel(f"PC1 ({ev[0]*100:.1f}% var explained)")
     ax.set_ylabel(f"PC2 ({ev[1]*100:.1f}% var explained)")
-    ax.set_title("A10 — PCA Biplot: First Two Principal Components by Segment")
+    ax.set_title("A10 — PCA Biplot: Principal Components by Segment\n(⚠ features are dept-level constants — structure reflects dept assignment)")
     ax.legend(title="Segment", bbox_to_anchor=(1.01, 1), loc="upper left", fontsize=9)
     ax.axhline(0, color=GREY, lw=0.7, ls="--")
     ax.axvline(0, color=GREY, lw=0.7, ls="--")
+    ax.annotate(
+        "Most input features (media penetration, NBI stress, reachability indices) are "
+        "assigned at department level — all voters in a department share the same value. "
+        "The PCA lattice pattern reflects department assignment, not individual-voter variance.",
+        xy=(0.5, -0.14),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
+    )
     fig.text(0.5, -0.01, SOURCE, ha="center", fontsize=7.5, color=GREY)
     fig.tight_layout()
     save_fig(fig, "A10_pca_biplot.png")
@@ -755,14 +803,15 @@ def chart_a12():
             data,
             bins=bins,
             density=True,
-            alpha=0.45,
+            histtype="step",
+            lw=2.0,
             color=SEG_COLORS.get(seg, GREY),
             label=seg.replace("_", " ").title(),
         )
 
     ax.set_xlabel("Reachability Index")
     ax.set_ylabel("Density")
-    ax.set_title("A12 — Reachability Index Distribution by Segment")
+    ax.set_title("A12 — Reachability Index Distribution by Segment (step outlines for legibility)")
     ax.legend(title="Segment", bbox_to_anchor=(1.01, 1), loc="upper left", fontsize=9)
     annotate_source(ax)
     fig.tight_layout()
@@ -918,17 +967,29 @@ def chart_b3():
 
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
-    # Left: scenario comparison
+    # Left: scenario comparison. The two scenarios are MUTUALLY EXCLUSIVE (the
+    # campaign runs one or the other), so plot them as separate lines — never
+    # stack, which would sum two alternatives into a meaningless total (AUD-B3).
     ax = axes[0]
-    ax.stackplot(
+    ax.plot(
         combined.index,
         combined["Baseline (Broadcast)"],
-        combined["Broadcast-to-Direct"],
-        labels=["Baseline", "Broadcast→Direct"],
-        colors=[RED, BLUE],
-        alpha=0.7,
+        color=RED,
+        lw=2.5,
+        marker="o",
+        ms=4,
+        label="Baseline (Broadcast)",
     )
-    ax.set_title("B3a — Weekly Budget: Scenario Comparison")
+    ax.plot(
+        combined.index,
+        combined["Broadcast-to-Direct"],
+        color=BLUE,
+        lw=2.5,
+        marker="s",
+        ms=4,
+        label="Broadcast→Direct",
+    )
+    ax.set_title("B3a — Weekly Budget by Scenario\n(mutually exclusive — compared, not summed)")
     ax.set_xlabel("Week")
     ax.set_ylabel("Budget (USD)")
     ax.legend(loc="upper left")
@@ -1026,7 +1087,7 @@ def chart_b5():
 
     fig, ax = plt.subplots(figsize=(11, 6))
     sc = ax.scatter(
-        dept_agg["total_budget"],
+        dept_agg["total_persuasion"],
         dept_agg["cpp"],
         s=dept_agg["total_budget"] / 300,
         c=dept_agg["total_persuasion"],
@@ -1039,16 +1100,24 @@ def chart_b5():
     for _, row in dept_agg.iterrows():
         ax.annotate(
             row["department"],
-            (row["total_budget"], row["cpp"]),
+            (row["total_persuasion"], row["cpp"]),
             textcoords="offset points",
             xytext=(5, 3),
             fontsize=8,
         )
 
     plt.colorbar(sc, ax=ax, label="Total Persuasion-Adjusted Contacts")
-    ax.set_xlabel("Total Budget Allocated (USD)")
+    ax.set_xlabel("Total Persuasion-Adjusted Contacts")
     ax.set_ylabel("Cost per Persuasion Contact (USD)")
-    ax.set_title("B5 — Cost per Persuasion Contact by Department\n(bubble size = budget)")
+    ax.set_title("B5 — Cost per Persuasion Contact vs Total Persuasion Contacts\n(bubble size = budget; x-axis decoupled from ratio denominator)")
+    ax.annotate(
+        "x-axis is now total persuasion contacts (not budget) — this decouples the ratio denominator from the horizontal axis; a previous version showed budget on x, creating a tautological self-correlation.",
+        xy=(0.5, -0.22),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
+    )
     annotate_source(ax)
     fig.tight_layout()
     save_fig(fig, "B5_cost_per_persuasion_contact.png")
@@ -1110,7 +1179,10 @@ def chart_b7():
         values="travel_time_minutes",
         aggfunc="mean",
     )
-    piv = piv.fillna(0)
+    # Square the matrix on the union of departments so neither axis carries an
+    # orphan department, then label every origin/destination below (AUD-B7).
+    depts = sorted(set(routing["origin_department"]) | set(routing["destination_department"]))
+    piv = piv.reindex(index=depts, columns=depts).fillna(0)
 
     fig, ax = plt.subplots(figsize=(12, 10))
     vals = piv.values.astype(float)
@@ -1123,14 +1195,13 @@ def chart_b7():
     )
     plt.colorbar(im, ax=ax, label="Avg travel time (minutes)")
 
-    step = max(1, len(piv.columns) // 9)
-    tick_idx = list(range(0, len(piv.columns), step))
-    ax.set_xticks(tick_idx)
-    ax.set_xticklabels([piv.columns[i] for i in tick_idx], rotation=55, ha="right", fontsize=7)
-    ax.set_yticks(tick_idx)
-    ax.set_yticklabels([piv.index[i] for i in tick_idx], fontsize=7)
+    ax.set_xticks(range(len(piv.columns)))
+    ax.set_xticklabels(piv.columns, rotation=55, ha="right", fontsize=6)
+    ax.set_yticks(range(len(piv.index)))
+    ax.set_yticklabels(piv.index, fontsize=6)
     ax.set_title(
-        "B7 — Routing Cost Matrix: Travel Time by Department Pair\n(Dry Standard Conditions)"
+        "B7 — Routing Cost Matrix: Travel Time by Department Pair\n"
+        "(Dry Standard Conditions · every origin→destination labelled)"
     )
     fig.text(0.5, -0.02, SOURCE, ha="center", fontsize=7.5, color=GREY)
     fig.tight_layout()
@@ -1176,7 +1247,7 @@ def chart_b8():
         width=w,
         color=RED,
         alpha=0.85,
-        label="Actual Expected Contacts",
+        label="Expected Contacts (multi-channel cumulative)",
     )
     ax1.set_ylabel("Contacts / Audience Size")
     ax1.set_xticks(list(x))
@@ -1191,7 +1262,15 @@ def chart_b8():
     ax2.tick_params(axis="y", colors=BLUE)
     ax2.legend(loc="upper right")
 
-    ax1.set_title("B8 — Reach Cap vs Expected Contacts vs Budget (Top 10 Departments)")
+    ax1.set_title("B8 — Reach Cap vs Expected Contacts (Top 10 Departments)\n(contacts = cumulative channel touches; cap = unique voter ceiling)")
+    ax1.annotate(
+        "expected_contacts counts cumulative multi-channel exposures (a voter may be touched across TV, radio, and WhatsApp); reach_cap is a unique reachable-voter ceiling. A ratio > 1 reflects multi-channel scheduling, not a constraint violation.",
+        xy=(0.5, -0.18),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
+    )
     fig.text(0.5, -0.02, SOURCE, ha="center", fontsize=7.5, color=GREY)
     fig.tight_layout()
     save_fig(fig, "B8_reach_caps_vs_contacts.png")
@@ -1207,7 +1286,14 @@ print("\n── Module C charts ──")
 
 @safe_chart("C1")
 def chart_c1():
-    """C1: Full forecast timeline with HDI bands."""
+    """C1: in-sample Bayesian tracking retrodiction of the 2018 Series A window.
+
+    This is a *retrodiction* of a past, known-outcome election, not an
+    out-of-sample forecast: the posterior tracks historical poll waves and is
+    read against the verified TSJE outcome anchor (+3.70 pp). Drawing and
+    labelling that anchor — and not titling the panel a "forecast" — is the
+    AUD-C1 / F-055 closure invariant.
+    """
     fig, ax = plt.subplots(figsize=(13, 5))
     fc = forecast.sort_values("date")
 
@@ -1216,7 +1302,7 @@ def chart_c1():
         fc["posterior_mean_preference_margin_pp"],
         color=RED,
         lw=2.5,
-        label="Posterior Mean (Margin pp)",
+        label="Posterior mean margin (in-sample retrodiction)",
     )
     ax.fill_between(
         fc["date"],
@@ -1227,17 +1313,36 @@ def chart_c1():
         label="94% HDI",
     )
     ax.axhline(0, color=CHARCOAL, lw=1.2, ls="--", label="Toss-up line (0 pp)")
+    # Verified outcome anchor — the known Series A result the retrodiction is read
+    # against. Replaces the previously unlabelled terminal posterior-mean line.
     ax.axhline(
-        fc["posterior_mean_preference_margin_pp"].iloc[-1], color=GOLD, lw=1.0, ls=":", alpha=0.8
+        TSJE_ANCHOR_PP,
+        color=GOLD,
+        lw=1.5,
+        ls=":",
+        label=f"Verified TSJE Series A outcome anchor (+{TSJE_ANCHOR_PP:.2f} pp)",
     )
 
-    ax.set_xlabel("Date")
+    ax.set_xlabel("Date (2018 Series A window — past election, known outcome)")
     ax.set_ylabel("Preference Margin (pp, Candidate A vs B)")
-    ax.set_title("C1 — Bayesian Forecast Timeline: Preference Margin with 94% HDI")
-    ax.legend()
+    ax.set_title(
+        "C1 — Bayesian Tracking Retrodiction: Preference Margin with 94% HDI\n"
+        "(retrospective reconciliation — conditions on the verified outcome anchor; "
+        "not an out-of-sample forecast — see walk-forward validation for that)"
+    )
+    ax.legend(loc="upper left")
     ax.xaxis.set_major_locator(matplotlib.dates.MonthLocator())
     ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%b %Y"))
     plt.setp(ax.xaxis.get_majorticklabels(), rotation=30, ha="right")
+    ax.annotate(
+        "Retrodiction on fixture polls — in-sample tracking of a known 2018 outcome, "
+        "not a forward forecast. Gold line marks the verified outcome anchor.",
+        xy=(0.5, -0.22),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
+    )
     annotate_source(ax)
     fig.tight_layout()
     save_fig(fig, "C1_forecast_timeline.png")
@@ -1248,7 +1353,14 @@ chart_c1()
 
 @safe_chart("C2")
 def chart_c2():
-    """C2: Final-day posterior margin — mean + 94% HDI (no simulated draws)."""
+    """C2: calibrated terminal posterior margin — mean + 94% HDI.
+
+    The terminal latent margin is pinned to the verified outcome anchor
+    m★ = +3.70 pp by a soft likelihood term (``outcome_anchor ~
+    Normal(mu_margin[-1], sigma=0.5)`` in models/tracking/hierarchical.py). The
+    posterior therefore sits near the anchor **by construction**, not by
+    independent agreement — disclosing that is the AUD-C2 / F-056 invariant.
+    """
     last_date = forecast["date"].max()
     last_row = forecast[forecast["date"] == last_date].iloc[0]
 
@@ -1256,21 +1368,37 @@ def chart_c2():
     hdi_lo = float(last_row["posterior_hdi_low_pp"])
     hdi_hi = float(last_row["posterior_hdi_high_pp"])
 
-    fig, ax = plt.subplots(figsize=(10, 4))
+    fig, ax = plt.subplots(figsize=(10, 4.4))
     ax.axvspan(hdi_lo, hdi_hi, color=RED, alpha=0.25, label="94% HDI")
-    ax.axvline(mean_v, color=CHARCOAL, lw=2.5, label=f"Posterior mean: {mean_v:.1f} pp")
+    ax.axvline(mean_v, color=CHARCOAL, lw=2.5, label=f"Calibrated posterior mean: {mean_v:.1f} pp")
     ax.axvline(0, color=GREY, lw=1.2, ls="--", label="Toss-up (0 pp)")
-    ax.axvline(3.7, color=GOLD, lw=1.5, ls=":", label="TSJE Series A anchor (+3.70 pp)")
+    ax.axvline(
+        TSJE_ANCHOR_PP,
+        color=GOLD,
+        lw=1.5,
+        ls=":",
+        label=f"Calibration target m★ (+{TSJE_ANCHOR_PP:.2f} pp, entered likelihood σ=0.5)",
+    )
 
     pad = max(2.0, (hdi_hi - hdi_lo) * 0.35)
-    ax.set_xlim(min(hdi_lo, 0, 3.7) - pad, max(hdi_hi, mean_v, 3.7) + pad)
+    ax.set_xlim(min(hdi_lo, 0, TSJE_ANCHOR_PP) - pad, max(hdi_hi, mean_v, TSJE_ANCHOR_PP) + pad)
     ax.set_ylim(0, 1)
     ax.set_yticks([])
     ax.set_xlabel("Preference Margin (pp, Candidate A vs B)")
     ax.set_title(
-        f"C2 — Final-Day Posterior Margin (mean + 94% HDI)\n({last_date.strftime('%d %b %Y')})"
+        f"C2 — Calibrated Terminal Posterior Margin (mean + 94% HDI)\n"
+        f"({last_date.strftime('%d %b %Y')})"
     )
     ax.legend(fontsize=9, loc="upper left")
+    ax.annotate(
+        "Terminal margin is pinned to the verified outcome anchor (σ=0.5 pp) — "
+        "proximity to m★ is by construction, not out-of-sample validation.",
+        xy=(0.5, -0.3),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
+    )
     annotate_source(ax)
     fig.tight_layout()
     save_fig(fig, "C2_posterior_margin_final.png")
@@ -1350,47 +1478,58 @@ chart_c4()
 
 @safe_chart("C5")
 def chart_c5():
-    """C5: Monte Carlo scenario fan chart (percentile bands by scenario bucket)."""
-    # Use shock_scale as the x-axis proxy across draws, grouping by scenario
-    buckets = mc_draws["scenario_bucket"].unique()
-    bucket_colors = {b: c for b, c in zip(buckets, [RED, BLUE, GREEN, ORANGE])}
+    """C5: shock-scale distribution by scenario bucket.
 
-    fig, ax = plt.subplots(figsize=(11, 5))
+    Monte-Carlo draws are *exchangeable* — they carry no temporal or otherwise
+    meaningful ordering — so a percentile "fan" over a draw-block index is a
+    meaningless x-axis (AUD-C5). This panel shows the shock-scale distribution
+    per scenario bucket (box + jittered draws); near-deterministic scenarios
+    collapse to a point, which is the honest signal.
+    """
+    buckets = list(mc_draws["scenario_bucket"].unique())
+    colors = [[RED, BLUE, GREEN, ORANGE, PURPLE][i % 5] for i in range(len(buckets))]
+    series = [
+        mc_draws.loc[mc_draws["scenario_bucket"] == b, "shock_scale"].to_numpy() for b in buckets
+    ]
+    positions = list(range(1, len(buckets) + 1))
 
-    # Sort draws by draw_id and compute running percentiles of shock_scale
-    mc_sorted = mc_draws.sort_values("draw_id")
-    chunk_size = 250
-    chunks = [mc_sorted.iloc[i : i + chunk_size] for i in range(0, len(mc_sorted), chunk_size)]
+    fig, ax = plt.subplots(figsize=(11, 6))
+    bp = ax.boxplot(series, positions=positions, widths=0.5, showfliers=False, patch_artist=True)
+    for patch, color in zip(bp["boxes"], colors):
+        patch.set_facecolor(color)
+        patch.set_alpha(0.35)
+    rng = np.random.default_rng(42)
+    for pos, vals, color in zip(positions, series, colors):
+        jitter = (rng.random(len(vals)) - 0.5) * 0.3
+        ax.scatter(np.full(len(vals), pos) + jitter, vals, s=6, color=color, alpha=0.35, zorder=3)
 
-    for bucket in buckets:
-        chunk_medians = []
-        chunk_p10, chunk_p90 = [], []
-        chunk_p25, chunk_p75 = [], []
-        xs = []
-        for ci, chunk in enumerate(chunks):
-            sub = chunk[chunk["scenario_bucket"] == bucket]["shock_scale"]
-            if len(sub) == 0:
-                continue
-            chunk_medians.append(np.median(sub))
-            chunk_p10.append(np.percentile(sub, 10))
-            chunk_p90.append(np.percentile(sub, 90))
-            chunk_p25.append(np.percentile(sub, 25))
-            chunk_p75.append(np.percentile(sub, 75))
-            xs.append(ci)
-
-        if not xs:
-            continue
-        color = bucket_colors.get(bucket, GREY)
-        ax.plot(xs, chunk_medians, color=color, lw=2, label=bucket)
-        ax.fill_between(xs, chunk_p25, chunk_p75, color=color, alpha=0.25)
-        ax.fill_between(xs, chunk_p10, chunk_p90, color=color, alpha=0.10)
-
-    ax.set_xlabel("Draw Chunk (250-draw blocks)")
+    ax.set_xticks(positions)
+    ax.set_xticklabels(buckets, rotation=20, ha="right")
+    ax.set_xlabel("Scenario Bucket")
     ax.set_ylabel("Shock Scale")
     ax.set_title(
-        "C5 — Monte Carlo Scenario Fan Chart\n(Shock Scale Percentile Bands by Scenario Bucket)"
+        "C5 — Shock Scale by Scenario Bucket\n"
+        "(MC draws are exchangeable — distribution per scenario, not a time fan)"
     )
-    ax.legend(title="Scenario")
+    ax.annotate(
+        "Monte-Carlo draws have no temporal order, so a percentile fan over a draw index "
+        "would be meaningless. Near-deterministic scenarios collapse to a point.",
+        xy=(0.5, -0.28),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
+    )
+    ax.annotate(
+        "B→C handshake note: alloc_mean_persuasion_contacts is scenario-invariant — "
+        "Module B allocates a single mean contact count across all scenarios. "
+        "Scenario variation enters only via the shock_scale multiplier, not contact volume.",
+        xy=(0.5, -0.40),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
+    )
     annotate_source(ax)
     fig.tight_layout()
     save_fig(fig, "C5_mc_scenario_fan_chart.png")
@@ -1401,34 +1540,97 @@ chart_c5()
 
 @safe_chart("C6")
 def chart_c6():
-    """C6: Shock scale distribution per scenario bucket (overlaid KDE)."""
-    from scipy.stats import gaussian_kde
+    """C6: shock-scale distribution per scenario bucket (discrete-aware, no KDE).
 
+    Scenario shock_scale draws cluster at a few point masses (near-deterministic
+    scenario design), so a smooth Gaussian KDE invented continuous density that
+    is not in the data (AUD-C6). This panel uses a plain histogram plus an
+    explicit dotted marker at each actual point mass instead.
+    """
     buckets = mc_draws["scenario_bucket"].unique()
     bucket_colors = dict(zip(buckets, [RED, BLUE, GREEN, ORANGE, PURPLE]))
 
     fig, ax = plt.subplots(figsize=(10, 5))
     for bucket in buckets:
-        data = mc_draws.loc[mc_draws["scenario_bucket"] == bucket, "shock_scale"].values
+        data = mc_draws.loc[mc_draws["scenario_bucket"] == bucket, "shock_scale"].to_numpy()
         color = bucket_colors.get(bucket, GREY)
-        ax.hist(data, bins=40, density=True, alpha=0.35, color=color)
-        if len(np.unique(data)) > 2:
-            kde = gaussian_kde(data)
-            xs = np.linspace(data.min() - 0.2, data.max() + 0.2, 300)
-            ax.plot(xs, kde(xs), color=color, lw=2.5, label=bucket)
-        else:
-            ax.axvline(data[0], color=color, lw=2.5, label=f"{bucket} (point mass={data[0]:.3f})")
+        ax.hist(data, bins=40, density=True, alpha=0.35, color=color, label=bucket)
+        # Mark the discrete point mass(es) honestly instead of KDE-smoothing them.
+        for value in np.unique(data)[:6]:
+            ax.axvline(value, color=color, lw=1.2, ls=":", alpha=0.9)
 
     ax.set_xlabel("Shock Scale")
-    ax.set_ylabel("Density")
-    ax.set_title("C6 — Shock Scale Distribution by Scenario Bucket (KDE)")
+    ax.set_ylabel("Density (histogram)")
+    ax.set_title(
+        "C6 — Shock Scale Distribution by Scenario Bucket\n(discrete point masses — no KDE smoothing)"
+    )
     ax.legend(title="Scenario Bucket")
+    ax.annotate(
+        "Scenario shock_scale is near-deterministic (discrete point masses); a smooth KDE would "
+        "fabricate continuous density. Dotted lines mark the actual point masses.",
+        xy=(0.5, -0.24),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
+    )
     annotate_source(ax)
     fig.tight_layout()
     save_fig(fig, "C6_shock_scale_distribution.png")
 
 
 chart_c6()
+
+
+@safe_chart("C5B")
+def chart_c5b():
+    """C5B: scenario-adjusted (effective) persuasion contacts by bucket — varies.
+
+    The published "Monte Carlo persuasion-adjusted contacts" figure plotted
+    alloc_mean_persuasion_contacts, a single scenario-invariant scalar broadcast to
+    every draw, so it was a flat line (AUD dead-B→C-metric). The honest, plottable
+    quantity is the effective contact volume each draw's engagement shock implies:
+    scenario_adjusted_persuasion_contacts = alloc_mean × shock_scale. It varies by
+    draw and by bucket. Rendered as a violin (distribution per scenario).
+    """
+    if "scenario_adjusted_persuasion_contacts" in mc_draws.columns:
+        metric = mc_draws["scenario_adjusted_persuasion_contacts"]
+    else:  # robust to a not-yet-regenerated parquet
+        metric = mc_draws["alloc_mean_persuasion_contacts"] * mc_draws["shock_scale"]
+    work = mc_draws.assign(_eff=metric)
+    buckets = list(work["scenario_bucket"].unique())
+    series = [work.loc[work["scenario_bucket"] == b, "_eff"].to_numpy() for b in buckets]
+    colors = [[RED, BLUE, GREEN, ORANGE, PURPLE][i % 5] for i in range(len(buckets))]
+
+    fig, ax = plt.subplots(figsize=(11, 5))
+    parts = ax.violinplot(series, showmeans=True, showextrema=True)
+    for body, color in zip(parts["bodies"], colors):
+        body.set_facecolor(color)
+        body.set_alpha(0.35)
+    ax.set_xticks(range(1, len(buckets) + 1))
+    ax.set_xticklabels(buckets, rotation=20, ha="right")
+    ax.set_xlabel("Scenario Bucket")
+    ax.set_ylabel("Effective persuasion contacts (mean × shock)")
+    ax.set_title(
+        "C5B — Scenario-Adjusted Persuasion Contacts by Bucket\n"
+        "(effective = handshake mean × per-draw engagement shock — varies, unlike the raw mean)"
+    )
+    ax.annotate(
+        "Units: alloc_mean_persuasion_contacts is the MEAN persuasion-adjusted contacts per "
+        "allocation cell; total expected_contacts across all cells is larger by the cell count. "
+        "Raw alloc_mean is scenario-invariant (a flat line) — this panel scales it by each draw's shock.",
+        xy=(0.5, -0.30),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.0,
+        color=GREY,
+    )
+    annotate_source(ax)
+    fig.tight_layout()
+    save_fig(fig, "C5B_scenario_adjusted_contacts.png")
+
+
+chart_c5b()
 
 
 @safe_chart("C7")
@@ -1484,23 +1686,9 @@ def chart_c8():
     _stagger_annotate(ax, merged_c8, "mean_propensity", "win_probability_a", "department")
 
     ax.axhline(0.5, color=CHARCOAL, lw=1.2, ls="--", label="50% win threshold")
-    wp = merged_c8["win_probability_a"]
-    # Full [0,1] axis (not a zoomed 0.48–0.52 band): every department sits on
-    # the 50% line. The sub-1pp spread is deterministic illustrative jitter,
-    # not signal — a zoomed axis would amplify noise into a false ranking.
+    # Full [0,1] axis: TSJE-calibrated swing model produces a wide range across
+    # departments — GANAR strongholds are well below 50%, ANR strongholds well above.
     ax.set_ylim(0, 1)
-    spread_pp = float((wp.max() - wp.min()) * 100)
-    ax.text(
-        0.5,
-        0.92,
-        f"All departments within {spread_pp:.2f} pp of 50% — spread is "
-        f"illustrative noise, not a ranking",
-        transform=ax.transAxes,
-        ha="center",
-        fontsize=8,
-        fontstyle="italic",
-        color=CHARCOAL,
-    )
     plt.colorbar(sc, ax=ax, label="Total Budget (USD)")
     ax.set_xlabel("Mean Participation Propensity (Department)")
     ax.set_ylabel("P(Win — Candidate A)")
@@ -1551,12 +1739,25 @@ def chart_c9():
 
     ax.set_xlabel("Mean Transparency Score (phi)")
     ax.set_ylabel("|House Effect| (pp)")
-    ax.set_title("C9 — Polling Transparency vs House Effect Magnitude")
+    n_pollsters = len(he_merged)
+    ax.set_title(
+        f"C9 — Polling Transparency vs House Effect Magnitude\n"
+        f"(per-pollster audit, n={n_pollsters} pollsters — not a fitted trend)"
+    )
     ax.set_xlim(-0.05, 1.15)
 
     red_p = mpatches.Patch(color=RED, label="|HE| > 3 pp (high bias risk)")
     blue_p = mpatches.Patch(color=BLUE, label="|HE| <= 3 pp (moderate)")
     ax.legend(handles=[red_p, blue_p])
+    ax.annotate(
+        f"n = {n_pollsters} pollsters — far too few to infer a transparency-bias relationship; "
+        "read as a per-pollster audit, not a trend.",
+        xy=(0.5, -0.2),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
+    )
     annotate_source(ax)
     fig.tight_layout()
     save_fig(fig, "C9_polling_transparency_audit.png")
@@ -1567,13 +1768,16 @@ chart_c9()
 
 @safe_chart("C10")
 def chart_c10():
-    """C10: Monte Carlo win-probability histogram across all draws."""
-    # Derive win probability per draw: win if shock_scale > median baseline
+    """C10: Monte Carlo shock-scale distribution by scenario (NOT win probability).
+
+    The committed filename (``C10_mc_win_probability_histogram.png``) is a legacy
+    misnomer: this panel histograms shock_scale per scenario — it does not derive
+    P(win). Candidate-A win probability lives in C3 / C8 (AUD-C10).
+    """
     baseline_median = mc_draws.loc[
         mc_draws["scenario_bucket"] == "baseline", "shock_scale"
     ].median()
 
-    # Use a simple proxy: fraction of draws above baseline level per scenario
     buckets = mc_draws["scenario_bucket"].unique()
     bucket_colors = dict(zip(buckets, [RED, BLUE, GREEN, ORANGE, PURPLE]))
 
@@ -1601,9 +1805,19 @@ def chart_c10():
     ax.set_xlabel("Shock Scale")
     ax.set_ylabel("Density")
     ax.set_title(
-        f"C10 — Monte Carlo Scenario Draw Distribution\n(Shock Scale across {len(mc_draws):,} Draws)"
+        f"C10 — Monte Carlo Shock-Scale Distribution by Scenario\n"
+        f"(shock scale across {len(mc_draws):,} draws — not win probability; P(win) → C3/C8)"
     )
     ax.legend(title="Scenario Bucket")
+    ax.annotate(
+        "Legacy filename says 'win_probability', but this panel shows the shock-scale "
+        "distribution. Candidate-A win probability is C3 / C8, not derived here.",
+        xy=(0.5, -0.22),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
+    )
     annotate_source(ax)
     fig.tight_layout()
     save_fig(fig, "C10_mc_win_probability_histogram.png")
@@ -1810,7 +2024,6 @@ def chart_s4():
     merged_s4["priority_score"] = (
         merged_s4["win_probability_a"]
         * merged_s4["mean_propensity"]
-        * np.log1p(merged_s4["budget_allocation_usd"].fillna(0))
     )
 
     merged_s4 = merged_s4.sort_values("priority_score", ascending=True)
@@ -1837,7 +2050,7 @@ def chart_s4():
             fontsize=8,
         )
 
-    plt.colorbar(sc, ax=ax, label="Priority Score (win_prob × propensity × log_budget)")
+    plt.colorbar(sc, ax=ax, label="Priority Score (win_prob × propensity — budget removed to avoid circularity)")
     ax.axvline(0.5, color=GREY, lw=1.2, ls="--", label="50% win threshold")
     ax.axhline(
         merged_s4["mean_propensity"].median(), color=GREY, lw=1, ls="--", label="Median propensity"
@@ -1846,7 +2059,15 @@ def chart_s4():
     ax.set_ylabel("Mean Participation Propensity")
     ax.set_title(
         "S4 — Department Priority Matrix\n"
-        f"(Win Prob × Propensity × Budget · {ILLUSTRATIVE_BATTLE_SUB})"
+        f"(Win Prob × Propensity · budget-size on bubble · {ILLUSTRATIVE_BATTLE_SUB})"
+    )
+    ax.annotate(
+        "Budget was excluded from the priority score: it was itself allocated based on win_prob × propensity, so including it would create a tautology. Bubble size still reflects budget for reference.",
+        xy=(0.5, -0.22),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
     )
     ax.legend(fontsize=8, loc="lower right")
     annotate_source(ax)
@@ -1895,19 +2116,36 @@ def chart_s5():
 
     plt.colorbar(sc, ax=ax, label="Total Budget (USD)")
 
-    # Efficiency frontier line
+    # Descriptive OLS trend — NOT a Pareto / efficiency frontier (which would be
+    # the non-dominated upper envelope, not a regression line) (AUD-S5).
     xf = np.linspace(dept_eff["mean_reach_util"].min(), dept_eff["mean_reach_util"].max(), 100)
     coeffs = np.polyfit(dept_eff["mean_reach_util"], dept_eff["total_persuasion"], 1)
     ax.plot(
-        xf, np.polyval(coeffs, xf), color=CHARCOAL, lw=1.2, ls="--", alpha=0.6, label="Linear trend"
+        xf,
+        np.polyval(coeffs, xf),
+        color=CHARCOAL,
+        lw=1.2,
+        ls="--",
+        alpha=0.6,
+        label="OLS linear trend (descriptive)",
     )
 
     ax.set_xlabel("Mean Reach Utilisation")
     ax.set_ylabel("Total Persuasion-Adjusted Contacts")
     ax.set_title(
-        "S5 — Campaign Efficiency Frontier by Department\n(Reach Utilisation vs Persuasion Contacts)"
+        "S5 — Reach Utilisation vs Persuasion-Adjusted Contacts by Department\n"
+        "(descriptive scatter + OLS trend — not a Pareto efficiency frontier)"
     )
     ax.legend()
+    ax.annotate(
+        "Dashed line is an OLS trend, not a Pareto efficiency frontier (the non-dominated "
+        "envelope). Legacy filename 'efficiency_frontier' retained for lineage.",
+        xy=(0.5, -0.16),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.5,
+        color=GREY,
+    )
     annotate_source(ax)
     fig.tight_layout()
     save_fig(fig, "S5_efficiency_frontier.png")
@@ -2073,7 +2311,7 @@ def chart_eda_overview():
             label=col.replace("media_penetration_", "").upper(),
         )
     ax4.set_xticks(x)
-    ax4.set_xticklabels([s[:8] for s in SEG_ORDER], rotation=45, ha="right", fontsize=7)
+    ax4.set_xticklabels([s.replace("_", "\n") for s in SEG_ORDER], rotation=0, ha="center", fontsize=6)
     ax4.set_title("Media Penetration by Segment", fontsize=10)
     ax4.set_ylabel("Mean rate")
     ax4.legend(fontsize=7)
@@ -2098,8 +2336,8 @@ def chart_eda_overview():
     fig.text(
         0.5,
         0.035,
-        "Empirical pipeline inputs only. Model outputs: C1–C10 (posterior forecast, "
-        "win probabilities, MC scenarios).",
+        "Empirical population inputs plus the Module A participation-propensity output (panel 3). "
+        "Model outputs: C1–C10 (forecast / win-probability / Monte-Carlo) are shown separately.",
         ha="center",
         fontsize=9,
         color=CHARCOAL,
@@ -2145,6 +2383,30 @@ forecast_final_hdi_hi = forecast.sort_values("date").iloc[-1]["posterior_hdi_hig
 top_win_dept = battleground.sort_values("win_probability_a", ascending=False).iloc[0]
 low_win_dept = battleground.sort_values("win_probability_a").iloc[0]
 
+# House-effect narrative numbers are DERIVED from the canonical
+# posterior_house_effects.parquet (the same frame the C4 chart plots), so the prose
+# can never contradict the figure or the notebook (SSOT — F-072). Never hardcode
+# pollster house-effect pp values in prose.
+_he_by_mean = house_eff.sort_values("house_effect_posterior_mean")
+_he_neg = _he_by_mean.iloc[0]  # most negative house effect (understates A)
+_he_pos = _he_by_mean.iloc[-1]  # most positive house effect (overstates A)
+_he_neutral = house_eff.loc[house_eff["house_effect_posterior_mean"].abs().idxmin()]
+
+
+def _he_name(row) -> str:
+    return str(row["pollster_id"]).upper()
+
+
+_he_neg_name = _he_name(_he_neg)
+_he_neg_pp = float(_he_neg["house_effect_posterior_mean"])
+_he_pos_name = _he_name(_he_pos)
+_he_pos_pp = float(_he_pos["house_effect_posterior_mean"])
+_he_neutral_name = _he_name(_he_neutral)
+_he_neutral_pp = float(_he_neutral["house_effect_posterior_mean"])
+_he_max_abs = house_eff.loc[house_eff["house_effect_posterior_mean"].abs().idxmax()]
+_he_max_abs_name = _he_name(_he_max_abs)
+_he_max_abs_pp = abs(float(_he_max_abs["house_effect_posterior_mean"]))
+
 # Data-derived narrative stats (keeps report prose truthful across regenerations)
 _seg_share_pct = pop["segment_label"].value_counts(normalize=True) * 100
 _seg_prop_mean = pop.groupby("segment_label")["participation_propensity"].mean()
@@ -2181,7 +2443,7 @@ _mc_alloc_note = (
 )
 _min_win_prob = float(battleground["win_probability_a"].min())
 _max_win_prob = float(battleground["win_probability_a"].max())
-_tsje_margin_pp = 3.70
+_tsje_margin_pp = TSJE_ANCHOR_PP
 _illustrative_tracking_note = (
     "Illustrative model output on fixture survey polls — not verified outcome; "
     f"TSJE Series A anchor is +{_tsje_margin_pp:.2f} pp"
@@ -2212,6 +2474,7 @@ report_md = f"""# Paraguay Presidential Campaign — Full EDA Report
 
 **Generated:** April 30, 2026
 **Data Pipeline Version:** 1.0.0
+**Canonical run:** {FIGURE_RUN_ID} · model {FIGURE_MODEL_VERSION} (stamped on every figure for SSOT traceability)
 **Population Sample:** N = {len(pop):,} individuals
 **Campaign Period:** Weeks 1–14 (2018-W01 to 2018-W14)
 **Forecast Window:** 2017-12-01 to 2018-04-21 (142 days)
@@ -2227,7 +2490,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 - **Central and Alto Paraná absorb {_central_alto_share_pct:.0f}% of the total budget** (${_b1_central:,.0f} and ${_b1_alto:,.0f} respectively), reflecting their demographic weight. These allocations appear justified, but efficiency metrics suggest diminishing returns in Central already in week 8.
 - **{_seg_title(_top_prop_seg)} is the highest-propensity segment (mean {_seg_prop_mean[_top_prop_seg]:.2f})** but receives little digital investment due to low internet penetration. Radio is the dominant reach channel for rural segments; any reduction in radio spend directly suppresses participation in Itapúa and San Pedro strongholds.
 - **Bilateral (direct) channels absorb 52.5% of baseline budget** vs. 47.5% for broadcast. The broadcast-to-direct scenario redistributes this mix but produces zero additional persuasion contacts at the aggregate level, suggesting the direct-contact premium is not converting efficiently everywhere.
-- **Three pollsters show significant house effects:** ATI/Snead has a −5.1 pp negative bias, ICA has +3.8 pp positive bias; only CAPLI is near-neutral. Raw polling averages should never be used without bias correction for this race.
+- **Pollster house effects (from posterior_house_effects.parquet):** {_he_neg_name} has a {_he_neg_pp:+.1f} pp bias, {_he_pos_name} has a {_he_pos_pp:+.1f} pp bias; {_he_neutral_name} is the closest to neutral ({_he_neutral_pp:+.1f} pp). Raw polling averages should never be used without bias correction for this race.
 - **Chaco departments (Alto Paraguay, Boquerón, Presidente Hayes) are negligible-tier** in budget allocation; modelled department win probabilities cluster near **{_min_win_prob:.0%}–{_max_win_prob:.0%}** on fixture posteriors ({_illustrative_tracking_note}).
 
 ---
@@ -2349,7 +2612,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 **Strategic implication:** The front-loaded direct spend may be losing impact by the time election day arrives. Consider shifting 10–15% of bilateral budget from weeks 1–3 to weeks 11–13 to maintain turnout pressure in the final push.
 
 ### B3 — Broadcast vs Direct Budget Split
-**What it shows:** Stacked area chart comparing broadcast vs. bilateral budget by week, and scenario comparison.
+**What it shows:** Left: the two budget scenarios (Baseline vs Broadcast→Direct) compared as separate lines — they are mutually exclusive, so they are never stacked into a meaningless total. Right: the within-baseline broadcast vs bilateral split (legitimate components of one budget) as a stacked area.
 **Key finding:** Baseline allocates 47.5% broadcast / 52.5% bilateral. The broadcast-to-direct scenario shifts this further but does not produce additional persuasion contacts (alloc_mean_persuasion_contacts = 0 in all MC draws), suggesting a possible pipeline data gap.
 **Strategic implication:** Until the persuasion contact column is validated for the broadcast-to-direct scenario, treat that scenario's efficiency claims with caution. The baseline split appears operationally sound.
 
@@ -2382,14 +2645,14 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 
 ## Module C: Forecasting & Scenarios
 
-### C1 — Full Forecast Timeline
-**What it shows:** 142-day Bayesian preference margin timeline with 94% HDI bands.
+### C1 — Bayesian Tracking Retrodiction (2018 Series A)
+**What it shows:** 142-day Bayesian preference-margin *retrodiction* — in-sample tracking of the past 2018 Series A window, read against the verified +3.70 pp TSJE outcome anchor (drawn on the panel), **not** an out-of-sample forecast — with 94% HDI bands.
 **Key finding:** Candidate A's posterior mean preference margin closes near **{forecast_final_mean:.1f} pp** on fixture polls ({_illustrative_tracking_note}). The 94% HDI is wide ({forecast_final_hdi_lo:.1f} to {forecast_final_hdi_hi:.1f} pp), reflecting only 4 survey measurement waves.
 **Strategic implication:** The lead is robust but the HDI is wide — more polling waves would dramatically tighten the uncertainty bounds. The campaign should commission 2–3 additional poll waves in the final 6 weeks.
 
-### C2 — Final Day Posterior Distribution
-**What it shows:** Approximate posterior margin distribution at election date (April 21, 2018).
-**Key finding:** Final mean margin is {forecast_final_mean:.1f} pp. The 5th percentile is still positive (approximately +3 pp), indicating Candidate A wins under virtually all plausible scenarios. The 95th percentile margin exceeds 30 pp.
+### C2 — Calibrated Terminal Posterior Distribution
+**What it shows:** Terminal (election-eve) posterior margin — mean + 94% HDI. The terminal latent margin is *pinned to the verified outcome anchor* m★ = +3.70 pp by a soft likelihood term (σ = 0.5 pp; `models/tracking/hierarchical.py`), so the posterior sits near m★ **by construction**, not by independent out-of-sample agreement.
+**Key finding:** Calibrated final mean margin is {forecast_final_mean:.1f} pp ({_illustrative_tracking_note}). Read the proximity to +3.70 pp as a calibration target the model was pinned to — not a forecast that independently recovered the result. Out-of-sample skill is evaluated separately in walk-forward, where the anchor is withheld.
 **Strategic implication:** The campaign is in a "protecting the lead" posture. The strategic priority shifts from persuasion to turnout maximisation among A-leaning segments, particularly Youth Volatile and Rural Committed.
 
 ### C3 — Battleground Department Win Probability
@@ -2399,16 +2662,16 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 
 ### C4 — House Effects Forest Plot
 **What it shows:** Posterior mean ± 94% HDI for each pollster's house effect (bias toward Candidate A).
-**Key finding:** ATI/Snead has a large negative bias (−5.1 pp, HDI entirely negative), meaning their polls systematically understate A's lead. ICA has positive bias (+3.8 pp). CAPLI is the most neutral pollster.
-**Strategic implication:** Never cite raw ATI/Snead polls in communications — they will appear worse than reality. CAPLI should be the reference pollster for public-facing narratives. The campaign analytics team should routinely adjust all external poll reports for these biases.
+**Key finding:** {_he_neg_name} has the largest negative house effect ({_he_neg_pp:+.1f} pp), meaning its polls systematically understate A's lead; {_he_pos_name} has the largest positive house effect ({_he_pos_pp:+.1f} pp); {_he_neutral_name} is the most neutral ({_he_neutral_pp:+.1f} pp). (Derived from posterior_house_effects.parquet — the same frame the C4 figure plots.)
+**Strategic implication:** Never cite raw {_he_neg_name} polls in communications — they will appear worse than reality. {_he_neutral_name} is the closest to unbiased for public-facing narratives. The campaign analytics team should routinely adjust all external poll reports for these biases.
 
-### C5 — Monte Carlo Scenario Fan Chart
-**What it shows:** Percentile bands of shock scale over 10,000 Monte Carlo draws.
-**Key finding:** Baseline scenario draws cluster tightly around shock_scale ≈ 0.987 (low volatility). Extreme Tracker scenario has draws at shock_scale ≈ 1.83 and 2.43, indicating significantly higher electoral volatility assumed in that scenario.
+### C5 — Shock Scale Distribution by Scenario
+**What it shows:** Shock-scale distribution per scenario bucket (box + jittered draws). Monte-Carlo draws are *exchangeable*, so a percentile fan over a draw index would be a meaningless x-axis.
+**Key finding:** Baseline scenario draws cluster tightly around shock_scale ≈ 0.987 (low volatility); the Extreme Tracker scenario sits at ≈ 1.83 and 2.43. Near-deterministic scenarios collapse to a point — the honest signal of a discrete scenario catalogue.
 **Strategic implication:** The extreme tracker scenario requires campaign stress-testing — if late-breaking events cause a 2x shock scale swing, what is the impact on persuasion contacts and turnout? Model this explicitly for contingency planning.
 
 ### C6 — Shock Scale Distribution by Scenario
-**What it shows:** Overlaid KDE of shock_scale for each scenario bucket.
+**What it shows:** Histogram of shock_scale per scenario bucket with dotted markers at each discrete point mass — no KDE, because smoothing would fabricate continuous density that is not in the data.
 **Key finding:** Baseline has two point-mass clusters at 0.987 and 0.590, suggesting a discrete scenario design rather than continuous draws. Extreme Tracker similarly clusters at 1.83 and 2.43. The MC architecture uses deterministic scenario parameters with draw-level randomness elsewhere.
 **Strategic implication:** The shock scale design is scenario-discrete, not continuously random — this limits the model's ability to capture smooth intermediate risk scenarios. A continuous shock prior would be more realistic for final-week planning.
 
@@ -2423,12 +2686,12 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 **Strategic implication:** The combination of high propensity + high win probability identifies "safe yield" departments (San Pedro, Cordillera, Misiones). These departments can deliver high turnout at low persuasion cost — mobilisation spend here has the best ROI.
 
 ### C9 — Polling Transparency Audit
-**What it shows:** Transparency score vs. house effect magnitude for each pollster.
-**Key finding:** ATI/Snead has the highest transparency (phi=1.0) but the largest house effect magnitude (5.1 pp). ICA has intermediate transparency (0.79) and 3.8 pp bias. CAPLI has low transparency (0.37) but near-zero bias.
-**Strategic implication:** Transparency does not predict bias — ATI/Snead is the most methodologically transparent yet most biased. The campaign should apply bias corrections independent of transparency ratings.
+**What it shows:** Transparency score vs. house-effect magnitude, one point per pollster (n=3 pollsters — a per-pollster audit, not a fitted trend).
+**Key finding:** Across the three fixture pollsters, {_he_max_abs_name} carries the largest |house effect| ({_he_max_abs_pp:.1f} pp) while {_he_neutral_name} is the closest to neutral ({_he_neutral_pp:+.1f} pp). With n=3, no transparency–bias relationship can be inferred — read this as an audit, not evidence of a rule.
+**Strategic implication:** Apply bias corrections per pollster regardless of transparency rating; do not infer a transparency→bias rule from three points.
 
-### C10 — MC Win Probability Histogram
-**What it shows:** Distribution of shock_scale across all 10,000 MC draws by scenario bucket.
+### C10 — MC Shock-Scale Distribution (legacy filename)
+**What it shows:** Distribution of shock_scale across all MC draws by scenario bucket. The committed filename references "win probability", but this panel does **not** derive P(win) — Candidate-A win probability is C3 / C8.
 **Key finding:** Draws are split across {len(_mc_bucket_counts)} canonical buckets ({_mc_bucket_desc}); shock-scale distributions are multimodal by design of the discrete scenario catalog.
 **Strategic implication:** Resource buffers and contingency plans should be stress-tested against the extreme-tracker bucket (1.8–2.4× baseline shock sensitivity) — not just the ±10% band around baseline.
 
@@ -2456,10 +2719,10 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 **Key finding:** Central, Caaguazu, and Itapúa score highest on the composite priority index. Misiones, Neembucú, and Caazapá score lowest despite reasonable win probabilities, primarily due to lower propensity and smaller budget allocations.
 **Strategic implication:** Caaguazu is underweighted relative to its priority score — it ranks 3rd in composite priority but only 5th in total budget. A budget rebalancing toward Caaguazu would improve overall campaign efficiency.
 
-### S5 — Campaign Efficiency Frontier
-**What it shows:** Reach utilisation vs. total persuasion contacts by department, bubble = budget.
-**Key finding:** Most departments cluster in the low-utilisation / low-contacts quadrant, with Central and Alto Paraná as positive outliers. No department achieves both high reach utilisation AND high persuasion contacts simultaneously.
-**Strategic implication:** The efficiency frontier is not being achieved. Departments with moderate reach utilisation but very few persuasion contacts (e.g., Concepción, Misiones) may be experiencing a channel-segment mismatch — channels selected are not penetrating the dominant behavioral segments in those areas.
+### S5 — Reach Utilisation vs Persuasion Contacts (descriptive)
+**What it shows:** Reach utilisation vs. total persuasion-adjusted contacts by department (bubble = budget), with a descriptive OLS trend line — *not* a Pareto efficiency frontier (the non-dominated envelope).
+**Key finding:** Most departments cluster in the low-utilisation / low-contacts region, with Central and Alto Paraná as positive outliers. No department reaches both high reach utilisation AND high persuasion contacts.
+**Strategic implication:** Departments with moderate reach utilisation but very few persuasion contacts (e.g., Concepción, Misiones) may have a channel–segment mismatch — the channels selected are not penetrating the dominant behavioural segments there. (Descriptive trend, not a frontier-optimality claim.)
 
 ---
 
@@ -2479,7 +2742,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 
 7. **Do not invest in Committed Opposition persuasion.** This segment has a mean propensity of {_co_prop:.2f} and high preference strength for Candidate B. The cost of persuading even a marginal share of this group far exceeds the returns. Redirect any persuasion budget earmarked for this segment to Youth Volatile micro-targeting.
 
-8. **Apply bias corrections to all external polling references.** ATI/Snead results understate the lead by ~5 pp; ICA overstates it by ~4 pp. All internal planning documents and public communications should use bias-corrected figures. Share the house effect estimates with the communications team immediately.
+8. **Apply bias corrections to all external polling references.** {_he_neg_name} results understate the lead by ~{abs(_he_neg_pp):.0f} pp; {_he_pos_name} overstates it by ~{abs(_he_pos_pp):.0f} pp. All internal planning documents and public communications should use bias-corrected figures. Share the house effect estimates with the communications team immediately.
 
 9. **Stress-test the extreme tracker scenario for weeks 12–14.** The extreme_tracker bucket ({_mc_bucket_counts.get("extreme_tracker", 0):,} of {len(mc_draws):,} draws, shock_scale 1.83–2.43) encodes high-volatility outcomes. Ensure field operations have a 72-hour rapid-response protocol if a late-breaking adverse event triggers a 5–8 pp margin compression.
 
@@ -2491,7 +2754,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 
 - **Segmentation:** 6 clusters from KMeans on scaled numeric features; segment names are profile-derived (Hungarian assignment of cluster profiles to the canonical vocabulary, with interpretation tests). DBSCAN runs as a noise diagnostic only ({segs["dbscan_noise_flag"].sum()} flagged rows). Segment IDs 0–5 map to labels via `segment_labels.parquet`.
 - **Participation propensity:** Bayesian logistic regression with department-level random effects and post-stratification rake weights. Rake multipliers vary substantially across departments (mean 3.2×) indicating sampling imbalance in raw data.
-- **Bayesian tracking model:** Hierarchical Gaussian random walk with house effect corrections. 94% HDI reported (approximately equivalent to 2σ for normally distributed posteriors). Only 4 poll waves ingested — uncertainty is fundamentally limited by sparse polling data.
+- **Bayesian tracking model:** Hierarchical Gaussian random walk with house effect corrections. Credible bands are true 94% highest-density intervals (`az.hdi`, ≈±1.9σ for a Gaussian posterior) — not 5/95 equal-tailed quantiles. Only 4 poll waves ingested — uncertainty is fundamentally limited by sparse polling data.
 - **Budget optimisation:** Linear programming solver (OPTIMAL status confirmed for all cells). Constraints include reach caps, department tiers, and channel eligibility rules. FX conversion uses retail spread rate (not reference rate).
 - **Monte Carlo:** {len(mc_draws):,} draws across {len(_mc_bucket_counts)} scenario buckets. Shock scale parameterises outcome volatility. {_mc_alloc_note}.
 - **Exit model:** Gaussian likelihood with intercept + two international observer beta parameters. Identified on historical exit survey data. Wide HDI intervals suggest limited historical data for calibration.

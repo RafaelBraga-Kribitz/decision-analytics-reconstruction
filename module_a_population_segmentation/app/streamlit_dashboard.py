@@ -171,8 +171,14 @@ def main() -> None:
 
     with tab3:
         st.subheader("Data Quality Report")
-        qa_path = Path(__file__).resolve().parents[1] / "reports" / "qa_report_20260507.md"
-        if qa_path.exists():
+        # The cleaning pipeline emits qa_report_<YYYYMMDD>.md (a fresh date each
+        # run). Glob for the most recent one instead of a hard-coded date so the
+        # tab populates regardless of when the pipeline last ran (AUD-PUB-001).
+        reports_dir = Path(__file__).resolve().parents[1] / "reports"
+        qa_reports = sorted(reports_dir.glob("qa_report_*.md"))
+        if qa_reports:
+            qa_path = qa_reports[-1]
+            st.caption(f"Showing latest QA report: {qa_path.name}")
             st.markdown(qa_path.read_text(encoding="utf-8"))
         else:
             st.info("QA report not found yet. Run cleaning pipeline first.")

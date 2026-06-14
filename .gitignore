@@ -32,6 +32,8 @@ data/processed/*
 *.csv
 !schema_contracts/
 !**/tests/fixtures/*.csv
+# Verified real-world anchor data shipped as geo package data (model reads it at runtime).
+!**/geo/*.csv
 
 # ─── MLflow ──────────────────────────────────────────────────────────────────
 mlruns/

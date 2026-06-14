@@ -1,0 +1,18 @@
+id: F-063
+title: "B8 multi-channel contacts vs unique-voter cap disclosed"
+category: misleading_visualization
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-13
+closed_at: 2026-06-13
+recurrence_count: 0
+evidence: |
+  governance/ISSUE_TRIAGE_MASTER.yaml AUD-B8 (severity reject).
+  chart_b8 showed total_expected (cumulative multi-channel touches) exceeding
+  reach_cap (unique-voter ceiling) by ~5x. Without disclosure, this looked
+  like a constraint violation.
+verification_script: scripts/check_module_b8_contacts_disclosure.py
+notes: |
+  Fix: bar label updated to "Expected Contacts (multi-channel cumulative)";
+  title and annotation explain that contacts are cumulative channel touches
+  while cap is a unique-voter ceiling.

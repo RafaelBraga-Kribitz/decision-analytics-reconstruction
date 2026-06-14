@@ -1,0 +1,31 @@
+id: F-060
+title: "Module B charts stacked exclusive scenarios, half-labelled routing, and faked an efficiency frontier"
+category: misleading_visualization
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-13
+closed_at: 2026-06-13
+recurrence_count: 0
+evidence: |
+  governance/ISSUE_TRIAGE_MASTER.yaml AUD-B3 + AUD-B7 + AUD-S5 (severity reject;
+  shared theme = Module B allocation chart presentation).
+  - reports/eda/generate_eda.py chart_b3 (B3a) stackplotted "Baseline" and
+    "Broadcast→Direct", which are *mutually exclusive* scenarios — summing two
+    alternatives into a meaningless stacked total.
+  - chart_b7 labelled only every ~9th department (``step = len // 9``), leaving
+    the routing cost matrix half-labelled and unreadable.
+  - chart_s5 fit a 1-degree np.polyfit and titled it a "Campaign Efficiency
+    Frontier" — an efficiency/Pareto frontier is the non-dominated envelope, not
+    an OLS regression line.
+verification_script: scripts/check_module_b_allocation_chart_integrity.py
+notes: |
+  Fix (reports/eda/generate_eda.py + B3/B7/S5 narrative):
+  - B3a now plots the two scenarios as separate lines (compared, not summed);
+    B3b keeps its legitimate within-budget channel stack (one stackplot remains).
+  - B7 squares the matrix on the department union and labels every
+    origin/destination (full-range ticks, no sparse step).
+  - S5 retitled to a descriptive scatter + OLS trend, with an on-chart
+    disclosure that it is not a Pareto efficiency frontier; the legacy
+    'efficiency_frontier' filename is kept for F-050 lineage.
+  One themed finding resolving three reject rows (F-040/F-053 precedent). Static
+  gate, negative-tested. Part of governance/chart_audit_completion_sprint.md.

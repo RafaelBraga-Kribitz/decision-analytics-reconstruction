@@ -1,0 +1,60 @@
+id: F-073
+title: "Canonical figure regen: retire deploy screenshots, re-sync EDA narrative to real TSJE model"
+status: closed
+severity: medium
+kind: recurrence_invariant
+category: narrative_sync
+opened_at: 2026-06-14
+closed_at: 2026-06-14
+owner: remediator
+finding: >
+  After F-070 replaced the fabricated department win-probability formula with a
+  hierarchical swing model calibrated to real 2018 TSJE per-department returns,
+  several artefacts still described the old synthetic-mapping model: (a)
+  docs/assets/*-deploy/ contained Render/Railway deployment screenshots showing
+  the "Department-level outcome probability (Series A, synthetic mapping)" chart
+  with a 0.49–0.51 near-uniform win-probability distribution; (b)
+  reports/epistemic_boundaries.md row 32 still classified the battleground
+  heatmap as ILLUSTRATIVE with "seed=42" and "0.49–0.51" claims; (c)
+  reports/eda/generate_eda.py ILLUSTRATIVE_BATTLE_SUB = "Series A · synthetic
+  dept mapping (illustrative)" was used as chart subtitle in C3/C8/S4/C8v2;
+  (d) reports/eda/build_notebook.py repeated the same label plus finding texts
+  asserting "cluster near 0.49–0.51" and "synthetic illustrative mapping".
+  These stale artefacts would mislead any reviewer examining the current output.
+remediation: >
+  (1) git rm docs/assets/module-a-deploy/, module-b-deploy/, module-c-deploy/
+  (22 files including hero banners and Render/Railway deploy screenshots).
+  (2) Module README img tags referencing the removed hero banners removed.
+  (3) reports/epistemic_boundaries.md row 32 reclassified from ILLUSTRATIVE to
+  CALIBRATED; updated evidence source (TSJE CSV, 19 rows, reconciliation-gated),
+  key assumptions (swing model formula, σ_dept = √((swing_j × σ_national)² +
+  1.5 pp²)), and inference claim (all 5 GANAR winners < 50% at verified margin,
+  CI gate passes, c_battleground_v0.2); stale "seed=42" and "0.49–0.51" removed.
+  (4) generate_eda.py ILLUSTRATIVE_BATTLE_SUB updated to "Series A · swing model
+  calibrated to TSJE 2018 returns (illustrative — posterior-dependent)"; C8
+  false annotation "spread is illustrative noise, not a ranking" removed;
+  C8 comment updated to reflect wide real partisan range.
+  (5) build_notebook.py: C3/C8/S4 chart subtitles updated to TSJE-calibrated
+  label; ax.set_xlim(0.47, 0.53) and ax.set_ylim(0.485–0.515) replaced with
+  full-range axes; C3/C8/S4 finding texts updated to remove "0.49–0.51" and
+  "synthetic geographic jitter" claims. F-048 (disclosure gate) still passes
+  because "illustrative" is retained in the subtitle suffix
+  "(illustrative — posterior-dependent)".
+  scripts/check_canonical_figure_regen.py enforces the static invariant.
+verification_script: scripts/check_canonical_figure_regen.py
+artifacts:
+  - docs/assets/module-a-deploy/ (removed)
+  - docs/assets/module-b-deploy/ (removed)
+  - docs/assets/module-c-deploy/ (removed)
+  - reports/epistemic_boundaries.md
+  - reports/eda/generate_eda.py
+  - reports/eda/build_notebook.py
+  - scripts/check_canonical_figure_regen.py
+notes: >
+  Item 6 of the figure-layer adversarial audit. Cross-reference F-070 (item 4,
+  the root cause: real TSJE model). The "illustrative — posterior-dependent"
+  qualifier is intentionally preserved in chart subtitles: while the swing
+  factors are calibrated to TSJE, the absolute win_probability_a values depend
+  on the illustrative fixture posterior (m_pp from daily_posterior_forecast),
+  so characterising them as purely "calibrated" without qualification would
+  overclaim. Item 7 (F-033/037/038/039 cross-check) tracked separately.

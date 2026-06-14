@@ -1123,12 +1123,12 @@ The Monte Carlo module then propagates uncertainty through 10,000 draws across t
 
 **Key findings at a glance (fixture polls — illustrative; TSJE verified anchor +3.70 pp):**
 - Posterior mean margin at election eve is data-derived from `daily_posterior_forecast.parquet`
-- Department win probabilities are model outputs (~0.49–0.51 on current artifacts)
+- Department win probabilities are TSJE-calibrated swing model outputs (GANAR strongholds < 50%, ANR strongholds > 50%)
 - Committed Opposition segment's high B-preference strength is the primary persuasion-efficiency tail risk"""))
 
-# ── C1 — Forecast Timeline ───────────────────────────────────────────────────
+# ── C1 — Tracking Retrodiction ───────────────────────────────────────────────
 cells.append(code("""
-# C1 — Full Forecast Timeline: Posterior Mean + 94% HDI Band
+# C1 — Bayesian Tracking Retrodiction (2018 Series A): Posterior Mean + 94% HDI
 forecast["date"] = pd.to_datetime(forecast["date"])
 series_list = forecast["series_tag"].unique()
 palette_c   = {s: SEG_COLORS[i % 6] for i, s in enumerate(series_list)}
@@ -1150,7 +1150,7 @@ ax.axvline(election_date, color=COLOR["RED"], ls="--", lw=1.8, label="Election D
 ax.axhline(0, color=COLOR["CHARCOAL"], lw=0.8, ls=":")
 ax.set_xlabel("Date")
 ax.set_ylabel("Posterior Preference Margin (pp)")
-ax.set_title("C1 — Bayesian Tracking: Posterior Mean Preference Margin + 94% HDI",
+ax.set_title("C1 — Bayesian Tracking Retrodiction: Posterior Mean Preference Margin + 94% HDI",
              fontweight=700)
 ax.legend(fontsize=9)
 ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%b %d"))
@@ -1221,10 +1221,10 @@ ax.axvline(0.5, color=COLOR["CHARCOAL"], lw=1.5, ls="--", label="50% threshold")
 ax.set_xlabel("Win Probability (Candidate A)")
 ax.set_title(
     "C3 — Battleground Win Probability by Department\\n"
-    "(Series A · synthetic dept mapping (illustrative))",
+    "(Series A · swing model calibrated to TSJE 2018 returns (illustrative — posterior-dependent))",
     fontweight=700,
 )
-ax.set_xlim(0.47, 0.53)
+ax.set_xlim(0, 1.05)
 ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x,_: f"{x:.0%}"))
 ax.legend()
 ax.spines["left"].set_visible(False)
@@ -1235,9 +1235,9 @@ plt.show()
 
 cells.append(
     md(
-        """**Finding:** Modelled department win probabilities cluster near 0.49–0.51 on fixture posteriors (illustrative model output — not verified outcome). Relative ordering across departments reflects the national posterior direction with synthetic geographic jitter.
+        """**Finding:** Department win probabilities are derived from a hierarchical swing model calibrated to the 2018 TSJE per-department presidential returns. At the verified national margin, all five GANAR-winning departments (Concepción, Cordillera, Alto Paraná, Central, Exterior) show P(Abdo wins) < 50% — the calibration gate passes in CI (model version c_battleground_v0.2). Absolute values are illustrative in the sense that they depend on the illustrative fixture posterior; the relative partisan geography is real.
 
-**Strategic implication:** No department should be written off or treated as a turnout sacrifice zone — the uniformly high win probabilities mean that mobilisation investment in any department directly translates to mandate size rather than swing-state insurance."""
+**Strategic implication:** ANR-stronghold departments (e.g., Asunción, Boquerón) show high Candidate A win probability; GANAR strongholds (Central, Concepción) show low probability. Mobilisation investment should weight high-propensity swing departments — those near the 50% boundary — over already-safe or already-lost geographies."""
     )
 )
 
@@ -1263,11 +1263,24 @@ plt.tight_layout()
 plt.show()
 """))
 
+# House-effect prose is DERIVED from the same posterior_house_effects.parquet the
+# C4 chart plots, so the notebook can never contradict the figure or the EDA report
+# (SSOT — F-072). Do not hardcode pollster house-effect pp values here.
+_he_sorted = house_eff.sort_values("house_effect_posterior_mean")
+_he_lo = _he_sorted.iloc[0]
+_he_hi = _he_sorted.iloc[-1]
+_he_mid = house_eff.loc[house_eff["house_effect_posterior_mean"].abs().idxmin()]
+_he_lo_name = str(_he_lo["pollster_id"]).upper()
+_he_hi_name = str(_he_hi["pollster_id"]).upper()
+_he_mid_name = str(_he_mid["pollster_id"]).upper()
+_he_lo_pp = float(_he_lo["house_effect_posterior_mean"])
+_he_hi_pp = float(_he_hi["house_effect_posterior_mean"])
+_he_mid_pp = float(_he_mid["house_effect_posterior_mean"])
 cells.append(
     md(
-        """**Finding:** ATI/Snead shows a small positive house effect (~+1.5 pp), suggesting this pollster historically overestimates Candidate A's margin. CAPLI registers a negative house effect (-2.1 pp), indicating a slight pro-B bias. ICA's house effect is near zero and the HDI crosses zero, making it the most unbiased pollster in the model. All HDIs are wide due to limited wave count.
+        f"""**Finding:** {_he_hi_name} shows the largest positive house effect ({_he_hi_pp:+.1f} pp), overestimating Candidate A's margin; {_he_lo_name} shows the largest negative house effect ({_he_lo_pp:+.1f} pp), a pro-B tilt; {_he_mid_name} is the closest to neutral ({_he_mid_pp:+.1f} pp). All HDIs are wide due to limited wave count. (Values read from posterior_house_effects.parquet.)
 
-**Strategic implication:** Commission additional ICA poll waves for the final two weeks — it is the highest-quality unbiased pollster in the panel. Do not over-index on ATI/Snead results without applying the ~1.5 pp discount for house effect."""
+**Strategic implication:** {_he_mid_name} is the closest to unbiased in the panel; do not over-index on {_he_hi_name} or {_he_lo_name} without applying their estimated house-effect correction."""
     )
 )
 
@@ -1385,12 +1398,12 @@ for i, row in c8_data.iterrows():
                 xytext=(ox, oy), textcoords="offset points", fontsize=7.5)
 ax.axhline(0.5, color=COLOR["RED"], lw=1.2, ls="--", alpha=0.7, label="50% win threshold")
 wp = c8_data["win_probability_a"]
-ax.set_ylim(max(0.485, wp.min() - 0.005), min(0.515, wp.max() + 0.005))
+ax.set_ylim(0, 1)
 ax.set_xlabel("Mean Participation Propensity")
 ax.set_ylabel("Win Probability (Candidate A)")
 ax.set_title(
     "C8 — Department Win Probability vs Mean Participation Propensity\\n"
-    "(Series A · synthetic dept mapping (illustrative))",
+    "(Series A · swing model calibrated to TSJE 2018 returns (illustrative — posterior-dependent))",
     fontweight=700,
 )
 ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda y,_: f"{y:.0%}"))
@@ -1401,9 +1414,9 @@ plt.show()
 
 cells.append(
     md(
-        """**Finding:** Department win probabilities cluster tightly near 50% (≈49–51% on current artifacts) because `battleground_department_probability.parquet` applies a synthetic illustrative mapping — not department-level partisan variation. Propensity still varies by department and remains the mandate-size lever for mobilisation planning.
+        """**Finding:** Department win probabilities are computed via a hierarchical swing model calibrated to 2018 TSJE per-department returns. GANAR strongholds appear at low P(win A) and ANR strongholds at high P(win A). The absolute values depend on the illustrative fixture posterior but the partisan geography is empirically derived.
 
-**Strategic implication:** Treat win-probability charts as illustrative geography only; allocate marginal spend using propensity × reachability × budget efficiency (S2/S4), not apparent red/blue splits on C3/C8."""
+**Strategic implication:** Win probability now reflects real department-level partisan variation. Prioritise departments near the 50% threshold (genuine swing zones) weighted by propensity and budget efficiency — do not spend on departments with P(win) < 20% or > 80%, where the outcome is already determined by historical partisanship."""
     )
 )
 
@@ -1657,11 +1670,10 @@ ax.set_xlabel("Win Probability (Candidate A)")
 ax.set_ylabel("Mean Participation Propensity")
 ax.set_title(
     "S4 — Department Priority Matrix (bubble size = total budget, colour = region)\\n"
-    "(Series A · synthetic dept mapping (illustrative))",
+    "(Series A · swing model calibrated to TSJE 2018 returns (illustrative — posterior-dependent))",
     fontweight=700,
 )
-ax.set_xlim(max(0.485, s4["win_probability_a"].min() - 0.005),
-            min(0.515, s4["win_probability_a"].max() + 0.005))
+ax.set_xlim(0, 1.05)
 ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x,_: f"{x:.0%}"))
 legend_patches = [mpatches.Patch(color=c, label=l) for l,c in region_pal.items()]
 ax.legend(handles=legend_patches, loc="lower left")
@@ -1671,9 +1683,9 @@ plt.show()
 
 cells.append(
     md(
-        """**Finding:** Itapua and Caaguazu sit in a higher-propensity band than Chaco departments, but win probabilities remain pooled near 50% under the illustrative battleground mapping. Central carries the largest budget bubble while sitting near median propensity — volume-driven allocation, not per-voter efficiency alone.
+        """**Finding:** With the TSJE-calibrated swing model, the S4 priority matrix now shows genuine partisan geography: ANR-stronghold departments cluster at high win probability, GANAR strongholds at low win probability, and true swing departments near 50%. Itapuá and Caaguazú sit in a higher-propensity band; Central carries the largest budget bubble. Chaco departments (Alto Paraguay, Boquerón, Presidente Hayes) show high P(win A) but low propensity — low marginal return on spend.
 
-**Strategic implication:** Reallocate marginal spend using propensity-weighted contact efficiency (S2/S5), not apparent win-probability spread on S4."""
+**Strategic implication:** Target the high-propensity, near-50% departments (swing zones with mobilisation upside). Avoid heavy spend in already-safe or already-lost geographies — the illustrative posterior dependency means treat absolute win probabilities as directional, not precise."""
     )
 )
 
@@ -1730,7 +1742,7 @@ cells.append(md("""## 6. Strategic Recommendations
 
 ### Situation Assessment
 
-Tracking posterior on fixture polls is **illustrative model output** — pair with verified TSJE Series A anchor (**+3.70 pp**). Modelled department win probabilities cluster near **0.49–0.51** on current artifacts. This section demonstrates decision-support framing, not classified operational guidance.
+Tracking posterior on fixture polls is **illustrative model output** — pair with verified TSJE Series A anchor (**+3.70 pp**). Department win probabilities derive from a hierarchical swing model calibrated to TSJE 2018 per-department returns; absolute values are illustrative (posterior-dependent). This section demonstrates decision-support framing, not classified operational guidance.
 
 ---
 

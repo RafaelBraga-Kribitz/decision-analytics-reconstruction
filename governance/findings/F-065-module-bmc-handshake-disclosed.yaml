@@ -1,0 +1,18 @@
+id: F-065
+title: "B→C contact handshake scenario-invariance disclosed in C5"
+category: misleading_visualization
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-06-13
+closed_at: 2026-06-13
+recurrence_count: 0
+evidence: |
+  governance/ISSUE_TRIAGE_MASTER.yaml AUD-BMC (severity reject).
+  alloc_mean_contacts is a single scalar passed identically to all MC draws.
+  So alloc_mean_persuasion_contacts is scenario-invariant — all scenarios
+  share the same contact volume; only shock_scale varies.
+verification_script: scripts/check_module_bmc_handshake_disclosed.py
+notes: |
+  Fix: second annotation added to chart_c5 disclosing that
+  alloc_mean_persuasion_contacts is scenario-invariant and that
+  scenario variation enters only via shock_scale, not contact volume.

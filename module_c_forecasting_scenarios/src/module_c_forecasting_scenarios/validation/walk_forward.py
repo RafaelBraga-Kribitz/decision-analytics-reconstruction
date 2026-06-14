@@ -90,6 +90,10 @@ def _predict_holdout(
         train,
         outcome_event_date=outcome_event_date,
         calibration_series=calibration_series,
+        m_star_pp=None,  # out-of-sample: walk-forward must NEVER anchor on the
+        # outcome it is trying to predict (the anchored series is a retrodiction,
+        # not a forecast — see F-069). Keep this explicit so the guarantee is
+        # visible to readers and enforced by test_walk_forward_never_anchors.
     )
 
     days, _ = _build_day_index(train, outcome_event_date)

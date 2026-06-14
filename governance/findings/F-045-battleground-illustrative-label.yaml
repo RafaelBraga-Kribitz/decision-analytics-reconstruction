@@ -1,18 +1,38 @@
 id: F-045
-title: "Battleground department probabilities must stay explicitly illustrative"
+title: "Battleground department probabilities must be honestly classified, never overclaimed"
 category: fake_completion
 kind: recurrence_invariant
 status: closed
 opened_at: 2026-06-12
-closed_at: 2026-06-12
+closed_at: 2026-06-14
 recurrence_count: 0
 evidence: |
-  geo/heatmap.py derives department win probabilities from synthetic noise around
-  a national margin — not a stratified posterior. epistemic_boundaries.md must
-  keep ILLUSTRATIVE classification visible. MASTERPLAN C-4; deep Bayesian fix
-  deferred to post-publish backlog.
+  geo/heatmap.py v0.1 derived department win probabilities from synthetic noise
+  around a national margin (deterministic jitter, seed=42) — not a stratified
+  posterior. The interim invariant required the output to stay labelled
+  ILLUSTRATIVE/synthetic in epistemic_boundaries.md and the heatmap docstring,
+  with the "deep Bayesian fix deferred to post-publish backlog."
 verification_script: scripts/check_battleground_illustrative_label.py
 wont_fix_reason: null
 notes: |
-  Closure does not require rebuilding the model — only consistent labeling in
-  epistemic_boundaries, heatmap module docstring, and any portfolio copy.
+  SUPERSEDED IN PART BY F-070 (2026-06-14). F-070 delivered the deferred fix:
+  heatmap.py v0.2 replaces the fabricated jitter formula with a model calibrated
+  to the verified 2018 TSJE per-department presidential returns (it recovers the
+  actual GANAR strongholds). The old invariant ("must say synthetic/illustrative")
+  would now FORCE a false label onto real-data outputs — the exact dishonesty the
+  governance system bans — so the invariant was rewritten to its honest successor:
+
+    (1) heatmap.py documents its real TSJE provenance and never reintroduces the
+        fabricated v0.1 formula; and
+    (2) epistemic_boundaries.md keeps an honest epistemic classification for the
+        battleground artifact AND an explicit not-a-verified-outcome caveat (the
+        choropleth is never presented as an independent per-department forecast).
+
+  Both the pre-regen wording ("ILLUSTRATIVE … not verified outcome") and the
+  post-regen wording ("CALIBRATED swing reconstruction … not verified outcome")
+  satisfy (2). The epistemic_boundaries.md row 32 reclassification
+  (ILLUSTRATIVE -> CALIBRATED), the EDA chart subtitles/narrative, and the figure
+  bytes re-sync atomically in item 6 (the pipeline-full regen pass), per the
+  established generator-then-artifact precedent (cf. F-053/F-055). Until that pass
+  the committed geojson is still the v0.1 artifact, so its v0.1 captions remain
+  accurate for the committed bytes.

@@ -1,10 +1,3 @@
-<p align="center">
-  <img
-    src="../docs/assets/module-b-deploy/module-b-hero-banner.png"
-    alt="Module B — Resource Allocation Engine: MILP allocation, department heatmaps, and FastAPI docs"
-    width="100%"
-  />
-</p>
 
 # Module B — Resource Allocation Engine
 
