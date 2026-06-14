@@ -78,7 +78,7 @@ plt.rcParams.update(
 )
 
 SOURCE = "Source: Paraguay Campaign Data Pipeline 2018 | April 2026"
-ILLUSTRATIVE_BATTLE_SUB = "Series A · synthetic dept mapping (illustrative)"
+ILLUSTRATIVE_BATTLE_SUB = "Series A · swing model calibrated to TSJE 2018 returns (illustrative — posterior-dependent)"
 CHACO_DEPARTMENTS = frozenset({"Presidente Hayes", "Boqueron", "Alto Paraguay"})
 DPI = 160
 
@@ -1686,23 +1686,9 @@ def chart_c8():
     _stagger_annotate(ax, merged_c8, "mean_propensity", "win_probability_a", "department")
 
     ax.axhline(0.5, color=CHARCOAL, lw=1.2, ls="--", label="50% win threshold")
-    wp = merged_c8["win_probability_a"]
-    # Full [0,1] axis (not a zoomed 0.48–0.52 band): every department sits on
-    # the 50% line. The sub-1pp spread is deterministic illustrative jitter,
-    # not signal — a zoomed axis would amplify noise into a false ranking.
+    # Full [0,1] axis: TSJE-calibrated swing model produces a wide range across
+    # departments — GANAR strongholds are well below 50%, ANR strongholds well above.
     ax.set_ylim(0, 1)
-    spread_pp = float((wp.max() - wp.min()) * 100)
-    ax.text(
-        0.5,
-        0.92,
-        f"All departments within {spread_pp:.2f} pp of 50% — spread is "
-        f"illustrative noise, not a ranking",
-        transform=ax.transAxes,
-        ha="center",
-        fontsize=8,
-        fontstyle="italic",
-        color=CHARCOAL,
-    )
     plt.colorbar(sc, ax=ax, label="Total Budget (USD)")
     ax.set_xlabel("Mean Participation Propensity (Department)")
     ax.set_ylabel("P(Win — Candidate A)")

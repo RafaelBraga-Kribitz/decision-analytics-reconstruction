@@ -1,10 +1,3 @@
-<p align="center">
-  <img
-    src="../docs/assets/module-c-deploy/module-c-hero-banner.png"
-    alt="Module C — Probabilistic Forecasting and Scenario Analysis: posterior margin track, house effects, and Monte Carlo scenarios"
-    width="100%"
-  />
-</p>
 
 # Module C — Probabilistic Forecasting & Scenario Analysis
 
