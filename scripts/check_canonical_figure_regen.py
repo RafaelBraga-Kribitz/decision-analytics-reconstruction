@@ -37,17 +37,13 @@ _STALE_SYNTHETIC_LABEL = "synthetic dept mapping"
 
 def _deploy_gaps() -> list[str]:
     return [
-        f"{d.name} deploy-screenshot directory still exists"
-        for d in _DEPLOY_DIRS
-        if d.exists()
+        f"{d.name} deploy-screenshot directory still exists" for d in _DEPLOY_DIRS if d.exists()
     ]
 
 
 def _epistemic_gaps(src: str) -> list[str]:
     gaps: list[str] = []
-    battleground_lines = [
-        ln for ln in src.splitlines() if "battleground_probability_heatmap" in ln
-    ]
+    battleground_lines = [ln for ln in src.splitlines() if "battleground_probability_heatmap" in ln]
     if not battleground_lines:
         return ["epistemic_boundaries.md has no battleground_probability_heatmap row"]
     for ln in battleground_lines:
@@ -71,13 +67,9 @@ def _epistemic_gaps(src: str) -> list[str]:
 def _eda_gaps(gen_src: str, nb_src: str) -> list[str]:
     gaps: list[str] = []
     if _STALE_SYNTHETIC_LABEL in gen_src:
-        gaps.append(
-            f"generate_eda.py still contains stale label: {_STALE_SYNTHETIC_LABEL!r}"
-        )
+        gaps.append(f"generate_eda.py still contains stale label: {_STALE_SYNTHETIC_LABEL!r}")
     if _STALE_SYNTHETIC_LABEL in nb_src:
-        gaps.append(
-            f"build_notebook.py still contains stale label: {_STALE_SYNTHETIC_LABEL!r}"
-        )
+        gaps.append(f"build_notebook.py still contains stale label: {_STALE_SYNTHETIC_LABEL!r}")
     return gaps
 
 
