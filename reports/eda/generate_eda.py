@@ -1295,7 +1295,8 @@ def chart_c1():
     ax.set_ylabel("Preference Margin (pp, Candidate A vs B)")
     ax.set_title(
         "C1 — Bayesian Tracking Retrodiction: Preference Margin with 94% HDI\n"
-        "(in-sample reconstruction of a past election, not an out-of-sample forecast)"
+        "(retrospective reconciliation — conditions on the verified outcome anchor; "
+        "not an out-of-sample forecast — see walk-forward validation for that)"
     )
     ax.legend(loc="upper left")
     ax.xaxis.set_major_locator(matplotlib.dates.MonthLocator())
