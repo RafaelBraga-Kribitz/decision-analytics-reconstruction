@@ -571,18 +571,29 @@
       "status": "closed",
       "title": "Two published artifacts reported the same pollster house effects with different numbers",
       "verification_script": "scripts/check_published_artifact_ssot.py"
+    },
+    {
+      "category": "narrative_sync",
+      "closed_at": "2026-06-14",
+      "id": "F-073",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-14",
+      "path": "governance/findings/F-073-canonical-figure-regen.yaml",
+      "status": "closed",
+      "title": "Canonical figure regen: retire deploy screenshots, re-sync EDA narrative to real TSJE model",
+      "verification_script": "scripts/check_canonical_figure_regen.py"
     }
   ],
-  "generated_at": "2026-06-14T18:36:16.111555+00:00",
+  "generated_at": "2026-06-14T18:49:40.531215+00:00",
   "git_branch": "claude/funny-heisenberg-w3mw7h",
-  "git_head_sha": "f5a3e333e59b88d7d422c967f04078438c1facfa",
+  "git_head_sha": "603f7d3e6dcc19e1128de0882c8cea35327a1678",
   "migrations": [],
   "summary": {
-    "findings_closed": 49,
+    "findings_closed": 50,
     "findings_closed_historical": 2,
     "findings_in_progress": 0,
     "findings_open": 1,
-    "findings_total": 52,
+    "findings_total": 53,
     "findings_wont_fix": 0,
     "migrations_in_progress": 0,
     "migrations_total": 0,
