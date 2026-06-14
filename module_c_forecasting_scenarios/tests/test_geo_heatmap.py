@@ -82,3 +82,36 @@ def test_battleground_heatmap_deterministic(daily_fixture: pd.DataFrame, tmp_pat
     probs_a = [f["properties"]["posterior_win_prob"] for f in geo_a["features"]]
     probs_b = [f["properties"]["posterior_win_prob"] for f in geo_b["features"]]
     assert probs_a == probs_b
+
+
+def test_battleground_recovers_real_ganar_strongholds(tmp_path: Path) -> None:
+    """F-070 calibration gate: at the verified 2018 national candidate margin, the
+    four GANAR-winning departments that have polygon geometry (Concepción,
+    Cordillera, Alto Paraná, Central) must yield P(Abdo wins) < 0.5 — the model is
+    derived from real TSJE returns, not a fabricated formula. The fifth GANAR
+    stronghold, Exterior, has no ADM1 polygon and is omitted from the choropleth."""
+    # Verified national candidate margin (Abdo 1,206,067 vs Alegre 1,110,464).
+    nat_margin_pp = (1_206_067 - 1_110_464) / (1_206_067 + 1_110_464) * 100.0
+    daily = pd.DataFrame(
+        {
+            "date": [pd.Timestamp("2018-04-22")],
+            "calibration_series": ["A"],
+            "series_tag": ["A"],
+            "posterior_mean_preference_margin_pp": [nat_margin_pp],
+            "posterior_hdi_low_pp": [nat_margin_pp - 1.0],
+            "posterior_hdi_high_pp": [nat_margin_pp + 1.0],
+            "model_version": ["t"],
+        }
+    )
+    out = tmp_path / "bg.parquet"
+    df = export_battleground_department_table(daily, out, calibration_series="A")
+    win = dict(zip(df["department"], df["win_probability_a"], strict=True))
+    ganar_with_polygons = ["Concepcion", "Cordillera", "Alto Parana", "Central"]
+    for dept in ganar_with_polygons:
+        assert win[dept] < 0.5, (
+            f"{dept} was a GANAR stronghold in 2018 but the model gives "
+            f"P(Abdo)={win[dept]:.3f} ≥ 0.5 — calibration to real returns broken"
+        )
+    # And a known Abdo landslide (Asunción) must be near-certain for Candidate A.
+    assert win["Asuncion"] > 0.9, f"Asuncion P(Abdo)={win['Asuncion']:.3f} too low"
+

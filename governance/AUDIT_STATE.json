@@ -266,13 +266,13 @@
     },
     {
       "category": "fake_completion",
-      "closed_at": "2026-06-12",
+      "closed_at": "2026-06-14",
       "id": "F-045",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-12",
       "path": "governance/findings/F-045-battleground-illustrative-label.yaml",
       "status": "closed",
-      "title": "Battleground department probabilities must stay explicitly illustrative",
+      "title": "Battleground department probabilities must be honestly classified, never overclaimed",
       "verification_script": "scripts/check_battleground_illustrative_label.py"
     },
     {
@@ -540,6 +540,17 @@
       "verification_script": "scripts/check_module_c_forecast_not_anchored.py"
     },
     {
+      "category": "fabricated_estimand",
+      "closed_at": "2026-06-14",
+      "id": "F-070",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-14",
+      "path": "governance/findings/F-070-department-heatmap-fake-formula.yaml",
+      "status": "closed",
+      "title": "Department win-probability heatmap derived from a fabricated formula, not real data",
+      "verification_script": "scripts/check_department_heatmap_real_data.py"
+    },
+    {
       "category": "misleading_visualization",
       "closed_at": "2026-06-14",
       "id": "F-071",
@@ -562,16 +573,16 @@
       "verification_script": "scripts/check_published_artifact_ssot.py"
     }
   ],
-  "generated_at": "2026-06-14T13:34:51.248706+00:00",
+  "generated_at": "2026-06-14T18:23:12.993662+00:00",
   "git_branch": "claude/funny-heisenberg-w3mw7h",
-  "git_head_sha": "347d213a7679a878431bf474ed75a2c1d0f885fa",
+  "git_head_sha": "6f1eec4a9c32794754ab23ec0a11b9f60e80e4f9",
   "migrations": [],
   "summary": {
-    "findings_closed": 48,
+    "findings_closed": 49,
     "findings_closed_historical": 2,
     "findings_in_progress": 0,
     "findings_open": 1,
-    "findings_total": 51,
+    "findings_total": 52,
     "findings_wont_fix": 0,
     "migrations_in_progress": 0,
     "migrations_total": 0,
