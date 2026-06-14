@@ -1,0 +1,45 @@
+id: F-070
+title: "Department win-probability heatmap derived from a fabricated formula, not real data"
+status: closed
+severity: high
+kind: recurrence_invariant
+category: fabricated_estimand
+opened_at: 2026-06-14
+closed_at: 2026-06-14
+owner: remediator
+finding: >
+  geo/heatmap.py v0.1 computed per-department Candidate A win probabilities via
+  z = 0.12 * (last − 3.8) + noise + 0.001 * i, then expit(z). This formula was
+  entirely fabricated: the 0.12 slope, the 3.8 breakeven, and the deterministic
+  noise were chosen to produce a plausible-looking chart with no empirical basis.
+  The formula had no connection to actual 2018 TSJE per-department presidential
+  returns, historical swing patterns, or any data artefact in the repository.
+  Two published figures (C3 battleground bar and the choropleth GeoJSON) reported
+  numbers that looked credible but were invented.
+remediation: >
+  heatmap.py v0.2 replaces the fabricated formula with a calibrated hierarchical
+  partial-pooling model derived from the official 2018 TSJE per-department
+  presidential results (data/external/tsje_2018_department_results.csv — GATE: PASS
+  against verified nationals 1,206,067 / 1,110,464 / all 5 GANAR winner departments).
+  Each department's candidate-margin swing factor is computed against the national
+  candidate total; win_probability_a = Φ(swing_j × m_forecast / σ_dept) where σ_dept
+  propagates the national posterior uncertainty plus a 1.5 pp idiosyncratic floor.
+  Five actual GANAR-winning departments (Alto Paraná, Central, Concepción, Cordillera,
+  Exterior) all produce win_probability_a < 0.5 (i.e., P(Abdo wins) < 50%) at the
+  actual national margin, consistent with the verified election result. Model version
+  bumped to c_battleground_v0.2. scripts/check_department_heatmap_real_data.py
+  enforces the static invariant (no fabricated formula; CSV present and reconciled).
+verification_script: scripts/check_department_heatmap_real_data.py
+artifacts:
+  - module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/geo/heatmap.py
+  - data/external/tsje_2018_department_results.csv
+  - scripts/check_department_heatmap_real_data.py
+notes: >
+  Item 4 of the figure-layer adversarial audit. The TSJE CSV was extracted from
+  Resultados-por-mesa-2018.csv (21,206 PRESIDENTE polling-table rows) by local CLI
+  ETL on the operator's machine and reconciliation-gated before ingest; only the
+  reconciled file is committed. The existing geo/paraguay_departments.geojson (18
+  polygon features) is retained as the choropleth geometry source; Exterior votes
+  have no polygon and are omitted from the choropleth (but appear in the CSV for
+  reconciliation completeness). Items 6 (figure regen) and 7 (cross-check) are
+  tracked in F-073.
