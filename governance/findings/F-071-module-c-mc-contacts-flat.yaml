@@ -1,0 +1,42 @@
+id: F-071
+title: "MC 'persuasion-adjusted contacts' figure was a flat scalar broadcast to every draw"
+status: closed
+severity: high
+kind: recurrence_invariant
+category: misleading_visualization
+opened_at: 2026-06-14
+closed_at: 2026-06-14
+owner: remediator
+finding: >
+  scenarios/monte_carlo.py stored alloc_mean_persuasion_contacts — a single scalar
+  (the mean of persuasion_adjusted_contacts from the Module B handshake) — on every
+  Monte Carlo draw. The published "Monte Carlo scenario distribution —
+  persuasion-adjusted contacts" figure therefore plotted a flat line (~6e4) across
+  all scenario buckets. The monte_carlo_draws contract said shock_scale is
+  "propagated to allocation outcomes", but the engine never applied it, so the
+  scenario shock had no effect on the plotted contact volume. Separately, the units
+  were never reconciled: the ~6e4 here is a MEAN per allocation cell while the
+  ~1e7 expected_contacts elsewhere is a TOTAL across cells.
+remediation: >
+  monte_carlo.py now emits a per-draw scenario_adjusted_persuasion_contacts =
+  alloc_mean_persuasion_contacts × shock_scale (helper _scenario_adjusted_contacts),
+  actualising the propagation the contract always described; the raw scalar is kept
+  and documented as scenario-INVARIANT. The monte_carlo_draws contract declares the
+  new field. generate_eda.py adds chart C5B, a violin of the effective contacts by
+  bucket (varies, unlike the flat raw mean) with an on-panel note reconciling the
+  mean-per-cell vs total-contacts unit difference. A fast test,
+  test_scenario_adjusted_contacts_varies_within_buckets, asserts
+  draws.groupby("scenario_bucket")[metric].std() > 0 (and that the raw mean is a
+  single constant). The flat published screenshot is retired in favour of C5B.
+verification_script: scripts/check_module_c_mc_contacts_vary.py
+artifacts:
+  - module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/scenarios/monte_carlo.py
+  - schema_contracts/monte_carlo_draws.yaml
+  - module_c_forecasting_scenarios/tests/test_bc_handshake.py
+  - reports/eda/generate_eda.py
+  - scripts/check_module_c_mc_contacts_vary.py
+notes: >
+  Item 5 of the figure-layer adversarial audit; confirms F-040's B→C handshake
+  actually reaches a varying figure. scenario_adjusted_persuasion_contacts is an
+  effective (scenario-adjusted) quantity, explicitly not raw allocated contacts.
+  C5B regenerates from the canonical run in item 6.

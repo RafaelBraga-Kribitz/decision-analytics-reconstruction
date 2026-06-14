@@ -1550,6 +1550,57 @@ def chart_c6():
 chart_c6()
 
 
+@safe_chart("C5B")
+def chart_c5b():
+    """C5B: scenario-adjusted (effective) persuasion contacts by bucket — varies.
+
+    The published "Monte Carlo persuasion-adjusted contacts" figure plotted
+    alloc_mean_persuasion_contacts, a single scenario-invariant scalar broadcast to
+    every draw, so it was a flat line (AUD dead-B→C-metric). The honest, plottable
+    quantity is the effective contact volume each draw's engagement shock implies:
+    scenario_adjusted_persuasion_contacts = alloc_mean × shock_scale. It varies by
+    draw and by bucket. Rendered as a violin (distribution per scenario).
+    """
+    if "scenario_adjusted_persuasion_contacts" in mc_draws.columns:
+        metric = mc_draws["scenario_adjusted_persuasion_contacts"]
+    else:  # robust to a not-yet-regenerated parquet
+        metric = mc_draws["alloc_mean_persuasion_contacts"] * mc_draws["shock_scale"]
+    work = mc_draws.assign(_eff=metric)
+    buckets = list(work["scenario_bucket"].unique())
+    series = [work.loc[work["scenario_bucket"] == b, "_eff"].to_numpy() for b in buckets]
+    colors = [[RED, BLUE, GREEN, ORANGE, PURPLE][i % 5] for i in range(len(buckets))]
+
+    fig, ax = plt.subplots(figsize=(11, 5))
+    parts = ax.violinplot(series, showmeans=True, showextrema=True)
+    for body, color in zip(parts["bodies"], colors):
+        body.set_facecolor(color)
+        body.set_alpha(0.35)
+    ax.set_xticks(range(1, len(buckets) + 1))
+    ax.set_xticklabels(buckets, rotation=20, ha="right")
+    ax.set_xlabel("Scenario Bucket")
+    ax.set_ylabel("Effective persuasion contacts (mean × shock)")
+    ax.set_title(
+        "C5B — Scenario-Adjusted Persuasion Contacts by Bucket\n"
+        "(effective = handshake mean × per-draw engagement shock — varies, unlike the raw mean)"
+    )
+    ax.annotate(
+        "Units: alloc_mean_persuasion_contacts is the MEAN persuasion-adjusted contacts per "
+        "allocation cell; total expected_contacts across all cells is larger by the cell count. "
+        "Raw alloc_mean is scenario-invariant (a flat line) — this panel scales it by each draw's shock.",
+        xy=(0.5, -0.30),
+        xycoords="axes fraction",
+        ha="center",
+        fontsize=7.0,
+        color=GREY,
+    )
+    annotate_source(ax)
+    fig.tight_layout()
+    save_fig(fig, "C5B_scenario_adjusted_contacts.png")
+
+
+chart_c5b()
+
+
 @safe_chart("C7")
 def chart_c7():
     """C7: Exit model parameter posterior (forest plot)."""

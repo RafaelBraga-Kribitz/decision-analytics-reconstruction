@@ -34,7 +34,17 @@ fields:
     nullable: false
     description: >
       Mean persuasion-adjusted contacts from the allocation_baseline
-      handshake (0.0 when no allocation parquet supplied).
+      handshake (0.0 when no allocation parquet supplied). Scenario-INVARIANT:
+      the same scalar on every draw — do not plot this as a distribution.
+  scenario_adjusted_persuasion_contacts:
+    type: float64
+    nullable: false
+    description: >
+      Per-draw EFFECTIVE persuasion contacts = alloc_mean_persuasion_contacts ×
+      shock_scale. This is the propagation of the engagement shock to the
+      allocation outcome; it varies by draw and by scenario bucket and is the
+      honest quantity to plot (the raw alloc_mean is constant). Effective /
+      scenario-adjusted, not raw allocated contacts.
   draw_source:
     type: string
     nullable: false
