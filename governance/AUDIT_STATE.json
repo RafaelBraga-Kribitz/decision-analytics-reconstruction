@@ -584,9 +584,9 @@
       "verification_script": "scripts/check_canonical_figure_regen.py"
     }
   ],
-  "generated_at": "2026-06-14T18:49:40.531215+00:00",
-  "git_branch": "claude/funny-heisenberg-w3mw7h",
-  "git_head_sha": "603f7d3e6dcc19e1128de0882c8cea35327a1678",
+  "generated_at": "2026-06-14T20:22:12.314662+00:00",
+  "git_branch": "main",
+  "git_head_sha": "2460cad62df29ac7a389fac4a535ff9ecf13b5de",
   "migrations": [],
   "summary": {
     "findings_closed": 50,
