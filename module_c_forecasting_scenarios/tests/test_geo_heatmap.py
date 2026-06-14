@@ -114,4 +114,3 @@ def test_battleground_recovers_real_ganar_strongholds(tmp_path: Path) -> None:
         )
     # And a known Abdo landslide (Asunción) must be near-certain for Candidate A.
     assert win["Asuncion"] > 0.9, f"Asuncion P(Abdo)={win['Asuncion']:.3f} too low"
-
