@@ -103,6 +103,36 @@ def test_walk_forward_raises_when_too_few_polls() -> None:
         )
 
 
+def test_walk_forward_never_anchors_on_outcome(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Out-of-sample guarantee: walk-forward must NEVER pass m_star to the fit.
+
+    The anchored tracking series conditions on the verified outcome (m★ enters the
+    likelihood) — that is a retrodiction, not a forecast (F-069). Walk-forward is
+    the genuine out-of-sample series, so every fit it triggers must be anchor-free.
+    We spy on the fit function as referenced inside the walk_forward module.
+    """
+    import module_c_forecasting_scenarios.validation.walk_forward as wf
+
+    real_fit = wf.fit_tracking_hierarchical
+    seen_m_star: list[object] = []
+
+    def _spy(*args: object, **kwargs: object) -> object:
+        seen_m_star.append(kwargs.get("m_star_pp", "MISSING_KW"))
+        return real_fit(*args, **kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(wf, "fit_tracking_hierarchical", _spy)
+    walk_forward_tracking_validation(
+        _synthetic_tracking(n=5),
+        outcome_event_date=date(2018, 4, 22),
+        calibration_series="A",
+        min_train_size=2,
+    )
+    assert seen_m_star, "walk-forward never invoked the tracking fit — test has no power"
+    assert all(
+        v is None for v in seen_m_star
+    ), f"walk-forward leaked the outcome anchor into the fit: m_star_pp values = {seen_m_star}"
+
+
 def test_summarize_walk_forward_handles_empty() -> None:
     empty = pd.DataFrame(
         columns=[

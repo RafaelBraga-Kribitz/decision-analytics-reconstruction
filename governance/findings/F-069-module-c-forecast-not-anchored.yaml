@@ -1,0 +1,40 @@
+id: F-069
+title: "Published 'forecast' track is the outcome-anchored series (a retrodiction, not a forecast)"
+status: closed
+severity: high
+kind: recurrence_invariant
+category: misleading_visualization
+opened_at: 2026-06-14
+closed_at: 2026-06-14
+owner: remediator
+finding: >
+  The tracking model adds a soft outcome anchor in the likelihood
+  (Normal("outcome_anchor", mu=mu_margin[-1], sigma=anchor_sigma_pp,
+  observed=m_star_pp)) and run_tracking defaults use_outcome_anchor=true, so the
+  published daily_posterior_forecast.parquet / "Daily Posterior Forecast Track" is
+  the anchored series: it conditions on the very outcome it appears to predict.
+  Presenting it as a forecast overstates the model's predictive power. The genuine
+  out-of-sample series is walk-forward validation, whose fit must never see m_star
+  — but that opt-out was only implicit (the call omitted the kwarg).
+remediation: >
+  validation/walk_forward.py now passes m_star_pp=None explicitly, with a comment
+  pinning the out-of-sample guarantee. A new slow spy test,
+  test_walk_forward_never_anchors_on_outcome, monkeypatches the fit inside the
+  walk_forward module and asserts every fit it triggers receives m_star_pp=None
+  (and that the fit is actually called, so the test has power). The C1 panel in
+  generate_eda.py is relabelled a "retrospective reconciliation — conditions on
+  the verified outcome anchor; not an out-of-sample forecast — see walk-forward
+  validation for that", keeping the verified-outcome line on that panel only.
+  (The walk-forward predictive bands already used true az.hdi at 0.80/0.95.)
+verification_script: scripts/check_module_c_forecast_not_anchored.py
+artifacts:
+  - module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/validation/walk_forward.py
+  - module_c_forecasting_scenarios/tests/test_walk_forward.py
+  - reports/eda/generate_eda.py
+  - scripts/check_module_c_forecast_not_anchored.py
+notes: >
+  Item 3 of the figure-layer adversarial audit; relates to F-034/F-036 (the anchor
+  is intentional and structural — the issue is calling the anchored series a
+  forecast). The anchored series is retained but honestly framed as a retrodiction
+  per the task's allowed option; the C1 figure regenerates from the canonical run
+  in item 6.
