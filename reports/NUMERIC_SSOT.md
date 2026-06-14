@@ -66,13 +66,13 @@ held-out real data.
 | Scenario buckets | 3 canonical (`baseline`, `extreme_tracker`, `compounded_herd`) | equal-weight stratified sampling |
 | NUTS divergences (full run) | 14 measured | **does not block** portfolio delivery; tracked in README diagnostics |
 | Walk-forward coverage | sparse fixture | not "validated" on withheld real survey measurements |
-| Battleground win probability (fixture posterior) | **~0.49–0.51** per department | illustrative; not a verified outcome forecast |
+| Battleground win probability (fixture posterior) | **[0.001, 1.000]** range (v0.2 swing model) | calibrated to TSJE 2018 dept returns; GANAR-winning depts show <0.5; relative ordering is empirical |
 
 ## Forbidden headline claims
 
 - Causal "with/without analytics → +3.70 pp" or "underperformed by 2–4 pp" counterfactuals (unverifiable)
 - Posterior tracking margin as substitute for verified +3.70 pp without "illustrative fixture survey measurements" disclaimer
-- Win probability ">79%" when artifacts show ~0.49–0.51
+- Win probability expressed as a single narrow "certainty" claim (v0.2 model range is [0.001, 1.000]; GANAR-winning depts show near-zero probability for Candidate A)
 - Any alternate historical budget figure in public narrative (use **$6M** only)
 - AUC as generalization evidence
 - 75% extreme-tracker draw share (legacy equal-weight misread; use live bucket counts)

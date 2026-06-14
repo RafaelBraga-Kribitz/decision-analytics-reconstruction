@@ -3,10 +3,10 @@
 # Next step: close or file findings for all rows marked open_unfiled or insufficient_fix.
 
 meta:
-  version: 3
-  generated_at: "2026-06-13"
+  version: 2
+  generated_at: "2026-06-12"
   agent: governance
-  repo_head: "8840540a"
+  repo_head: "14da1e02"
   source_files:
     - governance/findings/F-*.yaml
     - governance/FIGURE_MANIFEST.yaml
@@ -32,9 +32,9 @@ status_legend:
   insufficient_fix: Partial fix landed; quality bar not met — reopen or new finding
 
 summary:
-  findings_total: 43
-  findings_open: 1
-  findings_closed_verified: 40
+  findings_total: 32
+  findings_open: 3
+  findings_closed_verified: 27
   findings_historical: 2
   masterplan_items: 54
   project_evaluation_phases: 18
@@ -42,9 +42,8 @@ summary:
   decoder_proposed_unfiled: 14
   doc_debt_open: 1
   chart_audit_rows: 52
-  chart_audit_open_unfiled: 28
+  chart_audit_open_unfiled: 39
   chart_audit_p0_filed: 3
-  chart_audit_p1_filed: 12
 
 # ─── Machine-enforced findings (authoritative closure surface) ─────────────────
 
@@ -71,8 +70,10 @@ findings:
     status: verified_closed
     verification: scripts/check_ruff_unused_zero.py
   - id: F-008
-    status: verified_closed
+    status: open_finding
     verification: scripts/check_radon_complexity_zero.py
+    last_check: "2026-06-12 radon_complex_blocks=8 (down from 34; target 0)"
+    notes: CL Agent owns remediation
   - id: F-009
     status: verified_closed
     verification: scripts/check_vulture_dead_code_zero.py
@@ -113,16 +114,19 @@ findings:
     verification: scripts/check_pipeline_golden_metrics.py
     supersedes: [F-010, F-011, F-015-partial, F-022, E-2, C-2-wiring]
   - id: F-041
-    status: verified_closed
+    status: open_finding
+    title: Terminology compliance in public markdown
     verification: scripts/check_terminology_compliance.py
   - id: F-042
     status: verified_closed
     verification: scripts/check_mcmc_diagnostics_disclosure.py
   - id: F-043
-    status: verified_closed
+    status: open_finding
+    title: Operator-only artifacts remain publicly tracked
     verification: scripts/check_tracked_operator_artifacts.py
   - id: F-044
-    status: verified_closed
+    status: open_finding
+    title: Module A model_params.yaml not wired to runtime loaders
     verification: scripts/check_module_a_config_wiring.py
   - id: F-045
     status: verified_closed
@@ -130,6 +134,7 @@ findings:
   - id: F-046
     status: verified_closed
     verification: scripts/check_eda_stale_orphan_pngs.py
+    note: Orphans now in generate_eda manifest; lineage gate is F-050
   - id: F-047
     status: verified_closed
     verification: scripts/check_module_a_report_charts.py
@@ -140,121 +145,79 @@ findings:
     status: verified_closed
     verification: scripts/check_eda_notebook_chart_parity.py
   - id: F-050
-    status: verified_closed
+    status: open_finding
+    title: Committed chart PNGs bind to single canonical data run
     verification: scripts/check_figure_artifact_lineage.py
-    note: FIGURE_MANIFEST.yaml + canonical parquet consumers
   - id: F-051
-    status: verified_closed
+    status: open_finding
+    title: Canonical chart population earns segment label semantics
     verification: scripts/check_segment_label_chart_semantics.py
     supersedes_partial: F-039
+    note: F-039 gates fresh fit; F-051 gates data/processed artifact charts consume
   - id: F-052
-    status: verified_closed
-    verification: scripts/check_propensity_individual_variation.py
-  - id: F-055
-    status: verified_closed
-    verification: scripts/check_allocation_contact_caps.py
-    note: Chart audit AUD-B8
-  - id: F-056
-    status: verified_closed
-    verification: scripts/check_mc_shock_contact_coupling.py
-    note: Chart audit AUD-BMC
-  - id: F-057
-    status: verified_closed
-    verification: scripts/check_eda_figure_footer_layout.py
-    note: Chart audit AUD-XCUT-004 footer template
-  - id: F-061
     status: open_finding
-    title: House effects forest and table share single posterior export
-    verification: scripts/check_house_effects_reconciliation.py
-    note: Reopened 2026-06-13 — manifest missing house_effects_identifiability_note
-  - id: F-071
-    status: verified_closed
-    verification: scripts/check_dashboard_canonical_mode.py
-    note: Chart audit AUD-A1, AUD-PUB-003
-  - id: F-073
-    status: verified_closed
-    verification: scripts/check_eda_overview_signoff.py
-    note: Chart audit AUD-PUB-004
-  - id: F-074
-    status: verified_closed
-    verification: scripts/check_entity_covariate_variance.py
-    note: Extends F-052; dashboard no live refit
-  - id: F-075
-    status: verified_closed
-    verification: scripts/check_reliability_label_semantics.py
-    note: Chart audit AUD-REL Bernoulli-label disclosure
-  - id: F-076
-    status: verified_closed
-    verification: scripts/check_module_b_objective_manifest.py
-    note: Chart audit AUD-S1 objective + proration disclosure
-  - id: F-077
-    status: verified_closed
-    verification: scripts/check_filtered_track_export.py
-    note: Chart audit AUD-C1/C2 filtered vs anchored track
-  - id: F-078
-    status: verified_closed
-    verification: scripts/check_battleground_illustrative_mapping.py
-    note: Chart audit AUD-C3/C8/XCUT-005 dept win prob coherence
+    title: Propensity varies within departments and segments
+    verification: scripts/check_propensity_individual_variation.py
 
 # ─── Chart audit batch 1 (2026-06-12) — Modules A/B/C + public layer ───────────
 
 chart_audit_2026_06:
   cross_cutting:
-    - {id: AUD-XCUT-001, status: verified_closed, finding: F-051, title: Segment labels on canonical parquet}
-    - {id: AUD-XCUT-002, status: verified_closed, finding: F-050, title: Stale figure pairs / run_id lineage}
-    - {id: AUD-XCUT-003, status: verified_closed, finding: F-050, F-071, title: Dashboard vs N=50k chart population}
-    - {id: AUD-XCUT-004, status: verified_closed, finding: F-057, title: Watermark/legend footer template}
-    - {id: AUD-XCUT-005, status: verified_closed, finding: F-078, title: C2 vs C3/C8 dept win prob coherence}
-    - {id: AUD-XCUT-006, status: verified_closed, finding: F-052, F-074, title: Individual covariates dept-constant pathology}
+    - {id: AUD-XCUT-001, status: open_finding, finding: F-051, title: Segment labels wrong on canonical parquet (A6 convicts)}
+    - {id: AUD-XCUT-002, status: open_finding, finding: F-050, title: Stale figure pairs / missing run_id (C4 table vs forest, C6 vs C10)}
+    - {id: AUD-XCUT-003, status: open_finding, finding: F-050, title: Dashboard live rebuild vs N=50k chart population}
+    - {id: AUD-XCUT-004, status: open_unfiled, root_cause: figure_template, title: Watermark/legend collisions all modules}
+    - {id: AUD-XCUT-005, status: open_unfiled, root_cause: module_c_coherence, title: C2 national win certain vs C3/C8 dept coin flips}
+    - {id: AUD-XCUT-006, status: open_finding, finding: F-052, title: Individual covariates are dept constants (A5/A10/A11)}
     - {id: AUD-XCUT-007, status: open_unfiled, root_cause: chart_cull, title: Deliverable cull to ~5 Module C + 6 Module B keepers}
   module_c:
-    - {id: AUD-C1, status: verified_closed, finding: F-077, severity: critical, title: C1 filtered vs anchored track disclosure}
-    - {id: AUD-C2, status: verified_closed, finding: F-077, severity: critical, title: C2 terminal posterior / filtered export}
-    - {id: AUD-C3, status: verified_closed, finding: F-078, severity: reject, title: C3 dept win prob illustrative mapping}
-    - {id: AUD-C4, status: open_finding, finding: F-061, severity: rework, title: C4 vs table house-effect reconciliation}
-    - {id: AUD-C5, status: open_unfiled, severity: reject, title: C5 fan chart meaningless x-axis}
-    - {id: AUD-C6, status: open_unfiled, severity: reject, title: C6 KDE on point masses}
+    - {id: AUD-C1, status: verified_closed, finding: F-055, severity: critical, title: C1 anchor unlabeled / retrodiction vs forecast, blocks: [AUD-C2]}
+    - {id: AUD-C2, status: verified_closed, finding: F-056, severity: critical, title: C2 terminal posterior borrowed from anchor}
+    - {id: AUD-C3, status: verified_closed, finding: F-053, title: C3 dept win prob (full 0-1 axis, illustrative label)}
+    - {id: AUD-C4, status: open_unfiled, severity: rework, title: C4 vs table house-effect inconsistency}
+    - {id: AUD-C5, status: verified_closed, finding: F-057, severity: reject, title: C5 fan chart meaningless x-axis}
+    - {id: AUD-C6, status: verified_closed, finding: F-057, severity: reject, title: C6 KDE on point masses}
     - {id: AUD-C7, status: open_unfiled, severity: rework, title: C7 exit model null coefficients unlabeled}
-    - {id: AUD-C8, status: verified_closed, finding: F-078, severity: reject, title: C8/C8_v2 bubble on noise y-axis}
-    - {id: AUD-C9, status: open_unfiled, severity: reject, title: C9 n=3 transparency scatter}
-    - {id: AUD-C10, status: open_unfiled, severity: reject, title: C10 filename promises P(win) histogram}
+    - {id: AUD-C8, status: verified_closed, finding: F-053, title: C8/C8_v2 win-prob axis widened to 0-1 (F-053)}
+    - {id: AUD-C9, status: verified_closed, finding: F-058, severity: reject, title: C9 n=3 transparency scatter}
+    - {id: AUD-C10, status: verified_closed, finding: F-059, severity: reject, title: C10 filename promises P(win) histogram}
     - {id: AUD-PPC, status: open_unfiled, severity: approved_revisions, title: PPC n=4 promote with firm labels}
-    - {id: AUD-REL, status: verified_closed, finding: F-075, severity: rework, title: Reliability diagram label semantics}
+    - {id: AUD-REL, status: open_unfiled, severity: rework, title: Reliability diagram missing disclaimer on PNG}
   module_b:
     - {id: AUD-B1, status: open_unfiled, severity: approved_revisions, title: B1 needs per-capita normalization}
     - {id: AUD-B2, status: open_unfiled, severity: rework, title: B2 missing in_person channel / not burn-down}
-    - {id: AUD-B3, status: open_unfiled, severity: reject, title: B3a stacks mutually exclusive scenarios}
+    - {id: AUD-B3, status: verified_closed, finding: F-060, severity: reject, title: B3a stacks mutually exclusive scenarios}
     - {id: AUD-B4, status: open_unfiled, severity: rework, title: B4 blank broadcast columns / 100% saturation}
-    - {id: AUD-B5, status: open_unfiled, severity: reject, title: B5 ratio self-correlation / 3.5¢ contacts}
+    - {id: AUD-B5, status: verified_closed, finding: F-062, severity: reject, title: B5 ratio self-correlation / 3.5¢ contacts}
     - {id: AUD-B6, status: open_unfiled, severity: approved_revisions, title: B6 synthetic FX unlabeled}
-    - {id: AUD-B7, status: open_unfiled, severity: reject, title: B7 routing matrix half-labeled / orphan channel}
-    - {id: AUD-B8, status: verified_closed, finding: F-055, severity: reject, title: B8 contacts exceed caps}
-    - {id: AUD-S1, status: verified_closed, finding: F-076, severity: rework, title: S1 objective + proration disclosed}
+    - {id: AUD-B7, status: verified_closed, finding: F-060, severity: reject, title: B7 routing matrix half-labeled / orphan channel}
+    - {id: AUD-B8, status: verified_closed, finding: F-063, severity: reject, title: B8 contacts exceed caps 5× (allocation-data dependent — triaged in completion sprint)}
+    - {id: AUD-S1, status: open_unfiled, severity: rework, title: S1 committed segments funded incoherently}
     - {id: AUD-S2, status: open_unfiled, severity: approved_revisions, title: S2 quadrant labels wrong}
     - {id: AUD-S3, status: open_unfiled, severity: rework, title: S3 ROI inherits contact inflation}
-    - {id: AUD-S4, status: open_unfiled, severity: reject, title: S4 priority score circular / MC noise}
-    - {id: AUD-S5, status: open_unfiled, severity: reject, title: S5 mislabeled efficiency frontier}
-    - {id: AUD-BMC, status: verified_closed, finding: F-056, severity: reject, title: MC contacts flat across scenarios}
+    - {id: AUD-S4, status: verified_closed, finding: F-064, severity: reject, title: S4 priority score circular / MC noise}
+    - {id: AUD-S5, status: verified_closed, finding: F-060, severity: reject, title: S5 mislabeled efficiency frontier}
+    - {id: AUD-BMC, status: verified_closed, finding: F-065, severity: reject, title: MC contacts flat across scenarios (MC coupling — deferred, see completion sprint)}
   module_a:
-    - {id: AUD-A1, status: verified_closed, finding: F-071, title: A1 segment sizes vs dashboard canonical bundle}
+    - {id: AUD-A1, status: insufficient_fix, finding: F-050, title: A1 segment sizes contradict dashboard shares}
     - {id: AUD-A2, status: open_unfiled, severity: rework, title: A2 hard age cut at 25 exposes flag-driven segments}
     - {id: AUD-A3, status: deferred, title: A3 gender null — replace with one sentence}
-    - {id: AUD-A4, status: verified_closed, finding: F-051, title: A4 rural_committed metro placement}
-    - {id: AUD-A5, status: verified_closed, finding: F-052, title: A5 propensity violins}
-    - {id: AUD-A6, status: verified_closed, finding: F-051, title: A6 urbanicity label audit exhibit}
+    - {id: AUD-A4, status: open_finding, finding: F-051, title: A4 rural_committed only in metro depts}
+    - {id: AUD-A5, status: open_finding, finding: F-052, title: A5 degenerate propensity violins}
+    - {id: AUD-A6, status: open_finding, finding: F-051, title: A6 rural_committed 95% urban — promoted exhibit}
     - {id: AUD-A7, status: open_unfiled, severity: approved_revisions, title: A7 language after label fix}
     - {id: AUD-A8, status: open_unfiled, severity: approved_revisions, title: A8 structurally_dependent name falsified}
     - {id: AUD-A9, status: open_unfiled, severity: rework, title: A9 correlation QA internal only}
-    - {id: AUD-A10, status: open_unfiled, severity: reject, title: A10 PCA lattice proves dept constants}
-    - {id: AUD-A11, status: verified_closed, finding: F-074, title: A11 NBI bimodality / entity variance}
-    - {id: AUD-A12, status: open_unfiled, severity: reject, title: A12 reachability histogram unreadable}
+    - {id: AUD-A10, status: verified_closed, finding: F-066, severity: reject, title: A10 PCA lattice proves dept constants}
+    - {id: AUD-A11, status: open_finding, finding: F-052, title: A11 NBI bimodality misdrawn as outliers}
+    - {id: AUD-A12, status: verified_closed, finding: F-061, severity: reject, title: A12 reachability histogram unreadable}
     - {id: AUD-A13, status: deferred, title: A13 preference proxy null — drop feature}
     - {id: AUD-SHAP, status: open_unfiled, severity: rework, title: SHAP missing model/target label}
   public_layer:
-    - {id: AUD-PUB-001, status: open_unfiled, severity: reject, title: Dashboard QA tab empty}
-    - {id: AUD-PUB-002, status: open_unfiled, severity: rework, title: GitHub Pages report full-resolution capture}
-    - {id: AUD-PUB-003, status: verified_closed, finding: F-075, severity: rework, title: Calibration disclaimer on reliability figures}
-    - {id: AUD-PUB-004, status: verified_closed, finding: F-073, severity: reject, title: eda_overview sign-off after pipeline fixes}
+    - {id: AUD-PUB-001, status: verified_closed, finding: F-067, severity: reject, title: Dashboard QA tab empty}
+    - {id: AUD-PUB-002, status: open_finding, finding: F-050, title: GitHub Pages report 280px capture useless}
+    - {id: AUD-PUB-003, status: open_unfiled, severity: rework, title: Calibration tab disclaimer stripped from PNG}
+    - {id: AUD-PUB-004, status: verified_closed, finding: F-061, severity: reject, title: eda_overview data/model scope mislabel + truncated bars}
     - {id: AUD-PUB-005, status: open_unfiled, severity: appendix, title: Module B API OpenAPI schemas absent}
 
 # ─── Decoder-proposed findings never filed (deduped) ───────────────────────────
@@ -511,42 +474,25 @@ recommended_next_findings:
     - F-050
     - F-051
     - F-052
-    note: all closed 2026-06-12/13 on fix/F-052 branch
-  priority_1b_chart_audit:
-    - F-055
-    - F-056
-    - F-057
-    - F-071
-    - F-073
-    - F-074
-    - F-075
-    - F-076
-    - F-077
-    - F-078
-    note: all closed; see open_unfiled chart rows for next wave
-  priority_1_open_now:
-    - F-061
+  priority_1:
+    - F-008
+    - F-041
+    - F-042
+    - F-043
+  priority_1b_after_p0:
+    - F-053  # AUD-C3/C8 — closed
+    - F-054  # umbrella tracker — open until severe backlog cleared
+    - F-055  # AUD-C1 — closed
+    - F-056  # AUD-B8 — proposed
+    - F-057  # AUD-BMC — proposed
   priority_2_file_when_started:
-    - F-053
-    - F-054
-    - F-058
-    - F-059
-    - F-062
-    - F-063
-    - F-064
-    - F-065
-    title_map:
-      F-053: C5/C6/C10 shock-scale ECDF + P(win) histogram
-      F-054: C7 exit model null disclosure
-      F-058: B3 scenario comparison chart rebuild
-      F-059: B2/B4 channel accounting consistency
-      F-062: PPC firm labels + temporal axis
-      F-063: Chart deliverable cull manifest (AUD-XCUT-007)
-      F-064: Dashboard QA tab functional
-      F-065: GitHub Pages report full-res artifact
+    - F-025
+    - F-026
+    - F-027
+    - F-031
+    - F-012
+    - F-013
   priority_3_deferred_or_batch:
     - E-10 plot polish
     - T2-08 German README
     - C-10 analytical coupling
-    - AUD-A3
-    - AUD-A13
