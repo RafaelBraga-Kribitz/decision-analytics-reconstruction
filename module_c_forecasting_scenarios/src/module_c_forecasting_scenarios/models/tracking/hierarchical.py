@@ -15,7 +15,14 @@ import yaml
 
 from module_c_forecasting_scenarios.paths import module_config_dir
 
-MODEL_VERSION = "c_tracking_hierarchical_v0.2"  # v0.2: soft m-star outcome anchor in likelihood
+MODEL_VERSION = "c_tracking_hierarchical_v0.3"  # v0.3: honest 94% HDI bands (az.hdi); v0.2 stored 5/95 quantiles under hdi names
+
+# Probability mass of the credible interval stored in the ``*_hdi_*`` columns and
+# labelled "94% HDI" on every figure. The bounds are a genuine highest-density
+# interval (az.hdi), not 5/95 equal-tailed quantiles (the prior, mislabelled
+# behaviour). Keep this in sync with the "94% HDI" titles in reports/eda.
+HDI_PROB = 0.94
+INTERVAL_TYPE = "HDI"
 
 
 def _sampler_kwargs() -> dict[str, Any]:
@@ -146,9 +153,28 @@ def fit_tracking_hierarchical(
             )
     idata.attrs["calibration_series"] = calibration_series
     idata.attrs["model_version"] = MODEL_VERSION
+    idata.attrs["interval_type"] = INTERVAL_TYPE
+    idata.attrs["interval_prob"] = float(HDI_PROB)
     idata.attrs["outcome_anchor_m_star_pp"] = "" if m_star_pp is None else float(m_star_pp)
     idata.attrs["outcome_anchor_sigma_pp"] = float(anchor_sigma_pp)
     return idata
+
+
+def _hdi_low_high(post: Any, hdi_prob: float = HDI_PROB) -> tuple[np.ndarray, np.ndarray]:
+    """Return (low, high) bounds of a true highest-density interval.
+
+    ``post`` is a posterior DataArray carrying ``chain``/``draw`` sample dims plus
+    one parameter dim. We use ``az.hdi`` (minimum-width interval) so the stored
+    ``*_hdi_*`` columns and the "94% HDI" figure titles are honest. The previous
+    implementation stored 5th/95th equal-tailed quantiles — a 90% interval — under
+    HDI names, which is what AUD interval-mislabel flagged.
+    """
+    hdi = az.hdi(post, hdi_prob=hdi_prob)
+    if hasattr(hdi, "data_vars"):  # Dataset → take its single data variable
+        hdi = hdi[next(iter(hdi.data_vars))]
+    low = np.asarray(hdi.sel(hdi="lower").values, dtype=float).reshape(-1)
+    high = np.asarray(hdi.sel(hdi="higher").values, dtype=float).reshape(-1)
+    return low, high
 
 
 def export_daily_posterior_table(
@@ -157,12 +183,8 @@ def export_daily_posterior_table(
     calibration_series: str,
 ) -> pd.DataFrame:
     post = idata.posterior["mu_margin"]  # type: ignore[union-attr]  # arviz stubs omit InferenceData.posterior; runtime is xarray.Dataset
-    mean_m = post.mean(dim=("chain", "draw")).values
-    low = post.quantile(0.05, dim=("chain", "draw")).values
-    high = post.quantile(0.95, dim=("chain", "draw")).values
-    mean_m = np.asarray(mean_m).reshape(-1)
-    low = np.asarray(low).reshape(-1)
-    high = np.asarray(high).reshape(-1)
+    mean_m = np.asarray(post.mean(dim=("chain", "draw")).values).reshape(-1)
+    low, high = _hdi_low_high(post)
     rows = []
     for i, d in enumerate(days):
         rows.append(
@@ -186,9 +208,8 @@ def export_house_effects_table(
     tracking: pd.DataFrame,
 ) -> pd.DataFrame:
     post = idata.posterior["house_offset"]  # type: ignore[union-attr]  # arviz stubs omit InferenceData.posterior; runtime is xarray.Dataset
-    mean_m = post.mean(dim=("chain", "draw")).values.flatten()
-    low = post.quantile(0.05, dim=("chain", "draw")).values.flatten()
-    high = post.quantile(0.95, dim=("chain", "draw")).values.flatten()
+    mean_m = np.asarray(post.mean(dim=("chain", "draw")).values).reshape(-1)
+    low, high = _hdi_low_high(post)
     fam = tracking.groupby("pollster_id")["pollster_bias_family"].first()
     rows = []
     for i, p in enumerate(pollsters):
