@@ -1,0 +1,42 @@
+id: F-068
+title: "Tracking credible bands were 90% equal-tailed quantiles mislabelled as 94% HDI"
+status: closed
+severity: high
+kind: recurrence_invariant
+category: misleading_visualization
+opened_at: 2026-06-14
+closed_at: 2026-06-14
+owner: remediator
+finding: >
+  models/tracking/hierarchical.py computed low/high as post.quantile(0.05) /
+  post.quantile(0.95) — a 90% equal-tailed interval — and stored them in columns
+  named posterior_hdi_low_pp/high_pp and house_effect_hdi_low/high. Every figure
+  (generate_eda.py C1/C2/C4/C7, build_notebook.py, the methodology note, and the
+  data dictionary) titled the band "94% HDI", and the methodology note further
+  claimed it was "≈ 2σ". The column name, the figure title, and the interval that
+  was actually computed disagreed: a reader was told 94% HDI and shown 90% ETI.
+remediation: >
+  hierarchical.py now computes a genuine highest-density interval via
+  az.hdi(post, hdi_prob=HDI_PROB) with HDI_PROB = 0.94, through a shared
+  _hdi_low_high helper used by both export functions; the 5/95 quantile calls are
+  gone. The fit stamps interval_type="HDI" and interval_prob=0.94 into the idata
+  attrs and MODEL_VERSION is bumped to c_tracking_hierarchical_v0.3. The two
+  schema contracts document the hdi columns as 94% HDI bounds, and generate_eda.py
+  drops the false "≈ 2σ" note (94% HDI ≈ ±1.9σ). The "94% HDI" titles are now
+  honest. A new slow test, test_interval_consistency.py, asserts the exported
+  bands equal az.hdi(0.94) and are materially wider than the old 90% ETI
+  (the negative control), and that the interval metadata is stamped.
+verification_script: scripts/check_module_c_interval_honesty.py
+artifacts:
+  - module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/models/tracking/hierarchical.py
+  - module_c_forecasting_scenarios/tests/test_interval_consistency.py
+  - schema_contracts/daily_posterior_forecast.yaml
+  - schema_contracts/posterior_house_effects.yaml
+  - reports/eda/generate_eda.py
+  - scripts/check_module_c_interval_honesty.py
+notes: >
+  Item 2 of the figure-layer adversarial audit. Source-truth fix; the affected
+  figures (C1 margin track, C2 final-day, C4 house-effect forest) are regenerated
+  from the canonical run in the figure-regeneration step (item 6). The 94%-HDI
+  numbers change versus the committed PNGs because the prior bands were a
+  different (narrower, 90%) interval — golden metrics re-snapshot accordingly.
