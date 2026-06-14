@@ -44,6 +44,21 @@ def _bucket_share(n: int, k: int) -> list[int]:
     return [base + (1 if i < rem else 0) for i in range(k)]
 
 
+def _scenario_adjusted_contacts(alloc_mean_contacts: float, shock_scale: float) -> float:
+    """Per-draw effective persuasion contacts = baseline mean × engagement shock.
+
+    The B→C handshake passes a single scenario-invariant mean
+    (``alloc_mean_persuasion_contacts``); the scenario severity lives entirely in
+    ``shock_scale``. This is the *effective* contact volume each draw's shock
+    implies — the propagation the monte_carlo_draws contract always described
+    ("shock_scale ... propagated to allocation outcomes") but the engine never
+    actually applied, which is why the published "persuasion-adjusted contacts"
+    figure was a flat line. It varies by draw and by bucket. This is a
+    scenario-adjusted (effective) quantity, not raw allocated contacts.
+    """
+    return float(alloc_mean_contacts) * float(shock_scale)
+
+
 def _draw_from_tracking(
     bucket_rows: pd.DataFrame,
     n: int,
@@ -65,6 +80,9 @@ def _draw_from_tracking(
                 "scenario_bucket": str(bucket_rows.iloc[j]["scenario_bucket"]),
                 "shock_scale": float(scores[j]),
                 "alloc_mean_persuasion_contacts": alloc_mean_contacts,
+                "scenario_adjusted_persuasion_contacts": _scenario_adjusted_contacts(
+                    alloc_mean_contacts, float(scores[j])
+                ),
                 "draw_source": "tracking_sample",
             }
         )
@@ -91,6 +109,9 @@ def _draw_from_prior(
             "scenario_bucket": bucket,
             "shock_scale": float(shocks[i]),
             "alloc_mean_persuasion_contacts": alloc_mean_contacts,
+            "scenario_adjusted_persuasion_contacts": _scenario_adjusted_contacts(
+                alloc_mean_contacts, float(shocks[i])
+            ),
             "draw_source": "synthetic_prior",
         }
         for i in range(n)
