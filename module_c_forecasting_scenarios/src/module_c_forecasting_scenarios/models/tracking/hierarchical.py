@@ -15,7 +15,8 @@ import yaml
 
 from module_c_forecasting_scenarios.paths import module_config_dir
 
-MODEL_VERSION = "c_tracking_hierarchical_v0.3"  # v0.3: honest 94% HDI bands (az.hdi); v0.2 stored 5/95 quantiles under hdi names
+# v0.3: honest 94% HDI bands (az.hdi); v0.2 stored 5/95 quantiles under hdi names.
+MODEL_VERSION = "c_tracking_hierarchical_v0.3"
 
 # Probability mass of the credible interval stored in the ``*_hdi_*`` columns and
 # labelled "94% HDI" on every figure. The bounds are a genuine highest-density
@@ -169,7 +170,7 @@ def _hdi_low_high(post: Any, hdi_prob: float = HDI_PROB) -> tuple[np.ndarray, np
     implementation stored 5th/95th equal-tailed quantiles — a 90% interval — under
     HDI names, which is what AUD interval-mislabel flagged.
     """
-    hdi = az.hdi(post, hdi_prob=hdi_prob)
+    hdi = cast(Any, az.hdi(post, hdi_prob=hdi_prob))  # az.hdi stub says ndarray; runtime is xarray
     if hasattr(hdi, "data_vars"):  # Dataset → take its single data variable
         hdi = hdi[next(iter(hdi.data_vars))]
     low = np.asarray(hdi.sel(hdi="lower").values, dtype=float).reshape(-1)
