@@ -573,9 +573,9 @@
       "verification_script": "scripts/check_published_artifact_ssot.py"
     }
   ],
-  "generated_at": "2026-06-14T18:23:12.993662+00:00",
+  "generated_at": "2026-06-14T18:36:16.111555+00:00",
   "git_branch": "claude/funny-heisenberg-w3mw7h",
-  "git_head_sha": "6f1eec4a9c32794754ab23ec0a11b9f60e80e4f9",
+  "git_head_sha": "f5a3e333e59b88d7d422c967f04078438c1facfa",
   "migrations": [],
   "summary": {
     "findings_closed": 49,
