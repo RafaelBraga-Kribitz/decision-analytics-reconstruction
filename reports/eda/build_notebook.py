@@ -1263,11 +1263,24 @@ plt.tight_layout()
 plt.show()
 """))
 
+# House-effect prose is DERIVED from the same posterior_house_effects.parquet the
+# C4 chart plots, so the notebook can never contradict the figure or the EDA report
+# (SSOT — F-072). Do not hardcode pollster house-effect pp values here.
+_he_sorted = house_eff.sort_values("house_effect_posterior_mean")
+_he_lo = _he_sorted.iloc[0]
+_he_hi = _he_sorted.iloc[-1]
+_he_mid = house_eff.loc[house_eff["house_effect_posterior_mean"].abs().idxmin()]
+_he_lo_name = str(_he_lo["pollster_id"]).upper()
+_he_hi_name = str(_he_hi["pollster_id"]).upper()
+_he_mid_name = str(_he_mid["pollster_id"]).upper()
+_he_lo_pp = float(_he_lo["house_effect_posterior_mean"])
+_he_hi_pp = float(_he_hi["house_effect_posterior_mean"])
+_he_mid_pp = float(_he_mid["house_effect_posterior_mean"])
 cells.append(
     md(
-        """**Finding:** ATI/Snead shows a small positive house effect (~+1.5 pp), suggesting this pollster historically overestimates Candidate A's margin. CAPLI registers a negative house effect (-2.1 pp), indicating a slight pro-B bias. ICA's house effect is near zero and the HDI crosses zero, making it the most unbiased pollster in the model. All HDIs are wide due to limited wave count.
+        f"""**Finding:** {_he_hi_name} shows the largest positive house effect ({_he_hi_pp:+.1f} pp), overestimating Candidate A's margin; {_he_lo_name} shows the largest negative house effect ({_he_lo_pp:+.1f} pp), a pro-B tilt; {_he_mid_name} is the closest to neutral ({_he_mid_pp:+.1f} pp). All HDIs are wide due to limited wave count. (Values read from posterior_house_effects.parquet.)
 
-**Strategic implication:** Commission additional ICA poll waves for the final two weeks — it is the highest-quality unbiased pollster in the panel. Do not over-index on ATI/Snead results without applying the ~1.5 pp discount for house effect."""
+**Strategic implication:** {_he_mid_name} is the closest to unbiased in the panel; do not over-index on {_he_hi_name} or {_he_lo_name} without applying their estimated house-effect correction."""
     )
 )
 
