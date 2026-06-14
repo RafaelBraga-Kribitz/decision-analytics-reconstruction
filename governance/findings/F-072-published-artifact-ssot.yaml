@@ -1,0 +1,41 @@
+id: F-072
+title: "Two published artifacts reported the same pollster house effects with different numbers"
+status: closed
+severity: high
+kind: recurrence_invariant
+category: numeric_inconsistency
+opened_at: 2026-06-14
+closed_at: 2026-06-14
+owner: remediator
+finding: >
+  reports/eda/generate_eda.py prose stated pollster house effects as ATI/Snead
+  −5.1 pp / ICA +3.8 pp, while reports/eda/build_notebook.py prose stated ATI/Snead
+  +1.5 pp / CAPLI −2.1 pp. Both were hardcoded, mutually contradictory, and
+  disagreed with posterior_house_effects.parquet — the very frame each generator's
+  C4 figure plots. A reader comparing the EDA report and the notebook saw different
+  numbers for the same quantity. There was no CI gate that would catch two published
+  artifacts disagreeing on a shared number.
+remediation: >
+  Both generators now DERIVE their house-effect prose from
+  posterior_house_effects.parquet via shared f-string variables (the most-negative,
+  most-positive, most-neutral, and largest-|effect| pollsters and their pp values),
+  so the report, the notebook, and the C4 figure read the same single source and
+  cannot diverge. tests/test_golden_metrics.py gains two SSOT gates:
+  test_house_effect_prose_single_sourced (static: neither generator hardcodes a
+  contradictory house-effect pp literal; both reference the derived variables) and
+  test_house_effect_report_matches_parquet (runtime: the EDA report's house-effect
+  number equals the canonical parquet within rounding). The governance gate
+  check_published_artifact_ssot.py enforces the static invariant.
+verification_script: scripts/check_published_artifact_ssot.py
+artifacts:
+  - reports/eda/generate_eda.py
+  - reports/eda/build_notebook.py
+  - tests/test_golden_metrics.py
+  - scripts/check_published_artifact_ssot.py
+notes: >
+  Item 1 of the figure-layer adversarial audit (SSOT / run hygiene). The canonical
+  run is the pipeline-full output; the duplicate FIGURE renderings (the deployment
+  screenshots in docs/assets/*-deploy/) are retired in favour of canonical,
+  run-id-stamped figures in item 6 per the operator's "canonical figures + retire
+  screenshots" decision. This finding closes the numeric half (prose ↔ parquet ↔
+  figure agreement); the figure-regeneration half is item 6.

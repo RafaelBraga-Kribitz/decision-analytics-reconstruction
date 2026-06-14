@@ -2365,6 +2365,30 @@ forecast_final_hdi_hi = forecast.sort_values("date").iloc[-1]["posterior_hdi_hig
 top_win_dept = battleground.sort_values("win_probability_a", ascending=False).iloc[0]
 low_win_dept = battleground.sort_values("win_probability_a").iloc[0]
 
+# House-effect narrative numbers are DERIVED from the canonical
+# posterior_house_effects.parquet (the same frame the C4 chart plots), so the prose
+# can never contradict the figure or the notebook (SSOT — F-072). Never hardcode
+# pollster house-effect pp values in prose.
+_he_by_mean = house_eff.sort_values("house_effect_posterior_mean")
+_he_neg = _he_by_mean.iloc[0]  # most negative house effect (understates A)
+_he_pos = _he_by_mean.iloc[-1]  # most positive house effect (overstates A)
+_he_neutral = house_eff.loc[house_eff["house_effect_posterior_mean"].abs().idxmin()]
+
+
+def _he_name(row) -> str:
+    return str(row["pollster_id"]).upper()
+
+
+_he_neg_name = _he_name(_he_neg)
+_he_neg_pp = float(_he_neg["house_effect_posterior_mean"])
+_he_pos_name = _he_name(_he_pos)
+_he_pos_pp = float(_he_pos["house_effect_posterior_mean"])
+_he_neutral_name = _he_name(_he_neutral)
+_he_neutral_pp = float(_he_neutral["house_effect_posterior_mean"])
+_he_max_abs = house_eff.loc[house_eff["house_effect_posterior_mean"].abs().idxmax()]
+_he_max_abs_name = _he_name(_he_max_abs)
+_he_max_abs_pp = abs(float(_he_max_abs["house_effect_posterior_mean"]))
+
 # Data-derived narrative stats (keeps report prose truthful across regenerations)
 _seg_share_pct = pop["segment_label"].value_counts(normalize=True) * 100
 _seg_prop_mean = pop.groupby("segment_label")["participation_propensity"].mean()
@@ -2447,7 +2471,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 - **Central and Alto Paraná absorb {_central_alto_share_pct:.0f}% of the total budget** (${_b1_central:,.0f} and ${_b1_alto:,.0f} respectively), reflecting their demographic weight. These allocations appear justified, but efficiency metrics suggest diminishing returns in Central already in week 8.
 - **{_seg_title(_top_prop_seg)} is the highest-propensity segment (mean {_seg_prop_mean[_top_prop_seg]:.2f})** but receives little digital investment due to low internet penetration. Radio is the dominant reach channel for rural segments; any reduction in radio spend directly suppresses participation in Itapúa and San Pedro strongholds.
 - **Bilateral (direct) channels absorb 52.5% of baseline budget** vs. 47.5% for broadcast. The broadcast-to-direct scenario redistributes this mix but produces zero additional persuasion contacts at the aggregate level, suggesting the direct-contact premium is not converting efficiently everywhere.
-- **Three pollsters show significant house effects:** ATI/Snead has a −5.1 pp negative bias, ICA has +3.8 pp positive bias; only CAPLI is near-neutral. Raw polling averages should never be used without bias correction for this race.
+- **Pollster house effects (from posterior_house_effects.parquet):** {_he_neg_name} has a {_he_neg_pp:+.1f} pp bias, {_he_pos_name} has a {_he_pos_pp:+.1f} pp bias; {_he_neutral_name} is the closest to neutral ({_he_neutral_pp:+.1f} pp). Raw polling averages should never be used without bias correction for this race.
 - **Chaco departments (Alto Paraguay, Boquerón, Presidente Hayes) are negligible-tier** in budget allocation; modelled department win probabilities cluster near **{_min_win_prob:.0%}–{_max_win_prob:.0%}** on fixture posteriors ({_illustrative_tracking_note}).
 
 ---
@@ -2619,8 +2643,8 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 
 ### C4 — House Effects Forest Plot
 **What it shows:** Posterior mean ± 94% HDI for each pollster's house effect (bias toward Candidate A).
-**Key finding:** ATI/Snead has a large negative bias (−5.1 pp, HDI entirely negative), meaning their polls systematically understate A's lead. ICA has positive bias (+3.8 pp). CAPLI is the most neutral pollster.
-**Strategic implication:** Never cite raw ATI/Snead polls in communications — they will appear worse than reality. CAPLI should be the reference pollster for public-facing narratives. The campaign analytics team should routinely adjust all external poll reports for these biases.
+**Key finding:** {_he_neg_name} has the largest negative house effect ({_he_neg_pp:+.1f} pp), meaning its polls systematically understate A's lead; {_he_pos_name} has the largest positive house effect ({_he_pos_pp:+.1f} pp); {_he_neutral_name} is the most neutral ({_he_neutral_pp:+.1f} pp). (Derived from posterior_house_effects.parquet — the same frame the C4 figure plots.)
+**Strategic implication:** Never cite raw {_he_neg_name} polls in communications — they will appear worse than reality. {_he_neutral_name} is the closest to unbiased for public-facing narratives. The campaign analytics team should routinely adjust all external poll reports for these biases.
 
 ### C5 — Shock Scale Distribution by Scenario
 **What it shows:** Shock-scale distribution per scenario bucket (box + jittered draws). Monte-Carlo draws are *exchangeable*, so a percentile fan over a draw index would be a meaningless x-axis.
@@ -2644,7 +2668,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 
 ### C9 — Polling Transparency Audit
 **What it shows:** Transparency score vs. house-effect magnitude, one point per pollster (n=3 pollsters — a per-pollster audit, not a fitted trend).
-**Key finding:** Across the three fixture pollsters, ATI/Snead pairs the highest transparency (phi=1.0) with the largest |house effect| (5.1 pp), while CAPLI pairs low transparency (0.37) with near-zero bias. With n=3, no transparency–bias relationship can be inferred — read this as an audit, not evidence of a rule.
+**Key finding:** Across the three fixture pollsters, {_he_max_abs_name} carries the largest |house effect| ({_he_max_abs_pp:.1f} pp) while {_he_neutral_name} is the closest to neutral ({_he_neutral_pp:+.1f} pp). With n=3, no transparency–bias relationship can be inferred — read this as an audit, not evidence of a rule.
 **Strategic implication:** Apply bias corrections per pollster regardless of transparency rating; do not infer a transparency→bias rule from three points.
 
 ### C10 — MC Shock-Scale Distribution (legacy filename)
@@ -2699,7 +2723,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 
 7. **Do not invest in Committed Opposition persuasion.** This segment has a mean propensity of {_co_prop:.2f} and high preference strength for Candidate B. The cost of persuading even a marginal share of this group far exceeds the returns. Redirect any persuasion budget earmarked for this segment to Youth Volatile micro-targeting.
 
-8. **Apply bias corrections to all external polling references.** ATI/Snead results understate the lead by ~5 pp; ICA overstates it by ~4 pp. All internal planning documents and public communications should use bias-corrected figures. Share the house effect estimates with the communications team immediately.
+8. **Apply bias corrections to all external polling references.** {_he_neg_name} results understate the lead by ~{abs(_he_neg_pp):.0f} pp; {_he_pos_name} overstates it by ~{abs(_he_pos_pp):.0f} pp. All internal planning documents and public communications should use bias-corrected figures. Share the house effect estimates with the communications team immediately.
 
 9. **Stress-test the extreme tracker scenario for weeks 12–14.** The extreme_tracker bucket ({_mc_bucket_counts.get("extreme_tracker", 0):,} of {len(mc_draws):,} draws, shock_scale 1.83–2.43) encodes high-volatility outcomes. Ensure field operations have a 72-hour rapid-response protocol if a late-breaking adverse event triggers a 5–8 pp margin compression.
 
