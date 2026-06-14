@@ -7,6 +7,7 @@ Run from project root:  python3 reports/eda/generate_eda.py
 
 import os
 import sys
+import json
 import warnings
 import traceback
 from pathlib import Path
@@ -95,6 +96,17 @@ _succeeded = 0
 
 def save_fig(fig: plt.Figure, fname: str) -> None:
     global _succeeded
+    # Provenance stamp on every figure (run id + model version) — F-073.
+    fig.text(
+        0.995,
+        0.004,
+        FIGURE_STAMP,
+        ha="right",
+        va="bottom",
+        fontsize=5,
+        color=GREY,
+        alpha=0.6,
+    )
     path = OUT / fname
     fig.savefig(path, dpi=DPI, bbox_inches="tight", facecolor=WHITE)
     plt.close(fig)
@@ -194,6 +206,26 @@ forecast["date"] = pd.to_datetime(forecast["date"])
 print(f"  pop: {pop.shape} | segs: {segs.shape} | prop: {prop.shape}")
 print(f"  alloc_base: {alloc_base.shape} | mc_draws: {mc_draws.shape}")
 print("  All datasets loaded successfully.\n")
+
+
+# Provenance stamp applied to EVERY figure (run id + model version) so two
+# artifacts of the same quantity can never silently diverge again, and so a figure
+# can always be traced to the canonical run that produced it (F-073).
+def _figure_run_id() -> str:
+    mrun = DATA / "model_run_manifest.json"
+    if mrun.is_file():
+        try:
+            return str(json.loads(mrun.read_text()).get("git_commit", "uncommitted"))[:12]
+        except (ValueError, OSError):
+            return "uncommitted"
+    return "uncommitted"
+
+
+FIGURE_RUN_ID = _figure_run_id()
+FIGURE_MODEL_VERSION = (
+    str(forecast["model_version"].iloc[0]) if "model_version" in forecast.columns else "unknown"
+)
+FIGURE_STAMP = f"run {FIGURE_RUN_ID} · model {FIGURE_MODEL_VERSION}"
 
 # ════════════════════════════════════════════════════════════════════════════
 # MODULE A — POPULATION & SEGMENTS
@@ -2456,6 +2488,7 @@ report_md = f"""# Paraguay Presidential Campaign — Full EDA Report
 
 **Generated:** April 30, 2026
 **Data Pipeline Version:** 1.0.0
+**Canonical run:** {FIGURE_RUN_ID} · model {FIGURE_MODEL_VERSION} (stamped on every figure for SSOT traceability)
 **Population Sample:** N = {len(pop):,} individuals
 **Campaign Period:** Weeks 1–14 (2018-W01 to 2018-W14)
 **Forecast Window:** 2017-12-01 to 2018-04-21 (142 days)
