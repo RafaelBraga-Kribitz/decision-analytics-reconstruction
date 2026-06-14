@@ -584,9 +584,9 @@
       "verification_script": "scripts/check_canonical_figure_regen.py"
     }
   ],
-  "generated_at": "2026-06-14T20:22:12.314662+00:00",
+  "generated_at": "2026-06-14T21:09:13.052585+00:00",
   "git_branch": "main",
-  "git_head_sha": "2460cad62df29ac7a389fac4a535ff9ecf13b5de",
+  "git_head_sha": "8b44c9cbb0e1c4571881921dd3963a6bfff73906",
   "migrations": [],
   "summary": {
     "findings_closed": 50,

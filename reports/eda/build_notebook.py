@@ -9,6 +9,7 @@ import sys
 from pathlib import Path
 
 import nbformat
+import pandas as pd
 from nbformat.v4 import new_code_cell, new_markdown_cell, new_notebook
 
 # ---------------------------------------------------------------------------
@@ -168,6 +169,29 @@ for name, df in datasets.items():
 summary_df = pd.DataFrame(rows)
 print(summary_df.to_string(index=False))
 """))
+
+# ── Script-level loads (for dynamic prose; mirrors the notebook setup cell) ──
+# The block above is a notebook code cell string, not executed by this script.
+# Variables below are loaded here so module-level prose-generation code can use them.
+_PROJECT_ROOT = Path("../..").resolve()
+_DATA = _PROJECT_ROOT / "data" / "processed"
+_MODC = _DATA / "module_c" / "run_all"
+
+pop       = pd.read_parquet(_DATA / "population_master_clean.parquet")
+seg       = pd.read_parquet(_DATA / "segment_labels.parquet")
+prop      = pd.read_parquet(_DATA / "participation_propensity.parquet")
+alloc     = pd.read_csv(_DATA / "module_b" / "allocation_baseline.csv")
+forecast  = pd.read_parquet(_MODC / "tracking" / "daily_posterior_forecast.parquet")
+house_eff = pd.read_parquet(_MODC / "tracking" / "posterior_house_effects.parquet")
+battle    = pd.read_parquet(_MODC / "battleground" / "battleground_department_probability.parquet")
+mc        = pd.read_parquet(_MODC / "mc" / "monte_carlo_draws.parquet")
+
+COLOR = dict(
+    RED="#e60000", CHARCOAL="#25282b", GREY="#8a8e94", BLUE="#3b82f6",
+    GREEN="#10b981", AMBER="#f59e0b", PURPLE="#8b5cf6", LIGHT="#f7f7f8",
+)
+SEG_COLORS = [COLOR["BLUE"], COLOR["GREEN"], COLOR["AMBER"],
+              COLOR["RED"], COLOR["PURPLE"], COLOR["GREY"]]
 
 # ── Cell 3 — Section 1 header ───────────────────────────────────────────────
 cells.append(
