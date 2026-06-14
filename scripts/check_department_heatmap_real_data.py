@@ -7,12 +7,12 @@ to neither 2018 TSJE returns nor historical swing patterns. It produced plausibl
 fabricated departmental win probabilities.
 
 Closure invariant (static source checks):
-  geo/heatmap.py — references data/external/tsje_2018_department_results.csv and the
+  geo/heatmap.py — references tsje_2018_department_results.csv and the
         _swing_factors() function; does NOT contain the fabricated 0.12*(last-3.8) formula.
 
 Closure invariant (runtime reconciliation):
-  data/external/tsje_2018_department_results.csv — candidate totals reconcile to the
-        verified national totals (1,206,067 / 1,110,464) within 0.3% AND all five
+  geo/tsje_2018_department_results.csv (shipped as package data) — candidate totals
+        reconcile to the verified nationals (1,206,067 / 1,110,464) within 0.3% AND all five
         GANAR-winning departments (Alto Parana, Central, Concepcion, Cordillera, Exterior)
         have positive alegre − abdo votes.
 """
@@ -33,7 +33,14 @@ HEATMAP = (
     / "geo"
     / "heatmap.py"
 )
-TSJE_CSV = REPO_ROOT / "data" / "external" / "tsje_2018_department_results.csv"
+TSJE_CSV = (
+    REPO_ROOT
+    / "module_c_forecasting_scenarios"
+    / "src"
+    / "module_c_forecasting_scenarios"
+    / "geo"
+    / "tsje_2018_department_results.csv"
+)
 
 _NATIONAL_ABDO = 1_206_067
 _NATIONAL_GANAR = 1_110_464
@@ -56,7 +63,7 @@ def _static_gaps(src: str) -> list[str]:
 
 def _runtime_gaps() -> list[str]:
     if not TSJE_CSV.exists():
-        return ["data/external/tsje_2018_department_results.csv is absent"]
+        return ["geo/tsje_2018_department_results.csv (package data) is absent"]
     gaps: list[str] = []
     rows = list(csv.DictReader(TSJE_CSV.open()))
     try:

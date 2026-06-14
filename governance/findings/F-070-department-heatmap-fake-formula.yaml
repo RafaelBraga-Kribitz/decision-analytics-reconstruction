@@ -19,8 +19,8 @@ finding: >
 remediation: >
   heatmap.py v0.2 replaces the fabricated formula with a calibrated hierarchical
   partial-pooling model derived from the official 2018 TSJE per-department
-  presidential results (data/external/tsje_2018_department_results.csv — GATE: PASS
-  against verified nationals 1,206,067 / 1,110,464 / all 5 GANAR winner departments).
+  presidential results (geo/tsje_2018_department_results.csv, shipped as package data
+  — GATE: PASS vs verified nationals 1,206,067 / 1,110,464 / all 5 GANAR winners).
   Each department's candidate-margin swing factor is computed against the national
   candidate total; win_probability_a = Φ(swing_j × m_forecast / σ_dept) where σ_dept
   propagates the national posterior uncertainty plus a 1.5 pp idiosyncratic floor.
@@ -32,7 +32,7 @@ remediation: >
 verification_script: scripts/check_department_heatmap_real_data.py
 artifacts:
   - module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/geo/heatmap.py
-  - data/external/tsje_2018_department_results.csv
+  - module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/geo/tsje_2018_department_results.csv
   - scripts/check_department_heatmap_real_data.py
 notes: >
   Item 4 of the figure-layer adversarial audit. The TSJE CSV was extracted from

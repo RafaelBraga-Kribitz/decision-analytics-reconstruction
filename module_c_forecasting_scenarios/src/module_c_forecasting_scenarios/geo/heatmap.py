@@ -2,8 +2,8 @@
 
 Replaces the fabricated ``0.12 * (last − 3.8) + noise`` formula (v0.1) with a
 calibrated model derived from the official 2018 TSJE per-department presidential
-results (``data/external/tsje_2018_department_results.csv``, GATE: PASS against
-the verified national totals of 1,206,067 / 1,110,464):
+results (``geo/tsje_2018_department_results.csv``, shipped as package data; GATE:
+PASS against the verified national totals of 1,206,067 / 1,110,464):
 
   1. Load TSJE candidate vote counts per department.
   2. Compute each department's candidate-margin *swing factor* relative to the
@@ -42,8 +42,9 @@ _HDI_PROB: float = 0.94
 _HDI_Z: float = float(norm.ppf(1.0 - (1.0 - _HDI_PROB) / 2.0))
 
 _DEPT_POLYGONS_PATH = Path(__file__).parent / "paraguay_departments.geojson"
-# Four parents up from geo/heatmap.py reaches the repository root.
-_TSJE_CSV = Path(__file__).parents[4] / "data" / "external" / "tsje_2018_department_results.csv"
+# Shipped as package data alongside the polygons so it resolves under every install
+# mode (editable, wheel, Docker) — a repo-root path would vanish once installed.
+_TSJE_CSV = Path(__file__).parent / "tsje_2018_department_results.csv"
 
 
 def _load_department_polygons() -> dict[str, Any]:
@@ -57,7 +58,7 @@ def _load_tsje() -> pd.DataFrame:
     if not _TSJE_CSV.exists():
         raise FileNotFoundError(
             f"TSJE department results not found: {_TSJE_CSV}\n"
-            "Run the local CLI ETL and commit data/external/tsje_2018_department_results.csv."
+            "Expected as geo package data (geo/tsje_2018_department_results.csv)."
         )
     df = pd.read_csv(_TSJE_CSV)
     required = {"department_ascii", "abdo_anr_votes", "alegre_ganar_votes"}
