@@ -2472,7 +2472,7 @@ top_null_cols = null_pct[null_pct > 0].sort_values(ascending=False).head(5)
 
 report_md = f"""# Paraguay Presidential Campaign — Full EDA Report
 
-**Generated:** April 30, 2026
+**Generated:** June 14, 2026
 **Data Pipeline Version:** 1.0.0
 **Canonical run:** {FIGURE_RUN_ID} · model {FIGURE_MODEL_VERSION} (stamped on every figure for SSOT traceability)
 **Population Sample:** N = {len(pop):,} individuals
@@ -2804,7 +2804,7 @@ print("\n── Writing strategic_brief.md ──")
 
 strategic_brief = f"""# Paraguay Program Analytics — Strategic Brief
 **Portfolio reconstruction brief | Generated from pipeline artifacts**
-**Date:** April 30, 2026 | **Analyst:** Decision Analytics Reconstruction
+**Date:** June 14, 2026 | **Analyst:** Decision Analytics Reconstruction
 
 ---
 

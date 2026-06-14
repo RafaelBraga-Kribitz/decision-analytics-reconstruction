@@ -1,9 +1,9 @@
-run_id: df74d67c4256
-git_commit: df74d67c42561bea6163335f97361a53cb826f79
-generated_at: '2026-06-13'
+run_id: 2460cad62df2
+git_commit: 2460cad62df29ac7a389fac4a535ff9ecf13b5de
+generated_at: '2026-06-14'
 data_manifest: data/processed/model_run_manifest.json
 canonical_sample_size: 50000
-segmentation_label_hash: a4e1317f1514db89
+segmentation_label_hash: 9b6c375edb4b4273
 figures:
 - path: reports/eda/A10_pca_biplot.png
   generator: reports/eda/generate_eda.py
@@ -83,6 +83,9 @@ figures:
 - path: reports/eda/C4_house_effects_forest.png
   generator: reports/eda/generate_eda.py
   save_name: C4_house_effects_forest.png
+- path: reports/eda/C5B_scenario_adjusted_contacts.png
+  generator: reports/eda/generate_eda.py
+  save_name: C5B_scenario_adjusted_contacts.png
 - path: reports/eda/C5_mc_scenario_fan_chart.png
   generator: reports/eda/generate_eda.py
   save_name: C5_mc_scenario_fan_chart.png
