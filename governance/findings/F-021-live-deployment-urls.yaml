@@ -2,9 +2,9 @@ id: F-021
 title: "Public deployment badges point to non-live URLs"
 category: fake_completion
 kind: recurrence_invariant
-status: closed
+status: open
 opened_at: 2026-06-08
-closed_at: 2026-06-15
+closed_at: null
 recurrence_count: 1
 evidence: |
   README badges advertise Module A Streamlit, Module B FastAPI docs, and Module C
@@ -20,13 +20,20 @@ notes: |
   down means this finding has regressed — so it is reopened rather than left
   falsely closed.
 
-  Closed 2026-06-15: Manual verification confirms all three URLs are now live
-  and accessible:
+  Closure attempt 2026-06-15: Manual verification confirms all three URLs
+  are live and accessible:
   - Module A (Streamlit): https://decision-analytics-module-a.onrender.com
   - Module B (FastAPI): https://decision-analytics-module-b-production.up.railway.app/docs
   - Module C (Quarto): https://RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction/
 
-  Remote automation environment has network egress restrictions that prevent
-  automated script verification, but human verification (2026-06-15) confirms
-  all services are responding and deployed. Individual service issues noted by
-  maintainer will be addressed in follow-up work.
+  REGRESSED 2026-06-15: Closed finding regressed — Adversary verification
+  script still returns 403 for all URLs when run from remote automation
+  environment (network egress policy blocks these hosts). All URLs confirmed
+  accessible by maintainer when accessed directly.
+
+  **Blocker for durable closure:** Automated verification script cannot
+  verify from restricted network environments. Options:
+  1. Add hosts to network allowlist in automation environment
+  2. Adjust verification script to work around network policy
+  3. Use scheduled (cron) verification with different environment
+  4. Manually verify on each PR (not automated)
