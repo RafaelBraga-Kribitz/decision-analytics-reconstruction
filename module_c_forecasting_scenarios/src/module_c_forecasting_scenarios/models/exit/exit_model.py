@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import os
+from typing import Any, cast
 
+import arviz as az
 import numpy as np
 import pandas as pd
 import pymc as pm
@@ -12,6 +14,7 @@ import yaml
 from module_c_forecasting_scenarios.paths import module_config_dir
 
 MODEL_VERSION = "c_exit_bias_v0.1"
+HDI_PROB = 0.94  # minimum-width highest-density interval; matches tracking model
 
 
 def _exit_sampler_kwargs() -> dict:
@@ -72,12 +75,17 @@ def fit_exit_quickcount(
     rows = []
     for v in ("intercept", "beta_oea", "beta_eu", "sigma"):
         s = post[v].stack(sample=("chain", "draw"))
+        # Use minimum-width HDI (same as tracking model) — NOT 5th/95th quantiles.
+        # Prior bug: quantile(0.05/0.95) = 90% ETI stored under hdi_* names (F-074).
+        _hdi = cast(Any, az.hdi(s, hdi_prob=HDI_PROB))
+        if hasattr(_hdi, "data_vars"):  # Dataset → take its single data variable
+            _hdi = _hdi[next(iter(_hdi.data_vars))]
         rows.append(
             {
                 "parameter": v,
                 "posterior_mean": float(s.mean().values),
-                "hdi_low": float(s.quantile(0.05).values),
-                "hdi_high": float(s.quantile(0.95).values),
+                "hdi_low": float(_hdi.sel(hdi="lower").values),
+                "hdi_high": float(_hdi.sel(hdi="higher").values),
                 "calibration_series": calibration_series,
                 "model_version": MODEL_VERSION,
             }
