@@ -1,0 +1,36 @@
+id: F-074
+title: "exit_model.py: 90% ETI stored as hdi_low/hdi_high — partial regression of F-068"
+status: closed
+severity: high
+kind: recurrence_invariant
+category: statistical_integrity
+opened_at: 2026-06-15
+closed_at: 2026-06-15
+owner: remediator
+finding: >
+  F-068 fixed the 90%-ETI-mislabelled-as-94%-HDI defect in hierarchical.py (tracking
+  model) but left exit_model.py untouched. exit_model.py lines 79-80 used
+  s.quantile(0.05) / s.quantile(0.95) — a 90% equal-tailed interval — and stored the
+  results in columns named hdi_low / hdi_high. Chart C7 ("Exit Model Parameter Posteriors:
+  Mean ± 94% HDI") consumed these columns and titled itself "94% HDI", making the mislabel
+  visible to any reader. The four-chart adversarial audit (2026-06-15) surfaced this as
+  the only active code bug requiring a new finding.
+remediation: >
+  (1) Added 'import arviz as az', 'from typing import Any, cast', and HDI_PROB = 0.94
+  constant to exit_model.py.
+  (2) Replaced the quantile loop body with az.hdi(s, hdi_prob=HDI_PROB), following the
+  identical pattern as hierarchical.py _hdi_low_high(). The xarray Dataset guard
+  (hasattr(_hdi, "data_vars")) and .sel(hdi="lower"/"higher") indexing match the
+  tracking model exactly.
+  (3) Verification script scripts/check_exit_model_hdi.py gates closure: banned
+  expressions (quantile at 5th/95th percentile) absent, required expressions (az.hdi,
+  HDI_PROB) present.
+verification_script: scripts/check_exit_model_hdi.py
+artifacts:
+  - module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/models/exit/exit_model.py
+  - scripts/check_exit_model_hdi.py
+notes: >
+  C7 chart title ("94% HDI") is now correct by construction — the output parquet
+  hdi_low/hdi_high columns will contain genuine minimum-width 94% HDIs on next
+  Module C run. No chart regeneration needed to close this finding; the next full
+  pipeline run will produce corrected output. Cross-reference F-068 (tracking model fix).
