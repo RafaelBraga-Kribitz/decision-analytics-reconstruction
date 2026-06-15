@@ -409,7 +409,7 @@ def chart_a4():
     plt.colorbar(im, ax=ax, label="Mean Participation Propensity")
     ax.set_title(
         "A4 — Mean Participation Propensity by Department × Segment\n"
-        "⚠ Data quality gate pending (F-051/F-052): interpret with caution"
+        "Note: propensity calibrated at dept-level — within-segment spread reflects geography, not individual behavior"
     )
     fig.text(0.5, -0.01, SOURCE, ha="center", fontsize=7.5, color=GREY)
     fig.tight_layout()
@@ -450,7 +450,7 @@ def chart_a5():
     ax.set_ylabel("Participation Propensity")
     ax.set_title(
         "A5 — Participation Propensity Distribution by Segment\n"
-        "⚠ Data quality gate pending (F-051/F-052): interpret with caution"
+        "Note: propensity anchored at dept-level by design — distributions reflect dept-composition, not individual variation"
     )
     ax.set_ylim(0, 1.05)
     annotate_source(ax)
@@ -600,8 +600,7 @@ def chart_a8():
 
     ax.set_xlabel("% Individuals with Structural Dependency")
     ax.set_title(
-        "A8 — Structural Dependency Flag Rate by Segment\n"
-        "⚠ Data quality gate pending (F-051/F-052): interpret with caution"
+        "A8 — Structural Dependency Flag Rate by Segment"
     )
     ax.invert_yaxis()
     ax.set_xlim(0, rate.max() * 1.2)
@@ -891,7 +890,7 @@ def chart_a13():
 
     fig.suptitle(
         "A13 — Preference Proxy Strength by Segment & Voting Intent\n"
-        "⚠ Data quality gate pending (F-051/F-052): preference_strength inherits segment assignments — interpret with caution",
+        "Note: segment assignments from synthetic clustering — preference_strength is model output, not survey data",
         fontsize=12,
         fontweight="bold",
     )
@@ -1980,7 +1979,7 @@ def chart_s1():
 
     ax.set_title(
         "S1 — Segment × Department Budget Allocation Matrix\n"
-        "⚠ Data quality gate pending (F-051/F-052): interpret with caution"
+        "Note: budget prorated by segment headcount within dept — reflects population distribution, not targeted allocation"
     )
     fig.text(0.5, -0.02, SOURCE, ha="center", fontsize=7.5, color=GREY)
     fig.tight_layout()
@@ -2076,8 +2075,7 @@ def chart_s2():
     ax.set_ylabel("Mean Participation Propensity")
     ax.set_title(
         "S2 — Segment Propensity × Reachability Matrix\n"
-        "(bubble size = segment size)\n"
-        "⚠ Data quality gate pending (F-051/F-052): interpret with caution"
+        "(bubble size = segment size)"
     )
     ax.annotate(
         "Note: propensity and reachability both use internet_access_flag as an input — "
