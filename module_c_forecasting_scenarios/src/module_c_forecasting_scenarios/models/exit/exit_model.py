@@ -77,15 +77,16 @@ def fit_exit_quickcount(
         s = post[v].stack(sample=("chain", "draw"))
         # Use minimum-width HDI (same as tracking model) — NOT 5th/95th quantiles.
         # Prior bug: quantile(0.05/0.95) = 90% ETI stored under hdi_* names (F-074).
-        _hdi = cast(Any, az.hdi(s, hdi_prob=HDI_PROB))
-        if hasattr(_hdi, "data_vars"):  # Dataset → take its single data variable
-            _hdi = _hdi[next(iter(_hdi.data_vars))]
+        # Pass a flat ndarray: az.hdi on an xarray input requires {chain, draw}
+        # core dims, which the stack() above collapses into `sample`. The 1-D
+        # array form returns array([lower, higher]) and is version-robust.
+        _hdi = cast(Any, az.hdi(s.values, hdi_prob=HDI_PROB))
         rows.append(
             {
                 "parameter": v,
                 "posterior_mean": float(s.mean().values),
-                "hdi_low": float(_hdi.sel(hdi="lower").values),
-                "hdi_high": float(_hdi.sel(hdi="higher").values),
+                "hdi_low": float(_hdi[0]),
+                "hdi_high": float(_hdi[1]),
                 "calibration_series": calibration_series,
                 "model_version": MODEL_VERSION,
             }
