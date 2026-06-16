@@ -1,0 +1,23 @@
+# consumers.yaml — registry of projects that vendor this kit.
+#
+# Every entry here receives a `repository_dispatch: governance-update`
+# event on every release of governance-bootstrap (see
+# .github/workflows/fanout-update.yml). Each consumer's
+# sync-from-upstream.yml workflow listens for that event and opens a PR
+# titled "Governance kit sync: <ref>" against its own main branch.
+#
+# To register a project:
+#   1. Vendor the kit in the project (see CONSUMER_SETUP.md).
+#   2. Add the project's GH_REPO secret to this file.
+#   3. Open a PR against governance-bootstrap with the new entry.
+#
+# Schema:
+#   consumers:
+#     - repo:    "org-or-user/repo-name"   # required
+#       contact: "name <email>"            # optional, for outage triage
+#       notes:   "free-form context"       # optional
+
+consumers: []
+  # - repo: RafaelBraga-Kribitz/project-a
+  #   contact: rafaelbragakribitz@gmail.com
+  #   notes: "First pilot consumer."

@@ -1,0 +1,29 @@
+id: F-HARDCODED-VALUES
+title: "Magic values hardcoded in src/scripts/notebooks instead of config/"
+category: numeric_drift
+kind: recurrence_invariant
+status: open
+opened_at: "{PROJECT_START_DATE}"
+closed_at: null
+recurrence_count: 0
+evidence: |
+  scripts/check_hardcoded_values.py reports GAP — config/ directory missing
+  or non-trivial numeric/date literals found outside config/.
+  Run `make audit` to see the full list.
+verification_script: scripts/check_hardcoded_values.py
+notes: |
+  Closure approach:
+    1. Ensure config/global.yaml, modeling.yaml, business_rules.yaml,
+       visualization.yaml, and paths.yaml all exist with their values.
+    2. Ensure every value in those files has an entry in
+       config/parameter_registry.yaml (value + owner + rationale + history[]).
+    3. Replace every flagged hardcoded literal in src/scripts/notebooks
+       with a config reference (e.g., config["random_seed"]).
+    4. Run `python scripts/check_hardcoded_values.py`.
+       Expected: [PASS] check_hardcoded_values.py: F-HARDCODED-VALUES clean
+    5. Update status to closed, set closed_at.
+
+  Allowed literals (not flagged):
+    - 0, 1, -1, 2 (trivial)
+    - np.pi, math.e (mathematical constants)
+    - Values inside config/ or tests/ (SSOT declarations or fixtures)

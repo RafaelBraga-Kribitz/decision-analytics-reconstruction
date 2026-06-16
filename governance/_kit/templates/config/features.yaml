@@ -1,0 +1,15 @@
+# config/features.yaml — Level 5 SSOT: feature flags
+#
+# Every flag here must also appear in config/parameter_registry.yaml with
+# owner + rationale. Commented-out code is NOT a flag — file it as
+# category: feature_flag_drift in governance/findings/.
+#
+# A flag's lifecycle:
+#   1. Add here as `false` with a registry entry explaining the experiment.
+#   2. Reference in code via config["features"]["<name>"].
+#   3. When the experiment concludes, delete the flag from both files and
+#      delete the dead branch from code in the same PR.
+
+features:
+  # Example:
+  # use_graph_embeddings: false

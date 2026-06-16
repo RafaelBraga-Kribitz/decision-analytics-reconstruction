@@ -1,0 +1,27 @@
+# Pre-commit hooks for governance hygiene. Append to your project's existing
+# .pre-commit-config.yaml if one exists.
+
+repos:
+  - repo: local
+    hooks:
+      - id: governance-audit
+        name: governance audit (write AUDIT_STATE.json)
+        entry: python scripts/write_audit_state.py
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
+      - id: claude-md-guard
+        name: CLAUDE.md guard (anti-patterns)
+        entry: python scripts/check_claude_md.py
+        language: system
+        pass_filenames: false
+        files: ^CLAUDE\.md$
+
+      - id: charter-size
+        name: PROJECT_CHARTER.md size guard (≤200 lines)
+        entry: python scripts/check_charter_size.py
+        language: system
+        pass_filenames: false
+        files: ^PROJECT_CHARTER\.md$
