@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import sys
+import time
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
@@ -16,40 +17,33 @@ URLS = {
     "module_c_quarto": "https://RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction/",
 }
 
+_MAX_RETRIES = 3
+_BACKOFF_BASE = 2
+
+
+def _is_timeout(exc: URLError) -> bool:
+    reason = exc.reason.__class__.__name__
+    return reason == "ConnectTimeoutError" or "timeout" in str(exc.reason).lower()
+
 
 def _status(url: str) -> int | str:
-    """Check URL status with retry logic for free-tier service spinup.
-
-    Render free tier sleeps after 15 min idle; first request may timeout.
-    Retry up to 3 times with backoff to allow spinup.
-    """
-    import time
-
     req = Request(url, headers={"User-Agent": "decision-analytics-governance-check/1.0"})
-    max_retries = 3
-    backoff_base = 2
-
-    for attempt in range(max_retries):
+    for attempt in range(_MAX_RETRIES):
         try:
             with urlopen(req, timeout=15) as response:
                 return int(response.status)
         except HTTPError as exc:
             return int(exc.code)
         except URLError as exc:
-            reason = exc.reason.__class__.__name__
-            if reason == "ConnectTimeoutError" or "timeout" in str(exc.reason).lower():
-                if attempt < max_retries - 1:
-                    delay = backoff_base ** attempt
-                    time.sleep(delay)
-                    continue
-            return reason
+            if _is_timeout(exc) and attempt < _MAX_RETRIES - 1:
+                time.sleep(_BACKOFF_BASE**attempt)
+                continue
+            return exc.reason.__class__.__name__
         except TimeoutError:
-            if attempt < max_retries - 1:
-                delay = backoff_base ** attempt
-                time.sleep(delay)
+            if attempt < _MAX_RETRIES - 1:
+                time.sleep(_BACKOFF_BASE**attempt)
                 continue
             return "Timeout"
-
     return "Timeout"
 
 
