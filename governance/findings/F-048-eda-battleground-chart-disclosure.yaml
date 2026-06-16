@@ -4,8 +4,8 @@ category: fake_completion
 kind: recurrence_invariant
 status: closed
 opened_at: 2026-06-12
-closed_at: 2026-06-12
-recurrence_count: 0
+closed_at: 2026-06-16
+recurrence_count: 1
 evidence: |
   F-045 closed epistemic_boundaries.md + geo/heatmap.py labeling only.
   reports/eda/generate_eda.py chart_c3/chart_c8 titles read "Battleground
@@ -20,3 +20,8 @@ notes: |
   Triage: extends MASTERPLAN C-4 / F-045 without reopening F-045. Do not
   duplicate E-7 (S1 proration deferred). Add subtitle e.g. "Series A ·
   synthetic dept mapping (illustrative)" to C3, C8, S4 titles.
+
+  Regressed 2026-06-15, re-closed 2026-06-16: C3 chart title was missing
+  illustrative disclosure. Fixed by updating C3 title to use
+  ILLUSTRATIVE_BATTLE_SUB constant (already in use by C8 and S4).
+  Verification script now passes for all three charts.
