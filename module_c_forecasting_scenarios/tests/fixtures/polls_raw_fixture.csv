@@ -3,6 +3,10 @@ raw_capli_20180201,2018-02-01,Capli First Análisis,ABC Color,50.4,37.2,12.4,,tr
 raw_capli_20180301,2018-03-01,Capli,ABC Color,53.4,22.2,24.4,,false,ABC,tracking,semana pasada,false,false,false,,
 raw_ati_20180315,2018-03-15,Ati Snead,La Nacion,41.0,45.5,13.5,800,true,,tracking,,true,true,true,true,true
 raw_ica_20180318,2018-03-18,Taka Chase ICA,Ultima Hora,58.2,26.8,15.0,600,false,Vierci,tracking,,true,true,false,,
+raw_ecodat_20180326,2018-03-26,EcoDat,La Nacion,54.9,30.5,7.5,1412,true,Nación Media,tracking,finalizó el 23 de marzo,true,true,false,true,true
+raw_capli_20180406,2018-04-06,First Análisis y Estudios,ABC Color,54.9,28.6,,,false,ABC,tracking,,false,false,false,true,true
+raw_grau_20180410,2018-04-10,Grau & Asociados,Ultima Hora,55.7,31.4,10.0,1500,true,Vierci,tracking,entre el 27 de marzo y el 8 de abril,true,true,false,true,true
+raw_ati_20180418,2018-04-18,Ati Snead,Radio Ñandutí,41.7,46.2,,1500,true,,tracking,entre el 15 y 18 de abril,true,true,false,true,true
 raw_exit_20180422,2018-04-22,Consortium Exit,TV,65.0,32.0,3.0,1200,true,,exit,,true,true,true,false,false
 raw_exit_20180422b,2018-04-22,Exit Poll B,TV,62.0,35.0,3.0,900,true,,exit,,true,true,true,true,true
 raw_exit_20180421,2018-04-21,Exit Poll C,Radio,58.0,38.0,4.0,700,false,,exit,,false,true,false,false,false

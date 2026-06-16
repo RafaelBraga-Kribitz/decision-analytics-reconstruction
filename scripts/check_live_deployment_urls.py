@@ -18,16 +18,39 @@ URLS = {
 
 
 def _status(url: str) -> int | str:
+    """Check URL status with retry logic for free-tier service spinup.
+
+    Render free tier sleeps after 15 min idle; first request may timeout.
+    Retry up to 3 times with backoff to allow spinup.
+    """
+    import time
+
     req = Request(url, headers={"User-Agent": "decision-analytics-governance-check/1.0"})
-    try:
-        with urlopen(req, timeout=15) as response:
-            return int(response.status)
-    except HTTPError as exc:
-        return int(exc.code)
-    except URLError as exc:
-        return exc.reason.__class__.__name__
-    except TimeoutError:
-        return "Timeout"
+    max_retries = 3
+    backoff_base = 2
+
+    for attempt in range(max_retries):
+        try:
+            with urlopen(req, timeout=15) as response:
+                return int(response.status)
+        except HTTPError as exc:
+            return int(exc.code)
+        except URLError as exc:
+            reason = exc.reason.__class__.__name__
+            if reason == "ConnectTimeoutError" or "timeout" in str(exc.reason).lower():
+                if attempt < max_retries - 1:
+                    delay = backoff_base ** attempt
+                    time.sleep(delay)
+                    continue
+            return reason
+        except TimeoutError:
+            if attempt < max_retries - 1:
+                delay = backoff_base ** attempt
+                time.sleep(delay)
+                continue
+            return "Timeout"
+
+    return "Timeout"
 
 
 def main() -> int:
