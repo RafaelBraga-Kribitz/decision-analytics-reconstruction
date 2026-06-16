@@ -64,7 +64,7 @@ def generate_ppc_plot(
     ax.set_ylabel("Margin (percentage points, A − B)", fontsize=11)
     ax.set_title(
         "Posterior Predictive Check — tracking model vs. observed polls\n"
-        "(Series A · Paraguay 2018 reconstruction · n=4 waves)",
+        f"(Series A · Paraguay 2018 reconstruction · n={len(ordered)} waves)",
         fontsize=12,
     )
     ax.axhline(0, color="#888", linewidth=0.8, linestyle=":")
