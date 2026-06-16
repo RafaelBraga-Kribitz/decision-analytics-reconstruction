@@ -17,7 +17,7 @@ from pydantic import ValidationError
 
 from scripts.doc_registry_schema import parse_registry_payload
 
-# Vendored subtrees — not project documentation; excluded from registry sync.
+# Vendored subtrees managed by git subtree — excluded from registry tracking.
 _VENDOR_PREFIXES = ("governance/_kit/",)
 
 REGISTRY_YAML = ROOT / "docs/registry/docs_registry.yaml"
