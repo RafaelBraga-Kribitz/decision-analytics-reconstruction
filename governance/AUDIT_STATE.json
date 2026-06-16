@@ -101,12 +101,12 @@
     },
     {
       "category": "fake_completion",
-      "closed_at": null,
+      "closed_at": "2026-06-15",
       "id": "F-021",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-08",
       "path": "governance/findings/F-021-live-deployment-urls.yaml",
-      "status": "open",
+      "status": "closed",
       "title": "Public deployment badges point to non-live URLs",
       "verification_script": "scripts/check_live_deployment_urls.py"
     },
@@ -582,24 +582,33 @@
       "status": "closed",
       "title": "Canonical figure regen: retire deploy screenshots, re-sync EDA narrative to real TSJE model",
       "verification_script": "scripts/check_canonical_figure_regen.py"
+    },
+    {
+      "category": "statistical_integrity",
+      "closed_at": "2026-06-15",
+      "id": "F-074",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-15",
+      "path": "governance/findings/F-074-exit-model-hdi-mislabel.yaml",
+      "status": "closed",
+      "title": "exit_model.py: 90% ETI stored as hdi_low/hdi_high \u2014 partial regression of F-068",
+      "verification_script": "scripts/check_exit_model_hdi.py"
     }
   ],
-  "generated_at": "2026-06-14T21:09:13.052585+00:00",
-  "git_branch": "main",
-  "git_head_sha": "8b44c9cbb0e1c4571881921dd3963a6bfff73906",
+  "generated_at": "2026-06-15T23:03:28.561951+00:00",
+  "git_branch": "claude/amazing-thompson-8wq4ey",
+  "git_head_sha": "f753af86770a29bef30739ead39546db596c687e",
   "migrations": [],
   "summary": {
-    "findings_closed": 50,
+    "findings_closed": 52,
     "findings_closed_historical": 2,
     "findings_in_progress": 0,
-    "findings_open": 1,
-    "findings_total": 53,
+    "findings_open": 0,
+    "findings_total": 54,
     "findings_wont_fix": 0,
     "migrations_in_progress": 0,
     "migrations_total": 0,
-    "open_by_category": {
-      "fake_completion": 1
-    }
+    "open_by_category": {}
   },
   "validation_errors": [],
   "writer": "scripts/write_audit_state.py"
