@@ -89,6 +89,7 @@ extend-exclude = [
     "reports",
     "graphify-out",
     "*.ipynb",
+    "governance/_kit",
 ]
 
 [tool.ruff.lint]
