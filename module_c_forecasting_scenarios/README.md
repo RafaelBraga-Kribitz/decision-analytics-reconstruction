@@ -9,7 +9,7 @@ Bayesian hierarchical aggregation of noisy, structurally biased survey measureme
 
 ### 1. Tracking (hierarchical)
 
-Daily latent preference margin via Gaussian random walk + pollster-specific house effects (4 polling firms):
+Daily latent preference margin via Gaussian random walk + pollster-specific house effects (5 polling firms):
 
 ```
 mu_margin[t]   ~ GaussianRandomWalk(sigma=sigma_rw)
