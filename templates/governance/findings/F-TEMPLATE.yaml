@@ -1,0 +1,17 @@
+id: F-NNN                          # required; replace NNN with 3-digit zero-padded number
+title: "human-readable summary"     # required; ≤80 chars; what is wrong
+category: <category-slug>           # required; e.g., documentation_entropy, fake_completion
+kind: recurrence_invariant          # one of: recurrence_invariant | historical_change | migration | deprecation
+status: open                        # one of: open | in_progress | closed | closed_historical | wont_fix
+opened_at: 2026-01-01               # required; ISO date
+closed_at: null                     # ISO date once closed
+recurrence_count: 0                 # how many prior cycles re-found this
+evidence: |
+  Concrete artifact citations:
+    file:line — what the claim is
+    file:line — why it's wrong
+  Be specific. Banned: vague "the docs say X" without a path.
+verification_script: tests/governance/test_fnnn_short_name.py | scripts/check_xxx.py | null
+notes: |
+  Free-text. Use to capture the closure approach, the script's logic, or
+  links to related findings/ADRs. Safe to grow.

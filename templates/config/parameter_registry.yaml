@@ -1,0 +1,154 @@
+# config/parameter_registry.yaml — authoritative registry of every named constant
+#
+# Rules:
+#   1. Every entry in any other config/*.yaml must have a matching entry here.
+#   2. Each entry declares: value, source_file, owner, rationale.
+#   3. Changes to value require updating both the source_file AND this registry.
+#   4. Rationale must answer WHY this value, not just WHAT it is.
+#   5. history[] is append-only — never delete past entries.
+#
+# Violation of these rules is category: numeric_drift in governance/findings/.
+
+parameter_registry:
+
+  random_seed:
+    value: 42
+    source_file: "config/global.yaml"
+    owner: "Data Science"
+    rationale: "Reproducibility — all stochastic operations use one seed."
+    history:
+      - date: "{PROJECT_START_DATE}"
+        changed_by: "{PROJECT_OWNER}"
+        old_value: null
+        new_value: 42
+        reason: "Initial project setup."
+
+  # ── Modeling ──────────────────────────────────────────────────────────────
+
+  train_test_split.test_size:
+    value: 0.2
+    source_file: "config/modeling.yaml"
+    owner: "Data Science"
+    rationale: "80/20 split; project dataset size justifies 20% holdout."
+    history:
+      - date: "{PROJECT_START_DATE}"
+        changed_by: "{PROJECT_OWNER}"
+        old_value: null
+        new_value: 0.2
+        reason: "Initial project setup."
+
+  significance_level:
+    value: 0.05
+    source_file: "config/modeling.yaml"
+    owner: "Data Science"
+    rationale: "Standard alpha for hypothesis tests in this domain."
+    history:
+      - date: "{PROJECT_START_DATE}"
+        changed_by: "{PROJECT_OWNER}"
+        old_value: null
+        new_value: 0.05
+        reason: "Initial project setup."
+
+  # ── Business Rules ────────────────────────────────────────────────────────
+  # Add entries here when business_rules.yaml gains values.
+  # Example:
+  #
+  # active_customer_days:
+  #   value: 90
+  #   source_file: "config/business_rules.yaml"
+  #   owner: "Marketing"
+  #   rationale: "Customer is active if purchased in the last 90 days. Agreed with Marketing 2024-Q1."
+  #   history:
+  #     - date: "2024-01-15"
+  #       changed_by: "{PROJECT_OWNER}"
+  #       old_value: null
+  #       new_value: 90
+  #       reason: "Initial definition from Marketing stakeholder meeting."
+
+  # ── Visualization ─────────────────────────────────────────────────────────
+
+  figure.width:
+    value: 10
+    source_file: "config/visualization.yaml"
+    owner: "Data Science"
+    rationale: "Standard width for report-ready figures."
+    history:
+      - date: "{PROJECT_START_DATE}"
+        changed_by: "{PROJECT_OWNER}"
+        old_value: null
+        new_value: 10
+        reason: "Initial project setup."
+
+  # ── Code Quality Gates ────────────────────────────────────────────────────
+
+  quality_gates.coverage.min_lines:
+    value: 80
+    source_file: "config/quality_gates.yaml"
+    owner: "Engineering"
+    rationale: "Minimum line coverage % before CI fails. Below 80% indicates undertested code paths."
+    history:
+      - date: "{PROJECT_START_DATE}"
+        changed_by: "{PROJECT_OWNER}"
+        old_value: null
+        new_value: 80
+        reason: "Initial project setup."
+
+  quality_gates.coverage.min_branches:
+    value: 80
+    source_file: "config/quality_gates.yaml"
+    owner: "Engineering"
+    rationale: "Minimum branch coverage %. Branch coverage catches conditional logic gaps that line coverage misses."
+    history:
+      - date: "{PROJECT_START_DATE}"
+        changed_by: "{PROJECT_OWNER}"
+        old_value: null
+        new_value: 80
+        reason: "Initial project setup."
+
+  quality_gates.complexity.max_per_function:
+    value: 6
+    source_file: "config/quality_gates.yaml"
+    owner: "Engineering"
+    rationale: "Uncle Bob recommends cyclomatic complexity ≤ 7. 6 gives one unit of headroom before the gate fires."
+    history:
+      - date: "{PROJECT_START_DATE}"
+        changed_by: "{PROJECT_OWNER}"
+        old_value: null
+        new_value: 6
+        reason: "Initial project setup."
+
+  quality_gates.module_size.max_file_lines:
+    value: 250
+    source_file: "config/quality_gates.yaml"
+    owner: "Engineering"
+    rationale: "Files over 250 lines typically violate Single Responsibility Principle and become hard to navigate."
+    history:
+      - date: "{PROJECT_START_DATE}"
+        changed_by: "{PROJECT_OWNER}"
+        old_value: null
+        new_value: 250
+        reason: "Initial project setup."
+
+  quality_gates.module_size.max_function_lines:
+    value: 40
+    source_file: "config/quality_gates.yaml"
+    owner: "Engineering"
+    rationale: "Functions over 40 lines are hard to unit-test and usually contain hidden sub-responsibilities."
+    history:
+      - date: "{PROJECT_START_DATE}"
+        changed_by: "{PROJECT_OWNER}"
+        old_value: null
+        new_value: 40
+        reason: "Initial project setup."
+
+  quality_gates.crap.max_score:
+    value: 30
+    source_file: "config/quality_gates.yaml"
+    owner: "Engineering"
+    rationale: "CRAP > 30 signals a function that is both complex and undertested — the highest change-risk class."
+    history:
+      - date: "{PROJECT_START_DATE}"
+        changed_by: "{PROJECT_OWNER}"
+        old_value: null
+        new_value: 30
+        reason: "Initial project setup."

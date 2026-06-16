@@ -1,0 +1,56 @@
+name: Governance
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # Steward-equivalent: regenerate state, fail on validation errors.
+  governance-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: pip install pyyaml pytest
+      - name: make audit
+        run: make audit
+
+  # Adversary: re-verify every closed finding's verification_script on a clean
+  # checkout. A closed finding that regresses fails the PR.
+  adversary:
+    runs-on: ubuntu-latest
+    needs: governance-audit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: pip install pyyaml pytest
+      - name: Re-verify closed findings
+        run: python scripts/check_closed_findings.py
+
+  code-quality:
+    runs-on: ubuntu-latest
+    needs: governance-audit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install deps
+        run: pip install pyyaml radon coverage import-linter
+      - name: Run quality gates
+        # Scripts print [SKIP] and exit 0 when tools or coverage data are unavailable.
+        # CI stays green for greenfield projects until findings are closed.
+        run: |
+          python scripts/check_test_coverage.py
+          python scripts/check_complexity.py
+          python scripts/check_module_sizes.py
+          python scripts/check_dependency_structure.py
+          python scripts/check_crap_score.py

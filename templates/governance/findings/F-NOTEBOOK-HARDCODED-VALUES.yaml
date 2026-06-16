@@ -1,0 +1,28 @@
+id: F-NOTEBOOK-HARDCODED-VALUES
+title: "Magic values hardcoded inside Jupyter notebook code cells"
+category: notebook_drift
+kind: recurrence_invariant
+status: open
+opened_at: "{PROJECT_START_DATE}"
+closed_at: null
+recurrence_count: 0
+evidence: |
+  scripts/check_notebook_values.py reports GAP — at least one *.ipynb code
+  cell contains a non-trivial numeric/date literal in an assignment,
+  comparison, call argument, or default parameter.
+  Run `make audit` to see the full list.
+verification_script: scripts/check_notebook_values.py
+notes: |
+  Notebooks are the most common SSOT escape hatch — analysts paste random
+  seeds, thresholds, and date filters directly into cells, then those values
+  diverge from the canonical config over time.
+
+  Closure approach:
+    1. For each flagged cell, move the literal into config/*.yaml and
+       register it in config/parameter_registry.yaml.
+    2. Replace the literal in the cell with a config reference.
+    3. Mark exploratory cells with metadata tag 'exploratory' or 'scratch'
+       to exempt them (use sparingly; the scanner skips them).
+    4. Run `python scripts/check_notebook_values.py`.
+       Expected: [PASS].
+    5. Update status to closed, set closed_at.

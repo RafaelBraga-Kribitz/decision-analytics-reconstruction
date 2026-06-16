@@ -1,0 +1,35 @@
+id: F-CRAP-SCORE
+title: "Function CRAP score (C²·(1−COV)³+C) exceeds project threshold"
+category: crap_violation
+kind: recurrence_invariant
+status: open
+opened_at: "{PROJECT_START_DATE}"
+closed_at: null
+recurrence_count: 0
+evidence: |
+  scripts/check_crap_score.py reports GAP — one or more functions have a
+  CRAP score above quality_gates.crap.max_score in config/quality_gates.yaml.
+  High CRAP = high complexity + low test coverage = highest change risk.
+  Run `make audit` to see violating functions.
+verification_script: scripts/check_crap_score.py
+notes: |
+  Closure approach:
+    1. Run `python scripts/check_crap_score.py` to list worst-scoring functions.
+    2. Address by either:
+       a. Adding tests to raise coverage (lowers CRAP dramatically), or
+       b. Refactoring to lower cyclomatic complexity, or
+       c. Both.
+    3. Run `python scripts/check_crap_score.py`.
+       Expected: [PASS] check_crap_score.py: F-CRAP-SCORE clean
+    4. Update status to closed, set closed_at.
+
+  Formula: CRAP(F) = C² × (1 − COV)³ + C
+  A function with complexity 10 and 0% coverage scores CRAP = 1010.
+  The same function at 90% coverage scores CRAP = 10.1.
+  Requires: pip install radon coverage && pytest --cov
+
+  Mid-flight: run `make baseline` to see the top-10 worst scores.
+  Set max_score at or above the current worst to get CI green immediately,
+  then ratchet downward one PR at a time.
+
+  If this project has no Python src: set status: wont_fix.

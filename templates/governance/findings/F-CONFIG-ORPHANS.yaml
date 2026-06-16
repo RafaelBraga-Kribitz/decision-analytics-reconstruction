@@ -1,0 +1,28 @@
+id: F-CONFIG-ORPHANS
+title: "config/*.yaml contains keys that no code path references"
+category: registry_incomplete
+kind: recurrence_invariant
+status: open
+opened_at: "{PROJECT_START_DATE}"
+closed_at: null
+recurrence_count: 0
+evidence: |
+  scripts/check_config_orphans.py reports GAP — at least one leaf key in
+  config/*.yaml is never referenced from src/, app/, scripts/, notebooks/,
+  sql/, queries/, or models/.
+  Run `make audit` to see the full list.
+verification_script: scripts/check_config_orphans.py
+notes: |
+  Orphan keys are dead artifacts — they accumulate from copy-paste, deleted
+  features, and renames. They confuse readers (which value is "the real one"?)
+  and silently poison the registry's signal-to-noise ratio.
+
+  Closure approach:
+    1. For each orphan, either:
+       a. Wire it up — replace the corresponding hardcoded literal in code
+          with a config reference; or
+       b. Delete it from config/*.yaml AND parameter_registry.yaml AND
+          record the removal in the registry history of the parent block.
+    2. Run `python scripts/check_config_orphans.py`.
+       Expected: [PASS].
+    3. Update status to closed, set closed_at.

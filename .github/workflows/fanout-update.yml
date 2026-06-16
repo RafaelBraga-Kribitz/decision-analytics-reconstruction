@@ -1,0 +1,81 @@
+name: Fanout governance update
+
+# Triggers a `repository_dispatch: governance-update` to every project
+# listed in consumers.yaml whenever a new release tag is pushed (or via
+# manual dispatch). Each consumer's sync-from-upstream.yml picks up the
+# event and opens a sync PR against its own main branch.
+
+on:
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Tag or SHA to broadcast (defaults to the triggering ref)'
+        required: false
+        default: ''
+
+jobs:
+  fanout:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install deps
+        run: pip install pyyaml
+
+      - name: Resolve ref
+        id: ref
+        run: |
+          if [ -n "${{ inputs.ref }}" ]; then
+            echo "ref=${{ inputs.ref }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=${GITHUB_REF_NAME}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Dispatch to consumers
+        env:
+          GH_TOKEN: ${{ secrets.GOV_SYNC_TOKEN }}
+          REF: ${{ steps.ref.outputs.ref }}
+          FROM_REPO: ${{ github.repository }}
+        run: |
+          python - <<'PY'
+          import os, subprocess, sys, yaml
+
+          with open("consumers.yaml") as f:
+              data = yaml.safe_load(f) or {}
+          consumers = data.get("consumers") or []
+          ref = os.environ["REF"]
+          from_repo = os.environ["FROM_REPO"]
+
+          if not consumers:
+              print("consumers.yaml is empty — nothing to dispatch")
+              sys.exit(0)
+
+          failures = []
+          for c in consumers:
+              repo = c.get("repo")
+              if not repo:
+                  continue
+              print(f"→ dispatching {ref} to {repo}")
+              r = subprocess.run([
+                  "gh", "api", "--method", "POST",
+                  f"repos/{repo}/dispatches",
+                  "-f", "event_type=governance-update",
+                  "-f", f"client_payload[ref]={ref}",
+                  "-f", f"client_payload[from]={from_repo}",
+              ])
+              if r.returncode != 0:
+                  failures.append(repo)
+
+          if failures:
+              print(f"FAILED to dispatch to: {failures}", file=sys.stderr)
+              sys.exit(1)
+          print(f"✓ dispatched {ref} to {len(consumers)} consumer(s)")
+          PY

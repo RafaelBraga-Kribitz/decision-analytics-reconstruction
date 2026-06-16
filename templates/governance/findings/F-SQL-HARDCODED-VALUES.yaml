@@ -1,0 +1,30 @@
+id: F-SQL-HARDCODED-VALUES
+title: "Magic values hardcoded in SQL queries instead of templated from config"
+category: sql_drift
+kind: recurrence_invariant
+status: open
+opened_at: "{PROJECT_START_DATE}"
+closed_at: null
+recurrence_count: 0
+evidence: |
+  scripts/check_sql_values.py reports GAP — at least one *.sql or *.sql.j2
+  file contains an integer >=10, a 'YYYY-MM-DD' date literal, or an INTERVAL
+  expression outside of LIMIT/OFFSET/FETCH and comments.
+  Run `make audit` to see the full list.
+verification_script: scripts/check_sql_values.py
+notes: |
+  SQL is the canonical Level 3 example: business-rule constants
+  ("active_customer_days = 90") leak into WHERE clauses, then drift from
+  the registry as engineers tune queries.
+
+  Closure approach:
+    1. For each flagged literal, add the value to config/business_rules.yaml
+       (or appropriate config file) and register it in parameter_registry.yaml.
+    2. Convert the SQL to a Jinja template (*.sql.j2) that receives the value
+       as a template variable injected from config.
+    3. Run `python scripts/check_sql_values.py`.
+       Expected: [PASS].
+    4. Update status to closed, set closed_at.
+
+  Allowlisted: LIMIT / OFFSET / FETCH FIRST integers (pagination), and
+  anything inside -- line or /* block */ comments.
