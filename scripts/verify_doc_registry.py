@@ -17,6 +17,9 @@ from pydantic import ValidationError
 
 from scripts.doc_registry_schema import parse_registry_payload
 
+# Vendored subtrees — not project documentation; excluded from registry sync.
+_VENDOR_PREFIXES = ("governance/_kit/",)
+
 REGISTRY_YAML = ROOT / "docs/registry/docs_registry.yaml"
 TAXONOMY = ROOT / "docs/registry/taxonomy.yaml"
 LIFE = ROOT / "docs/registry/lifecycle.yaml"
@@ -344,7 +347,7 @@ def main() -> int:
     taxonomy = taxonomy_or_err
 
     documents: list[dict[str, Any]] = modeled.model_dump(mode="python")["documents"]
-    tracked = git_tracked_md()
+    tracked = {p for p in git_tracked_md() if not any(p.startswith(vp) for vp in _VENDOR_PREFIXES)}
     registry_paths = {str(d["path"]) for d in documents}
 
     problems: list[str] = []
