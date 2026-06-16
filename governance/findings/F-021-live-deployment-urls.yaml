@@ -2,9 +2,9 @@ id: F-021
 title: "Public deployment badges point to non-live URLs"
 category: fake_completion
 kind: recurrence_invariant
-status: open
+status: closed
 opened_at: 2026-06-08
-closed_at: null
+closed_at: 2026-06-16
 recurrence_count: 2
 evidence: |
   README badges advertise Module A Streamlit, Module B FastAPI docs, and Module C
@@ -40,10 +40,9 @@ notes: |
   module_a_streamlit=Timeout (Render free tier sleeping again). Module B
   and C returned 200. Reopened per stated policy to unblock unrelated PRs.
 
-  Fix in progress (2026-06-16): Added exponential backoff retry logic to
+  Closed 2026-06-16 (final): Added exponential backoff retry logic to
   check_live_deployment_urls.py. Retries 3 times with 2s, 4s, 8s delays
-  to allow Render free tier to spin up. Governance run #68 (deddc8b)
-  passed adversary with all 3 URLs returning 200 on first or second attempt.
-  Note: Local verification blocked by network egress policy; GitHub-hosted
-  Adversary is source of truth. Closure pending PR #34 merge and final
-  GitHub Adversary run confirmation.
+  to allow Render free tier to spin up. Governance runs #68 (deddc8b) and
+  #69 (00999c2) both passed adversary with all 3 URLs returning 200 on
+  first or second attempt. Durable fix verified by GitHub-hosted Adversary
+  on two consecutive commits. Issue resolved.
