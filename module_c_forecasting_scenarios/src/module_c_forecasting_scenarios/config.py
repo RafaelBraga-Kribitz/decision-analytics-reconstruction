@@ -16,7 +16,7 @@ import yaml
 from module_c_forecasting_scenarios.paths import module_config_dir
 
 
-def load_sampler_config() -> dict[str, Any]:
+def load_sampler_config() -> dict[str, Any]:  # Any: yaml.safe_load returns untyped structures
     """Load and return the pymc_sampler.yaml config dict.
 
     Returns:
