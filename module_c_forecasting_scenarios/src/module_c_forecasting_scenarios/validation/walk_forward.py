@@ -36,12 +36,13 @@ import pandas as pd
 
 from module_c_forecasting_scenarios.models.tracking.hierarchical import (
     _build_day_index,  # pyright: ignore[reportPrivateUsage]
+    _load_sampler_config,  # pyright: ignore[reportPrivateUsage]
     fit_tracking_hierarchical,
     observation_sigma,
 )
 
 _EPS = 1e-6
-_PREDICTIVE_SEED = 20180422
+_PREDICTIVE_SEED = int(_load_sampler_config().get("predictive_seed", 20180422))
 
 
 @dataclass(frozen=True)

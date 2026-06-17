@@ -17,19 +17,24 @@ from module_c_forecasting_scenarios.paths import module_config_dir
 
 # v0.3: honest 94% HDI bands (az.hdi); v0.2 stored 5/95 quantiles under hdi names.
 MODEL_VERSION = "c_tracking_hierarchical_v0.3"
+INTERVAL_TYPE = "HDI"
+
+
+def _load_sampler_config() -> dict[str, Any]:
+    path = module_config_dir() / "pymc_sampler.yaml"
+    with open(path) as f:
+        return yaml.safe_load(f)
+
 
 # Probability mass of the credible interval stored in the ``*_hdi_*`` columns and
 # labelled "94% HDI" on every figure. The bounds are a genuine highest-density
 # interval (az.hdi), not 5/95 equal-tailed quantiles (the prior, mislabelled
-# behaviour). Keep this in sync with the "94% HDI" titles in reports/eda.
-HDI_PROB = 0.94
-INTERVAL_TYPE = "HDI"
+# behaviour). Loaded from pymc_sampler.yaml for centralized control.
+HDI_PROB = float(_load_sampler_config().get("hdi_prob", 0.94))
 
 
 def _sampler_kwargs() -> dict[str, Any]:
-    path = module_config_dir() / "pymc_sampler.yaml"
-    with open(path) as f:
-        cfg = yaml.safe_load(f)
+    cfg = _load_sampler_config()
     if os.environ.get("MC_FAST"):
         return {
             "chains": 2,

@@ -1,0 +1,281 @@
+"""Parameter Registry — governance layer for centralized parameter control.
+
+This file documents ownership, rationale, and source-of-truth locations for every
+externalized parameter across Modules A, B, C. Each entry links to the corresponding
+config file and YAML key.
+
+Philosophy:
+- Values live in config/ YAML files (scoped by module/concern)
+- This registry documents OWNERSHIP and CHANGE JUSTIFICATION
+- Changes to any parameter must update both this registry and the config file
+- Owner is responsible for validation and cross-module impact assessment
+
+Status legend:
+- [VERIFIED]: Outcome anchor from official TSJE/DGEEC records
+- [MEASURED]: Computed from data (e.g., hand-drawn samples, pilot studies)
+- [CALIBRATED]: Tuned on synthetic test data to meet design targets
+- [NOMINAL]: Placeholder for development; not production-ready
+"""
+
+# ==============================================================================
+# MODULE C: Forecasting & Scenarios — pymc_sampler.yaml
+# ==============================================================================
+
+module_c_pymc_sampler:
+
+  hdi_prob:
+    value: 0.94
+    source_file: module_c_forecasting_scenarios/config/pymc_sampler.yaml
+    owner: "Data Science"
+    status: "[NOMINAL]"
+    rationale: |
+      Highest-density interval probability used across tracking, exit, and
+      geo models for posterior credible intervals. Set to 94% as a balance
+      between informativeness and plausible range for noisy polling data.
+      Used by: hierarchical.py, exit_model.py, geo/heatmap.py
+
+  predictive_seed:
+    value: 20180422
+    source_file: module_c_forecasting_scenarios/config/pymc_sampler.yaml
+    owner: "Data Science"
+    status: "[VERIFIED]"
+    rationale: |
+      Election outcome date (YYYYMMDD) — Paraguay 2018. Used as RNG seed
+      for walk-forward posterior-predictive sampling to ensure reproducibility
+      across reruns of validation.py. Immutable as historical anchor.
+      Used by: validation/walk_forward.py
+
+  chains:
+    value: 4
+    source_file: module_c_forecasting_scenarios/config/pymc_sampler.yaml
+    owner: "Data Science"
+    status: "[CALIBRATED]"
+    rationale: |
+      MCMC chain count. 4 chains × 1000 draws = 4000 posterior samples.
+      Sufficient for ESS > 200 on this sparse fixture (8 tracking waves).
+
+  draws:
+    value: 1000
+    source_file: module_c_forecasting_scenarios/config/pymc_sampler.yaml
+    owner: "Data Science"
+    status: "[CALIBRATED]"
+    rationale: |
+      Draws per MCMC chain. Target ESS bulk ≈ 100 on sparse data.
+
+  tune:
+    value: 1000
+    source_file: module_c_forecasting_scenarios/config/pymc_sampler.yaml
+    owner: "Data Science"
+    status: "[CALIBRATED]"
+    rationale: |
+      Tuning steps (warmup) for adaptation phase.
+
+  target_accept:
+    value: 0.95
+    source_file: module_c_forecasting_scenarios/config/pymc_sampler.yaml
+    owner: "Data Science"
+    status: "[NOMINAL]"
+    rationale: |
+      NUTS sampler target acceptance rate. Higher values (0.95) reduce
+      divergences at cost of slower sampling.
+
+  max_treedepth:
+    value: 15
+    source_file: module_c_forecasting_scenarios/config/pymc_sampler.yaml
+    owner: "Data Science"
+    status: "[NOMINAL]"
+    rationale: |
+      Max tree depth for NUTS doubling scheme. 15 allows very complex
+      integrations; current runs hit 0 max-depth warnings (OK).
+
+  draws_fast:
+    value: 50
+    source_file: module_c_forecasting_scenarios/config/pymc_sampler.yaml
+    owner: "Data Science"
+    status: "[NOMINAL]"
+    rationale: |
+      Fast-path draws when MC_FAST=1 env var is set (CI smoke tests).
+      50 draws × 2 chains = 100 samples; sufficient for syntax check.
+
+  tune_fast:
+    value: 50
+    source_file: module_c_forecasting_scenarios/config/pymc_sampler.yaml
+    owner: "Data Science"
+    status: "[NOMINAL]"
+    rationale: |
+      Fast-path tuning steps.
+
+# ==============================================================================
+# MODULE B: Resource Allocation — budget_envelope.yaml
+# ==============================================================================
+
+module_b_budget:
+
+  total_envelope_usd:
+    value: 6000000.0
+    source_file: module_b_resource_allocation/config/budget_envelope.yaml
+    owner: "Finance"
+    status: "[NOMINAL]"
+    rationale: |
+      Reconstruction budget (USD). Real 2018 ANR budget was ~USD 44M;
+      this $6M scale matches synthetic population reach-cap calibration.
+      To model full-scale replication, multiply reach_caps by 7.3×.
+      Used by: constants.py CAMPAIGN_BUDGET_USD
+
+  tolerance_pct:
+    value: 0.005
+    source_file: module_b_resource_allocation/config/budget_envelope.yaml
+    owner: "Finance"
+    status: "[NOMINAL]"
+    rationale: |
+      Budget envelope tolerance (0.5%). Allocation must stay within
+      $6M ± 0.5% (±$30,000).
+
+  coverage_lower_bound_pct:
+    value: 0.80
+    source_file: module_b_resource_allocation/config/budget_envelope.yaml
+    owner: "Strategy"
+    status: "[NOMINAL]"
+    rationale: |
+      Minimum national reach floor (80% population). Solver enforces
+      at least 80% of eligible population must be reachable via allocated channels.
+
+  bcp_corridor_max_pct:
+    value: 0.10
+    source_file: module_b_resource_allocation/config/budget_envelope.yaml
+    owner: "Strategy"
+    status: "[NOMINAL]"
+    rationale: |
+      BCP (Paraguay Central Bank) corridor spending limit (10%). High-touch
+      field campaigns restricted to ≤10% of spend to maintain broad reach.
+
+  fx_band_max_pct_vs_bcp:
+    value: 0.005
+    source_file: module_b_resource_allocation/config/budget_envelope.yaml
+    owner: "Finance"
+    status: "[NOMINAL]"
+    rationale: |
+      FX deviation band vs BCP reference rate (0.5%). Avoid currency
+      arbitrage; keep actual rate within ±0.5% of official BCP rate.
+
+# ==============================================================================
+# MODULE A: Population Segmentation — model_params.yaml
+# ==============================================================================
+
+module_a_pca:
+
+  n_components:
+    value: 5
+    source_file: module_a_population_segmentation/config/model_params.yaml
+    owner: "Data Science"
+    status: "[CALIBRATED]"
+    rationale: |
+      PCA dimensionality reduction from 13 features → 5 components.
+      Captures dominant variance; makes DBSCAN eps and silhouette
+      thresholds interpretable in reduced space. Empirically stable.
+      Used by: pipeline/models/segmentation.py _matrix()
+
+  random_state:
+    value: 42
+    source_file: module_a_population_segmentation/config/model_params.yaml
+    owner: "Data Science"
+    status: "[NOMINAL]"
+    rationale: |
+      Random seed for PCA fitting. Ensures reproducibility across
+      multiple segmentation runs (deterministic initialization).
+
+module_a_kmeans:
+
+  default_k:
+    value: 6
+    source_file: module_a_population_segmentation/config/model_params.yaml
+    owner: "Data Science"
+    status: "[CALIBRATED]"
+    rationale: |
+      Canonical segment count. Derived from k-range grid search
+      [4,5,6,7,8] → silhouette optimization on synthetic population.
+      k=6 balances interpretability vs. granularity for targeting.
+      Used by: pipeline/models/segmentation.py KMeansSegmenter.k
+
+  random_state:
+    value: 42
+    source_file: module_a_population_segmentation/config/model_params.yaml
+    owner: "Data Science"
+    status: "[NOMINAL]"
+    rationale: |
+      Random seed for KMeans initialization. Same value across
+      dataflows ensures repeatable assignments in production.
+
+# ==============================================================================
+# SHARED / VERIFIED ANCHORS — calibration_anchors.yaml (Module A)
+# ==============================================================================
+
+verified_outcome_anchors:
+
+  tsje_participation_rate:
+    value: 0.6125
+    source_file: module_a_population_segmentation/config/calibration_anchors.yaml
+    owner: "TSJE (official)"
+    status: "[VERIFIED]"
+    rationale: |
+      National participation rate (April 22, 2018). Published by Tribunal
+      Supremo de Justicia Electoral; ±0.1 pp tolerance documented.
+      Used across: Module A propensity model calibration + validation gates.
+
+# ==============================================================================
+# Cross-Module Dependencies
+# ==============================================================================
+
+cross_module_alignment:
+
+  hdi_probability:
+    description: |
+      Single HDI probability (0.94) must be used across ALL confidence
+      interval visualizations in Module C reports. Ensures terminology
+      consistency: every "94% HDI" label in the report matches the same
+      value loaded from pymc_sampler.yaml.
+    depends_on:
+      - module_c_pymc_sampler.hdi_prob
+    used_by:
+      - module_c_forecasting_scenarios.models.tracking.hierarchical.HDI_PROB
+      - module_c_forecasting_scenarios.models.exit.exit_model.HDI_PROB
+      - module_c_forecasting_scenarios.geo.heatmap._HDI_PROB
+    change_impact: |
+      If modified, must update: all Quarto report titles, axis labels,
+      figure captions, posterior_predictive percentile bounds.
+
+  reproducibility_seed:
+    description: |
+      Walk-forward validation uses predictive_seed to deterministically
+      sample from posterior predictive distributions. Immutable for
+      reproducibility across all validation runs.
+    depends_on:
+      - module_c_pymc_sampler.predictive_seed
+    used_by:
+      - module_c_forecasting_scenarios.validation.walk_forward._PREDICTIVE_SEED
+    change_impact: |
+      Changing this changes all walk-forward metric outputs (Brier score,
+      log loss, HDI coverage). Must justify in changelog. Usually immutable.
+
+# ==============================================================================
+# Change Control Process
+# ==============================================================================
+
+change_control:
+  approval_required: true
+  approval_roles: ["Data Science Lead", "Finance Lead"]
+  checklist:
+    - "Edit source config file (config/*.yaml)"
+    - "Update corresponding parameters in any hardcoded fallbacks"
+    - "Run verification scripts: make verify"
+    - "Update this registry (parameter_registry.yaml)"
+    - "Add entry to governance/CHANGELOG.md with justification"
+    - "Create PR with [PARAM] tag for visibility"
+    - "Wait for review by assigned owner + 1 other approver"
+    - "Merge only after all checks pass"
+
+notification:
+  description: |
+    Parameters marked [VERIFIED] or [MEASURED] should NOT change without
+    explicit business justification and governance review. Create a GitHub
+    issue tagged #governance-parameter-change before modifying.

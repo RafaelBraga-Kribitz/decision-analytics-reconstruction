@@ -26,6 +26,9 @@ from typing import Any, cast
 import numpy as np
 import pandas as pd
 from module_b_resource_allocation.constants import DEPARTMENTS
+from module_c_forecasting_scenarios.models.tracking.hierarchical import (
+    _load_sampler_config,  # pyright: ignore[reportPrivateUsage]
+)
 from scipy.stats import norm
 
 MODEL_VERSION = "c_battleground_v0.2"
@@ -37,8 +40,9 @@ MODEL_VERSION = "c_battleground_v0.2"
 # ~15–20 pp HDI width for swing departments at typical national posterior widths.
 _SIGMA_IDIO_PP: float = 1.5
 
-_HDI_PROB: float = 0.94
-# Two-sided z-score for 94% HDI: norm.ppf(1 − (1−0.94)/2) ≈ 1.8808
+# Loaded from pymc_sampler.yaml for sync with tracking model (0.94 = 94% HDI).
+_HDI_PROB: float = float(_load_sampler_config().get("hdi_prob", 0.94))
+# Two-sided z-score for HDI: norm.ppf(1 − (1−hdi_prob)/2)
 _HDI_Z: float = float(norm.ppf(1.0 - (1.0 - _HDI_PROB) / 2.0))
 
 _DEPT_POLYGONS_PATH = Path(__file__).parent / "paraguay_departments.geojson"

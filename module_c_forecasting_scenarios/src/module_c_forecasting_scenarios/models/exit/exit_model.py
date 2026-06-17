@@ -14,13 +14,20 @@ import yaml
 from module_c_forecasting_scenarios.paths import module_config_dir
 
 MODEL_VERSION = "c_exit_bias_v0.1"
-HDI_PROB = 0.94  # minimum-width highest-density interval; matches tracking model
+
+
+def _load_sampler_config() -> dict:
+    path = module_config_dir() / "pymc_sampler.yaml"
+    with open(path) as f:
+        return yaml.safe_load(f)
+
+
+# Minimum-width highest-density interval; loaded from pymc_sampler.yaml for sync with tracking model.
+HDI_PROB = float(_load_sampler_config().get("hdi_prob", 0.94))
 
 
 def _exit_sampler_kwargs() -> dict:
-    path = module_config_dir() / "pymc_sampler.yaml"
-    with open(path) as f:
-        cfg = yaml.safe_load(f)
+    cfg = _load_sampler_config()
     if os.environ.get("MC_FAST"):
         return {
             "chains": 2,
