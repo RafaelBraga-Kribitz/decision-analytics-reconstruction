@@ -14,6 +14,7 @@ MAX_PUBLIC_MD = 20
 OPERATOR_PREFIXES = (
     ".claude/",
     ".cursor/",
+    ".github/",
     "docs/registry/",
     "governance/_kit/",
     "governance/adrs/",
