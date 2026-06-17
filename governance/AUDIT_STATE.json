@@ -595,9 +595,9 @@
       "verification_script": "scripts/check_exit_model_hdi.py"
     }
   ],
-  "generated_at": "2026-06-16T12:57:19.794927+00:00",
-  "git_branch": "fix/pr10-clean-fixture-polls",
-  "git_head_sha": "6f1aa1f0377c20006f6e1b736bd271080a5bbdfa",
+  "generated_at": "2026-06-17T14:29:46.985438+00:00",
+  "git_branch": "claude/elegant-planck-0r5kpp",
+  "git_head_sha": "24cb8e7102d71b96118df44b35db4bd3acb67ae6",
   "migrations": [],
   "summary": {
     "findings_closed": 52,
