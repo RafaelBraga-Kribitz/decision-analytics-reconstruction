@@ -22,33 +22,62 @@ jobs:
         with:
           python-version: "3.11"
 
+      - name: Ensure .claude directory exists
+        run: mkdir -p .claude
+
       - name: Install dependencies
         run: |
-          python -m pip install --upgrade pip pyyaml
+          python -m pip install --upgrade pip
 
       - name: Generate agent_queue.json from GitHub Issues
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
         run: |
           python3 << 'EOF'
           import subprocess
           import json
           import sys
+          import os
           from datetime import datetime
 
-          # Fetch all open issues with status:claude-ready label
-          proc = subprocess.run(
-              ["gh", "issue", "list", "--search", "is:open label:status:claude-ready", "--json", "number,title,labels,body"],
-              capture_output=True,
-              text=True,
-              check=False,
-          )
-
-          if proc.returncode != 0:
-              print(f"gh issue list failed: {proc.stderr}", file=sys.stderr)
+          # Ensure gh CLI is available
+          try:
+              result = subprocess.run(["which", "gh"], capture_output=True, check=True)
+              print(f"gh found at: {result.stdout.decode().strip()}")
+          except subprocess.CalledProcessError:
+              print("ERROR: gh CLI not found in PATH", file=sys.stderr)
               sys.exit(1)
 
-          issues = json.loads(proc.stdout) if proc.stdout.strip() else []
+          # Fetch all open issues with status:claude-ready label
+          cmd = [
+              "gh", "issue", "list",
+              "--repo", os.environ.get("GH_REPO", "${{ github.repository }}"),
+              "--search", "is:open label:status:claude-ready",
+              "--json", "number,title,labels,body"
+          ]
+
+          print(f"Running: {' '.join(cmd)}")
+          proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
+
+          print(f"Return code: {proc.returncode}")
+          if proc.stderr:
+              print(f"Stderr: {proc.stderr}")
+
+          if proc.returncode != 0:
+              print(f"gh issue list failed with return code {proc.returncode}", file=sys.stderr)
+              if proc.stdout:
+                  print(f"Stdout: {proc.stdout}", file=sys.stderr)
+              sys.exit(1)
+
+          try:
+              issues = json.loads(proc.stdout) if proc.stdout.strip() else []
+          except json.JSONDecodeError as e:
+              print(f"ERROR: Failed to parse gh output as JSON: {e}", file=sys.stderr)
+              print(f"Raw output: {proc.stdout}", file=sys.stderr)
+              sys.exit(1)
+
+          print(f"Found {len(issues)} ready issues")
 
           # Extract priority, effort, skills from labels
           ready_tasks = []
@@ -99,7 +128,7 @@ jobs:
                   "skills": skills,
                   "status": "ready",
                   "acceptance_criteria": acceptance_criteria,
-                  "url": f"https://github.com/${{ github.repository }}/issues/{issue['number']}"
+                  "url": f"https://github.com/{os.environ.get('GH_REPO', 'RafaelBraga-Kribitz/decision-analytics-reconstruction')}/issues/{issue['number']}"
               }
               ready_tasks.append(task)
 
@@ -128,14 +157,12 @@ jobs:
 
           EOF
 
-      - name: Commit and push queue
+      - name: Verify queue file generated
         run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          if git diff --exit-code .claude/agent_queue.json > /dev/null 2>&1; then
-            echo "No queue changes"
+          if [ -f .claude/agent_queue.json ]; then
+            echo "Queue file generated successfully"
+            jq '.ready_tasks | length' .claude/agent_queue.json
           else
-            git add .claude/agent_queue.json
-            git commit -m "ci: regenerate agent_queue.json from GitHub Issues [skip ci]"
-            git push origin HEAD:${{ github.ref }}
+            echo "ERROR: Queue file not generated"
+            exit 1
           fi
