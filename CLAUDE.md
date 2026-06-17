@@ -40,6 +40,39 @@ These claims and behaviors have caused recurrence cycles in prior sessions. They
 
 If a finding has `verification_script: null`, it is either `closed_historical` (no script needed) or it needs a script written first. Writing the script is the first half of the work; the change is the second.
 
+## Feature work queue: GitHub Issues
+
+`governance/findings/F-*.yaml` is the queue for **governance work** (audit, compliance, debt). GitHub Issues is the queue for **feature/improvement work** (new charts, model changes, report updates, code quality).
+
+The two queues are complementary:
+- A finding creates a `governance/findings/F-NNN.yaml`. Close it by running the verification script.
+- A feature creates a GitHub Issue with the label taxonomy below. Close it by merging a PR that passes CI.
+
+### Label taxonomy
+
+Labels are defined in `.github/labels.yaml`. Run the `Setup Repository Labels` workflow (Actions → workflow_dispatch) to seed them.
+
+| Prefix | Purpose | Values |
+|---|---|---|
+| `type:` | Nature of work | `feature` · `bug` · `refactor` · `governance` · `data` · `visualization` · `docs` |
+| `skill:` | Domain expertise needed | `module-a` · `module-b` · `module-c` · `shared` · `infra` |
+| `effort:` | Rough size | `low` (< 1h) · `medium` (1–4h) · `high` (> 4h) |
+| `status:` | Workflow state | `claude-ready` · `blocked` · `in-review` |
+| `priority:` | Urgency | `p0` (critical) · `p1` (high) · `p2` (normal) |
+
+### When to use `status:claude-ready`
+
+Apply this label when an issue has: a clear acceptance criterion, no unresolved blockers, and no ambiguous design decisions. When you see it, you can pick it up and ship without asking for clarification.
+
+### Session start for feature work
+
+After `make session-start`, if the handout shows `open_findings: 0`, shift to GitHub Issues:
+
+1. Filter issues by `status:claude-ready`.
+2. Pick the highest `priority:` item.
+3. Implement, test, open a PR referencing the issue.
+4. Remove `status:claude-ready`, add `status:in-review`.
+
 ## Why this file exists
 
 LLM coding sessions tend to invent a new methodology, run a new audit, declare "all clear," and disappear at `/clear`. The next session starts over because no machine-readable state survived. This file, plus `governance/AUDIT_STATE.json`, plus `governance/SESSION_END.md`, plus the Adversary CI job, exist so that does not happen here.

@@ -1,0 +1,106 @@
+# Repository label taxonomy for decision-analytics-reconstruction.
+#
+# Labels are grouped by prefix: type:, skill:, effort:, status:, priority:
+# Run `.github/workflows/setup-labels.yml` (workflow_dispatch) to create/update
+# all labels in this file.
+
+labels:
+
+  # ---------------------------------------------------------------------------
+  # Type — what kind of work is this?
+  # ---------------------------------------------------------------------------
+  - name: "type:feature"
+    color: "0075ca"
+    description: "New functionality or enhancement"
+
+  - name: "type:bug"
+    color: "d73a4a"
+    description: "Defect or broken behavior"
+
+  - name: "type:refactor"
+    color: "e4e669"
+    description: "Code restructuring, quality, or cleanup"
+
+  - name: "type:governance"
+    color: "7057ff"
+    description: "Governance finding, audit, or compliance work"
+
+  - name: "type:data"
+    color: "0e8a16"
+    description: "Data pipeline, fixtures, calibration anchors"
+
+  - name: "type:visualization"
+    color: "fbca04"
+    description: "Charts, EDA, Quarto reports, dashboards"
+
+  - name: "type:docs"
+    color: "cfd3d7"
+    description: "Documentation only (no code change)"
+
+  # ---------------------------------------------------------------------------
+  # Skill — which domain expertise / module does this require?
+  # ---------------------------------------------------------------------------
+  - name: "skill:module-a"
+    color: "84b6eb"
+    description: "Population segmentation (Module A)"
+
+  - name: "skill:module-b"
+    color: "bfd4f2"
+    description: "Resource allocation solver (Module B)"
+
+  - name: "skill:module-c"
+    color: "d4c5f9"
+    description: "Forecasting & scenarios (Module C)"
+
+  - name: "skill:shared"
+    color: "f9d0c4"
+    description: "Cross-module, governance, config"
+
+  - name: "skill:infra"
+    color: "c5def5"
+    description: "CI/CD, deployment, tooling"
+
+  # ---------------------------------------------------------------------------
+  # Effort — rough estimate of work required
+  # ---------------------------------------------------------------------------
+  - name: "effort:low"
+    color: "c2e0c6"
+    description: "Less than 1 hour"
+
+  - name: "effort:medium"
+    color: "fef2c0"
+    description: "1 to 4 hours"
+
+  - name: "effort:high"
+    color: "e99695"
+    description: "More than 4 hours"
+
+  # ---------------------------------------------------------------------------
+  # Status — where is this in the workflow?
+  # ---------------------------------------------------------------------------
+  - name: "status:claude-ready"
+    color: "0e8a16"
+    description: "Clear spec, no blockers — ready for Claude to execute"
+
+  - name: "status:blocked"
+    color: "b60205"
+    description: "Waiting on an external dependency"
+
+  - name: "status:in-review"
+    color: "e4e669"
+    description: "PR open, under review"
+
+  # ---------------------------------------------------------------------------
+  # Priority — how urgent is this?
+  # ---------------------------------------------------------------------------
+  - name: "priority:p0"
+    color: "b60205"
+    description: "Critical — blocks a release or other work"
+
+  - name: "priority:p1"
+    color: "d93f0b"
+    description: "High — should be in the current sprint"
+
+  - name: "priority:p2"
+    color: "fef2c0"
+    description: "Normal — backlog, no hard deadline"

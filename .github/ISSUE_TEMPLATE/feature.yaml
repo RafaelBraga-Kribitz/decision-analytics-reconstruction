@@ -1,0 +1,70 @@
+name: Feature / Enhancement
+description: Request new functionality or an improvement to an existing feature.
+title: "[Feature]: "
+labels: ["type:feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template for new capabilities or enhancements. For bugs, use the Bug Report template. For governance/audit work, use the Governance Finding template.
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      description: Which module does this affect?
+      options:
+        - Module A — Population Segmentation
+        - Module B — Resource Allocation
+        - Module C — Forecasting & Scenarios
+        - Shared / Infrastructure
+        - Governance / CI
+        - Reporting / Visualization
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What is the gap or limitation today?
+      placeholder: "Currently, X does not support Y, which means Z is manual / impossible / incorrect."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: What should be built? Be as specific as possible.
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: How will we know this is done? List verifiable, testable conditions.
+      placeholder: |
+        - [ ] Unit tests pass for new function X
+        - [ ] `make verify` exits 0
+        - [ ] Quarto report renders without errors
+    validations:
+      required: true
+
+  - type: dropdown
+    id: effort
+    attributes:
+      label: Estimated effort
+      options:
+        - low (< 1 hour)
+        - medium (1–4 hours)
+        - high (> 4 hours)
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Links to relevant files, findings, PRs, or prior work.

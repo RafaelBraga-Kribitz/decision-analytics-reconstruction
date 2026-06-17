@@ -1,0 +1,80 @@
+name: Chart / Visualization Defect
+description: A chart is statistically incorrect, misleading, or needs rework.
+title: "[Chart Defect]: "
+labels: ["type:visualization", "type:bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this for Module A/B/C charts that have statistical integrity issues, misleading labels, wrong chart types, or data quality problems. Reference the chart ID (e.g., A2, B1, C4) in the title.
+
+  - type: input
+    id: chart_id
+    attributes:
+      label: Chart ID
+      description: "e.g. A2, B3, C1"
+      placeholder: "A2"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module
+      options:
+        - Module A — Population Segmentation
+        - Module B — Resource Allocation
+        - Module C — Forecasting & Scenarios
+    validations:
+      required: true
+
+  - type: dropdown
+    id: defect_pattern
+    attributes:
+      label: Defect pattern
+      description: Which class of defect applies? (select all that apply — use the description field to elaborate)
+      multiple: true
+      options:
+        - "Pattern B: Department-constant feature broadcast (individual chart shows dept-level data)"
+        - "Pattern G: Wrong chart type for data structure (KDE/violin on discrete/constant data)"
+        - "Pattern S: Semantic inversion (label contradicts actual data)"
+        - "Pattern P: Propensity compression (near-zero variance across segments)"
+        - "Pattern M: Missing statistical context (no CI, no n, no source annotation)"
+        - "Pattern N: Misleading narrative (caption/title contradicts chart)"
+        - Other (describe below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What is wrong?
+      description: Be specific. What does the chart show? What should it show? What misleads the reader?
+    validations:
+      required: true
+
+  - type: textarea
+    id: fix
+    attributes:
+      label: Proposed fix
+      description: How should this be corrected? New chart type, data fix, caption change, removal?
+    validations:
+      required: true
+
+  - type: textarea
+    id: downstream
+    attributes:
+      label: Downstream impact
+      description: Does fixing this affect other charts, the report, or module outputs?
+
+  - type: dropdown
+    id: action
+    attributes:
+      label: Recommended action
+      options:
+        - Fix and keep (rework chart with correct data/type)
+        - Fix caption/labels only (data is correct, presentation misleads)
+        - Remove (chart adds no analytical value)
+        - Replace with different chart
+    validations:
+      required: true
