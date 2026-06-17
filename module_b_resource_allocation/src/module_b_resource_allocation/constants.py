@@ -8,7 +8,18 @@ campaign weekly grid MUST import from this file rather than re-declaring it.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Final
+from pathlib import Path
+from typing import Any, Final
+
+import yaml
+
+
+def _load_budget_config() -> dict[str, Any]:
+    """Load budget and campaign envelope from centralized config."""
+    config_path = Path(__file__).resolve().parents[2] / "config" / "budget_envelope.yaml"
+    with open(config_path) as f:
+        return yaml.safe_load(f)
+
 
 # ---------------------------------------------------------------------------
 # Departments (18) — matches schema_contracts/*.yaml allowed_values blocks.
@@ -125,12 +136,14 @@ ALLOCATION_ROWS: Final[int] = N_DEPARTMENTS * N_CHANNELS * WEEK_COUNT  # 18 * 11
 # segments). To model full-scale replication, reach_caps_*.csv must be scaled 7.3×.
 # Source: TSJE campaign finance declarations + investigative audits
 # Field staff scale: 70,000+ (36k mesarios, 12k veedores, 1k apoderados + operadores)
+# All values loaded from config/budget_envelope.yaml for centralized control.
 # ---------------------------------------------------------------------------
-CAMPAIGN_BUDGET_USD: Final[float] = 6_000_000.0
-CAMPAIGN_BUDGET_TOLERANCE: Final[float] = 0.005
-COVERAGE_LOWER_BOUND_PCT: Final[float] = 0.80
-BCP_CORRIDOR_MAX_PCT: Final[float] = 0.10
-FX_BAND_MAX_PCT_VS_BCP: Final[float] = 0.005
+_BUDGET_CFG = _load_budget_config().get("budget", {})
+CAMPAIGN_BUDGET_USD: Final[float] = float(_BUDGET_CFG.get("total_envelope_usd", 6_000_000.0))
+CAMPAIGN_BUDGET_TOLERANCE: Final[float] = float(_BUDGET_CFG.get("tolerance_pct", 0.005))
+COVERAGE_LOWER_BOUND_PCT: Final[float] = float(_BUDGET_CFG.get("coverage_lower_bound_pct", 0.80))
+BCP_CORRIDOR_MAX_PCT: Final[float] = float(_BUDGET_CFG.get("bcp_corridor_max_pct", 0.10))
+FX_BAND_MAX_PCT_VS_BCP: Final[float] = float(_BUDGET_CFG.get("fx_band_max_pct_vs_bcp", 0.005))
 
 
 # ---------------------------------------------------------------------------

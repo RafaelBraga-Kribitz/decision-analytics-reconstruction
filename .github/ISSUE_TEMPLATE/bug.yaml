@@ -1,0 +1,62 @@
+name: Bug Report
+description: Something is broken, produces wrong output, or crashes.
+title: "[Bug]: "
+labels: ["type:bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        File this when code is broken, a test is wrong, or output diverges from documented behavior. For visualization/chart defects, use the Chart Defect template.
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Affected module
+      options:
+        - Module A — Population Segmentation
+        - Module B — Resource Allocation
+        - Module C — Forecasting & Scenarios
+        - Shared / Infrastructure
+        - Governance / CI
+    validations:
+      required: true
+
+  - type: input
+    id: file
+    attributes:
+      label: File / function
+      description: Where is the bug? (e.g. `module_c_forecasting_scenarios/models/tracking/hierarchical.py:run_model`)
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: What is broken?
+      description: Describe the incorrect behavior clearly.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Run `poetry run python -m module_c_forecasting_scenarios.pipeline.run_tracking`
+        2. Observe error: ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What should happen instead?
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Logs, tracebacks, related findings, PR references.

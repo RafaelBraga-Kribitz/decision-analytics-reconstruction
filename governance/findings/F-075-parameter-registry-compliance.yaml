@@ -1,0 +1,41 @@
+id: F-075
+title: "Parameter registry compliance: docs/parameter_registry.yaml must stay in sync with config files"
+status: closed
+severity: medium
+kind: governance_invariant
+category: configuration_governance
+opened_at: 2026-06-17
+closed_at: 2026-06-17
+owner: remediator
+finding: >
+  The multi-SSOT configuration architecture (Phase 2) introduced centralized config
+  files (pymc_sampler.yaml, budget_envelope.yaml, model_params.yaml,
+  calibration_anchors.yaml) and a governance registry (docs/parameter_registry.yaml)
+  that documents ownership, rationale, and expected values for every externalized
+  parameter. Without an adversary check, registry and config values can drift silently
+  — a maintainer could change a config value without updating the registry (or vice
+  versa), breaking the chain of documented provenance.
+remediation: >
+  (1) Created docs/parameter_registry.yaml with authoritative documentation for all
+  externalized parameters across Modules A, B, C: hdi_prob, predictive_seed, chains,
+  draws, tune, target_accept, max_treedepth, draws_fast, tune_fast (Module C);
+  total_envelope_usd, tolerance_pct, coverage_lower_bound_pct, bcp_corridor_max_pct,
+  fx_band_max_pct_vs_bcp (Module B); n_components, random_state / PCA, default_k,
+  random_state / KMeans (Module A); tsje_participation_rate (verified anchor).
+  (2) Created scripts/check_parameter_registry.py which loads the registry, resolves
+  each source_file, and verifies every registered value is present in its config file
+  (key-match search with recursive fallback, numeric tolerance 1e-9). Mismatches exit 1.
+  (3) Fixed docs/parameter_registry.yaml header from Python docstring ("""...""") to
+  valid YAML comments (#...) so the file is parseable by check_parameter_registry.py
+  and any YAML tooling.
+verification_script: scripts/check_parameter_registry.py
+artifacts:
+  - docs/parameter_registry.yaml
+  - scripts/check_parameter_registry.py
+notes: >
+  The registry is a governance layer (documentation + change control), not a runtime
+  config loader. Runtime config loading is always done from the scoped config files
+  (config/*.yaml). The registry cross-references those files and the check script
+  enforces that the documented values match the live config. Changing a config value
+  requires updating both the config file AND the registry entry (with rationale);
+  the PR must carry the [PARAM] tag per the change_control checklist in the registry.

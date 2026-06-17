@@ -6,6 +6,29 @@ All notable changes to this project are documented here. This file follows [Keep
 
 ## [Unreleased]
 
+### Phase 2: Multi-SSOT Config Architecture — Registry & Wiring Completion (2026-06-17)
+
+- **Shared config loader** (`module_c_forecasting_scenarios/config.py`): extracted
+  `load_sampler_config()` into a standalone module with no heavy imports; heatmap.py
+  no longer pulls in pymc/arviz at import time.
+- **Segmentation params loaded at module level**: `_MODEL_PARAMS` dict loaded once at
+  import time in `segmentation.py`; eliminates repeated file reads in `_matrix()` and
+  dataclass field defaults. Fixed path depth (`parents[4]` for config resolution).
+- **`docs/parameter_registry.yaml`**: fixed header from Python docstring to valid YAML
+  comments; file is now parseable by all YAML tooling.
+- **`scripts/check_parameter_registry.py`**: new adversary script (F-075) verifies every
+  registered parameter's `value` is present in its declared `source_file`; uses
+  recursive key-name search with numeric tolerance, with value-scan fallback for aliased
+  keys. Complexity refactored to < grade C.
+- **F-075 closed**: governance finding filed and verified for parameter registry compliance.
+- **F-068 check updated**: `check_module_c_interval_honesty.py` accepts the config-loaded
+  form (`HDI_PROB = float(load_sampler_config().get("hdi_prob", 0.94))`) as equivalent to
+  the original literal `HDI_PROB = 0.94`.
+- **18 new tests** in `tests/test_parameter_config_wiring.py`: verify HDI_PROB, predictive_seed,
+  budget constants, and segmentation params all load from their canonical config files;
+  architectural check that heatmap.py does not import from tracking.hierarchical.
+- **[PARAM]**: no parameter values changed; wiring only.
+
 ### Governance Replacement (2026-06-08)
 
 - Raised the project-specific Charter line budget from 200 to 600 lines via `ADR-0003`, preserving a hard anti-sprawl cap while allowing enough context for the three-module system.
