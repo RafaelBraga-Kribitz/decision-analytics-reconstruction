@@ -64,14 +64,25 @@ Labels are defined in `.github/labels.yaml`. Run the `Setup Repository Labels` w
 
 Apply this label when an issue has: a clear acceptance criterion, no unresolved blockers, and no ambiguous design decisions. When you see it, you can pick it up and ship without asking for clarification.
 
-### Session start for feature work
+### Session start for feature work (Phase 6: Agent Task Workflow)
 
-After `make session-start`, if the handout shows `open_findings: 0`, shift to GitHub Issues:
+After `make session-start`, if the handout shows `open_findings: 0`:
 
-1. Filter issues by `status:claude-ready`.
-2. Pick the highest `priority:` item.
-3. Implement, test, open a PR referencing the issue.
-4. Remove `status:claude-ready`, add `status:in-review`.
+1. **Read `.claude/agent_queue.json`** — auto-generated queue of all issues labeled `status:claude-ready`, sorted by priority
+2. **Pick `ready_tasks[0]`** (highest priority task)
+3. **Read the issue body** — it contains the full spec, acceptance criteria, and linked context
+4. **Work from the issue description alone** — no chat context needed; the issue is self-contained
+5. **Implement, test, commit → PR** with title like: `Fix: Issue #NNN — [title]` or `Closes #NNN`
+6. **Merge PR** — CI automatically closes the issue, adds `status:completed` label
+
+**Agent queue auto-update:**
+- `.github/workflows/queue-sync.yml` regenerates `.claude/agent_queue.json` whenever issues change (opened, labeled, unlabeled)
+- `.github/workflows/auto-close-issues.yml` closes issues when referenced PRs merge, removes `status:claude-ready`, adds `status:completed`
+- Next agent session reads the updated queue and picks the next task
+
+**Dual-mode task creation:**
+- **GitHub-based:** You create an issue directly in GitHub Issues, fill in the spec, label it `status:claude-ready` → agent picks it up from queue
+- **Chat-based:** You tell Claude in chat "do X", Claude auto-files an issue with full spec + labels + `status:claude-ready` → agent picks it up from queue in the next session
 
 ## Why this file exists
 
