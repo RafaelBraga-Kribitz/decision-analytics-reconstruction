@@ -1,21 +1,20 @@
-"""Parameter Registry — governance layer for centralized parameter control.
-
-This file documents ownership, rationale, and source-of-truth locations for every
-externalized parameter across Modules A, B, C. Each entry links to the corresponding
-config file and YAML key.
-
-Philosophy:
-- Values live in config/ YAML files (scoped by module/concern)
-- This registry documents OWNERSHIP and CHANGE JUSTIFICATION
-- Changes to any parameter must update both this registry and the config file
-- Owner is responsible for validation and cross-module impact assessment
-
-Status legend:
-- [VERIFIED]: Outcome anchor from official TSJE/DGEEC records
-- [MEASURED]: Computed from data (e.g., hand-drawn samples, pilot studies)
-- [CALIBRATED]: Tuned on synthetic test data to meet design targets
-- [NOMINAL]: Placeholder for development; not production-ready
-"""
+# Parameter Registry — governance layer for centralized parameter control.
+#
+# This file documents ownership, rationale, and source-of-truth locations for
+# every externalized parameter across Modules A, B, C. Each entry links to the
+# corresponding config file and YAML key.
+#
+# Philosophy:
+# - Values live in config/ YAML files (scoped by module/concern)
+# - This registry documents OWNERSHIP and CHANGE JUSTIFICATION
+# - Changes to any parameter must update both this registry and the config file
+# - Owner is responsible for validation and cross-module impact assessment
+#
+# Status legend:
+# - [VERIFIED]: Outcome anchor from official TSJE/DGEEC records
+# - [MEASURED]: Computed from data (e.g., hand-drawn samples, pilot studies)
+# - [CALIBRATED]: Tuned on synthetic test data to meet design targets
+# - [NOMINAL]: Placeholder for development; not production-ready
 
 # ==============================================================================
 # MODULE C: Forecasting & Scenarios — pymc_sampler.yaml

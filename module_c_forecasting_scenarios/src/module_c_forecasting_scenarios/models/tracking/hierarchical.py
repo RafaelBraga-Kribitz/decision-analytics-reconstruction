@@ -11,19 +11,15 @@ import arviz as az
 import numpy as np
 import pandas as pd
 import pymc as pm
-import yaml
 
-from module_c_forecasting_scenarios.paths import module_config_dir
+from module_c_forecasting_scenarios.config import load_sampler_config
 
 # v0.3: honest 94% HDI bands (az.hdi); v0.2 stored 5/95 quantiles under hdi names.
 MODEL_VERSION = "c_tracking_hierarchical_v0.3"
 INTERVAL_TYPE = "HDI"
 
-
-def _load_sampler_config() -> dict[str, Any]:
-    path = module_config_dir() / "pymc_sampler.yaml"
-    with open(path) as f:
-        return yaml.safe_load(f)
+# Backward-compat alias: walk_forward.py imports _load_sampler_config from here.
+_load_sampler_config = load_sampler_config
 
 
 # Probability mass of the credible interval stored in the ``*_hdi_*`` columns and

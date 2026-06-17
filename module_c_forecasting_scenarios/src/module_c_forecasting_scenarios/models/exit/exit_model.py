@@ -9,21 +9,16 @@ import arviz as az
 import numpy as np
 import pandas as pd
 import pymc as pm
-import yaml
 
-from module_c_forecasting_scenarios.paths import module_config_dir
+from module_c_forecasting_scenarios.config import load_sampler_config
 
 MODEL_VERSION = "c_exit_bias_v0.1"
 
+# Backward-compat alias used by _exit_sampler_kwargs below.
+_load_sampler_config = load_sampler_config
 
-def _load_sampler_config() -> dict:
-    path = module_config_dir() / "pymc_sampler.yaml"
-    with open(path) as f:
-        return yaml.safe_load(f)
-
-
-# Minimum-width highest-density interval; loaded from pymc_sampler.yaml for sync with tracking model.
-HDI_PROB = float(_load_sampler_config().get("hdi_prob", 0.94))
+# Minimum-width HDI loaded from pymc_sampler.yaml for sync with tracking model.
+HDI_PROB = float(load_sampler_config().get("hdi_prob", 0.94))
 
 
 def _exit_sampler_kwargs() -> dict:
