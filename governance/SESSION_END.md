@@ -1,3 +1,39 @@
+# Session End — 2026-06-23 (F-021 — live deployment URLs)
+
+## Context
+
+Remediator pass on the sole open finding (F-021). The root cause was that
+`check_live_deployment_urls.py` used a 15-second timeout — too short for
+Render free-tier cold starts (~30–50 s). Added a Render-specific retry:
+first request wakes the dyno; second lands warm. All three URLs now verified
+live within the script's total budget.
+
+## Findings touched
+
+- **F-021 (closed, recurrence 1 → closed):** Made `check_live_deployment_urls.py`
+  cold-start tolerant: timeout raised to 90 s, one retry with 20 s delay for
+  Render URLs. Verified: `module_a_streamlit=200, module_b_fastapi_docs=200,
+  module_c_quarto=200`. YAML updated `status: closed`, `closed_at: 2026-06-23`.
+- **F-048 (reopened, recurrence 1):** Adversary detected pre-existing regression —
+  `check_eda_battleground_chart_labels.py` reports generate_eda.py chart C3
+  title/subtitle missing illustrative disclosure. Unrelated to F-021 work.
+- **F-073 (reopened, recurrence 1):** Adversary detected pre-existing regression —
+  `check_canonical_figure_regen.py` reports docs/assets/module-*-deploy/
+  directories still exist (git rm step not committed in prior session).
+
+## Verification status
+
+- `make verify` exits 0: 50 closed findings re-verified; F-021 now passes;
+  F-048 and F-073 skipped (open).
+
+## Recommended next action
+
+- Fix **F-073** first (simpler — git rm the three deploy-screenshot dirs and
+  update any README img tags pointing to them), then **F-048** (add
+  illustrative disclosure subtitle to generate_eda.py chart C3/C8/S4).
+
+---
+
 # Session End — 2026-06-13 (F-055 — AUD-C1 retrodiction label)
 
 ## Context

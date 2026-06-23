@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import time
 import sys
 from pathlib import Path
 from urllib.error import HTTPError, URLError
@@ -16,11 +17,15 @@ URLS = {
     "module_c_quarto": "https://RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction/",
 }
 
+# Render free tier cold-starts take up to ~50 s; allow one retry after a wake delay.
+_TIMEOUT = 90
+_RENDER_RETRY_DELAY = 20
 
-def _status(url: str) -> int | str:
+
+def _fetch(url: str) -> int | str:
     req = Request(url, headers={"User-Agent": "decision-analytics-governance-check/1.0"})
     try:
-        with urlopen(req, timeout=15) as response:
+        with urlopen(req, timeout=_TIMEOUT) as response:
             return int(response.status)
     except HTTPError as exc:
         return int(exc.code)
@@ -30,8 +35,17 @@ def _status(url: str) -> int | str:
         return "Timeout"
 
 
+def _status(name: str, url: str) -> int | str:
+    result = _fetch(url)
+    # One retry for Render — the first request wakes the dyno; the second lands warm.
+    if result != 200 and "render.com" in url:
+        time.sleep(_RENDER_RETRY_DELAY)
+        result = _fetch(url)
+    return result
+
+
 def main() -> int:
-    statuses = {name: _status(url) for name, url in URLS.items()}
+    statuses = {name: _status(name, url) for name, url in URLS.items()}
     ok = all(status == 200 for status in statuses.values())
     detail = ", ".join(f"{name}={status}" for name, status in statuses.items())
     return gate("F-021", Path(__file__).name, ok, detail)

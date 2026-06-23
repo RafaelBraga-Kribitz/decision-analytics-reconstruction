@@ -2,10 +2,10 @@ id: F-048
 title: "EDA battleground charts omit illustrative-mapping disclosure in titles"
 category: fake_completion
 kind: recurrence_invariant
-status: closed
+status: open
 opened_at: 2026-06-12
-closed_at: 2026-06-12
-recurrence_count: 0
+closed_at: null
+recurrence_count: 1
 evidence: |
   F-045 closed epistemic_boundaries.md + geo/heatmap.py labeling only.
   reports/eda/generate_eda.py chart_c3/chart_c8 titles read "Battleground
@@ -20,3 +20,8 @@ notes: |
   Triage: extends MASTERPLAN C-4 / F-045 without reopening F-045. Do not
   duplicate E-7 (S1 proration deferred). Add subtitle e.g. "Series A ·
   synthetic dept mapping (illustrative)" to C3, C8, S4 titles.
+
+  Reopened 2026-06-23 (recurrence 1): Adversary detected regression —
+  check_eda_battleground_chart_labels.py reports generate_eda.py chart C3
+  title/subtitle missing illustrative disclosure. This predates the F-021
+  PR and is unrelated to it.

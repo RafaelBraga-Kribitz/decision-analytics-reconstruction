@@ -101,12 +101,12 @@
     },
     {
       "category": "fake_completion",
-      "closed_at": null,
+      "closed_at": "2026-06-23",
       "id": "F-021",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-08",
       "path": "governance/findings/F-021-live-deployment-urls.yaml",
-      "status": "open",
+      "status": "closed",
       "title": "Public deployment badges point to non-live URLs",
       "verification_script": "scripts/check_live_deployment_urls.py"
     },
@@ -299,12 +299,12 @@
     },
     {
       "category": "fake_completion",
-      "closed_at": "2026-06-12",
+      "closed_at": null,
       "id": "F-048",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-12",
       "path": "governance/findings/F-048-eda-battleground-chart-disclosure.yaml",
-      "status": "closed",
+      "status": "open",
       "title": "EDA battleground charts omit illustrative-mapping disclosure in titles",
       "verification_script": "scripts/check_eda_battleground_chart_labels.py"
     },
@@ -574,31 +574,43 @@
     },
     {
       "category": "narrative_sync",
-      "closed_at": "2026-06-14",
+      "closed_at": null,
       "id": "F-073",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-14",
       "path": "governance/findings/F-073-canonical-figure-regen.yaml",
-      "status": "closed",
+      "status": "open",
       "title": "Canonical figure regen: retire deploy screenshots, re-sync EDA narrative to real TSJE model",
       "verification_script": "scripts/check_canonical_figure_regen.py"
+    },
+    {
+      "category": "statistical_integrity",
+      "closed_at": "2026-06-15",
+      "id": "F-074",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-06-15",
+      "path": "governance/findings/F-074-exit-model-hdi-mislabel.yaml",
+      "status": "closed",
+      "title": "exit_model.py: 90% ETI stored as hdi_low/hdi_high \u2014 partial regression of F-068",
+      "verification_script": "scripts/check_exit_model_hdi.py"
     }
   ],
-  "generated_at": "2026-06-14T21:09:13.052585+00:00",
+  "generated_at": "2026-06-23T18:37:18.871276+00:00",
   "git_branch": "main",
-  "git_head_sha": "8b44c9cbb0e1c4571881921dd3963a6bfff73906",
+  "git_head_sha": "bd1ac515cd9814a3754edf675b8e9a1ad470b680",
   "migrations": [],
   "summary": {
     "findings_closed": 50,
     "findings_closed_historical": 2,
     "findings_in_progress": 0,
-    "findings_open": 1,
-    "findings_total": 53,
+    "findings_open": 2,
+    "findings_total": 54,
     "findings_wont_fix": 0,
     "migrations_in_progress": 0,
     "migrations_total": 0,
     "open_by_category": {
-      "fake_completion": 1
+      "fake_completion": 1,
+      "narrative_sync": 1
     }
   },
   "validation_errors": [],

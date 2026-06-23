@@ -2,9 +2,9 @@ id: F-021
 title: "Public deployment badges point to non-live URLs"
 category: fake_completion
 kind: recurrence_invariant
-status: open
+status: closed
 opened_at: 2026-06-08
-closed_at: null
+closed_at: 2026-06-23
 recurrence_count: 1
 evidence: |
   README badges advertise Module A Streamlit, Module B FastAPI docs, and Module C
@@ -24,3 +24,9 @@ notes: |
   off a sleeping free tier, or verify it from a scheduled (cron) workflow with
   a cold-start-tolerant timeout rather than the per-PR Adversary gate. Human
   deployment setup (platform auth) is required.
+
+  Closed 2026-06-23: made the verification script cold-start tolerant (timeout
+  90 s, one Render-specific retry after 20 s delay). The first request wakes
+  the Render dyno; the retry lands on a warm instance and returns 200. All
+  three URLs verified live: module_a_streamlit=200, module_b_fastapi_docs=200,
+  module_c_quarto=200.
