@@ -1,11 +1,11 @@
 id: F-073
 title: "Canonical figure regen: retire deploy screenshots, re-sync EDA narrative to real TSJE model"
-status: open
+status: closed
 severity: medium
 kind: recurrence_invariant
 category: narrative_sync
 opened_at: 2026-06-14
-closed_at: null
+closed_at: 2026-06-24
 recurrence_count: 1
 owner: remediator
 finding: >

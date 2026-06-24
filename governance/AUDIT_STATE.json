@@ -574,12 +574,12 @@
     },
     {
       "category": "narrative_sync",
-      "closed_at": null,
+      "closed_at": "2026-06-24",
       "id": "F-073",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-14",
       "path": "governance/findings/F-073-canonical-figure-regen.yaml",
-      "status": "open",
+      "status": "closed",
       "title": "Canonical figure regen: retire deploy screenshots, re-sync EDA narrative to real TSJE model",
       "verification_script": "scripts/check_canonical_figure_regen.py"
     },
@@ -595,22 +595,20 @@
       "verification_script": "scripts/check_exit_model_hdi.py"
     }
   ],
-  "generated_at": "2026-06-24T13:08:50.308208+00:00",
-  "git_branch": "fix/F-048-eda-battleground-disclosure",
-  "git_head_sha": "449d4b2b9e26d42701f23da735f55fb9b4071e7b",
+  "generated_at": "2026-06-24T13:17:17.712267+00:00",
+  "git_branch": "fix/F-073-canonical-figure-regen",
+  "git_head_sha": "48fec27148cdd42d83f541c70462d80e2ad6dee1",
   "migrations": [],
   "summary": {
     "findings_closed": 52,
     "findings_closed_historical": 2,
     "findings_in_progress": 0,
-    "findings_open": 1,
+    "findings_open": 0,
     "findings_total": 54,
     "findings_wont_fix": 0,
     "migrations_in_progress": 0,
     "migrations_total": 0,
-    "open_by_category": {
-      "narrative_sync": 1
-    }
+    "open_by_category": {}
   },
   "validation_errors": [],
   "writer": "scripts/write_audit_state.py"

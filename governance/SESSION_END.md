@@ -1,3 +1,55 @@
+# Session End — 2026-06-24 (F-073 — canonical figure regen)
+
+## Context
+
+Second maintainer-run pass of the day, picking up the now-top open
+finding (F-073, recurrence 1).
+`scripts/check_canonical_figure_regen.py` was failing on three
+`docs/assets/module-{a,b,c}-deploy/` directories still existing on
+local disk. `git ls-tree -r HEAD docs/assets/` confirmed they hold
+nothing tracked — only regenerated macOS `.DS_Store` files in
+already-`.gitignore`'d slots. The L1 fix is local: `rm -rf` the empty
+parent dirs; YAML to closed. No fixture or script change.
+
+## Findings touched
+
+- **F-073 (closed, recurrence 1 → closed):** removed three stale
+  empty `docs/assets/module-*-deploy/` dirs from the working tree.
+  Verified by `scripts/check_canonical_figure_regen.py`. YAML
+  updated `status: closed`, `closed_at: 2026-06-24`.
+
+## Verification status
+
+- `make verify` exits 0 on `fix/F-073-canonical-figure-regen`:
+  52 closed findings re-verified; debt ratchet at baseline.
+- PR #53 opened against `fix/F-048-eda-battleground-disclosure`
+  (stacked on PR #52), labelled `status:in-review`. Adversary CI
+  (L2 remote) takes over.
+
+## Open questions for next session
+
+- Project #1 add still blocked: the keyring `gho_*` token lacks
+  `read:project`/`project` scope. Same as the F-048 handoff.
+- **L4 candidate (recurrence pattern):** F-073's failure mode was
+  macOS Finder regenerating `.DS_Store` inside empty governance dirs,
+  causing the dir-existence check to false-positive on dev machines
+  even after `git rm`. Consider hardening
+  `scripts/check_canonical_figure_regen.py` to ignore dirs whose
+  only contents are `.DS_Store`, OR adding the dirs to `.gitignore`
+  outright. Track as a harness-improvement candidate.
+
+## Recommended next action
+
+Work queue is now **empty** of `open` findings (2 → 0 closed in
+today's pair of L1 cycles). When PRs #52 and #53 merge and the
+Adversary re-runs on `main`, the queue can stay clean until a new
+finding is opened.
+
+If a new finding lands, `make session-start` will pick it up. The
+L4 harness candidate above is the only outstanding item.
+
+---
+
 # Session End — 2026-06-24 (F-048 — EDA C3 illustrative disclosure)
 
 ## Context
