@@ -3,7 +3,9 @@
 EDA narrative and epistemic_boundaries re-synced to real TSJE swing model.
 
 Closure invariants:
-  1. docs/assets/*-deploy/ directories are absent (screenshots retired).
+  1. docs/assets/*-deploy/ directories contain no tracked screenshot artifacts
+     (image files retired); empty or ignored-only dirs left behind on developer
+     worktrees do not regress this finding.
   2. reports/epistemic_boundaries.md row for battleground_probability_heatmap.geojson
      says CALIBRATED (not ILLUSTRATIVE) and does not contain the stale
      '0.49–0.51' or 'seed=42' claims.
@@ -34,11 +36,27 @@ _STALE_ILLUSTRATIVE_CLAIM = "0.49–0.51"
 _STALE_SEED = "seed=42"
 _STALE_SYNTHETIC_LABEL = "synthetic dept mapping"
 
+_SCREENSHOT_EXTS = {".png", ".jpg", ".jpeg", ".gif", ".svg", ".webp", ".bmp", ".tiff"}
+
+
+def _screenshot_artifacts(directory: Path) -> list[Path]:
+    if not directory.is_dir():
+        return []
+    return [
+        p
+        for p in directory.rglob("*")
+        if p.is_file() and p.suffix.lower() in _SCREENSHOT_EXTS
+    ]
+
 
 def _deploy_gaps() -> list[str]:
-    return [
-        f"{d.name} deploy-screenshot directory still exists" for d in _DEPLOY_DIRS if d.exists()
-    ]
+    gaps: list[str] = []
+    for d in _DEPLOY_DIRS:
+        artifacts = _screenshot_artifacts(d)
+        if artifacts:
+            rel = ", ".join(sorted(str(p.relative_to(REPO_ROOT)) for p in artifacts))
+            gaps.append(f"{d.name} still contains deploy-screenshot artifacts: {rel}")
+    return gaps
 
 
 def _epistemic_gaps(src: str) -> list[str]:
