@@ -595,9 +595,9 @@
       "verification_script": "scripts/check_exit_model_hdi.py"
     }
   ],
-  "generated_at": "2026-06-24T12:53:17.915466+00:00",
-  "git_branch": "feat/loop-engineering",
-  "git_head_sha": "a801c5f12b4b48e2d2fd3c38dc70d62e7505b5fd",
+  "generated_at": "2026-06-24T13:08:50.308208+00:00",
+  "git_branch": "fix/F-048-eda-battleground-disclosure",
+  "git_head_sha": "449d4b2b9e26d42701f23da735f55fb9b4071e7b",
   "migrations": [],
   "summary": {
     "findings_closed": 51,

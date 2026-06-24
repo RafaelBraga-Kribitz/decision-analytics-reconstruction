@@ -1,3 +1,61 @@
+# Session End — 2026-06-24 (F-048 — EDA C3 illustrative disclosure)
+
+## Context
+
+Maintainer-run pass on the top open finding (F-048, recurrence 1).
+`reports/eda/generate_eda.py` chart C3 had a "(posterior-dependent)"
+subtitle that did not contain the "illustrative"/"synthetic mapping"
+marker the F-048 verification script requires (consistent with C8/S4,
+which already use `ILLUSTRATIVE_BATTLE_SUB`). Routed C3 through the
+same constant — single source of truth for battleground-chart
+disclosure.
+
+`make verify` initially failed on a separate, pre-existing F-008
+radon regression: `scripts/project_watch.py` (added by PR #51 / L3
+loop wiring) had two functions at CC=15. Refactored
+`_label_matches`, `_parse_args`, `_stale_items`, `_dispatch_workflow`
+out of `_has_label` and `main` to drop both below CC=10. No
+behavioural change. F-008 YAML untouched — it stays closed because
+the underlying invariant is restored.
+
+## Findings touched
+
+- **F-048 (closed, recurrence 1 → closed):** C3 subtitle now uses
+  `ILLUSTRATIVE_BATTLE_SUB`. Verified by
+  `scripts/check_eda_battleground_chart_labels.py`. YAML updated
+  `status: closed`, `closed_at: 2026-06-24`.
+- **F-008 (closed, untouched YAML):** carry-fix in
+  `scripts/project_watch.py` restored radon CC ≤ 10 in two
+  functions; verification script passes on the branch.
+- **F-073 (open, unchanged):** still queued as next finding.
+
+## Verification status
+
+- `make verify` exits 0 on `fix/F-048-eda-battleground-disclosure`:
+  51 closed findings re-verified; debt ratchet at baseline.
+- PR #52 opened against `feat/loop-engineering`, labelled
+  `status:in-review`. Adversary CI (L2 remote) takes over.
+
+## Open questions for next session
+
+- Project #1 add was blocked: the keyring `gho_*` token lacks
+  `read:project` scope. Run `gh auth refresh -s read:project,project`
+  on the active account before the next maintainer-run if Project #1
+  auto-add is required by the L3 dispatcher.
+- The maintainer-run skill assumes branching off `main`, but the
+  current work sits on `feat/loop-engineering` (PR #51). PR #52
+  stacks on it. If PR #51 is rebased or force-pushed, expect
+  conflicts on `scripts/project_watch.py` (shared file).
+
+## Recommended next action
+
+Pick up **F-073** (canonical figure regen) — `git rm` the three
+`docs/assets/module-*-deploy/` directories and update any README img
+tags pointing to them. Verification:
+`scripts/check_canonical_figure_regen.py`.
+
+---
+
 # Session End — 2026-06-23 (F-021 — live deployment URLs)
 
 ## Context
