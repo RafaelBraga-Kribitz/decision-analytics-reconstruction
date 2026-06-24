@@ -255,7 +255,7 @@ rollback-module-b:
 # Only the governance-specific targets are defined here; your project's
 # build/test/lint targets stay separate.
 
-.PHONY: audit verify session-start session-end debt-scan debt-check
+.PHONY: audit verify session-start session-end debt-scan debt-check maintainer-run project-watch
 
 audit:
 	@echo "── make audit ─────────────────────────────────────────────"
@@ -301,4 +301,17 @@ session-end:
 	@poetry run python scripts/session_end.py
 	@echo ""
 	@echo "→ Edit free-text fields in governance/SESSION_END.md, then commit."
+
+# L3 entry: full maintainer cycle. Regenerates state, picks the top
+# `status:claude-ready` item, and prints the Remediator contract to follow.
+# The actual L1 work (file edits + PR) is performed by the agent/human
+# reading the printed handout. See governance/AUDIT_PROCEDURE.md.
+maintainer-run: session-start
+	@poetry run python scripts/maintainer_dispatch.py
+
+# L3 trigger surface 3: read project #1 and report actionable items.
+# Used by the cron heartbeat in .github/workflows/governance.yml.
+# Requires GH_TOKEN with `read:project` scope.
+project-watch:
+	@poetry run python scripts/project_watch.py --owner RafaelBraga-Kribitz --project 1
 

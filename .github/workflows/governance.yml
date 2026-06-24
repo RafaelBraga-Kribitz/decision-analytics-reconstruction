@@ -5,6 +5,17 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+  issues:
+    types: [labeled, opened, reopened]
+  schedule:
+    # L3 heartbeat: sweep project #1 every 6 h for stale claude-ready items.
+    - cron: '0 */6 * * *'
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Run mode: audit | maintainer | heartbeat'
+        required: false
+        default: 'maintainer'
 
 jobs:
   # Steward-equivalent: regenerate state, fail on validation errors.
@@ -50,6 +61,51 @@ jobs:
           poetry run python scripts/generate_figure_manifest.py
       - name: Re-verify closed findings
         run: poetry run python scripts/check_closed_findings.py
+
+  # L3 event-driven dispatcher: watches project #1 and fires the maintainer
+  # cycle. Three entry surfaces converge here:
+  #   1. issues labeled `status:claude-ready` (event-driven, default)
+  #   2. workflow_dispatch with mode=maintainer (command)
+  #   3. schedule cron every 6 h (automatic heartbeat)
+  # See governance/AUDIT_PROCEDURE.md §"L3 trigger surfaces".
+  #
+  # Needs a token with project read scope. GITHUB_TOKEN does not carry projects-v2
+  # scope by default; set MAINTAINER_PAT in repo secrets (PAT with read:project).
+  project-watch:
+    if: >
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issues' && contains(github.event.label.name, 'status:claude-ready'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Poetry
+        run: pip install poetry
+      - name: Install project deps
+        run: poetry install --no-interaction
+      - name: Regenerate audit state (Steward)
+        run: make session-start
+      - name: Watch project #1
+        env:
+          GH_TOKEN: ${{ secrets.MAINTAINER_PAT || secrets.GITHUB_TOKEN }}
+        run: |
+          poetry run python scripts/project_watch.py \
+            --owner RafaelBraga-Kribitz \
+            --project 1 \
+            --stale-hours 24 \
+            ${{ (github.event_name == 'workflow_dispatch' && inputs.mode == 'maintainer') && '--dispatch' || '' }}
+      - name: Print maintainer dispatch summary
+        run: poetry run python scripts/maintainer_dispatch.py || true
+      - name: Upload session handout
+        uses: actions/upload-artifact@v4
+        with:
+          name: session-handout
+          path: |
+            governance/SESSION_HANDOUT.md
+            governance/AUDIT_STATE.json
 
   # Debt ratchet: re-scan technical debt and fail if any metric grew past the
   # committed baseline (governance/DEBT_BASELINE.json). This is the "remediate
