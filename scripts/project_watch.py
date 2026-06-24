@@ -52,19 +52,21 @@ def _list_items(owner: str, project: int) -> list[dict]:
     return data.get("items", [])
 
 
+def _label_matches(lab: object, label: str) -> bool:
+    if isinstance(lab, dict):
+        return lab.get("name") == label
+    if isinstance(lab, str):
+        return lab == label
+    return False
+
+
 def _has_label(item: dict, label: str) -> bool:
     labels = (item.get("labels") or {}).get("nodes") or []
-    if isinstance(labels, list):
-        for lab in labels:
-            if isinstance(lab, dict) and lab.get("name") == label:
-                return True
-            if isinstance(lab, str) and lab == label:
-                return True
+    if isinstance(labels, list) and any(_label_matches(lab, label) for lab in labels):
+        return True
     raw = item.get("content") or {}
     if isinstance(raw, dict):
-        for lab in raw.get("labels", []) or []:
-            if isinstance(lab, dict) and lab.get("name") == label:
-                return True
+        return any(_label_matches(lab, label) for lab in (raw.get("labels", []) or []))
     return False
 
 
@@ -79,7 +81,7 @@ def _updated_at(item: dict) -> datetime | None:
         return None
 
 
-def main() -> int:
+def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--owner", required=True, help="GH owner (user or org)")
     parser.add_argument("--project", required=True, type=int, help="Project number (e.g., 1)")
@@ -94,8 +96,39 @@ def main() -> int:
         action="store_true",
         help="If set, call `gh workflow run governance.yml -f mode=maintainer` for the top item",
     )
-    args = parser.parse_args()
+    return parser.parse_args()
 
+
+def _stale_items(ready: list[dict], cutoff: datetime) -> list[dict]:
+    out: list[dict] = []
+    for item in ready:
+        updated = _updated_at(item)
+        if updated is not None and updated < cutoff:
+            out.append(item)
+    return out
+
+
+def _dispatch_workflow(content: dict) -> None:
+    repo = (content.get("repository") or {}).get("nameWithOwner")
+    if not repo:
+        print("WARNING: could not resolve repository for dispatch; skipping.", file=sys.stderr)
+        return
+    print(f"→ Dispatching governance.yml in {repo} for mode=maintainer …")
+    _run_gh(
+        [
+            "workflow",
+            "run",
+            "governance.yml",
+            "--repo",
+            repo,
+            "-f",
+            "mode=maintainer",
+        ]
+    )
+
+
+def main() -> int:
+    args = _parse_args()
     items = _list_items(args.owner, args.project)
     ready = [
         i
@@ -108,12 +141,7 @@ def main() -> int:
     print(f"Actionable (claude-ready, not queued): {len(ready)}")
 
     stale_cutoff = datetime.now(UTC) - timedelta(hours=args.stale_hours)
-    stale = []
-    for item in ready:
-        updated = _updated_at(item)
-        if updated is not None and updated < stale_cutoff:
-            stale.append(item)
-
+    stale = _stale_items(ready, stale_cutoff)
     if stale:
         print(f"Stale (> {args.stale_hours} h):           {len(stale)}")
         for item in stale[:5]:
@@ -131,22 +159,7 @@ def main() -> int:
     print(f"URL:      {content.get('url', '?')}")
 
     if args.dispatch:
-        repo = (content.get("repository") or {}).get("nameWithOwner")
-        if not repo:
-            print("WARNING: could not resolve repository for dispatch; skipping.", file=sys.stderr)
-            return 0
-        print(f"→ Dispatching governance.yml in {repo} for mode=maintainer …")
-        _run_gh(
-            [
-                "workflow",
-                "run",
-                "governance.yml",
-                "--repo",
-                repo,
-                "-f",
-                "mode=maintainer",
-            ]
-        )
+        _dispatch_workflow(content)
     return 0
 
 

@@ -2,9 +2,9 @@ id: F-048
 title: "EDA battleground charts omit illustrative-mapping disclosure in titles"
 category: fake_completion
 kind: recurrence_invariant
-status: open
+status: closed
 opened_at: 2026-06-12
-closed_at: null
+closed_at: 2026-06-24
 recurrence_count: 1
 evidence: |
   F-045 closed epistemic_boundaries.md + geo/heatmap.py labeling only.

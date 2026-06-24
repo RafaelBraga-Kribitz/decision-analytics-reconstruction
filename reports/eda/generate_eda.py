@@ -1494,7 +1494,7 @@ def chart_c3():
     ax.set_title(
         "C3 — Battleground Department Win Probability (Candidate A)\n"
         "GANAR departments show <5% win probability; 'certain' ANR departments carry uncertainty\n"
-        "Series A · swing model calibrated to TSJE 2018 returns (posterior-dependent)"
+        f"({ILLUSTRATIVE_BATTLE_SUB})"
     )
     ax.annotate(
         "Exterior dept (GANAR winner) absent — no polygon in GeoJSON. "
