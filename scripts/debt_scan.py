@@ -120,7 +120,7 @@ def _scan_vulture() -> dict:
 def _scan_radon(thresholds: dict) -> dict:
     if not _have("radon"):
         return {"radon_complex_blocks": _metric(None, False, "radon")}
-    _rc, out = _run(["radon", "cc", "-j", "-n", "C", "."])
+    _rc, out = _run(["radon", "cc", "-j", "-n", "C", "--exclude", "governance/_kit/*", "."])
     try:
         data = json.loads(out) if out.strip().startswith("{") else {}
         n = sum(

@@ -1,0 +1,31 @@
+id: F-MODULE-SIZE
+title: "Source file or function exceeds the line-count budget"
+category: module_size_violation
+kind: recurrence_invariant
+status: open
+opened_at: "{PROJECT_START_DATE}"
+closed_at: null
+recurrence_count: 0
+evidence: |
+  scripts/check_module_sizes.py reports GAP — one or more files exceed
+  quality_gates.module_size.max_file_lines or one or more functions exceed
+  quality_gates.module_size.max_function_lines in config/quality_gates.yaml.
+  Run `make audit` to see violating files and functions.
+verification_script: scripts/check_module_sizes.py
+notes: |
+  Closure approach:
+    1. Run `python scripts/check_module_sizes.py` to list all violations.
+    2. Split oversized files into focused modules (Single Responsibility Principle).
+    3. Extract helpers from oversized functions.
+    4. Or raise the threshold if the size is genuinely justified —
+       document the rationale in config/parameter_registry.yaml.
+    5. Run `python scripts/check_module_sizes.py`.
+       Expected: [PASS] check_module_sizes.py: F-MODULE-SIZE clean
+    6. Update status to closed, set closed_at.
+
+  check_module_sizes.py uses stdlib ast only — no extra deps required.
+
+  Mid-flight: run `make baseline` to discover current worst-case sizes,
+  then set thresholds at or above those values to get CI green immediately.
+
+  If this project has no Python src: set status: wont_fix.

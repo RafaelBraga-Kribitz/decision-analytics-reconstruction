@@ -1,0 +1,26 @@
+id: F-CONFIG-REFERENCE-RESOLUTION
+title: "Code references a config key that does not exist in any config/*.yaml"
+category: registry_incomplete
+kind: recurrence_invariant
+status: open
+opened_at: "{PROJECT_START_DATE}"
+closed_at: null
+recurrence_count: 0
+evidence: |
+  scripts/check_config_references.py reports GAP — at least one
+  `config.X` / `cfg.X` / `config["X"]` reference in Python or notebook code
+  cannot be resolved against any leaf key in config/*.yaml.
+  Run `make audit` to see the full list.
+verification_script: scripts/check_config_references.py
+notes: |
+  Unresolved config references are silent-bug factories: a typo or stale
+  rename returns None at runtime, downstream code reaches for the default,
+  and the SSOT is bypassed without warning.
+
+  Closure approach:
+    1. For each unresolved reference, either:
+       a. Add the missing key to config/*.yaml (and parameter_registry.yaml); or
+       b. Fix the typo / restore the renamed path in the calling code.
+    2. Run `python scripts/check_config_references.py`.
+       Expected: [PASS].
+    3. Update status to closed, set closed_at.

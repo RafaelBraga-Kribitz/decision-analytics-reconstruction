@@ -1,0 +1,82 @@
+name: Governance Finding
+description: File a new F-NNN governance finding. Creates a tracking entry for the audit queue.
+title: "F-NNN: "
+labels: ["type:governance"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to document a new governance finding. After filing this issue, create `governance/findings/F-NNN-<slug>.yaml` with the same details, then follow the closure protocol in `governance/AUDIT_PROCEDURE.md`.
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      options:
+        - critical
+        - high
+        - medium
+        - low
+    validations:
+      required: true
+
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Finding kind
+      options:
+        - test_gap
+        - type_gap
+        - dead_code
+        - complexity
+        - governance_invariant
+        - documentation
+        - configuration_drift
+        - data_integrity
+    validations:
+      required: true
+
+  - type: dropdown
+    id: module
+    attributes:
+      label: Module scope
+      options:
+        - Module A — Population Segmentation
+        - Module B — Resource Allocation
+        - Module C — Forecasting & Scenarios
+        - Shared / Infrastructure
+        - Governance
+        - Cross-module
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What is wrong? Be specific about the file, function, or artifact.
+    validations:
+      required: true
+
+  - type: textarea
+    id: invariant
+    attributes:
+      label: Closure invariant
+      description: |
+        What must be true for this finding to be closed? Write the condition as a testable statement.
+        Example: "hierarchical.py computes bounds with az.hdi at HDI_PROB=0.94, not quantile(0.05)/quantile(0.95)"
+    validations:
+      required: true
+
+  - type: input
+    id: verification_script
+    attributes:
+      label: Proposed verification script
+      description: Path to the script that will verify closure (e.g. `scripts/check_F_NNN.py`). Can be `null` if TBD.
+      placeholder: "scripts/check_F_NNN_slug.py"
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Related findings, files, PRs, or decision records.

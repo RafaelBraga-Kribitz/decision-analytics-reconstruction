@@ -15,7 +15,7 @@ MAX_CC = 10
 
 def main() -> int:
     proc = subprocess.run(
-        ["radon", "cc", "-j", "-n", "C", "."],
+        ["radon", "cc", "-j", "-n", "C", "--exclude", "governance/_kit/*", "."],
         cwd=REPO_ROOT,
         capture_output=True,
         text=True,

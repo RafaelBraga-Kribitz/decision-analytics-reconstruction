@@ -1,0 +1,59 @@
+name: Setup Repository Labels
+
+on:
+  workflow_dispatch:   # run manually from Actions tab to seed / sync labels
+
+jobs:
+  setup-labels:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Create or update labels
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          create_label() {
+            local name="$1" color="$2" description="$3"
+            gh label create "$name" \
+              --color "$color" \
+              --description "$description" \
+              --force   # updates if already exists
+          }
+
+          # type:
+          create_label "type:feature"       "0075ca" "New functionality or enhancement"
+          create_label "type:bug"           "d73a4a" "Defect or broken behavior"
+          create_label "type:refactor"      "e4e669" "Code restructuring, quality, or cleanup"
+          create_label "type:governance"    "7057ff" "Governance finding, audit, or compliance work"
+          create_label "type:data"          "0e8a16" "Data pipeline, fixtures, calibration anchors"
+          create_label "type:visualization" "fbca04" "Charts, EDA, Quarto reports, dashboards"
+          create_label "type:docs"          "cfd3d7" "Documentation only (no code change)"
+
+          # skill:
+          create_label "skill:module-a" "84b6eb" "Population segmentation (Module A)"
+          create_label "skill:module-b" "bfd4f2" "Resource allocation solver (Module B)"
+          create_label "skill:module-c" "d4c5f9" "Forecasting and scenarios (Module C)"
+          create_label "skill:shared"   "f9d0c4" "Cross-module, governance, config"
+          create_label "skill:infra"    "c5def5" "CI/CD, deployment, tooling"
+
+          # effort:
+          create_label "effort:low"    "c2e0c6" "Less than 1 hour"
+          create_label "effort:medium" "fef2c0" "1 to 4 hours"
+          create_label "effort:high"   "e99695" "More than 4 hours"
+
+          # status:
+          create_label "status:claude-ready" "0e8a16" "Clear spec, no blockers -- ready for Claude to execute"
+          create_label "status:blocked"      "b60205" "Waiting on an external dependency"
+          create_label "status:in-review"    "e4e669" "PR open, under review"
+
+          # priority:
+          create_label "priority:p0" "b60205" "Critical -- blocks a release or other work"
+          create_label "priority:p1" "d93f0b" "High -- should be in the current sprint"
+          create_label "priority:p2" "fef2c0" "Normal -- backlog, no hard deadline"
+
+          echo "All labels created/updated."

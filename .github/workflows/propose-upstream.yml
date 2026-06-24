@@ -1,0 +1,102 @@
+name: Propose change to governance kit
+
+# Pushes the local diff under governance/_kit/ as a PR to the upstream hub
+# repo (governance-bootstrap). Use this when you've improved a check
+# script, finding template, or category list while working in THIS
+# project and want the change to become canonical for all consumers.
+#
+# Trigger: manual (workflow_dispatch). Provide a PR title and body.
+#
+# Requires repo secret GOV_SYNC_TOKEN (PAT with contents:write +
+# pull_requests:write on the UPSTREAM repo).
+
+on:
+  workflow_dispatch:
+    inputs:
+      title:
+        description: 'PR title on the hub repo'
+        required: true
+      body:
+        description: 'PR body / motivation'
+        required: false
+        default: 'Upstream proposal from a consumer project.'
+
+env:
+  UPSTREAM_REPO: RafaelBraga-Kribitz/governance-bootstrap
+  KIT_PREFIX: governance/_kit
+
+jobs:
+  propose:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure git
+        run: |
+          git config --global user.name  "governance-sync-bot"
+          git config --global user.email "governance-sync-bot@users.noreply.github.com"
+
+      - name: Mirror kit diff onto upstream main
+        id: prep
+        env:
+          GH_TOKEN: ${{ secrets.GOV_SYNC_TOKEN }}
+        run: |
+          if [ ! -d "$KIT_PREFIX" ]; then
+            echo "::error::$KIT_PREFIX not found — is the kit vendored?"
+            exit 1
+          fi
+          STAMP=$(date -u +%Y%m%d-%H%M%S)
+          CONSUMER_SLUG="${GITHUB_REPOSITORY##*/}"
+          BRANCH="from-${CONSUMER_SLUG}/${STAMP}"
+          echo "branch=$BRANCH" >> "$GITHUB_OUTPUT"
+
+          git clone --depth=1 \
+            "https://x-access-token:${GH_TOKEN}@github.com/${UPSTREAM_REPO}.git" \
+            upstream
+          cd upstream
+          git checkout -b "$BRANCH"
+
+          # rsync mirrors the consumer's vendored kit onto upstream root.
+          # --delete ensures file removals propagate. .git is excluded.
+          rsync -a --delete \
+            --exclude='.git' \
+            --exclude='.github/workflows/sync-from-upstream.yml' \
+            --exclude='.github/workflows/propose-upstream.yml' \
+            "../${KIT_PREFIX}/" ./
+
+          if git diff --quiet && git diff --staged --quiet; then
+            echo "no diff vs upstream main — nothing to propose"
+            echo "has_diff=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "has_diff=true" >> "$GITHUB_OUTPUT"
+
+      - name: Commit, push, open PR
+        if: steps.prep.outputs.has_diff == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GOV_SYNC_TOKEN }}
+          BRANCH: ${{ steps.prep.outputs.branch }}
+          TITLE: ${{ inputs.title }}
+          BODY: ${{ inputs.body }}
+        run: |
+          cd upstream
+          git add -A
+          git commit -m "Proposal from ${GITHUB_REPOSITORY}: ${TITLE}"
+          git push -u origin "$BRANCH"
+          gh pr create \
+            --repo "$UPSTREAM_REPO" \
+            --base main \
+            --head "$BRANCH" \
+            --title "[from ${GITHUB_REPOSITORY}] ${TITLE}" \
+            --body "Proposed by **${GITHUB_REPOSITORY}** via \`propose-upstream\` workflow.
+
+          ${BODY}
+
+          ---
+          When merged, this change will fan out to every project listed in \`consumers.yaml\` via the hub's \`fanout-update.yml\` workflow."
+
+      - name: Report no-op
+        if: steps.prep.outputs.has_diff != 'true'
+        run: echo "✓ no diff vs ${UPSTREAM_REPO}@main — nothing to propose"

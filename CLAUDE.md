@@ -40,6 +40,50 @@ These claims and behaviors have caused recurrence cycles in prior sessions. They
 
 If a finding has `verification_script: null`, it is either `closed_historical` (no script needed) or it needs a script written first. Writing the script is the first half of the work; the change is the second.
 
+## Feature work queue: GitHub Issues
+
+`governance/findings/F-*.yaml` is the queue for **governance work** (audit, compliance, debt). GitHub Issues is the queue for **feature/improvement work** (new charts, model changes, report updates, code quality).
+
+The two queues are complementary:
+- A finding creates a `governance/findings/F-NNN.yaml`. Close it by running the verification script.
+- A feature creates a GitHub Issue with the label taxonomy below. Close it by merging a PR that passes CI.
+
+### Label taxonomy
+
+Labels are defined in `.github/labels.yaml`. Run the `Setup Repository Labels` workflow (Actions → workflow_dispatch) to seed them.
+
+| Prefix | Purpose | Values |
+|---|---|---|
+| `type:` | Nature of work | `feature` · `bug` · `refactor` · `governance` · `data` · `visualization` · `docs` |
+| `skill:` | Domain expertise needed | `module-a` · `module-b` · `module-c` · `shared` · `infra` |
+| `effort:` | Rough size | `low` (< 1h) · `medium` (1–4h) · `high` (> 4h) |
+| `status:` | Workflow state | `claude-ready` · `blocked` · `in-review` |
+| `priority:` | Urgency | `p0` (critical) · `p1` (high) · `p2` (normal) |
+
+### When to use `status:claude-ready`
+
+Apply this label when an issue has: a clear acceptance criterion, no unresolved blockers, and no ambiguous design decisions. When you see it, you can pick it up and ship without asking for clarification.
+
+### Session start for feature work (Phase 6: Agent Task Workflow)
+
+After `make session-start`, if the handout shows `open_findings: 0`:
+
+1. **Read `.claude/agent_queue.json`** — auto-generated queue of all issues labeled `status:claude-ready`, sorted by priority
+2. **Pick `ready_tasks[0]`** (highest priority task)
+3. **Read the issue body** — it contains the full spec, acceptance criteria, and linked context
+4. **Work from the issue description alone** — no chat context needed; the issue is self-contained
+5. **Implement, test, commit → PR** with title like: `Fix: Issue #NNN — [title]` or `Closes #NNN`
+6. **Merge PR** — CI automatically closes the issue, adds `status:completed` label
+
+**Agent queue auto-update:**
+- `.github/workflows/queue-sync.yml` regenerates `.claude/agent_queue.json` whenever issues change (opened, labeled, unlabeled)
+- `.github/workflows/auto-close-issues.yml` closes issues when referenced PRs merge, removes `status:claude-ready`, adds `status:completed`
+- Next agent session reads the updated queue and picks the next task
+
+**Dual-mode task creation:**
+- **GitHub-based:** You create an issue directly in GitHub Issues, fill in the spec, label it `status:claude-ready` → agent picks it up from queue
+- **Chat-based:** You tell Claude in chat "do X", Claude auto-files an issue with full spec + labels + `status:claude-ready` → agent picks it up from queue in the next session
+
 ## Why this file exists
 
 LLM coding sessions tend to invent a new methodology, run a new audit, declare "all clear," and disappear at `/clear`. The next session starts over because no machine-readable state survived. This file, plus `governance/AUDIT_STATE.json`, plus `governance/SESSION_END.md`, plus the Adversary CI job, exist so that does not happen here.
