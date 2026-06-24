@@ -18,8 +18,8 @@ Reported metrics:
 * **80% / 95% interval coverage** — fraction of held-out poll margins
   whose observed value falls inside the posterior-predictive HDI.
 
-The Paraguay 2018 fixture provides only four tracking polls, so the
-walk-forward loop is small (two holdouts at ``min_train_size=2``). This
+The Paraguay 2018 fixture provides only eight tracking polls, so the
+walk-forward loop is still small (six holdouts at ``min_train_size=2``). This
 is documented in the metrics summary as a data sparsity caveat, not a
 methodology limitation; the same routine scales to denser polling.
 """
@@ -36,12 +36,13 @@ import pandas as pd
 
 from module_c_forecasting_scenarios.models.tracking.hierarchical import (
     _build_day_index,  # pyright: ignore[reportPrivateUsage]
+    _load_sampler_config,  # pyright: ignore[reportPrivateUsage]
     fit_tracking_hierarchical,
     observation_sigma,
 )
 
 _EPS = 1e-6
-_PREDICTIVE_SEED = 20180422
+_PREDICTIVE_SEED = int(_load_sampler_config().get("predictive_seed", 20180422))
 
 
 @dataclass(frozen=True)
@@ -176,8 +177,8 @@ def walk_forward_tracking_validation(
 
     Example:
         ``walk_forward_tracking_validation(tracking, outcome_event_date=date(2018,4,22),
-        calibration_series="A")`` returns a result with 2 holdouts for the
-        Paraguay 2018 fixture (4 tracking polls).
+        calibration_series="A")`` returns a result with 6 holdouts for the
+        Paraguay 2018 fixture (8 tracking polls).
     """
     if len(tracking) < min_train_size + 1:
         raise ValueError(

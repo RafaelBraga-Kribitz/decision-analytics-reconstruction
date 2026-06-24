@@ -42,7 +42,11 @@ GENERATOR = REPO_ROOT / "reports" / "eda" / "generate_eda.py"
 
 def _hier_gaps(src: str) -> list[str]:
     gaps: list[str] = []
-    if "HDI_PROB = 0.94" not in src:
+    # Accept either the original literal form or the config-loaded form introduced in Phase 2.
+    hdi_defined = "HDI_PROB = 0.94" in src or (
+        "HDI_PROB" in src and "load_sampler_config" in src and "hdi_prob" in src
+    )
+    if not hdi_defined:
         gaps.append("hierarchical.py does not define HDI_PROB = 0.94")
     if "az.hdi(" not in src:
         gaps.append("hierarchical.py does not compute bounds via az.hdi")

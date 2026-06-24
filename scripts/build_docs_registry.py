@@ -37,6 +37,10 @@ DOMAIN_PREFIX_FOR_FIRST_SEGMENT = {
 }
 
 
+# Vendored subtrees — managed by git subtree, not project documentation.
+_VENDOR_PREFIXES = ("governance/_kit/",)
+
+
 def git_tracked_md() -> list[str]:
     proc = subprocess.run(
         ["git", "-C", str(ROOT), "ls-files", "-z", "--", "*.md"],
@@ -48,7 +52,9 @@ def git_tracked_md() -> list[str]:
     for b in raw:
         if not b:
             continue
-        paths.append(b.decode("utf-8", errors="replace"))
+        p = b.decode("utf-8", errors="replace")
+        if not any(p.startswith(vp) for vp in _VENDOR_PREFIXES):
+            paths.append(p)
     paths.sort()
     return paths
 

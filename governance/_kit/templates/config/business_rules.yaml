@@ -1,0 +1,11 @@
+# config/business_rules.yaml — domain thresholds and business definitions
+# Every value here must also have an entry in config/parameter_registry.yaml.
+# This is the Single Source of Truth for all business logic constants.
+# SQL, Python, and dashboards must read from this file (or a generated artifact from it).
+
+# Example entries — replace with project-specific rules:
+# active_customer_days: 90
+# high_value_customer_threshold: 10000
+# top_n_results: 10
+# min_sample_size: 30
+# churn_lookback_days: 180

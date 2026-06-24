@@ -9,18 +9,20 @@ import arviz as az
 import numpy as np
 import pandas as pd
 import pymc as pm
-import yaml
 
-from module_c_forecasting_scenarios.paths import module_config_dir
+from module_c_forecasting_scenarios.config import load_sampler_config
 
 MODEL_VERSION = "c_exit_bias_v0.1"
-HDI_PROB = 0.94  # minimum-width highest-density interval; matches tracking model
+
+# Backward-compat alias used by _exit_sampler_kwargs below.
+_load_sampler_config = load_sampler_config
+
+# Minimum-width HDI loaded from pymc_sampler.yaml for sync with tracking model.
+HDI_PROB = float(load_sampler_config().get("hdi_prob", 0.94))
 
 
 def _exit_sampler_kwargs() -> dict:
-    path = module_config_dir() / "pymc_sampler.yaml"
-    with open(path) as f:
-        cfg = yaml.safe_load(f)
+    cfg = _load_sampler_config()
     if os.environ.get("MC_FAST"):
         return {
             "chains": 2,
@@ -77,15 +79,16 @@ def fit_exit_quickcount(
         s = post[v].stack(sample=("chain", "draw"))
         # Use minimum-width HDI (same as tracking model) — NOT 5th/95th quantiles.
         # Prior bug: quantile(0.05/0.95) = 90% ETI stored under hdi_* names (F-074).
-        _hdi = cast(Any, az.hdi(s, hdi_prob=HDI_PROB))
-        if hasattr(_hdi, "data_vars"):  # Dataset → take its single data variable
-            _hdi = _hdi[next(iter(_hdi.data_vars))]
+        # Pass a flat ndarray: az.hdi on an xarray input requires {chain, draw}
+        # core dims, which the stack() above collapses into `sample`. The 1-D
+        # array form returns array([lower, higher]) and is version-robust.
+        _hdi = cast(Any, az.hdi(s.values, hdi_prob=HDI_PROB))
         rows.append(
             {
                 "parameter": v,
                 "posterior_mean": float(s.mean().values),
-                "hdi_low": float(_hdi.sel(hdi="lower").values),
-                "hdi_high": float(_hdi.sel(hdi="higher").values),
+                "hdi_low": float(_hdi[0]),
+                "hdi_high": float(_hdi[1]),
                 "calibration_series": calibration_series,
                 "model_version": MODEL_VERSION,
             }

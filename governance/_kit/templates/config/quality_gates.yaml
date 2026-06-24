@@ -1,0 +1,17 @@
+# config/quality_gates.yaml — code quality gate thresholds
+# Every value here must also appear in config/parameter_registry.yaml.
+# Scripts read from this file; never hardcode thresholds in check scripts.
+
+coverage:
+  min_lines: 80       # minimum % line coverage required (0-100)
+  min_branches: 80    # minimum % branch coverage required (0-100)
+
+complexity:
+  max_per_function: 6  # max cyclomatic complexity per function (Uncle Bob: ≤7)
+
+module_size:
+  max_file_lines: 250    # max lines per source file
+  max_function_lines: 40  # max lines per function (excluding blank lines)
+
+crap:
+  max_score: 30  # max CRAP score per function: C²·(1−COV)³+C

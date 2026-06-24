@@ -1,0 +1,15 @@
+# config/paths.yaml — canonical file and directory paths
+# Every value here must also have an entry in config/parameter_registry.yaml.
+# Code must reference these; no hardcoded paths elsewhere.
+
+data:
+  raw: "data/raw"
+  processed: "data/processed"
+  external: "data/external"
+
+outputs:
+  reports: "outputs/reports"
+  charts: "outputs/charts"
+  models: "outputs/models"
+
+logs: "logs"

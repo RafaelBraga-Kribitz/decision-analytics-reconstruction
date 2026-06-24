@@ -10,15 +10,28 @@ index order is never assumed to mean anything.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, cast
 
 import numpy as np
 import pandas as pd
+import yaml
 from scipy.optimize import linear_sum_assignment
 from sklearn.cluster import DBSCAN, KMeans
 from sklearn.decomposition import PCA
 from sklearn.metrics import adjusted_rand_score, silhouette_score
 from sklearn.preprocessing import StandardScaler
+
+
+def _load_model_params() -> dict[str, Any]:
+    """Load model parameters from centralized config."""
+    config_path = Path(__file__).resolve().parents[4] / "config" / "model_params.yaml"
+    with open(config_path) as f:
+        return yaml.safe_load(f)
+
+
+# Loaded once at import time; avoids repeated file reads in dataclass defaults and _matrix().
+_MODEL_PARAMS: dict[str, Any] = _load_model_params()
 
 # Canonical k=6 segment label vocabulary. The historical index keys are kept
 # only so downstream consumers can enumerate the canonical names and k —
@@ -216,7 +229,7 @@ FEATURE_COLUMNS = [
 ]
 
 
-def _matrix(df: pd.DataFrame, n_pca_components: int = 5) -> np.ndarray:
+def _matrix(df: pd.DataFrame, n_pca_components: int | None = None) -> np.ndarray:
     """Standardize then reduce dimensionality with PCA.
 
     PCA before DBSCAN and KMeans is necessary because in the raw 13-dimensional
@@ -225,9 +238,12 @@ def _matrix(df: pd.DataFrame, n_pca_components: int = 5) -> np.ndarray:
     components capture the dominant variance while making eps/silhouette
     thresholds stable and interpretable.
     """
+    if n_pca_components is None:
+        n_pca_components = int(_MODEL_PARAMS.get("pca", {}).get("n_components", 5))
+    pca_random_state = int(_MODEL_PARAMS.get("pca", {}).get("random_state", 42))
     x = df[FEATURE_COLUMNS].astype(float).to_numpy()
     x_scaled = StandardScaler().fit_transform(x)
-    return PCA(n_components=n_pca_components, random_state=42).fit_transform(x_scaled)
+    return PCA(n_components=n_pca_components, random_state=pca_random_state).fit_transform(x_scaled)
 
 
 @dataclass
@@ -268,8 +284,8 @@ class DBSCANNoiseFilter:
 
 @dataclass
 class KMeansSegmenter:
-    k: int = 6
-    random_state: int = 42
+    k: int = int(_MODEL_PARAMS.get("kmeans", {}).get("default_k", 6))
+    random_state: int = int(_MODEL_PARAMS.get("kmeans", {}).get("random_state", 42))
 
     def fit_predict(
         self, df: pd.DataFrame, *, x: np.ndarray | None = None

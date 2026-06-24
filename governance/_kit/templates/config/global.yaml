@@ -1,0 +1,8 @@
+# config/global.yaml — cross-cutting constants
+# Every value here must also have an entry in config/parameter_registry.yaml.
+# Code must reference this file; hardcoding the same literal is forbidden.
+
+random_seed: 42
+
+locale: "en_US"
+timezone: "UTC"

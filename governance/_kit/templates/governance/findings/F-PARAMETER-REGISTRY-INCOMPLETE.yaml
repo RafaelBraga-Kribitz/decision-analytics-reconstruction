@@ -1,0 +1,29 @@
+id: F-PARAMETER-REGISTRY-INCOMPLETE
+title: "config/parameter_registry.yaml is missing entries or has weak metadata"
+category: registry_incomplete
+kind: recurrence_invariant
+status: open
+opened_at: "{PROJECT_START_DATE}"
+closed_at: null
+recurrence_count: 0
+evidence: |
+  scripts/check_parameter_registry.py reports GAP — at least one of:
+    - A leaf key in config/*.yaml has no parameter_registry entry.
+    - A registry entry's source_file does not exist or lacks the key.
+    - An entry has empty/placeholder owner, rationale < 20 chars, or
+      missing/inconsistent history[].
+    - The latest history.new_value disagrees with the current value.
+  Run `make audit` to see the full list.
+verification_script: scripts/check_parameter_registry.py
+notes: |
+  The registry is the SSOT's metadata layer — without owner/rationale,
+  every named constant becomes an undocumented magic value with extra steps.
+
+  Closure approach:
+    1. For each gap, add (or repair) the entry in
+       config/parameter_registry.yaml with value, source_file, owner,
+       rationale (>= 20 chars, explains WHY), and history[].
+    2. Append history records on every value change — never edit past entries.
+    3. Run `python scripts/check_parameter_registry.py`.
+       Expected: [PASS].
+    4. Update status to closed, set closed_at.

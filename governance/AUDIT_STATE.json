@@ -600,7 +600,7 @@
   "git_head_sha": "bd1ac515cd9814a3754edf675b8e9a1ad470b680",
   "migrations": [],
   "summary": {
-    "findings_closed": 50,
+    "findings_closed": 52,
     "findings_closed_historical": 2,
     "findings_in_progress": 0,
     "findings_open": 2,

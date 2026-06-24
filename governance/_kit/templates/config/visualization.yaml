@@ -1,0 +1,11 @@
+# config/visualization.yaml — chart and reporting constants
+# Every value here must also have an entry in config/parameter_registry.yaml.
+
+figure:
+  width: 10
+  height: 6
+  dpi: 150
+
+color_palette: "colorblind"
+font_size: 12
+max_categories_in_legend: 8
