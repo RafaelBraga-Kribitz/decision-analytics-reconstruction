@@ -299,12 +299,12 @@
     },
     {
       "category": "fake_completion",
-      "closed_at": null,
+      "closed_at": "2026-06-24",
       "id": "F-048",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-12",
       "path": "governance/findings/F-048-eda-battleground-chart-disclosure.yaml",
-      "status": "open",
+      "status": "closed",
       "title": "EDA battleground charts omit illustrative-mapping disclosure in titles",
       "verification_script": "scripts/check_eda_battleground_chart_labels.py"
     },
@@ -595,21 +595,20 @@
       "verification_script": "scripts/check_exit_model_hdi.py"
     }
   ],
-  "generated_at": "2026-06-23T18:37:18.871276+00:00",
-  "git_branch": "main",
-  "git_head_sha": "bd1ac515cd9814a3754edf675b8e9a1ad470b680",
+  "generated_at": "2026-06-24T13:08:50.308208+00:00",
+  "git_branch": "fix/F-048-eda-battleground-disclosure",
+  "git_head_sha": "449d4b2b9e26d42701f23da735f55fb9b4071e7b",
   "migrations": [],
   "summary": {
     "findings_closed": 52,
     "findings_closed_historical": 2,
     "findings_in_progress": 0,
-    "findings_open": 2,
+    "findings_open": 1,
     "findings_total": 54,
     "findings_wont_fix": 0,
     "migrations_in_progress": 0,
     "migrations_total": 0,
     "open_by_category": {
-      "fake_completion": 1,
       "narrative_sync": 1
     }
   },
