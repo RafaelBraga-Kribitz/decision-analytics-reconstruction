@@ -2,10 +2,10 @@ id: F-021
 title: "Public deployment badges point to non-live URLs"
 category: fake_completion
 kind: recurrence_invariant
-status: closed
+status: open
 opened_at: 2026-06-08
-closed_at: 2026-06-16
-recurrence_count: 2
+closed_at: null
+recurrence_count: 3
 evidence: |
   README badges advertise Module A Streamlit, Module B FastAPI docs, and Module C
   Quarto report URLs as public artifacts. A live check on 2026-06-08 returned
@@ -46,3 +46,13 @@ notes: |
   #69 (00999c2) both passed adversary with all 3 URLs returning 200 on
   first or second attempt. Durable fix verified by GitHub-hosted Adversary
   on two consecutive commits. Issue resolved.
+
+  Reopened 2026-07-08 (recurrence 3): Adversary on PR #73 observed
+  module_a_streamlit=Timeout again (Module B and C returned 200). The
+  2s/4s/8s retry window (~45s) does not cover a full Render cold start.
+  Sandboxed sessions cannot reach the URL to remediate; the check now
+  supports GOVERNANCE_NETWORK_CHECKS=skip for such runners while CI still
+  enforces. Durable closure options remain as recommended 2026-06-13:
+  move Module A off the sleeping free tier, add a keep-alive/health cron,
+  or extend the probe's retry window past a worst-case cold start —
+  verified against the live URL before re-closing.

@@ -101,12 +101,12 @@
     },
     {
       "category": "fake_completion",
-      "closed_at": "2026-06-16",
+      "closed_at": null,
       "id": "F-021",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-08",
       "path": "governance/findings/F-021-live-deployment-urls.yaml",
-      "status": "closed",
+      "status": "open",
       "title": "Public deployment badges point to non-live URLs",
       "verification_script": "scripts/check_live_deployment_urls.py"
     },
@@ -617,20 +617,22 @@
       "verification_script": "scripts/check_doc_registry_vendor_prefix_ssot.py"
     }
   ],
-  "generated_at": "2026-07-08T19:09:50.766556+00:00",
+  "generated_at": "2026-07-08T19:23:24.195413+00:00",
   "git_branch": "claude/project-completion-orchestration-qjash7",
-  "git_head_sha": "af33f398a770cf7fe28fee4031047a7d869b0701",
+  "git_head_sha": "3699e81369e42547bf3707be7ccb8b116038206b",
   "migrations": [],
   "summary": {
-    "findings_closed": 54,
+    "findings_closed": 53,
     "findings_closed_historical": 2,
     "findings_in_progress": 0,
-    "findings_open": 0,
+    "findings_open": 1,
     "findings_total": 56,
     "findings_wont_fix": 0,
     "migrations_in_progress": 0,
     "migrations_total": 0,
-    "open_by_category": {}
+    "open_by_category": {
+      "fake_completion": 1
+    }
   },
   "validation_errors": [],
   "writer": "scripts/write_audit_state.py"
