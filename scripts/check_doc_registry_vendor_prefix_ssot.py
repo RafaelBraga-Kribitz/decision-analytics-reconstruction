@@ -21,9 +21,7 @@ SCRIPTS = (
     ROOT / "scripts" / "build_docs_registry.py",
     ROOT / "scripts" / "verify_doc_registry.py",
 )
-IMPORT_RE = re.compile(
-    r"^from scripts\.doc_registry_schema import VENDOR_PREFIXES\b", re.MULTILINE
-)
+IMPORT_RE = re.compile(r"^from scripts\.doc_registry_schema import VENDOR_PREFIXES\b", re.MULTILINE)
 LOCAL_DEF_RE = re.compile(r"^_?VENDOR_PREFIXES\s*=\s*\(", re.MULTILINE)
 
 

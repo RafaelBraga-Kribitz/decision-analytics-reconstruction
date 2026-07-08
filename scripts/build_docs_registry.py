@@ -22,6 +22,7 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
 from scripts.doc_registry_schema import VENDOR_PREFIXES as _VENDOR_PREFIXES
+
 REGISTRY_PATH = ROOT / "docs" / "registry" / "docs_registry.yaml"
 PATH_OVERRIDES_PATH = ROOT / "docs" / "registry" / "path_overrides.yaml"
 

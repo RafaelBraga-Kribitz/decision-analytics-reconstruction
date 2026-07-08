@@ -101,6 +101,7 @@ ignore = []
 # AST walkers mirror ``test_architecture_public_google_docstrings_contract``; nested closures trip B023.
 "tests/test_architecture_public_type_hints_contract.py" = ["B023", "SIM102", "SIM110"]
 "scripts/verify_doc_registry.py" = ["E402"]
+"scripts/build_docs_registry.py" = ["E402"]
 "scripts/export_doc_registry_schema.py" = ["E402"]
 "tests/test_doc_registry_schema.py" = ["E402"]
 
