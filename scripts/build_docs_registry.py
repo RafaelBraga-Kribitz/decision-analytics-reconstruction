@@ -37,8 +37,9 @@ DOMAIN_PREFIX_FOR_FIRST_SEGMENT = {
 }
 
 
-# Vendored subtrees — managed by git subtree, not project documentation.
-_VENDOR_PREFIXES = ("governance/_kit/",)
+# Vendored subtrees and CI/tooling dirs — excluded from registry tracking.
+# Must stay a superset-match of verify_doc_registry._VENDOR_PREFIXES.
+_VENDOR_PREFIXES = ("governance/_kit/", ".github/")
 
 
 def git_tracked_md() -> list[str]:
