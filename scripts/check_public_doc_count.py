@@ -18,6 +18,9 @@ OPERATOR_PREFIXES = (
     "docs/registry/",
     "governance/_kit/",
     "governance/adrs/",
+    # Improvement-plan specs are agent-facing work-queue artifacts (same class
+    # as the sprint docs listed in OPERATOR_FILES), not reviewer narrative.
+    "governance/improvement_plan/",
     "maintainer/",
 )
 
