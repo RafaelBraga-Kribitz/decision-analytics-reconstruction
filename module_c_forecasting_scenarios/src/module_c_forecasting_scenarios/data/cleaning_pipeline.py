@@ -4,7 +4,9 @@ transparency → dedupe → split tracking vs exit.
 
 from __future__ import annotations
 
+import logging
 from datetime import date, timedelta
+from typing import cast
 
 import pandas as pd
 import yaml
@@ -14,13 +16,18 @@ from module_c_forecasting_scenarios.data.transparency import (
     compute_phi_transparency,
     compute_tau_eff,
 )
-from module_c_forecasting_scenarios.features.herding_weights import rho_herd_for_row
+from module_c_forecasting_scenarios.features.herding_weights import (
+    count_unmapped_carriers,
+    rho_herd_for_row,
+)
 from module_c_forecasting_scenarios.features.shock_scores import (
     scenario_bucket_for_margin,
     shock_score_s,
 )
 from module_c_forecasting_scenarios.features.taxonomy_tables import normalize_pollster_id
 from module_c_forecasting_scenarios.paths import module_config_dir
+
+logger = logging.getLogger(__name__)
 
 REQUIRED_RAW = (
     "poll_raw_id",
@@ -205,6 +212,32 @@ def clean_raw_polls(
 
 
 def attach_shock_scores(tracking: pd.DataFrame, m_star_pp: float) -> pd.DataFrame:
+    """Attach ``shock_score_s`` to every tracking row and log the herding run summary.
+
+    IMP-C04 (audit C5) run-summary disclosure: after scoring every row, tallies
+    which non-null ``conglomerate_id`` carriers fell through to the default
+    herding group (i.e. were absent from ``config/herding_groups.yaml``) and
+    logs the aggregate count — the pipeline never silently substring-matches a
+    new/renamed carrier into a non-default group.
+
+    Args:
+        tracking: Cleaned tracking-wave rows (must include ``m_poll_pp``,
+            ``phi_transparency``, ``publication_date``, ``conglomerate_id``).
+        m_star_pp: Calibration-anchor margin, percentage points.
+
+    Returns:
+        A copy of ``tracking`` with ``shock_score_s`` attached. The unmapped-
+        carrier tally is available via ``result.attrs["unmapped_herding_carrier_counts"]``.
+
+    Raises:
+        ValueError: Propagated from ``shock_score_s`` / ``load_shock_params``
+            if the on-disk shock-parameter config fails schema validation.
+
+    Example:
+        >>> out = attach_shock_scores(tracking, m_star_pp=3.7)  # doctest: +SKIP
+        >>> "shock_score_s" in out.columns  # doctest: +SKIP
+        True
+    """
     out = tracking.copy()
     scores = []
     for _, r in out.iterrows():
@@ -218,4 +251,14 @@ def attach_shock_scores(tracking: pd.DataFrame, m_star_pp: float) -> pd.DataFram
         )
         scores.append(s)
     out["shock_score_s"] = scores
+    carrier_col = cast(pd.Series, out["conglomerate_id"])  # DataFrame.__getitem__ widens the type
+    unmapped_counts = count_unmapped_carriers(carrier_col)
+    out.attrs["unmapped_herding_carrier_counts"] = unmapped_counts
+    if unmapped_counts:
+        logger.warning(
+            "attach_shock_scores: run summary — %d unmapped herding carrier(s) "
+            "defaulted to the baseline group this run: %s",
+            len(unmapped_counts),
+            unmapped_counts,
+        )
     return out
