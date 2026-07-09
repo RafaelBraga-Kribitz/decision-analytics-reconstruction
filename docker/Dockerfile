@@ -16,6 +16,7 @@ RUN pip install --no-cache-dir poetry==2.4.0
 COPY pyproject.toml poetry.lock* README.md .pre-commit-config.yaml /app/
 COPY .streamlit /app/.streamlit
 COPY Makefile /app/
+COPY shared /app/shared
 COPY module_a_population_segmentation /app/module_a_population_segmentation
 COPY module_b_resource_allocation /app/module_b_resource_allocation
 COPY module_c_forecasting_scenarios /app/module_c_forecasting_scenarios

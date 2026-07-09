@@ -69,11 +69,13 @@ is tracked as open finding `F-021` and will be added once verifiably live.
 
 | Diagnostic | Target | Current status |
 |-----------|--------|---------------|
-| R̂ (R-hat) | < 1.01 | > 1.01 on centered parameterization — non-centered reparam pending (P2-4) |
-| ESS bulk | > 200 | < 100 on sparse fixture data (MC_FAST) |
-| Divergences | 0 | 14 divergences under full NUTS (P2-4) |
+| R̂ (R-hat) | ≤ 1.01 | ~1.007 — **enforced** under full NUTS after the non-centered reparam (model `v0.4`) |
+| ESS bulk / tail | ≥ 400 | ~2540 bulk / ~1860 tail on the 8-wave fixture |
+| Divergences | 0 | 0 (non-centered random walk + `target_accept_full=0.99`) |
 
-See `ROADMAP.md` § Module C for remediation status.
+These gates are enforced (not xfail'd) in the slow lane by
+`tests/test_mcmc_diagnostics_summary.py`; the fast CI path (`MC_FAST=1`) still
+uses a 50-draw fixture and does not run them. See `ROADMAP.md` § Module C.
 
 ## Walk-forward validation
 

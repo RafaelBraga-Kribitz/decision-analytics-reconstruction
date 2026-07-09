@@ -1,9 +1,17 @@
-"""Lightweight YAML contract checks for Module C DataFrames."""
+"""YAML contract checks for Module C DataFrames (layered on ``contract_core``).
+
+``load_contract`` resolves a ``schema_name`` to its ``schema_contracts/*.yaml``
+spec; ``validate_dataframe_contract`` delegates to the shared
+:mod:`contract_core` validator so every declared constraint (nullable,
+allowed_values, min/max, pattern, per-field unique, unique_key, row_count) is
+enforced the same way here as in every other module gate.
+"""
 
 from __future__ import annotations
 
 import pandas as pd
 import yaml
+from contract_core import ContractError, check_frame, parse_contract
 
 from module_c_forecasting_scenarios.data.exceptions import QAGateFailure
 from module_c_forecasting_scenarios.paths import schema_contracts_dir
@@ -20,15 +28,22 @@ def load_contract(schema_name: str) -> dict[str, object]:
 
 
 def validate_dataframe_contract(df: pd.DataFrame, schema_name: str) -> None:
+    """Enforce every declared constraint in ``schema_name`` against ``df``.
+
+    Args:
+        df: Frame to validate.
+        schema_name: ``schema_name`` of a ``schema_contracts/*.yaml`` contract.
+
+    Raises:
+        QAGateFailure: If the contract declares an unknown key, or ``df``
+            violates any declared constraint. The message names the contract,
+            column and constraint that failed.
+    """
     spec = load_contract(schema_name)
-    fields_raw = spec.get("fields")
-    fields: dict[str, object] = fields_raw if isinstance(fields_raw, dict) else {}
-    missing = [k for k in fields if k not in df.columns]
-    if missing:
-        raise QAGateFailure(f"{schema_name}: missing columns {missing}")
-    uk = spec.get("unique_key")
-    if uk:
-        keys = uk if isinstance(uk, list) else [uk]
-        dup = df.duplicated(keys)
-        if dup.any():
-            raise QAGateFailure(f"{schema_name}: duplicate keys on {keys}")
+    try:
+        contract = parse_contract(spec, source=schema_name)
+    except ContractError as exc:
+        raise QAGateFailure(str(exc)) from exc
+    violations = check_frame(df, contract)
+    if violations:
+        raise QAGateFailure(f"{schema_name}: " + "; ".join(violations))

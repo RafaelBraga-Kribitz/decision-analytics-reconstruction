@@ -6,7 +6,7 @@
       "id": "F-001",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-08",
-      "path": "governance/findings/F-001-charter-sprawl.yaml",
+      "path": "governance\\findings\\F-001-charter-sprawl.yaml",
       "status": "closed",
       "title": "Project Charter must remain under the 600-line scannable budget",
       "verification_script": "scripts/check_charter_size.py"
@@ -17,7 +17,7 @@
       "id": "F-002",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-08",
-      "path": "governance/findings/F-002-governance-session-state.yaml",
+      "path": "governance\\findings\\F-002-governance-session-state.yaml",
       "status": "closed",
       "title": "Agents must read machine-generated governance state from disk",
       "verification_script": "scripts/check_claude_md.py"
@@ -28,7 +28,7 @@
       "id": "F-003",
       "kind": "historical_change",
       "opened_at": "2026-06-08",
-      "path": "governance/findings/F-003-retired-transaction-harness.yaml",
+      "path": "governance\\findings\\F-003-retired-transaction-harness.yaml",
       "status": "closed_historical",
       "title": "Retired the old UNIT_ID transaction harness",
       "verification_script": null
@@ -39,7 +39,7 @@
       "id": "F-004",
       "kind": "historical_change",
       "opened_at": "2026-06-08",
-      "path": "governance/findings/F-004-root-doc-sprawl-consolidated.yaml",
+      "path": "governance\\findings\\F-004-root-doc-sprawl-consolidated.yaml",
       "status": "closed_historical",
       "title": "Root planning docs were consolidated into Charter plus archive",
       "verification_script": null
@@ -50,7 +50,7 @@
       "id": "F-005",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-08",
-      "path": "governance/findings/F-005-precommit-pyright-module-c.yaml",
+      "path": "governance\\findings\\F-005-precommit-pyright-module-c.yaml",
       "status": "closed",
       "title": "Pre-commit Pyright hook omits Module C",
       "verification_script": "scripts/check_precommit_pyright_all_modules.py"
@@ -61,7 +61,7 @@
       "id": "F-006",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-08",
-      "path": "governance/findings/F-006-pytest-conftest-collision.yaml",
+      "path": "governance\\findings\\F-006-pytest-conftest-collision.yaml",
       "status": "closed",
       "title": "Default pytest collection fails on duplicate conftest registration",
       "verification_script": "scripts/check_pytest_conftest_collection.py"
@@ -72,7 +72,7 @@
       "id": "F-007",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-08",
-      "path": "governance/findings/F-007-ruff-unused-baseline.yaml",
+      "path": "governance\\findings\\F-007-ruff-unused-baseline.yaml",
       "status": "closed",
       "title": "Ruff unused-code findings remain in baseline",
       "verification_script": "scripts/check_ruff_unused_zero.py"
@@ -83,7 +83,7 @@
       "id": "F-008",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-08",
-      "path": "governance/findings/F-008-radon-complexity-baseline.yaml",
+      "path": "governance\\findings\\F-008-radon-complexity-baseline.yaml",
       "status": "closed",
       "title": "High-complexity blocks remain in baseline",
       "verification_script": "scripts/check_radon_complexity_zero.py"
@@ -94,19 +94,19 @@
       "id": "F-009",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-08",
-      "path": "governance/findings/F-009-vulture-dead-code-baseline.yaml",
+      "path": "governance\\findings\\F-009-vulture-dead-code-baseline.yaml",
       "status": "closed",
       "title": "High-confidence dead-code findings remain in baseline",
       "verification_script": "scripts/check_vulture_dead_code_zero.py"
     },
     {
       "category": "fake_completion",
-      "closed_at": "2026-06-16",
+      "closed_at": null,
       "id": "F-021",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-08",
-      "path": "governance/findings/F-021-live-deployment-urls.yaml",
-      "status": "closed",
+      "path": "governance\\findings\\F-021-live-deployment-urls.yaml",
+      "status": "open",
       "title": "Public deployment badges point to non-live URLs",
       "verification_script": "scripts/check_live_deployment_urls.py"
     },
@@ -116,7 +116,7 @@
       "id": "F-023",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-11",
-      "path": "governance/findings/F-023-numeric-ssot.yaml",
+      "path": "governance\\findings\\F-023-numeric-ssot.yaml",
       "status": "closed",
       "title": "Numeric SSOT drift across flagship narrative docs",
       "verification_script": "scripts/check_numeric_ssot.py"
@@ -127,7 +127,7 @@
       "id": "F-032",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-08",
-      "path": "governance/findings/F-032-doc-surface-reduction.yaml",
+      "path": "governance\\findings\\F-032-doc-surface-reduction.yaml",
       "status": "closed",
       "title": "Public documentation surface exceeds reviewer reading budget",
       "verification_script": "scripts/check_public_doc_count.py"
@@ -138,7 +138,7 @@
       "id": "F-033",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-11",
-      "path": "governance/findings/F-033-module-b-solver-gates.yaml",
+      "path": "governance\\findings\\F-033-module-b-solver-gates.yaml",
       "status": "closed",
       "title": "Module B solver gates were fictional: 4% effective coverage, null diagnostics, wrong counterfactual curves",
       "verification_script": "scripts/check_module_b_solver_gates.py"
@@ -149,7 +149,7 @@
       "id": "F-034",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-11",
-      "path": "governance/findings/F-034-module-c-estimand-gates.yaml",
+      "path": "governance\\findings\\F-034-module-c-estimand-gates.yaml",
       "status": "closed",
       "title": "Module C scored the wrong estimand in walk-forward and mislabelled PPC calibration",
       "verification_script": "scripts/check_module_c_estimand_gates.py"
@@ -160,7 +160,7 @@
       "id": "F-035",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-11",
-      "path": "governance/findings/F-035-module-a-anchor-sync.yaml",
+      "path": "governance\\findings\\F-035-module-a-anchor-sync.yaml",
       "status": "closed",
       "title": "Module A calibration anchors drifted across config, schema contract, and model card",
       "verification_script": "scripts/check_module_a_anchor_sync.py"
@@ -171,7 +171,7 @@
       "id": "F-036",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-11",
-      "path": "governance/findings/F-036-mstar-anchor-likelihood.yaml",
+      "path": "governance\\findings\\F-036-mstar-anchor-likelihood.yaml",
       "status": "closed",
       "title": "Module C calibration anchor m-star never entered the Bayesian likelihood",
       "verification_script": "scripts/check_module_c_outcome_anchor.py"
@@ -182,7 +182,7 @@
       "id": "F-037",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-11",
-      "path": "governance/findings/F-037-module-b-objective-identity.yaml",
+      "path": "governance\\findings\\F-037-module-b-objective-identity.yaml",
       "status": "closed",
       "title": "Module B MILP maximized a different objective than it reported",
       "verification_script": "scripts/check_module_b_objective_identity.py"
@@ -193,7 +193,7 @@
       "id": "F-038",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-11",
-      "path": "governance/findings/F-038-module-b-a-ingestion.yaml",
+      "path": "governance\\findings\\F-038-module-b-a-ingestion.yaml",
       "status": "closed",
       "title": "A\u2192B link was narrative: Module B never read Module A artifacts",
       "verification_script": "scripts/check_module_b_a_ingestion.py"
@@ -204,7 +204,7 @@
       "id": "F-039",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-11",
-      "path": "governance/findings/F-039-segment-label-profiles.yaml",
+      "path": "governance\\findings\\F-039-segment-label-profiles.yaml",
       "status": "closed",
       "title": "Segment names were an arbitrary KMeans-index map, not earned by cluster content",
       "verification_script": "scripts/check_module_a_segment_labels.py"
@@ -215,7 +215,7 @@
       "id": "F-040",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-11",
-      "path": "governance/findings/F-040-pipeline-wiring-golden-metrics.yaml",
+      "path": "governance\\findings\\F-040-pipeline-wiring-golden-metrics.yaml",
       "status": "closed",
       "title": "B\u2192C link was narrative: pipeline wiring + golden-metric CI gates",
       "verification_script": "scripts/check_pipeline_golden_metrics.py"
@@ -226,7 +226,7 @@
       "id": "F-041",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-12",
-      "path": "governance/findings/F-041-terminology-compliance.yaml",
+      "path": "governance\\findings\\F-041-terminology-compliance.yaml",
       "status": "closed",
       "title": "Terminology compliance gaps in public markdown",
       "verification_script": "scripts/check_terminology_compliance.py"
@@ -237,7 +237,7 @@
       "id": "F-042",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-12",
-      "path": "governance/findings/F-042-mcmc-diagnostics-disclosure.yaml",
+      "path": "governance\\findings\\F-042-mcmc-diagnostics-disclosure.yaml",
       "status": "closed",
       "title": "MCMC diagnostic claims must match aspirational enforcement",
       "verification_script": "scripts/check_mcmc_diagnostics_disclosure.py"
@@ -248,7 +248,7 @@
       "id": "F-043",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-12",
-      "path": "governance/findings/F-043-operator-surface-tracked.yaml",
+      "path": "governance\\findings\\F-043-operator-surface-tracked.yaml",
       "status": "closed",
       "title": "Operator-only artifacts remain publicly tracked",
       "verification_script": "scripts/check_tracked_operator_artifacts.py"
@@ -259,7 +259,7 @@
       "id": "F-044",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-12",
-      "path": "governance/findings/F-044-module-a-config-wiring.yaml",
+      "path": "governance\\findings\\F-044-module-a-config-wiring.yaml",
       "status": "closed",
       "title": "Module A model_params.yaml not wired to runtime loaders",
       "verification_script": "scripts/check_module_a_config_wiring.py"
@@ -270,7 +270,7 @@
       "id": "F-045",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-12",
-      "path": "governance/findings/F-045-battleground-illustrative-label.yaml",
+      "path": "governance\\findings\\F-045-battleground-illustrative-label.yaml",
       "status": "closed",
       "title": "Battleground department probabilities must be honestly classified, never overclaimed",
       "verification_script": "scripts/check_battleground_illustrative_label.py"
@@ -281,7 +281,7 @@
       "id": "F-046",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-12",
-      "path": "governance/findings/F-046-eda-stale-orphan-pngs.yaml",
+      "path": "governance\\findings\\F-046-eda-stale-orphan-pngs.yaml",
       "status": "closed",
       "title": "Stale orphan EDA PNGs contradict canonical pipeline outputs",
       "verification_script": "scripts/check_eda_stale_orphan_pngs.py"
@@ -292,7 +292,7 @@
       "id": "F-047",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-12",
-      "path": "governance/findings/F-047-module-a-report-charts-missing.yaml",
+      "path": "governance\\findings\\F-047-module-a-report-charts-missing.yaml",
       "status": "closed",
       "title": "Module A model-card chart artifacts missing from reports/",
       "verification_script": "scripts/check_module_a_report_charts.py"
@@ -303,7 +303,7 @@
       "id": "F-048",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-12",
-      "path": "governance/findings/F-048-eda-battleground-chart-disclosure.yaml",
+      "path": "governance\\findings\\F-048-eda-battleground-chart-disclosure.yaml",
       "status": "closed",
       "title": "EDA battleground charts omit illustrative-mapping disclosure in titles",
       "verification_script": "scripts/check_eda_battleground_chart_labels.py"
@@ -314,7 +314,7 @@
       "id": "F-049",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-12",
-      "path": "governance/findings/F-049-eda-notebook-chart-parity.yaml",
+      "path": "governance\\findings\\F-049-eda-notebook-chart-parity.yaml",
       "status": "closed",
       "title": "EDA notebook chart IDs drift from canonical PNG generator (E-10)",
       "verification_script": "scripts/check_eda_notebook_chart_parity.py"
@@ -325,7 +325,7 @@
       "id": "F-050",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-12",
-      "path": "governance/findings/F-050-figure-artifact-lineage.yaml",
+      "path": "governance\\findings\\F-050-figure-artifact-lineage.yaml",
       "status": "closed",
       "title": "Committed chart PNGs must bind to a single canonical data run",
       "verification_script": "scripts/check_figure_artifact_lineage.py"
@@ -336,7 +336,7 @@
       "id": "F-051",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-12",
-      "path": "governance/findings/F-051-segment-label-chart-semantics.yaml",
+      "path": "governance\\findings\\F-051-segment-label-chart-semantics.yaml",
       "status": "closed",
       "title": "Canonical chart population must earn segment label semantics",
       "verification_script": "scripts/check_segment_label_chart_semantics.py"
@@ -347,7 +347,7 @@
       "id": "F-052",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-12",
-      "path": "governance/findings/F-052-propensity-individual-variation.yaml",
+      "path": "governance\\findings\\F-052-propensity-individual-variation.yaml",
       "status": "closed",
       "title": "Participation propensity must vary within departments and segments",
       "verification_script": "scripts/check_propensity_individual_variation.py"
@@ -358,7 +358,7 @@
       "id": "F-053",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-13",
-      "path": "governance/findings/F-053-winprob-chart-noise-axis.yaml",
+      "path": "governance\\findings\\F-053-winprob-chart-noise-axis.yaml",
       "status": "closed",
       "title": "Department win-probability charts zoomed a noise band into false signal",
       "verification_script": "scripts/check_winprob_chart_noise_axis.py"
@@ -369,7 +369,7 @@
       "id": "F-054",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-13",
-      "path": "governance/findings/F-054-triage-backlog-unfiled.yaml",
+      "path": "governance\\findings\\F-054-triage-backlog-unfiled.yaml",
       "status": "closed",
       "title": "Severe chart/inference issues sit unfiled while the queue reports empty",
       "verification_script": "scripts/check_triage_backlog_filed.py"
@@ -380,7 +380,7 @@
       "id": "F-055",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-13",
-      "path": "governance/findings/F-055-module-c-forecast-retrodiction-label.yaml",
+      "path": "governance\\findings\\F-055-module-c-forecast-retrodiction-label.yaml",
       "status": "closed",
       "title": "Module C C1 timeline mislabelled a retrodiction as a forecast with the verified anchor undrawn",
       "verification_script": "scripts/check_module_c_forecast_retrodiction.py"
@@ -391,7 +391,7 @@
       "id": "F-056",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-13",
-      "path": "governance/findings/F-056-module-c-terminal-anchor-disclosure.yaml",
+      "path": "governance\\findings\\F-056-module-c-terminal-anchor-disclosure.yaml",
       "status": "closed",
       "title": "Module C C2 showed an anchor-pinned terminal posterior as if it independently matched the outcome",
       "verification_script": "scripts/check_module_c_terminal_anchor_disclosure.py"
@@ -402,7 +402,7 @@
       "id": "F-057",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-13",
-      "path": "governance/findings/F-057-module-c-scenario-discreteness.yaml",
+      "path": "governance\\findings\\F-057-module-c-scenario-discreteness.yaml",
       "status": "closed",
       "title": "Module C C5/C6 misrepresented discrete, exchangeable Monte-Carlo draws",
       "verification_script": "scripts/check_module_c_scenario_discreteness.py"
@@ -413,7 +413,7 @@
       "id": "F-058",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-13",
-      "path": "governance/findings/F-058-module-c-transparency-small-n.yaml",
+      "path": "governance\\findings\\F-058-module-c-transparency-small-n.yaml",
       "status": "closed",
       "title": "Module C C9 read a transparency-vs-bias rule off n=3 pollsters",
       "verification_script": "scripts/check_module_c_transparency_small_n.py"
@@ -424,7 +424,7 @@
       "id": "F-059",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-13",
-      "path": "governance/findings/F-059-module-c-shock-scale-filename.yaml",
+      "path": "governance\\findings\\F-059-module-c-shock-scale-filename.yaml",
       "status": "closed",
       "title": "Module C C10 promised a win-probability histogram but plots shock scale",
       "verification_script": "scripts/check_module_c_shock_scale_filename.py"
@@ -435,7 +435,7 @@
       "id": "F-060",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-13",
-      "path": "governance/findings/F-060-module-b-allocation-chart-integrity.yaml",
+      "path": "governance\\findings\\F-060-module-b-allocation-chart-integrity.yaml",
       "status": "closed",
       "title": "Module B charts stacked exclusive scenarios, half-labelled routing, and faked an efficiency frontier",
       "verification_script": "scripts/check_module_b_allocation_chart_integrity.py"
@@ -446,7 +446,7 @@
       "id": "F-061",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-13",
-      "path": "governance/findings/F-061-module-a-overview-readability.yaml",
+      "path": "governance\\findings\\F-061-module-a-overview-readability.yaml",
       "status": "closed",
       "title": "Module A A12 was an unreadable overplot and eda_overview mislabelled its data/model scope",
       "verification_script": "scripts/check_module_a_overview_readability.py"
@@ -457,7 +457,7 @@
       "id": "F-062",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-13",
-      "path": "governance/findings/F-062-module-b5-ratio-decoupled.yaml",
+      "path": "governance\\findings\\F-062-module-b5-ratio-decoupled.yaml",
       "status": "closed",
       "title": "B5 x-axis decoupled from ratio denominator (self-correlation fix)",
       "verification_script": "scripts/check_module_b5_ratio_decoupled.py"
@@ -468,7 +468,7 @@
       "id": "F-063",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-13",
-      "path": "governance/findings/F-063-module-b8-contacts-cap-disclosure.yaml",
+      "path": "governance\\findings\\F-063-module-b8-contacts-cap-disclosure.yaml",
       "status": "closed",
       "title": "B8 multi-channel contacts vs unique-voter cap disclosed",
       "verification_script": "scripts/check_module_b8_contacts_disclosure.py"
@@ -479,7 +479,7 @@
       "id": "F-064",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-13",
-      "path": "governance/findings/F-064-module-s4-priority-decircularized.yaml",
+      "path": "governance\\findings\\F-064-module-s4-priority-decircularized.yaml",
       "status": "closed",
       "title": "S4 priority score decircularized (budget removed from formula)",
       "verification_script": "scripts/check_module_s4_priority_decircularized.py"
@@ -490,7 +490,7 @@
       "id": "F-065",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-13",
-      "path": "governance/findings/F-065-module-bmc-handshake-disclosed.yaml",
+      "path": "governance\\findings\\F-065-module-bmc-handshake-disclosed.yaml",
       "status": "closed",
       "title": "B\u2192C contact handshake scenario-invariance disclosed in C5",
       "verification_script": "scripts/check_module_bmc_handshake_disclosed.py"
@@ -501,7 +501,7 @@
       "id": "F-066",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-13",
-      "path": "governance/findings/F-066-module-a10-pca-disclosure.yaml",
+      "path": "governance\\findings\\F-066-module-a10-pca-disclosure.yaml",
       "status": "closed",
       "title": "A10 PCA lattice disclosed as dept-level constant features",
       "verification_script": "scripts/check_module_a10_pca_disclosure.py"
@@ -512,7 +512,7 @@
       "id": "F-067",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-13",
-      "path": "governance/findings/F-067-pub001-dashboard-qa-tab.yaml",
+      "path": "governance\\findings\\F-067-pub001-dashboard-qa-tab.yaml",
       "status": "closed",
       "title": "Dashboard QA tab resolves the latest qa_report instead of a stale date",
       "verification_script": "scripts/check_pub001_dashboard_qa_tab.py"
@@ -523,7 +523,7 @@
       "id": "F-068",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-14",
-      "path": "governance/findings/F-068-module-c-interval-mislabel.yaml",
+      "path": "governance\\findings\\F-068-module-c-interval-mislabel.yaml",
       "status": "closed",
       "title": "Tracking credible bands were 90% equal-tailed quantiles mislabelled as 94% HDI",
       "verification_script": "scripts/check_module_c_interval_honesty.py"
@@ -534,7 +534,7 @@
       "id": "F-069",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-14",
-      "path": "governance/findings/F-069-module-c-forecast-not-anchored.yaml",
+      "path": "governance\\findings\\F-069-module-c-forecast-not-anchored.yaml",
       "status": "closed",
       "title": "Published 'forecast' track is the outcome-anchored series (a retrodiction, not a forecast)",
       "verification_script": "scripts/check_module_c_forecast_not_anchored.py"
@@ -545,7 +545,7 @@
       "id": "F-070",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-14",
-      "path": "governance/findings/F-070-department-heatmap-fake-formula.yaml",
+      "path": "governance\\findings\\F-070-department-heatmap-fake-formula.yaml",
       "status": "closed",
       "title": "Department win-probability heatmap derived from a fabricated formula, not real data",
       "verification_script": "scripts/check_department_heatmap_real_data.py"
@@ -556,7 +556,7 @@
       "id": "F-071",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-14",
-      "path": "governance/findings/F-071-module-c-mc-contacts-flat.yaml",
+      "path": "governance\\findings\\F-071-module-c-mc-contacts-flat.yaml",
       "status": "closed",
       "title": "MC 'persuasion-adjusted contacts' figure was a flat scalar broadcast to every draw",
       "verification_script": "scripts/check_module_c_mc_contacts_vary.py"
@@ -567,7 +567,7 @@
       "id": "F-072",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-14",
-      "path": "governance/findings/F-072-published-artifact-ssot.yaml",
+      "path": "governance\\findings\\F-072-published-artifact-ssot.yaml",
       "status": "closed",
       "title": "Two published artifacts reported the same pollster house effects with different numbers",
       "verification_script": "scripts/check_published_artifact_ssot.py"
@@ -578,7 +578,7 @@
       "id": "F-073",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-14",
-      "path": "governance/findings/F-073-canonical-figure-regen.yaml",
+      "path": "governance\\findings\\F-073-canonical-figure-regen.yaml",
       "status": "closed",
       "title": "Canonical figure regen: retire deploy screenshots, re-sync EDA narrative to real TSJE model",
       "verification_script": "scripts/check_canonical_figure_regen.py"
@@ -589,7 +589,7 @@
       "id": "F-074",
       "kind": "recurrence_invariant",
       "opened_at": "2026-06-15",
-      "path": "governance/findings/F-074-exit-model-hdi-mislabel.yaml",
+      "path": "governance\\findings\\F-074-exit-model-hdi-mislabel.yaml",
       "status": "closed",
       "title": "exit_model.py: 90% ETI stored as hdi_low/hdi_high \u2014 partial regression of F-068",
       "verification_script": "scripts/check_exit_model_hdi.py"
@@ -600,26 +600,39 @@
       "id": "F-075",
       "kind": "governance_invariant",
       "opened_at": "2026-06-17",
-      "path": "governance/findings/F-075-parameter-registry-compliance.yaml",
+      "path": "governance\\findings\\F-075-parameter-registry-compliance.yaml",
       "status": "closed",
       "title": "Parameter registry compliance: docs/parameter_registry.yaml must stay in sync with config files",
       "verification_script": "scripts/check_parameter_registry.py"
+    },
+    {
+      "category": "governance_gate_drift",
+      "closed_at": "2026-07-08",
+      "id": "F-076",
+      "kind": "recurrence_invariant",
+      "opened_at": "2026-07-08",
+      "path": "governance\\findings\\F-076-doc-registry-vendor-prefix-drift.yaml",
+      "status": "closed",
+      "title": "Registry builder and verifier disagreed on vendor prefixes \u2014 make verify red on main",
+      "verification_script": "scripts/check_doc_registry_vendor_prefix_ssot.py"
     }
   ],
-  "generated_at": "2026-07-08T14:16:18.368533+00:00",
+  "generated_at": "2026-07-09T08:54:09.331928+00:00",
   "git_branch": "claude/analytics-audit-improvement-sdciz3",
-  "git_head_sha": "af33f398a770cf7fe28fee4031047a7d869b0701",
+  "git_head_sha": "76915125d6bb36022c70daaa2b847ddd4334371d",
   "migrations": [],
   "summary": {
     "findings_closed": 53,
     "findings_closed_historical": 2,
     "findings_in_progress": 0,
-    "findings_open": 0,
-    "findings_total": 55,
+    "findings_open": 1,
+    "findings_total": 56,
     "findings_wont_fix": 0,
     "migrations_in_progress": 0,
     "migrations_total": 0,
-    "open_by_category": {}
+    "open_by_category": {
+      "fake_completion": 1
+    }
   },
   "validation_errors": [],
   "writer": "scripts/write_audit_state.py"

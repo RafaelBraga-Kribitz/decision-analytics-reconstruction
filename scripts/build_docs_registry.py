@@ -11,6 +11,7 @@ Path-level ``doc_id`` and role fixes live in ``docs/registry/path_overrides.yaml
 from __future__ import annotations
 
 import subprocess
+import sys
 from collections import defaultdict
 from pathlib import Path
 from typing import Any
@@ -18,6 +19,10 @@ from typing import Any
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
+from scripts.doc_registry_schema import VENDOR_PREFIXES as _VENDOR_PREFIXES
+
 REGISTRY_PATH = ROOT / "docs" / "registry" / "docs_registry.yaml"
 PATH_OVERRIDES_PATH = ROOT / "docs" / "registry" / "path_overrides.yaml"
 
@@ -35,11 +40,6 @@ DOMAIN_PREFIX_FOR_FIRST_SEGMENT = {
     "tests": "TST",
     "maintainer": "MAINT",
 }
-
-
-# Vendored subtrees and CI/tooling dirs — excluded from registry tracking.
-# Must stay a superset-match of verify_doc_registry._VENDOR_PREFIXES.
-_VENDOR_PREFIXES = ("governance/_kit/", ".github/")
 
 
 def git_tracked_md() -> list[str]:

@@ -36,10 +36,21 @@ def _readme_gaps() -> list[str]:
 
 
 def _mcmc_test_gaps() -> list[str]:
+    """Claims must match reality: the diagnostics tests are EITHER enforced
+    under full NUTS (real R-hat / ESS / divergence assertions, no xfail) OR
+    disclosed as xfail while the gates are aspirational. Silently deleting the
+    gates is the failure mode this guard blocks.
+    """
     if not MCMC_TEST.is_file():
         return ["missing test_mcmc_diagnostics_summary.py"]
-    if MCMC_TEST.read_text(encoding="utf-8").count("@pytest.mark.xfail") == 0:
-        return ["expected xfail MCMC diagnostics tests while MC_FAST is default"]
+    text = MCMC_TEST.read_text(encoding="utf-8")
+    has_xfail = "@pytest.mark.xfail" in text
+    enforced = all(tok in text for tok in ("az.rhat", "az.ess", "diverging"))
+    if not has_xfail and not enforced:
+        return [
+            "MCMC diagnostics are neither enforced (R-hat/ESS/divergence "
+            "assertions) nor disclosed as xfail"
+        ]
     return []
 
 
@@ -47,8 +58,11 @@ def _validation_gaps() -> list[str]:
     if not VALIDATION.is_file():
         return ["missing reports/VALIDATION.md"]
     val = VALIDATION.read_text(encoding="utf-8").lower()
-    if "divergences" in val and "does not block" not in val:
-        return ["VALIDATION.md should state divergences do not block delivery"]
+    if "divergences" in val and "does not block" not in val and "enforced" not in val:
+        return [
+            "VALIDATION.md must either state divergences do not block delivery "
+            "(aspirational) or that the divergence gate is enforced"
+        ]
     return []
 
 

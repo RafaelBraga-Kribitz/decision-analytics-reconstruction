@@ -1,0 +1,43 @@
+id: F-076
+title: "Registry builder and verifier disagreed on vendor prefixes — make verify red on main"
+status: closed
+severity: high
+kind: recurrence_invariant
+category: governance_gate_drift
+opened_at: 2026-07-08
+closed_at: 2026-07-08
+recurrence_count: 0
+owner: remediator
+finding: >
+  scripts/build_docs_registry.py excluded only governance/_kit/ from registry
+  tracking while scripts/verify_doc_registry.py excluded governance/_kit/ and
+  .github/. Commit f832a6c added .github/pull_request_template.md, so the build
+  step (which make verify runs first) wrote the template into
+  docs/registry/docs_registry.yaml and the verify step immediately rejected the
+  registry it had just built ("registry paths missing from git ls-files").
+  make verify was red on a clean checkout of main, blocking every issue whose
+  acceptance criteria include a green verify. The same commit window also added
+  maintainer/AGENT_WORKFLOW_GUIDE.md without regenerating the registry — a
+  second latent verify failure masked by the first.
+remediation: >
+  VENDOR_PREFIXES moved to a single shared constant in
+  scripts/doc_registry_schema.py; both build_docs_registry.py and
+  verify_doc_registry.py now import it, so the exclusion lists cannot diverge.
+  Registry and docs/INDEX.md regenerated, picking up the missing
+  AGENT_WORKFLOW_GUIDE.md entry (DOC-MAINT-001) and dropping the vendored
+  .github/ template. scripts/check_doc_registry_vendor_prefix_ssot.py enforces
+  the single-source invariant statically and re-runs verify_doc_registry.py as
+  a round-trip check.
+verification_script: scripts/check_doc_registry_vendor_prefix_ssot.py
+artifacts:
+  - scripts/doc_registry_schema.py
+  - scripts/build_docs_registry.py
+  - scripts/verify_doc_registry.py
+  - scripts/check_doc_registry_vendor_prefix_ssot.py
+  - docs/registry/docs_registry.yaml
+  - docs/INDEX.md
+notes: >
+  Discovered at session start 2026-07-08: make verify failed on an unmodified
+  checkout. Root cause is a duplicated constant, i.e. the exact drift class the
+  registry system exists to prevent. The gate is static + round-trip, so the
+  Adversary re-verifies it on every PR without needing generated data.

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from module_b_resource_allocation.constants import WEEK_COUNT
+
 
 class AllocationHandshakeRow(BaseModel):
     """Subset of allocation_output aligned with ``reports/module_b_module_c_handshake.md``."""
@@ -12,7 +14,7 @@ class AllocationHandshakeRow(BaseModel):
 
     department: str
     channel: str
-    week_index: int = Field(ge=1, le=60)
+    week_index: int = Field(ge=1, le=WEEK_COUNT)
     iso_week: str
     budget_allocation_usd: float = Field(ge=0.0)
     expected_contacts: float

@@ -36,6 +36,9 @@ OPERATOR_FILES = {
     # Gate-evidence trail consumed by test_architecture_module_c_surface, not
     # reviewer-facing narrative.
     "module_c_forecasting_scenarios/reports/C_research_proof_table.md",
+    # Generated constraint x contract matrix (issue #64); registry lists it as
+    # internal/generated, freshness-gated by tests/test_conformance_matrix.py.
+    "schema_contracts/CONFORMANCE_MATRIX.md",
 }
 
 

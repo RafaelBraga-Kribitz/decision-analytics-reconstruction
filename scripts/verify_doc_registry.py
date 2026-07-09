@@ -15,10 +15,8 @@ sys.path.insert(0, str(ROOT))
 import yaml
 from pydantic import ValidationError
 
+from scripts.doc_registry_schema import VENDOR_PREFIXES as _VENDOR_PREFIXES
 from scripts.doc_registry_schema import parse_registry_payload
-
-# Vendored subtrees and CI/tooling dirs — excluded from registry tracking.
-_VENDOR_PREFIXES = ("governance/_kit/", ".github/")
 
 REGISTRY_YAML = ROOT / "docs/registry/docs_registry.yaml"
 TAXONOMY = ROOT / "docs/registry/taxonomy.yaml"

@@ -64,6 +64,17 @@ from module_b_resource_allocation.models.feature_join import build_allocation_fe
 _PAY_TV_ELIGIBLE: frozenset[str] = frozenset({"Asuncion", "Central", "Alto Parana"})
 
 
+class EmptyReachCapsError(ValueError):
+    """Raised when :func:`solve` is given an ``AllocationProblem`` whose
+    ``reach_caps`` frame has no rows.
+
+    Without at least one (department, channel) row the solver cannot build
+    any decision variables, and every ``DEPARTMENTS`` × ``CHANNEL_NAMES``
+    cell lookup against the empty frame would otherwise raise an opaque
+    ``KeyError`` deep inside :func:`_build_decision_variables`.
+    """
+
+
 def _expected_contacts(
     reachable_audience: float, reach_used: float, k: float, inflection_pct: float
 ) -> float:
@@ -702,11 +713,17 @@ def solve(problem: AllocationProblem) -> AllocationResult:
 
     Raises:
         RuntimeError: If CBC reports an infeasible or error status (via PuLP).
+        EmptyReachCapsError: If ``problem.reach_caps`` has zero rows.
 
     Example:
         ``solve(build_problem(scenario_id=\"baseline\"))`` is the core API call
         for both CLI and HTTP surfaces.
     """
+    if problem.reach_caps.empty:
+        raise EmptyReachCapsError(
+            "AllocationProblem.reach_caps has zero rows; the solver needs at "
+            "least one (department, channel) cell to build decision variables."
+        )
     layer = problem.fx_layer
     caps_lookup = problem.reach_caps.set_index(["department", "channel"], drop=False)
 

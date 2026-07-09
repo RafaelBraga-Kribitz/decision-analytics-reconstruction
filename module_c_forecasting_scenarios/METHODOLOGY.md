@@ -15,17 +15,22 @@ Both use PyMC (NUTS sampler), with diagnostics exportable for auditing.
 
 ### Generative model
 
-**Latent state:**
+**Latent state (non-centered random walk, model `v0.4`):**
 ```
-mu_margin[t] ~ GaussianRandomWalk(sigma=sigma_rw)
-  sigma_rw ~ HalfNormal(1.5)
+sigma_rw          ~ HalfNormal(1.5)
+mu_margin_init    ~ Normal(0, 10)          # initial level (pp)
+mu_margin_innov[t] ~ Normal(0, 1)          # standardized daily innovations
+mu_margin[t]      = mu_margin_init + sigma_rw * cumsum(mu_margin_innov)[t]
 ```
-Latent daily preference margin (t ∈ [start_date, outcome_event_date − 1]).
+Latent daily preference margin (t ∈ [start_date, outcome_event_date − 1]). This
+is the non-centered form of `GaussianRandomWalk(sigma=sigma_rw)` — see
+§ Reparameterization below for why the centered form was replaced.
 
-**Pollster offsets:**
+**Pollster offsets (non-centered hierarchy):**
 ```
-house_offset[p] ~ Normal(0, sigma_house)
-  sigma_house ~ HalfNormal(2.5)
+sigma_house       ~ HalfNormal(2.5)
+house_offset_z[p] ~ Normal(0, 1)
+house_offset[p]   = sigma_house * house_offset_z[p]
 ```
 Per-firm systematic bias (e.g., firm A always overstates margin by +1.2 pp).
 
@@ -47,9 +52,51 @@ Transparency (`phi`) inversely scales std dev; clipped to [1, 25] pp. Pollsters 
 - **Chains:** 4 (see `config/pymc_sampler.yaml`)
 - **Draws:** 1000 per chain (post-warmup)
 - **Tuning:** 1000 steps per chain
-- **Target acceptance:** 0.95
+- **Target acceptance:** 0.99 full NUTS (`target_accept_full`); 0.95 fast/CI
 - **Seed:** 42
 - **Fast mode (MC_FAST=1):** 50 draws, 50 tune (CI only)
+
+### Reparameterization (v0.4) — why non-centered
+
+**Symptom.** Under full NUTS on the production 8-wave fixture, the centered
+`v0.3` model (`mu_margin ~ GaussianRandomWalk(sigma=sigma_rw)`,
+`house_offset ~ Normal(0, sigma_house)`) failed every convergence gate:
+R-hat > 1.01, ESS < 100, and persistent divergences. This is the textbook
+**Neal's funnel**: when the scale parameter (`sigma_rw`, `sigma_house`) and the
+states it scales are sampled in the same coordinates, the posterior narrows to a
+cusp as the scale → 0 that NUTS cannot traverse at a fixed step size. The
+8-wave fixture is sparse (8 polls over ~140 latent days), so most of the walk is
+prior-dominated and the funnel is severe.
+
+**Remedy.** Non-centered reparameterization decouples the geometry from the
+scale. We sample standardized innovations `z ~ Normal(0, 1)` and reconstruct the
+latent quantities deterministically:
+
+```
+mu_margin  = mu_margin_init + sigma_rw   * cumsum(mu_margin_innov)   # innov ~ N(0,1)
+house_offset =                sigma_house * house_offset_z            # z     ~ N(0,1)
+```
+
+`mu_margin_init ~ Normal(0, 10)` supplies the initial level that the diffuse
+`GaussianRandomWalk` default carried implicitly (margins are plausibly within
+±30 pp). NUTS now explores a fixed unit-variance space independent of the
+scales. The scale priors are **unchanged** (`HalfNormal(1.5)` / `HalfNormal(2.5)`)
+— the fix is geometric, not a re-tuning of prior strength. A single lever was
+added on top: `target_accept_full = 0.99` (from 0.95) to clear the last handful
+of divergences by shrinking the step size in the tight regions.
+
+**Result** (full NUTS, 4 chains × 1000 draws, seed 42, 8-wave fixture):
+
+| Gate | Criterion | v0.3 (centered) | v0.4 (non-centered) |
+|------|-----------|-----------------|---------------------|
+| max R-hat | ≤ 1.01 | > 1.01 | **1.007** |
+| min ESS bulk | ≥ 400 | < 100 | **~2540** |
+| min ESS tail | ≥ 400 | — | **~1860** |
+| divergences | 0 | 4+ | **0** |
+
+Enforced (not xfail'd) by `tests/test_mcmc_diagnostics_summary.py` in the slow
+lane, with a companion posterior-stability test asserting two independent
+seed-42 fits agree within 0.05 pp (mean) / 0.10 pp (HDI bounds) per day.
 
 **Outcome anchor (m★):** After the random-walk likelihood, terminal margin is tied
 to the verified Series A/B anchor via `Normal(mu_margin[-1], anchor_sigma)` — see
@@ -110,11 +157,12 @@ If exit_df has < 2 rows: return summary stub with `note="insufficient_exit_rows_
 
 ```yaml
 chains: 4
-draws: 1000          # per chain
+draws: 1000              # per chain
 tune: 1000
-target_accept: 0.95
+target_accept: 0.95      # fast / CI path
+target_accept_full: 0.99 # full-NUTS tracking path (non-centered walk)
 random_seed: 42
-draws_fast: 50       # when MC_FAST=1
+draws_fast: 50           # when MC_FAST=1
 tune_fast: 50
 ```
 
@@ -158,7 +206,7 @@ print(f"Divergences: {idata.sample_stats['diverging'].sum().values}")
 - `posterior_mean_preference_margin_pp`
 - `posterior_hdi_low_pp`, `posterior_hdi_high_pp`
 - `calibration_series`, `series_tag`
-- `model_version` = `c_tracking_hierarchical_v0.1`
+- `model_version` = `c_tracking_hierarchical_v0.4`
 
 ### Output: `posterior_house_effects.parquet`
 - `pollster_id`

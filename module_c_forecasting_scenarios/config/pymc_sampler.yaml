@@ -2,6 +2,11 @@ chains: 4
 draws: 1000
 tune: 1000
 target_accept: 0.95
+# Full-NUTS tracking fits use a higher acceptance target so the non-centered
+# random walk clears its last few divergences on the sparse 8-wave fixture
+# (smaller step size near the posterior's tight regions). Fast/CI path keeps
+# target_accept (0.95). See METHODOLOGY.md § Reparameterization.
+target_accept_full: 0.99
 max_treedepth: 15
 random_seed: 42
 # Credible interval probability — 94% HDI used across tracking, exit, and geo models.

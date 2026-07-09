@@ -29,6 +29,7 @@ from module_b_resource_allocation.constants import DEPARTMENTS
 from scipy.stats import norm
 
 from module_c_forecasting_scenarios.config import load_sampler_config
+from module_c_forecasting_scenarios.data.contract_validate import validate_dataframe_contract
 
 MODEL_VERSION = "c_battleground_v0.2"
 
@@ -155,6 +156,7 @@ def export_battleground_department_table(
 
     contract_cols = ["department", "calibration_series", "win_probability_a", "model_version"]
     out = cast(pd.DataFrame, full[contract_cols].copy())
+    validate_dataframe_contract(out, "battleground_department_probability")
     out.to_parquet(out_path, index=False)
 
     null_features: list[dict[str, Any]] = [
