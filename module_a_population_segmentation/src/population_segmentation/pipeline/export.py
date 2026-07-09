@@ -227,7 +227,10 @@ def run_export(
     _centers = [0.1, 0.5, 0.9]
     _tiers = ("low", "medium", "high")
     _ref_counts = (_np.array([_ref_shares[k] for k in _tiers]) * 1000).astype(int)
-    _cur_counts = (_np.array([float(_cur.get(k, 0.0)) for k in _tiers]) * 1000).astype(int)
+    _cur_vals = [_cur.get(k, 0.0) for k in _tiers]
+    _cur_counts = (
+        _np.array([float(v) if v is not None else 0.0 for v in _cur_vals]) * 1000
+    ).astype(int)
     _tier_psi = population_stability_index(
         _np.repeat(_centers, _ref_counts),
         _np.repeat(_centers, _cur_counts),

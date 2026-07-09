@@ -106,7 +106,8 @@ def check_reachability_tier_drift(
     shares = df["reachability_tier"].value_counts(normalize=True)
     warnings: list[str] = []
     for tier in ("low", "medium", "high"):
-        share = float(shares.get(tier, 0.0))
+        raw_share = shares.get(tier, 0.0)
+        share = float(raw_share) if raw_share is not None else 0.0
         if not tol["min_share"] <= share <= tol["max_share"]:
             warnings.append(
                 f"reachability_tier drift: tier '{tier}' share {share:.4f} outside "

@@ -74,6 +74,7 @@ Run `poetry run python scripts/generate_doc_index.py --write` after registry cha
 - **DOC-REP-001** — `reports/eda/eda_report.md` — *narrative* / *canonical*
 - **DOC-REP-002** — `reports/eda/strategic_brief.md` — *narrative* / *canonical*
 - **DOC-EPI-001** — `reports/epistemic_boundaries.md` — *methodology* / *canonical*
+- **DOC-REP-003** — `reports/module_a/k_sweep_2026-07-09.md` — *narrative* / *canonical*
 
 ## Derived portfolio views
 
