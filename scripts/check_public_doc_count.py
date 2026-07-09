@@ -43,6 +43,12 @@ OPERATOR_FILES = {
     # Generated constraint x contract matrix (issue #64); registry lists it as
     # internal/generated, freshness-gated by tests/test_conformance_matrix.py.
     "schema_contracts/CONFORMANCE_MATRIX.md",
+    # Generated sensitivity-analysis evidence artifacts (IMP-C04 issue #62,
+    # IMP-C02 issue #61) — gate-evidence trails consumed by
+    # test_shock_herding_sensitivity_artifact.py / test_phi_sensitivity_artifact.py,
+    # not reviewer-facing narrative.
+    "module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md",
+    "module_c_forecasting_scenarios/reports/phi_sensitivity.md",
 }
 
 

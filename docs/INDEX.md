@@ -90,6 +90,8 @@ Run `poetry run python scripts/generate_doc_index.py --write` after registry cha
 
 - **DOC-GOV-SESSION-END-001** — `governance/SESSION_END.md` — *active*
 - **DOC-MODC-002** — `module_c_forecasting_scenarios/reports/C_research_proof_table.md` — *active*
+- **DOC-MODC-004** — `module_c_forecasting_scenarios/reports/phi_sensitivity.md` — *active*
+- **DOC-MODC-003** — `module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md` — *active*
 
 ## Research inputs (reference only)
 

@@ -234,6 +234,30 @@ paths:
     status: active
     sensitivity: public
     owner: module_c
+  module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md:
+    doc_id: DOC-MODC-003
+    doc_type: evidence
+    doc_role: evidence
+    visibility: public
+    audience:
+    - technical
+    - maintainer
+    authority: evidence
+    status: active
+    sensitivity: public
+    owner: module_c
+  module_c_forecasting_scenarios/reports/phi_sensitivity.md:
+    doc_id: DOC-MODC-004
+    doc_type: evidence
+    doc_role: evidence
+    visibility: public
+    audience:
+    - technical
+    - maintainer
+    authority: evidence
+    status: active
+    sensitivity: public
+    owner: module_c
   reports/system_walkthrough.md:
     doc_id: DOC-WALK-001
     doc_type: walkthrough
