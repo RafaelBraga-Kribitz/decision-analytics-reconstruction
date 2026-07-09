@@ -51,6 +51,14 @@ def build_demographic_features(df: pd.DataFrame) -> pd.DataFrame:
     gender_map = {"M": 1.0, "F": 0.0, "unknown": 0.5}
     out["gender_encoded"] = out["gender"].map(lambda x: gender_map.get(x, 0.5)).astype(float)
 
+    # One-hot indicators for the clustering matrix (IMP-A02): the scalar
+    # encoding above places "unknown" at the arithmetic midpoint of M/F —
+    # a false metric relationship for Euclidean methods. Full one-hot keeps
+    # every pairwise cross-category distance equal.
+    _gender_norm = out["gender"].map(lambda x: x if x in gender_map else "unknown")
+    for _cat in ("M", "F", "unknown"):
+        out[f"gender_is_{_cat}"] = _gender_norm.eq(_cat).astype(float)
+
     out["youth_flag"] = out["age_on_event_date"].between(18, 24)
     out["senior_flag"] = out["age_on_event_date"] >= 65
 

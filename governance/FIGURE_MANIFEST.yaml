@@ -18,12 +18,12 @@
 # renaming an existing key, changing an existing key's type/meaning, or
 # removing/repointing a chart_id.
 schema_version: 1
-run_id: 6d0da957cb9d
-git_commit: 6d0da957cb9d87ef369a48a4088f7dec9e6dacb4
+run_id: 1252ce644c59
+git_commit: 1252ce644c59c0a0595fdf0e6f32db7abe62d771
 generated_at: '2026-07-09'
 data_manifest: data/processed/model_run_manifest.json
 canonical_sample_size: 50000
-segmentation_label_hash: b624f3c39b909de3
+segmentation_label_hash: 02e4166d85151bca
 figures:
 - chart_id: A10_pca_biplot
   path: reports/eda/A10_pca_biplot.png

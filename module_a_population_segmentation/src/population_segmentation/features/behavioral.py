@@ -31,6 +31,15 @@ def build_behavioral_features(df: pd.DataFrame) -> pd.DataFrame:
         out["preference_proxy"].map(lambda x: pref_map.get(x, 3)).fillna(3).astype(int)
     )
 
+    # One-hot indicators for the clustering matrix (IMP-A02): preference_proxy
+    # is nominal/unordered, so the integer encoding above must never enter a
+    # Euclidean-distance pipeline. Full one-hot (no dropped reference level)
+    # keeps every pairwise cross-category distance equal.
+    _known_prefs = ("A", "B", "other")
+    _pref_norm = out["preference_proxy"].map(lambda x: x if x in _known_prefs else "none")
+    for _cat in ("A", "B", "other", "none"):
+        out[f"preference_proxy_is_{_cat}"] = _pref_norm.eq(_cat).astype(float)
+
     out["structural_dependency_encoded"] = out["structural_dependency_proxy"].astype(int)
 
     # generator.py clips raw NBI stress to the fixed [0, 1] range

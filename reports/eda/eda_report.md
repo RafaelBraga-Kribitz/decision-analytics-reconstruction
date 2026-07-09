@@ -2,7 +2,7 @@
 
 **Generated:** June 14, 2026
 **Data Pipeline Version:** 1.0.0
-**Canonical run:** 2460cad62df2 · model c_tracking_hierarchical_v0.3 (stamped on every figure for SSOT traceability)
+**Canonical run:** 1252ce644c59 · model c_tracking_hierarchical_v0.4 (stamped on every figure for SSOT traceability)
 **Population Sample:** N = 50,000 individuals
 **Campaign Period:** Weeks 1–14 (2018-W01 to 2018-W14)
 **Forecast Window:** 2017-12-01 to 2018-04-21 (142 days)
@@ -13,12 +13,12 @@
 
 Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3.70 pp):
 
-- **Tracking posterior on fixtures:** Closes at **3.7 pp** margin (94% HDI: 2.8 to 4.7 pp). Modelled department win probabilities: **0%–100%**. Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp.
-- **Structurally Dependent Bloc is the largest segment (26.8%)** with mean participation propensity 0.65. Youth Volatile (13.5%, propensity 0.56) remains the headline mobilisation cohort in Central and Alto Paraná.
-- **Central and Alto Paraná absorb 45% of the total budget** ($1,920,579 and $783,836 respectively), reflecting their demographic weight. These allocations appear justified, but efficiency metrics suggest diminishing returns in Central already in week 8.
-- **Rural Low Propensity is the highest-propensity segment (mean 0.65)** but receives little digital investment due to low internet penetration. Radio is the dominant reach channel for rural segments; any reduction in radio spend directly suppresses participation in Itapúa and San Pedro strongholds.
+- **Tracking posterior on fixtures:** Closes at **3.7 pp** margin (94% HDI: 2.9 to 4.7 pp). Modelled department win probabilities: **0%–100%**. Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp.
+- **Youth Volatile is the largest segment (21.6%)** with mean participation propensity 0.63. Youth Volatile (21.6%, propensity 0.63) remains the headline mobilisation cohort in Central and Alto Paraná.
+- **Central and Alto Paraná absorb 45% of the total budget** ($1,920,552 and $783,836 respectively), reflecting their demographic weight. These allocations appear justified, but efficiency metrics suggest diminishing returns in Central already in week 8.
+- **Committed Opposition is the highest-propensity segment (mean 0.65)** but receives little digital investment due to low internet penetration. Radio is the dominant reach channel for rural segments; any reduction in radio spend directly suppresses participation in Itapúa and San Pedro strongholds.
 - **Bilateral (direct) channels absorb 52.5% of baseline budget** vs. 47.5% for broadcast. The broadcast-to-direct scenario redistributes this mix but produces zero additional persuasion contacts at the aggregate level, suggesting the direct-contact premium is not converting efficiently everywhere.
-- **Pollster house effects (from posterior_house_effects.parquet):** ATI_SNEAD has a -4.5 pp bias, ICA has a +5.0 pp bias; CAPLI is the closest to neutral (+2.3 pp). Raw polling averages should never be used without bias correction for this race.
+- **Pollster house effects (from posterior_house_effects.parquet):** ATI_SNEAD has a -9.2 pp bias, ICA has a +6.0 pp bias; ECODAT is the closest to neutral (+3.0 pp). Raw polling averages should never be used without bias correction for this race.
 - **Chaco departments (Alto Paraguay, Boquerón, Presidente Hayes) are negligible-tier** in budget allocation; modelled department win probabilities cluster near **0%–100%** on fixture posteriors (Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp).
 
 ---
@@ -26,23 +26,23 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 ## Data Quality Assessment
 
 ### population_master_clean.parquet
-- **Shape:** 50,000 rows × 62 columns
+- **Shape:** 50,000 rows × 69 columns
 - **Duplicates:** 0 duplicate entity_ids confirmed
-- **Nulls:** 12,540 total missing values across 1 columns
+- **Nulls:** 12,548 total missing values across 1 columns
 - **Top null columns:**
   - `qualitative_district`: 25.1% missing
 - **Anomalies:** `qualitative_district` shows NaN for ~9% of records; `qualitative_sentiment` missing for ~10%; these appear intentionally unlinked (no linked qualitative interview). `participation_propensity` is well-bounded [0.014, 1.0] with no out-of-range values.
-- **Schema drift flags:** 697 records flagged — negligible (<1%).
+- **Schema drift flags:** 698 records flagged — negligible (<1%).
 
 ### segment_labels.parquet
 - **Shape:** 50,000 rows × 4 columns
 - **Segment coverage:** 6 unique labels, segment_id 0–5, fully mapping population_master
-- **DBSCAN noise:** 0 rows flagged as noise — all reassigned to nearest cluster, no orphan records.
+- **DBSCAN noise:** 5 rows flagged as noise — all reassigned to nearest cluster, no orphan records.
 
 ### participation_propensity.parquet
 - **Shape:** 50,000 rows × 4 columns
-- **Range:** [0.3080, 1.0000] — fully bounded in [0,1]
-- **Department rake multiplier:** mean 1.46, range [0.62, 2.92] — large dispersion indicates significant demographic imbalance across departments in the raw sample.
+- **Range:** [0.3077, 1.0000] — fully bounded in [0,1]
+- **Department rake multiplier:** mean 1.45, range [0.62, 2.93] — large dispersion indicates significant demographic imbalance across departments in the raw sample.
 
 ### allocation_baseline.csv / allocation_broadcast_to_direct.csv
 - **Shape:** 2,772 rows × 21 columns each
@@ -53,8 +53,8 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 ### module_c files
 - **daily_posterior_forecast.parquet:** 142 daily rows, single calibration series A, no gaps.
 - **posterior_house_effects.parquet:** 3 pollsters — small but complete.
-- **battleground_department_probability.parquet:** 18 departments, win_probability_a range [0.0014, 1.0000].
-- **monte_carlo_draws.parquet:** 10,000 draws across 3 scenario buckets: baseline (3,334), extreme_tracker (3,333), compounded_herd (3,333). alloc_mean_persuasion_contacts populated from the Module B baseline allocation (B-to-C handshake verified non-zero).
+- **battleground_department_probability.parquet:** 18 departments, win_probability_a range [0.0015, 1.0000].
+- **monte_carlo_draws.parquet:** 600 draws across 3 scenario buckets: baseline (200), extreme_tracker (200), compounded_herd (200). alloc_mean_persuasion_contacts populated from the Module B baseline allocation (B-to-C handshake verified non-zero).
 
 ---
 
@@ -62,7 +62,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 ### A1 — Segment Size Bar Chart
 **What it shows:** Absolute count and percentage share of the population dataset for each of the six behavioral segments.
-**Key finding:** Structurally Dependent Bloc is the largest segment at 26.8%, ahead of Urban High Volatility at 19.2%. Rural Committed is the smallest at 9.1%.
+**Key finding:** Youth Volatile is the largest segment at 21.6%, ahead of Structurally Dependent Bloc at 16.6%. Rural Low Propensity is the smallest at 14.7%.
 **Strategic implication:** Mobilisation strategy must prioritise youth outreach. Even modest propensity lifts in this cohort deliver outsized turnout gains relative to smaller segments.
 
 ### A2 — Age Distribution by Segment
@@ -131,7 +131,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 ### B1 — Budget by Department
 **What it shows:** Horizontal sorted bar chart of total USD allocated by department.
-**Key finding:** Central ($1,921K, 31.9%), Alto Paraná ($784K, 13.0%), and Itapúa ($494K, 8.2%) absorb 53% of the total budget. 2 department(s) receive less than $50K each.
+**Key finding:** Central ($1,921K, 31.8%), Alto Paraná ($784K, 13.0%), and Itapúa ($494K, 8.2%) absorb 53% of the total budget. 2 department(s) receive less than $50K each.
 **Strategic implication:** The allocation is demographically rational but should be stress-tested against marginal persuasion value. Chaco departments (Alto Paraguay, Boquerón) receive near-zero budget, which aligns with their high baseline win probability.
 
 ### B2 — Weekly Budget Burn-Down by Channel Type
@@ -175,7 +175,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 ### C1 — Bayesian Tracking Retrodiction (2018 Series A)
 **What it shows:** 142-day Bayesian preference-margin *retrodiction* — in-sample tracking of the past 2018 Series A window, read against the verified +3.70 pp TSJE outcome anchor (drawn on the panel), **not** an out-of-sample forecast — with 94% HDI bands.
-**Key finding:** Candidate A's posterior mean preference margin closes near **3.7 pp** on fixture polls (Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp). The 94% HDI is wide (2.8 to 4.7 pp), reflecting only 4 survey measurement waves.
+**Key finding:** Candidate A's posterior mean preference margin closes near **3.7 pp** on fixture polls (Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp). The 94% HDI is wide (2.9 to 4.7 pp), reflecting only 4 survey measurement waves.
 **Strategic implication:** The lead is robust but the HDI is wide — more polling waves would dramatically tighten the uncertainty bounds. The campaign should commission 2–3 additional poll waves in the final 6 weeks.
 
 ### C2 — Calibrated Terminal Posterior Distribution
@@ -185,13 +185,13 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 ### C3 — Battleground Department Win Probability
 **What it shows:** Horizontal bar chart of P(Win, Candidate A) by department.
-**Key finding:** All 18 departments show modelled win probability in the **0.1%–100.0%** range (Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp). Central (2.3%) and Caaguazu (55.6%) are among the highest.
+**Key finding:** All 18 departments show modelled win probability in the **0.1%–100.0%** range (Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp). Central (2.4%) and Caaguazu (55.6%) are among the highest.
 **Strategic implication:** There are no true "battleground" departments in the classical sense — all show strong favourability. However, the narrow spread means mobilisation in high-turnout departments (Central, Alto Paraná) will determine the final mandate margin.
 
 ### C4 — House Effects Forest Plot
 **What it shows:** Posterior mean ± 94% HDI for each pollster's house effect (bias toward Candidate A).
-**Key finding:** ATI_SNEAD has the largest negative house effect (-4.5 pp), meaning its polls systematically understate A's lead; ICA has the largest positive house effect (+5.0 pp); CAPLI is the most neutral (+2.3 pp). (Derived from posterior_house_effects.parquet — the same frame the C4 figure plots.)
-**Strategic implication:** Never cite raw ATI_SNEAD polls in communications — they will appear worse than reality. CAPLI is the closest to unbiased for public-facing narratives. The campaign analytics team should routinely adjust all external poll reports for these biases.
+**Key finding:** ATI_SNEAD has the largest negative house effect (-9.2 pp), meaning its polls systematically understate A's lead; ICA has the largest positive house effect (+6.0 pp); ECODAT is the most neutral (+3.0 pp). (Derived from posterior_house_effects.parquet — the same frame the C4 figure plots.)
+**Strategic implication:** Never cite raw ATI_SNEAD polls in communications — they will appear worse than reality. ECODAT is the closest to unbiased for public-facing narratives. The campaign analytics team should routinely adjust all external poll reports for these biases.
 
 ### C5 — Shock Scale Distribution by Scenario
 **What it shows:** Shock-scale distribution per scenario bucket (box + jittered draws). Monte-Carlo draws are *exchangeable*, so a percentile fan over a draw index would be a meaningless x-axis.
@@ -215,12 +215,12 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 ### C9 — Polling Transparency Audit
 **What it shows:** Transparency score vs. house-effect magnitude, one point per pollster (n=3 pollsters — a per-pollster audit, not a fitted trend).
-**Key finding:** Across the three fixture pollsters, ICA carries the largest |house effect| (5.0 pp) while CAPLI is the closest to neutral (+2.3 pp). With n=3, no transparency–bias relationship can be inferred — read this as an audit, not evidence of a rule.
+**Key finding:** Across the three fixture pollsters, ATI_SNEAD carries the largest |house effect| (9.2 pp) while ECODAT is the closest to neutral (+3.0 pp). With n=3, no transparency–bias relationship can be inferred — read this as an audit, not evidence of a rule.
 **Strategic implication:** Apply bias corrections per pollster regardless of transparency rating; do not infer a transparency→bias rule from three points.
 
 ### C10 — MC Shock-Scale Distribution (legacy filename)
 **What it shows:** Distribution of shock_scale across all MC draws by scenario bucket. The committed filename references "win probability", but this panel does **not** derive P(win) — Candidate-A win probability is C3 / C8.
-**Key finding:** Draws are split across 3 canonical buckets (baseline (3,334), extreme_tracker (3,333), compounded_herd (3,333)); shock-scale distributions are multimodal by design of the discrete scenario catalog.
+**Key finding:** Draws are split across 3 canonical buckets (baseline (200), extreme_tracker (200), compounded_herd (200)); shock-scale distributions are multimodal by design of the discrete scenario catalog.
 **Strategic implication:** Resource buffers and contingency plans should be stress-tested against the extreme-tracker bucket (1.8–2.4× baseline shock sensitivity) — not just the ±10% band around baseline.
 
 ---
@@ -256,9 +256,9 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 ## Strategic Recommendations
 
-1. **Accelerate Youth Volatile mobilisation in Central and Alto Paraná.** This is the highest-volume, high-reachability segment. Dedicate a dedicated WhatsApp chatbot campaign to 18–30 year olds in these departments in weeks 11–14. Target propensity lift from 0.56 to 0.61 would add tens of thousands of additional participation-weighted contacts.
+1. **Accelerate Youth Volatile mobilisation in Central and Alto Paraná.** This is the highest-volume, high-reachability segment. Dedicate a dedicated WhatsApp chatbot campaign to 18–30 year olds in these departments in weeks 11–14. Target propensity lift from 0.63 to 0.68 would add tens of thousands of additional participation-weighted contacts.
 
-2. **Protect Rural Committed in Itapúa and San Pedro through radio-first strategy.** Do not allow any radio budget reduction in these departments. Rural Committed has a participation propensity of 0.57 (mean) and is almost exclusively accessible by radio. Even a 15% radio budget cut risks losing 20,000+ high-propensity votes.
+2. **Protect Rural Committed in Itapúa and San Pedro through radio-first strategy.** Do not allow any radio budget reduction in these departments. Rural Committed has a participation propensity of 0.64 (mean) and is almost exclusively accessible by radio. Even a 15% radio budget cut risks losing 20,000+ high-propensity votes.
 
 3. **Reallocate 5–8% of Central budget to Caaguazu and San Pedro.** Central shows diminishing reach returns (reach cap not binding, but cost-per-persuasion-contact is high). Caaguazu and San Pedro have better cost efficiency and meaningful electoral scale. This reallocation would be budget-neutral with a projected +12% increase in total persuasion contacts.
 
@@ -270,9 +270,9 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 7. **Do not invest in Committed Opposition persuasion.** This segment has a mean propensity of 0.65 and high preference strength for Candidate B. The cost of persuading even a marginal share of this group far exceeds the returns. Redirect any persuasion budget earmarked for this segment to Youth Volatile micro-targeting.
 
-8. **Apply bias corrections to all external polling references.** ATI_SNEAD results understate the lead by ~5 pp; ICA overstates it by ~5 pp. All internal planning documents and public communications should use bias-corrected figures. Share the house effect estimates with the communications team immediately.
+8. **Apply bias corrections to all external polling references.** ATI_SNEAD results understate the lead by ~9 pp; ICA overstates it by ~6 pp. All internal planning documents and public communications should use bias-corrected figures. Share the house effect estimates with the communications team immediately.
 
-9. **Stress-test the extreme tracker scenario for weeks 12–14.** The extreme_tracker bucket (3,333 of 10,000 draws, shock_scale 1.83–2.43) encodes high-volatility outcomes. Ensure field operations have a 72-hour rapid-response protocol if a late-breaking adverse event triggers a 5–8 pp margin compression.
+9. **Stress-test the extreme tracker scenario for weeks 12–14.** The extreme_tracker bucket (200 of 600 draws, shock_scale 1.83–2.43) encodes high-volatility outcomes. Ensure field operations have a 72-hour rapid-response protocol if a late-breaking adverse event triggers a 5–8 pp margin compression.
 
 10. **Develop Jopara-language media content for all segments.** Jopara bilingual speakers are 47–51% of every segment. Spanish-only content structurally misses this plurality; Guaraní-only content is niche. Jopara-accessible creative is the single messaging investment with the broadest cross-segment reach.
 
@@ -280,11 +280,11 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 ## Methodology Notes
 
-- **Segmentation:** 6 clusters from KMeans on scaled numeric features; segment names are profile-derived (Hungarian assignment of cluster profiles to the canonical vocabulary, with interpretation tests). DBSCAN runs as a noise diagnostic only (0 flagged rows). Segment IDs 0–5 map to labels via `segment_labels.parquet`.
+- **Segmentation:** 6 clusters from KMeans on scaled numeric features; segment names are profile-derived (Hungarian assignment of cluster profiles to the canonical vocabulary, with interpretation tests). DBSCAN runs as a noise diagnostic only (5 flagged rows). Segment IDs 0–5 map to labels via `segment_labels.parquet`.
 - **Participation propensity:** Bayesian logistic regression with department-level random effects and post-stratification rake weights. Rake multipliers vary substantially across departments (mean 3.2×) indicating sampling imbalance in raw data.
 - **Bayesian tracking model:** Hierarchical Gaussian random walk with house effect corrections. Credible bands are true 94% highest-density intervals (`az.hdi`, ≈±1.9σ for a Gaussian posterior) — not 5/95 equal-tailed quantiles. Only 4 poll waves ingested — uncertainty is fundamentally limited by sparse polling data.
 - **Budget optimisation:** Linear programming solver (OPTIMAL status confirmed for all cells). Constraints include reach caps, department tiers, and channel eligibility rules. FX conversion uses retail spread rate (not reference rate).
-- **Monte Carlo:** 10,000 draws across 3 scenario buckets. Shock scale parameterises outcome volatility. alloc_mean_persuasion_contacts populated from the Module B baseline allocation (B-to-C handshake verified non-zero).
+- **Monte Carlo:** 600 draws across 3 scenario buckets. Shock scale parameterises outcome volatility. alloc_mean_persuasion_contacts populated from the Module B baseline allocation (B-to-C handshake verified non-zero).
 - **Exit model:** Gaussian likelihood with intercept + two international observer beta parameters. Identified on historical exit survey data. Wide HDI intervals suggest limited historical data for calibration.
 
 ---

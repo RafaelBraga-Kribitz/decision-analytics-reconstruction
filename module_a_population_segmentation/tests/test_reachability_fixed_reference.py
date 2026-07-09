@@ -8,7 +8,6 @@ sample's size or distribution.
 from __future__ import annotations
 
 import pandas as pd
-
 from population_segmentation.features.behavioral import build_behavioral_features
 from population_segmentation.features.reachability import (
     build_reachability_features,
