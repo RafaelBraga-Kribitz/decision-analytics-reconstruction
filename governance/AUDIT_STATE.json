@@ -617,9 +617,9 @@
       "verification_script": "scripts/check_doc_registry_vendor_prefix_ssot.py"
     }
   ],
-  "generated_at": "2026-07-09T04:48:20.162788+00:00",
+  "generated_at": "2026-07-09T05:04:13.300675+00:00",
   "git_branch": "claude/project-completion-orchestration-qjash7",
-  "git_head_sha": "6d0da957cb9d87ef369a48a4088f7dec9e6dacb4",
+  "git_head_sha": "55b3eea49fb64bbbb2ef4ee9d3190933b550c0e4",
   "migrations": [],
   "summary": {
     "findings_closed": 53,
