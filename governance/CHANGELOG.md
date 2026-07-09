@@ -6,6 +6,39 @@ All notable changes to this project are documented here. This file follows [Keep
 
 ## [Unreleased]
 
+### Orchestrated completion sprint — governance repair + issues #59/#60/#64/#71 (2026-07-09)
+
+- **F-076 (new, closed)**: `make verify` was red on a clean checkout — the registry
+  builder and verifier disagreed on vendor prefixes after `.github/pull_request_template.md`
+  was committed. `VENDOR_PREFIXES` single-sourced in `scripts/doc_registry_schema.py`;
+  gate `scripts/check_doc_registry_vendor_prefix_ssot.py`. Registry regeneration also
+  registered the previously missing `maintainer/AGENT_WORKFLOW_GUIDE.md` (DOC-MAINT-001).
+- **F-021 reopened (recurrence 3)**: Adversary on PR #73 observed the Module A Render
+  demo timing out. Sandboxed runners can skip via `GOVERNANCE_NETWORK_CHECKS=skip`;
+  CI still enforces. Durable closure needs paid hosting, keep-alive cron, or a
+  cold-start-tolerant probe verified live.
+- **Issue #60 (IMP-C01)**: tracking hierarchical model `v0.4` — non-centered
+  reparameterization (standardized innovations; house offsets scaled from z-scores);
+  full-NUTS diagnostics now hard-enforced (max R̂ 1.00673, min bulk/tail ESS 2541/1864,
+  0 divergences; gates R̂ ≤ 1.01, ESS ≥ 400, 0 divergences), xfail markers removed,
+  posterior-stability test added. Latent test bug fixed: `MC_FAST="0"` was truthy, so
+  the "full NUTS" tests had silently run the 50-draw fast path.
+- **Issue #64 (IMP-C07)**: new shared `contract_core` package enforces every declared
+  `schema_contracts/*.yaml` constraint (nullable, allowed_values, min/max, pattern,
+  unique, unique_key, row_count); unknown keys abort at load. Producers in all three
+  modules route writes through the gate; Module B's bespoke gate layered on the core;
+  conformance matrix generated at `schema_contracts/CONFORMANCE_MATRIX.md`.
+- **Issue #71 (IMP-F03 companion)**: `FIGURE_MANIFEST.yaml` now emits `schema_version`,
+  stable per-figure `chart_id`s (rename = retire + add), and a consumer-contract header;
+  F-050 gate extended to enforce both.
+- **Issue #59 (IMP-B03)**: MILP degenerate-input test matrix (zero budget → infeasible,
+  empty reach caps, all-zero-audience cell); `AllocationHandshakeRow.week_index` bound
+  tied to `WEEK_COUNT` (was drifting at `le=60` vs SSOT 14) with a contract-parity
+  regression test.
+- **[PARAM]**: model priors unchanged. Sampler config gains `target_accept_full: 0.99`
+  (full-NUTS path only; fast/CI path stays 0.95). `MODEL_VERSION` bumped to
+  `c_tracking_hierarchical_v0.4`.
+
 ### Phase 2: Multi-SSOT Config Architecture — Registry & Wiring Completion (2026-06-17)
 
 - **Shared config loader** (`module_c_forecasting_scenarios/config.py`): extracted
