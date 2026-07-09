@@ -7,6 +7,11 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
+# Vendored subtrees and CI/tooling dirs — excluded from registry tracking.
+# Single source for build_docs_registry.py and verify_doc_registry.py; the two
+# scripts drifted once (F-076) when .github/ was added to only one of them.
+VENDOR_PREFIXES = ("governance/_kit/", ".github/")
+
 
 class RegistryDocument(BaseModel):
     """Single inventory row — keys must match emitted YAML (no unknown keys)."""

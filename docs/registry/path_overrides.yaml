@@ -1,6 +1,23 @@
 override_guard:
   max_paths: 53
 paths:
+  schema_contracts/CONFORMANCE_MATRIX.md:
+    doc_id: DOC-SCH-MATRIX-001
+    doc_type: registry
+    doc_role: registry
+    visibility: internal
+    audience:
+    - maintainer
+    - agent
+    authority: registry
+    status: generated
+    sensitivity: internal
+    owner: governance
+    tier_shorthand: T2
+    numeric_authority: []
+    canonical_source: []
+    derived_from: []
+    last_reviewed: '2026-07-09'
   README.md:
     doc_id: DOC-ROOT-001
     doc_type: narrative

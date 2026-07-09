@@ -1,3 +1,71 @@
+# Session End — 2026-07-09 (F-076 + orchestrated issues #59/#60/#64/#71, PR #73)
+
+## Context
+
+Orchestrated completion sprint: session start found the governance queue empty
+(0 open findings) but `make verify` red on a clean checkout. After repairing
+verify, four `status:claude-ready` GitHub issues were implemented by parallel
+subagents and validated/integrated one commit per issue on
+`claude/project-completion-orchestration-qjash7` (PR #73).
+
+## Findings touched
+
+- **F-076 (new, closed):** builder/verifier vendor-prefix drift made
+  `make verify` fail on an unmodified checkout. `VENDOR_PREFIXES` single-sourced
+  in `scripts/doc_registry_schema.py`; gate
+  `scripts/check_doc_registry_vendor_prefix_ssot.py`. Registry regen also filed
+  the unregistered `maintainer/AGENT_WORKFLOW_GUIDE.md`.
+- **F-021 (reopened, recurrence 3):** PR #73's Adversary observed the Module A
+  Render demo timeout (B and C returned 200). Sandboxed runners can set
+  `GOVERNANCE_NETWORK_CHECKS=skip`; CI still enforces. Durable closure needs a
+  human decision: paid hosting, keep-alive cron, or a cold-start-tolerant probe
+  verified against the live URL.
+
+## Issues closed (via PR #73)
+
+- **#60 (p0, IMP-C01):** tracking model v0.4 non-centered reparameterization;
+  MCMC gates enforced (max R̂ 1.00673, ESS ≥ 1864, 0 divergences), xfails
+  removed, posterior-stability test added. Latent bug: `MC_FAST="0"` is truthy —
+  the "full NUTS" tests had been running the 50-draw fast path.
+- **#64 (IMP-C07):** shared `contract_core` package (new sanctioned fourth
+  Poetry package under `shared/src`) enforces every declared contract
+  constraint; producers in all three modules gated; conformance matrix at
+  `schema_contracts/CONFORMANCE_MATRIX.md`.
+- **#71 (IMP-F03):** FIGURE_MANIFEST schema_version + stable chart_ids +
+  consumer contract, generator-emitted, F-050-gated.
+- **#59 (IMP-B03):** MILP degenerate-input test matrix; handshake `week_index`
+  bound tied to `WEEK_COUNT` with contract-parity regression test.
+
+## Issues verified already-satisfied (recommend closing manually)
+
+- **#40** (code quality): ruff/black/pyright/radon/vulture/debt-ratchet all 0.
+- **#41** (adversary failures): all resolved or env-aware; F-021 tracked as the
+  reopened finding, not a CI blocker.
+- **#43** (F-051 rerun): regenerated canonical data satisfies the invariant
+  (rural_low_propensity pct_rural = 0.708 ≥ 0.70); F-051 closed and verifying.
+
+## Environment notes for the next session
+
+- Sandboxed runners: `GOVERNANCE_NETWORK_CHECKS=skip make verify`; CI adversary
+  parity needs `poetry run pip install radon vulture` and the Module A pipeline
+  regen at `--sample-size 50000` (running module tests can overwrite
+  `data/processed/` with 10k-row artifacts — regenerate before trusting hashes).
+- Quarto is NOT installable here (proxy 403s the release download) — issue #42
+  stays blocked in this environment.
+- Docker images: `shared/` must be COPY'd in both Dockerfiles (fixed this
+  session after CI Docker smoke caught it).
+
+## Recommended next action
+
+Work the remaining `status:claude-ready` queue by priority: #66 (shared
+palette) → #67 (single-source EDA charts; depends on #66), #57/#62 (high-effort
+module B/C data work), #54/#56 (Module A encoding/scaling — will change
+clustering artifacts, so plan a canonical regen + F-050/051/052 re-verify in
+the same PR). Human decisions pending: Module A hosting (F-021) and closing
+stale issues #40/#41/#43.
+
+---
+
 # Session End — 2026-06-13 (F-055 — AUD-C1 retrodiction label)
 
 ## Context

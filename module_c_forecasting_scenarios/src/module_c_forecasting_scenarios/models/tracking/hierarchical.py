@@ -14,8 +14,12 @@ import pymc as pm
 
 from module_c_forecasting_scenarios.config import load_sampler_config
 
+# v0.4: non-centered reparameterization of the random walk and house-effect
+#       hierarchy — converges under full NUTS (R-hat <= 1.01, ESS >= 400, zero
+#       divergences) where the centered v0.3 form funneled. See METHODOLOGY.md
+#       § Reparameterization for the rationale.
 # v0.3: honest 94% HDI bands (az.hdi); v0.2 stored 5/95 quantiles under hdi names.
-MODEL_VERSION = "c_tracking_hierarchical_v0.3"
+MODEL_VERSION = "c_tracking_hierarchical_v0.4"
 INTERVAL_TYPE = "HDI"
 
 # Backward-compat alias: walk_forward.py imports _load_sampler_config from here.
@@ -40,11 +44,15 @@ def _sampler_kwargs() -> dict[str, Any]:
             "random_seed": int(cfg.get("random_seed", 42)),
         }
     max_treedepth = int(cfg.get("max_treedepth", 10))
+    # Full-NUTS path prefers target_accept_full (0.99) so the non-centered walk
+    # clears its residual divergences; falls back to target_accept for configs
+    # that predate the key.
+    target_accept_full = float(cfg.get("target_accept_full", cfg.get("target_accept", 0.95)))
     return {
         "chains": int(cfg.get("chains", 4)),
         "draws": int(cfg.get("draws", 1000)),
         "tune": int(cfg.get("tune", 1000)),
-        "target_accept": float(cfg.get("target_accept", 0.95)),
+        "target_accept": target_accept_full,
         "random_seed": int(cfg.get("random_seed", 42)),
         "nuts_sampler_kwargs": {"max_treedepth": max_treedepth},
     }
@@ -131,10 +139,30 @@ def fit_tracking_hierarchical(
 
     coords = {"day": day_labels, "pollster": pollsters}
     with pm.Model(coords=coords) as model:
+        # --- Latent daily margin: NON-CENTERED Gaussian random walk. ---
+        # The centered form (mu_margin ~ GaussianRandomWalk(sigma=sigma_rw)) ties
+        # every walk state directly to the scale sigma_rw, producing a Neal funnel
+        # that NUTS cannot traverse on this sparse 8-wave fixture (divergences,
+        # R-hat > 1.01, ESS < 100). We reparameterize into standardized innovations
+        # z ~ Normal(0, 1) and rebuild the walk deterministically as
+        # mu_init + sigma_rw * cumsum(z); the sampler now explores a fixed unit
+        # geometry independent of sigma_rw. mu_margin_init carries the initial
+        # level (weakly informative Normal(0, 10) pp — margins plausibly within
+        # +/-30 pp) that the diffuse GRW default previously supplied implicitly.
+        # See METHODOLOGY.md § Reparameterization.
         sigma_rw = pm.HalfNormal("sigma_rw", 1.5)
-        mu_margin = pm.GaussianRandomWalk("mu_margin", sigma=sigma_rw, dims="day")
+        mu_init = pm.Normal("mu_margin_init", 0.0, 10.0)
+        rw_innov = pm.Normal("mu_margin_innov", 0.0, 1.0, dims="day")
+        mu_margin = pm.Deterministic(
+            "mu_margin", mu_init + sigma_rw * pm.math.cumsum(rw_innov), dims="day"
+        )
+        # --- Pollster house effects: NON-CENTERED hierarchy. ---
+        # Same funnel remedy for the per-firm offsets: sample unit-scale house_z
+        # and scale by sigma_house rather than drawing house_offset directly at
+        # scale sigma_house (which funnels when sigma_house is small).
         sigma_h = pm.HalfNormal("sigma_house", 2.5)
-        house_offset = pm.Normal("house_offset", 0.0, sigma=sigma_h, dims="pollster")
+        house_z = pm.Normal("house_offset_z", 0.0, 1.0, dims="pollster")
+        house_offset = pm.Deterministic("house_offset", sigma_h * house_z, dims="pollster")
         mu_poll = mu_margin[poll_day_idx] + house_offset[pollster_idx]
         pm.Normal("obs", mu=mu_poll, sigma=sigma_obs, observed=y)
         if m_star_pp is not None:

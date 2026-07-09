@@ -27,12 +27,15 @@ from typing import Any, cast
 
 import pandas as pd
 import yaml
+from contract_core import check_frame, load_named_contract
 
 from population_segmentation.pipeline.model_run_manifest import (
     build_model_run_manifest,
     maybe_log_mlflow_export,
     write_model_run_manifest,
 )
+
+_SCHEMA_CONTRACTS_DIR: Path = Path(__file__).resolve().parents[4] / "schema_contracts"
 
 
 def run_export(
@@ -177,6 +180,7 @@ def run_export(
         reach=reach_df,
         reach_dept=reach_dept_df,
     )
+    _gate_shared_core_contracts(merged_feat, prop_df, labels_df, reach_df, reach_dept_df)
     print("[export] Contract validation passed.", flush=True)
 
     manifest_path = out_dir / "model_run_manifest.json"
@@ -473,6 +477,48 @@ def _validate_media_reachability_dept(reach_dept: pd.DataFrame, errors: list[str
 
     _check_reach_dept_identity_keys(reach_dept, errors)
     _check_reach_dept_numeric_columns(reach_dept, errors)
+
+
+_SEGMENT_LABELS_COLUMNS: tuple[str, ...] = (
+    "entity_id",
+    "segment_label",
+    "segment_id",
+    "dbscan_noise_flag",
+)
+
+
+def _gate_shared_core_contracts(
+    master: pd.DataFrame,
+    prop: pd.DataFrame,
+    labels: pd.DataFrame,
+    reach: pd.DataFrame,
+    reach_dept: pd.DataFrame,
+) -> None:
+    """Route the written Module A artifacts through the shared contract core.
+
+    Enforces every constraint key each artifact's ``schema_contracts/*.yaml``
+    declares (nullable, allowed_values, min/max, pattern, per-field unique,
+    unique_key, row_count) so Module A's exports pass through the same gate as
+    every other module's producers. Operates on the exact frames written to
+    disk; the bespoke :func:`_validate_export_contracts` checks run first.
+
+    Raises:
+        ValueError: If any written frame violates its declared contract.
+    """
+    written: list[tuple[pd.DataFrame, str]] = [
+        (master, "population_master_clean"),
+        (prop, "participation_propensity"),
+        (cast(pd.DataFrame, labels[list(_SEGMENT_LABELS_COLUMNS)]), "segment_labels"),
+        (reach, "media_reachability_by_segment"),
+        (reach_dept, "media_reachability_by_segment_department"),
+    ]
+    errors: list[str] = []
+    for frame, schema_name in written:
+        contract = load_named_contract(_SCHEMA_CONTRACTS_DIR, schema_name)
+        errors.extend(check_frame(frame, contract))
+    if errors:
+        msg = "\n".join(f"  • {e}" for e in errors)
+        raise ValueError(f"[export] shared contract core validation FAILED:\n{msg}")
 
 
 def _validate_export_contracts(

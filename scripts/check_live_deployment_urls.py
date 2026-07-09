@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
-"""Verify public deployment URLs are live before portfolio publication."""
+"""Verify public deployment URLs are live before portfolio publication.
+
+Sandboxed runners (issue #41) can't reach the public internet, so an operator
+may set ``GOVERNANCE_NETWORK_CHECKS=skip`` to skip with an explicit [SKIP]
+marker. CI leaves the variable unset and enforces the check.
+"""
 
 from __future__ import annotations
 
+import os
 import sys
 import time
 from pathlib import Path
@@ -48,6 +54,12 @@ def _status(url: str) -> int | str:
 
 
 def main() -> int:
+    if os.environ.get("GOVERNANCE_NETWORK_CHECKS") == "skip":
+        print(
+            "[SKIP] check_live_deployment_urls.py: F-021 network checks skipped "
+            "(GOVERNANCE_NETWORK_CHECKS=skip — sandboxed runner)"
+        )
+        return 0
     statuses = {name: _status(url) for name, url in URLS.items()}
     ok = all(status == 200 for status in statuses.values())
     detail = ", ".join(f"{name}={status}" for name, status in statuses.items())

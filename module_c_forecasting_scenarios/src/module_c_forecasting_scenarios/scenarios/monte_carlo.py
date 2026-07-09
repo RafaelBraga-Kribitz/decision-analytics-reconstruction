@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 import yaml
 
+from module_c_forecasting_scenarios.data.contract_validate import validate_dataframe_contract
 from module_c_forecasting_scenarios.paths import module_config_dir, repo_root
 
 CANONICAL_BUCKETS: Final[tuple[str, str, str]] = (
@@ -250,6 +251,7 @@ def run_monte_carlo_scenarios(
     )
 
     draws_df = pd.DataFrame(all_draws)
+    validate_dataframe_contract(draws_df, "monte_carlo_draws")
     draws_df.to_parquet(out_dir / "monte_carlo_draws.parquet", index=False)
 
     bucket_quota = _bucket_share(n, len(CANONICAL_BUCKETS))

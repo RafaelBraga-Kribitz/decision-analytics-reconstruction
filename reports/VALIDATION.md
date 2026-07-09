@@ -30,7 +30,7 @@ Department participation raking aligns aggregates to **61.25%** national anchor.
 | Outcome anchor m★ | +3.70 pp Series A | `check_module_c_outcome_anchor.py` |
 | Walk-forward estimand | house offset in likelihood | F-034 |
 | MC B→C handshake | alloc contacts > 0 | F-040 |
-| MCMC divergences | 14 on full run | tracked; does not block delivery |
+| MCMC divergences | 0 on full run (v0.4 non-centered) | enforced: slow-lane tests fail on any divergence |
 | Walk-forward coverage on fixture | sparse | not claimed as external validation |
 
 ## Pipeline integration

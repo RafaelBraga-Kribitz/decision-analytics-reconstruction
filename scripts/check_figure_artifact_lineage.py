@@ -49,12 +49,34 @@ def _canonical_save_fig_names() -> set[str]:
 
 
 def _manifest_key_gaps(manifest: dict) -> list[str]:
-    required = ("run_id", "git_commit", "data_manifest", "segmentation_label_hash", "figures")
+    required = (
+        "schema_version",
+        "run_id",
+        "git_commit",
+        "data_manifest",
+        "segmentation_label_hash",
+        "figures",
+    )
     return [
         f"FIGURE_MANIFEST.yaml missing required key: {key}"
         for key in required
         if key not in manifest
     ]
+
+
+def _chart_id_gaps(manifest: dict) -> list[str]:
+    """chart_id is the versioned read surface's stable identifier (IMP-F03);
+    every figure must carry one and ids must be unique within the manifest."""
+    entries = [e for e in manifest.get("figures", []) if isinstance(e, dict)]
+    gaps = [
+        f"figure missing chart_id: {entry.get('path', entry)}"
+        for entry in entries
+        if not entry.get("chart_id")
+    ]
+    ids = [e["chart_id"] for e in entries if e.get("chart_id")]
+    duplicates = sorted({cid for cid in ids if ids.count(cid) > 1})
+    gaps.extend(f"duplicate chart_id: {cid}" for cid in duplicates)
+    return gaps
 
 
 def _model_manifest_gaps(manifest: dict) -> list[str]:
@@ -140,6 +162,7 @@ def main() -> int:
 
     gaps: list[str] = []
     gaps.extend(_manifest_key_gaps(manifest))
+    gaps.extend(_chart_id_gaps(manifest))
     gaps.extend(_model_manifest_gaps(manifest))
     gaps.extend(_label_hash_gaps(manifest))
     gaps.extend(_png_registration_gaps(manifest, on_disk))

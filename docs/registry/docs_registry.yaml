@@ -362,6 +362,25 @@ documents:
   doc_id: DOC-DOC-003
   path: governance/chart_audit_completion_sprint.md
   last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-MAINT-001
+  path: maintainer/AGENT_WORKFLOW_GUIDE.md
+  last_reviewed: '2026-05-20'
 - doc_type: registry
   doc_role: registry
   visibility: internal
@@ -656,3 +675,22 @@ documents:
   doc_id: DOC-EPI-001
   path: reports/epistemic_boundaries.md
   last_reviewed: '2026-05-20'
+- doc_type: registry
+  doc_role: registry
+  visibility: internal
+  audience:
+  - maintainer
+  - agent
+  authority: registry
+  status: generated
+  sensitivity: internal
+  owner: governance
+  tier_shorthand: T2
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  last_reviewed: '2026-07-09'
+  doc_id: DOC-SCH-MATRIX-001
+  path: schema_contracts/CONFORMANCE_MATRIX.md
