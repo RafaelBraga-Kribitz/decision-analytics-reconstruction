@@ -19,8 +19,14 @@ import yaml
 from scipy.optimize import linear_sum_assignment
 from sklearn.cluster import DBSCAN, KMeans
 from sklearn.decomposition import PCA
-from sklearn.metrics import adjusted_rand_score, silhouette_score
+from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import StandardScaler
+
+from population_segmentation.evaluation.clustering_metrics import (
+    compute_bootstrap_ari,
+    compute_calinski_harabasz,
+    compute_davies_bouldin,
+)
 
 
 def _load_model_params() -> dict[str, Any]:
@@ -94,8 +100,11 @@ def cluster_profiles(df: pd.DataFrame, labels: np.ndarray) -> pd.DataFrame:
             "youth": df["youth_flag"].astype(float),
             "dependency": df["structural_dependency_encoded"].astype(float),
             "strength": df["preference_proxy_strength"].astype(float),
-            "opposition": (df["preference_proxy_encoded"] == 1).astype(float),
-            "no_preference": (df["preference_proxy_encoded"] == 3).astype(float),
+            # One-hot sources (IMP-A02): profile features are derived from the
+            # same columns the clusters were fit on, so label assignment needs
+            # no columns beyond FEATURE_COLUMNS.
+            "opposition": df["preference_proxy_is_B"].astype(float),
+            "no_preference": df["preference_proxy_is_none"].astype(float),
             "nbi_stress": df["nbi_stress_prior_scaled"].astype(float),
             "cluster": labels,
         }
@@ -103,73 +112,61 @@ def cluster_profiles(df: pd.DataFrame, labels: np.ndarray) -> pd.DataFrame:
     return cast(pd.DataFrame, prof.groupby("cluster").mean())
 
 
-def _cluster_rural_share(df: pd.DataFrame, labels: np.ndarray, cluster_id: int) -> float:
-    mask = labels == cluster_id
-    if not mask.any():
-        return 0.0
-    return float(df.loc[mask, "rural_flag"].astype(bool).mean())
+# Hard semantic constraints applied INSIDE the assignment (IMP-A03 / issue
+# #55). These replace the former post-hoc _repair_* label swaps, which could
+# satisfy one label's invariant by silently breaking another's (observed at
+# n=6k: rural_committed stole the only all-youth cluster from youth_volatile).
+# Masking the score matrix before the Hungarian solve makes every invariant
+# bind simultaneously; if a constraint is infeasible for a fit, it is relaxed
+# in the declared priority order (lowest first) rather than silently dropped.
+#   - youth_volatile must sit on a youth-majority cluster (test invariant).
+#   - rural_committed must sit on a genuinely rural cluster (F-051).
+#   - structurally_dependent_bloc must take the max-dependency cluster.
+#   - committed_opposition must take the max-opposition-share cluster.
+_MASK = -1e9
+
+_CONSTRAINT_PRIORITY: tuple[str, ...] = (
+    "committed_opposition",  # relaxed first if infeasible
+    "structurally_dependent_bloc",
+    "youth_volatile",
+    "rural_committed",  # F-051 invariant — relaxed last
+)
 
 
-def _swap_cluster_labels(mapping: dict[int, str], a: int, b: int) -> None:
-    mapping[a], mapping[b] = mapping[b], mapping[a]
+def _constraint_allowed(name: str, profiles: pd.DataFrame) -> np.ndarray | None:
+    """Boolean allow-mask over clusters for a constrained label (None = free)."""
+    if name == "youth_volatile":
+        allowed = profiles["youth"].to_numpy() >= 0.5
+    elif name == "rural_committed":
+        allowed = profiles["rural"].to_numpy() >= 0.2
+    elif name == "structurally_dependent_bloc":
+        allowed = profiles["dependency"].to_numpy() == profiles["dependency"].max()
+    elif name == "committed_opposition":
+        allowed = profiles["opposition"].to_numpy() == profiles["opposition"].max()
+    else:
+        return None
+    return allowed if bool(allowed.any()) else None  # infeasible → unconstrained
 
 
-def _repair_committed_opposition(
-    df: pd.DataFrame,
-    labels: np.ndarray,
-    out: dict[int, str],
-    profiles: pd.DataFrame,
-) -> None:
-    reverse = {label: cluster_id for cluster_id, label in out.items()}
-    co_id = reverse.get("committed_opposition")
-    if co_id is None or _cluster_rural_share(df, labels, co_id) >= 0.01:
-        return
-    rural_clusters = [
-        int(cluster_id)
-        for cluster_id in profiles.index
-        if float(profiles.loc[cluster_id, "rural"]) >= 0.01
-    ]
-    if not rural_clusters:
-        return
-    best = max(rural_clusters, key=lambda cid: float(profiles.loc[cid, "opposition"]))
-    if best != co_id:
-        _swap_cluster_labels(out, co_id, best)
-
-
-def _repair_rural_committed(out: dict[int, str], profiles: pd.DataFrame) -> None:
-    """Ensure rural_committed sits on a genuinely rural cluster (F-051 invariant)."""
-    reverse = {label: cluster_id for cluster_id, label in out.items()}
-    rc_id = reverse.get("rural_committed")
-    if rc_id is None or float(profiles.loc[rc_id, "rural"]) >= 0.2:
-        return
-    donor_labels = ("urban_high_volatility", "youth_volatile", "structurally_dependent_bloc")
-    donors = [reverse[name] for name in donor_labels if name in reverse]
-    if not donors:
-        return
-    best = max(donors, key=lambda cid: float(profiles.loc[cid, "rural"]))
-    if float(profiles.loc[best, "rural"]) > float(profiles.loc[rc_id, "rural"]):
-        _swap_cluster_labels(out, rc_id, best)
-
-
-def _repair_label_mapping(
-    df: pd.DataFrame,
-    labels: np.ndarray,
-    mapping: dict[int, str],
-    profiles: pd.DataFrame,
-) -> dict[int, str]:
-    """Swap cluster names when Hungarian tie-breaks invert opposition/rural semantics."""
-    out = dict(mapping)
-    _repair_committed_opposition(df, labels, out, profiles)
-
-    reverse = {label: cluster_id for cluster_id, label in out.items()}
-    sdb_id = reverse.get("structurally_dependent_bloc")
-    if sdb_id is not None:
-        best_dep = int(max(profiles.index, key=lambda cid: float(profiles.loc[cid, "dependency"])))
-        if best_dep != sdb_id:
-            _swap_cluster_labels(out, sdb_id, best_dep)
-
-    _repair_rural_committed(out, profiles)
-    return out
+def _constrained_assignment(
+    score: np.ndarray, label_names: list[str], profiles: pd.DataFrame
+) -> tuple[np.ndarray, np.ndarray]:
+    """Hungarian solve with semantic allow-masks; relaxes constraints on infeasibility."""
+    active = [n for n in _CONSTRAINT_PRIORITY if _constraint_allowed(n, profiles) is not None]
+    while True:
+        masked = score.copy()
+        for name in active:
+            allowed = _constraint_allowed(name, profiles)
+            if allowed is None:
+                continue
+            j = label_names.index(name)
+            masked[~allowed, j] = _MASK
+        rows, cols = linear_sum_assignment(-masked)
+        if float(masked[rows, cols].sum()) > _MASK / 2:
+            return rows, cols
+        if not active:  # pragma: no cover - unmasked solve is always feasible
+            return rows, cols
+        active.pop(0)  # relax the lowest-priority constraint and retry
 
 
 def assign_segment_labels(df: pd.DataFrame, labels: np.ndarray) -> dict[int, str]:
@@ -204,19 +201,33 @@ def assign_segment_labels(df: pd.DataFrame, labels: np.ndarray) -> dict[int, str
         for feat, w in LABEL_SCORE_WEIGHTS[name].items():
             score[:, j] += w * z[feat].to_numpy()
 
-    rows, cols = linear_sum_assignment(-score)
+    rows, cols = _constrained_assignment(score, label_names, profiles)
     cluster_ids = profiles.index.to_numpy()
     mapping = {int(cluster_ids[r]): label_names[c] for r, c in zip(rows, cols, strict=False)}
     for cluster_id in profiles.index:
         mapping.setdefault(int(cluster_id), f"segment_{int(cluster_id)}")
-    return _repair_label_mapping(df, labels, mapping, profiles)
+    return mapping
 
 
+# Categorical proxies below are one-hot (full, no dropped reference level) —
+# not integer/ordinal-encoded — because every downstream step (_matrix,
+# StandardScaler, PCA, DBSCAN/KMeans) operates in Euclidean distance and a
+# single integer column for >2 unordered categories imposes false ordinal
+# structure (IMP-A02). Full one-hot (vs. drop-first) keeps every pairwise
+# cross-category distance equal, avoiding an asymmetric "reference level"
+# that would otherwise pull e.g. unknown-gender rows toward one cluster.
+# The raw *_encoded columns still exist for non-Euclidean consumers
+# (cluster_profiles label scoring, the propensity model).
 FEATURE_COLUMNS = [
     "age_bin_encoded",
-    "gender_encoded",
+    "gender_is_M",
+    "gender_is_F",
+    "gender_is_unknown",
     "rural_flag",
-    "preference_proxy_encoded",
+    "preference_proxy_is_A",
+    "preference_proxy_is_B",
+    "preference_proxy_is_other",
+    "preference_proxy_is_none",
     "preference_proxy_strength",
     "structural_dependency_encoded",
     "reachability_digital",
@@ -232,7 +243,7 @@ FEATURE_COLUMNS = [
 def _matrix(df: pd.DataFrame, n_pca_components: int | None = None) -> np.ndarray:
     """Standardize then reduce dimensionality with PCA.
 
-    PCA before DBSCAN and KMeans is necessary because in the raw 13-dimensional
+    PCA before DBSCAN and KMeans is necessary because in the raw 18-dimensional
     standardized feature space the median inter-point distance is ~0.75, making
     density-based thresholds very sensitive to dimensionality.  Five principal
     components capture the dominant variance while making eps/silhouette
@@ -248,7 +259,13 @@ def _matrix(df: pd.DataFrame, n_pca_components: int | None = None) -> np.ndarray
 
 @dataclass
 class DBSCANNoiseFilter:
-    eps: float = 2.0
+    # eps re-derived 2026-07-09 (IMP-A03 / issue #55) from the k-distance
+    # diagnostic on the post-IMP-A02 18-column one-hot matrix in PCA(5) space
+    # at n=15k/seed=42: sorted 5-NN distances p90=0.33, p99=0.77, p99.5=0.97.
+    # The old eps=2.0 sat far beyond the distance distribution and flagged
+    # exactly 0 rows — a dead pre-pass. eps=1.0 sits past the p99.5 elbow and
+    # yields a 0.14% noise rate (within the max_noise_rate: 0.01 gate).
+    eps: float = 1.0
     min_samples: int = 5
 
     def fit_transform(
@@ -325,42 +342,24 @@ class KMeansSegmenter:
             "labels": labels,
             "silhouette": sil,
             "bootstrap_ari": float(boot_ari),
+            "davies_bouldin": compute_davies_bouldin(x, labels),
+            "calinski_harabasz": compute_calinski_harabasz(x, labels),
             "segment_share": counts,
         }
 
-    def _bootstrap_ari(self, x: np.ndarray, _full_labels: np.ndarray) -> float:
-        """Mean ARI between two independent 80% subsample fits (platform-stable).
+    def _bootstrap_ari(self, x: np.ndarray, full_labels: np.ndarray) -> float:
+        """Bootstrap stability via the canonical reference-labeling ARI.
 
-        Compares two independently-fitted subsamples on their shared rows only.
-        BLAS differences then cancel because both label sets come from KMeans on
-        the same machine for the same subsample (macOS/Linux ARI variance eliminated).
+        Delegates to
+        :func:`~population_segmentation.evaluation.clustering_metrics.compute_bootstrap_ari`
+        (mean ARI between the primary fit's labels and KMeans refits on
+        bootstrap subsamples) so exactly ONE stability definition exists in the
+        codebase (IMP-A03 / issue #55). The previous two-subsample-overlap
+        implementation was removed with the same change; both compare KMeans
+        runs from the same process, so the platform-stability property (P2-5,
+        BLAS variance cancellation) is preserved.
         """
-        rng = np.random.default_rng(self.random_state)
-        n = len(x)
-        sub_size = max(100, int(0.8 * n))
-        scores: list[float] = []
-        for i in range(25):
-            idx_a = np.sort(rng.choice(n, size=sub_size, replace=False))
-            idx_b = np.sort(rng.choice(n, size=sub_size, replace=False))
-            shared = np.intersect1d(idx_a, idx_b)
-            if len(shared) < 50:
-                continue
-            km_a = KMeans(
-                n_clusters=self.k, init="k-means++", n_init="auto", random_state=self.random_state
-            )
-            km_b = KMeans(
-                n_clusters=self.k,
-                init="k-means++",
-                n_init="auto",
-                random_state=self.random_state + 1 + i,
-            )
-            labels_a = km_a.fit_predict(x[idx_a])
-            labels_b = km_b.fit_predict(x[idx_b])
-            pos_a = np.searchsorted(idx_a, shared)
-            pos_b = np.searchsorted(idx_b, shared)
-            ari = adjusted_rand_score(labels_a[pos_a], labels_b[pos_b])
-            scores.append(float(ari))
-        return float(np.mean(scores)) if scores else 0.0
+        return compute_bootstrap_ari(x, full_labels, self.k, random_state=self.random_state)
 
 
 def build_segmentation_frame(
@@ -416,6 +415,8 @@ def build_segmentation_frame(
         "silhouette": seg_out["silhouette"],
         "bootstrap_ari": seg_out["bootstrap_ari"],
         "noise_rate": float(noise_result["noise_rate"]),
+        "davies_bouldin": seg_out["davies_bouldin"],
+        "calinski_harabasz": seg_out["calinski_harabasz"],
         "segment_share": seg_out["segment_share"],
     }
 

@@ -36,6 +36,10 @@ OPERATOR_FILES = {
     # Gate-evidence trail consumed by test_architecture_module_c_surface, not
     # reviewer-facing narrative.
     "module_c_forecasting_scenarios/reports/C_research_proof_table.md",
+    # Gate-evidence trail for the IMP-A03 clustering selection (issue #55) —
+    # cited by model_params.yaml and the segmentation model card, not
+    # reviewer-facing narrative.
+    "reports/module_a/k_sweep_2026-07-09.md",
     # Generated constraint x contract matrix (issue #64); registry lists it as
     # internal/generated, freshness-gated by tests/test_conformance_matrix.py.
     "schema_contracts/CONFORMANCE_MATRIX.md",

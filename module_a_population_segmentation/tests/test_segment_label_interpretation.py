@@ -117,7 +117,10 @@ def test_profiles_z_scoring_handles_constant_feature() -> None:
             "youth_flag": np.zeros(n, dtype=int),  # constant → zero variance
             "structural_dependency_encoded": rng.integers(0, 2, n),
             "preference_proxy_strength": rng.random(n),
-            "preference_proxy_encoded": rng.integers(0, 4, n),
+            # cluster_profiles reads the one-hot indicators (IMP-A02), not the
+            # raw encoded scalar
+            "preference_proxy_is_B": rng.integers(0, 2, n).astype(float),
+            "preference_proxy_is_none": rng.integers(0, 2, n).astype(float),
             "nbi_stress_prior_scaled": rng.random(n),
         }
     )

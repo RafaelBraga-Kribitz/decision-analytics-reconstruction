@@ -75,7 +75,11 @@ def run_export(
     )
     from population_segmentation.features.behavioral import build_behavioral_features
     from population_segmentation.features.demographic import build_demographic_features
-    from population_segmentation.features.reachability import build_reachability_features
+    from population_segmentation.features.reachability import (
+        build_reachability_features,
+        check_reachability_tier_drift,
+        load_tier_share_tolerance,
+    )
     from population_segmentation.models.propensity import PropensityModel
     from population_segmentation.models.segmentation import build_segmentation_frame
 
@@ -104,6 +108,9 @@ def run_export(
     feat_df = build_reachability_features(
         build_behavioral_features(build_demographic_features(clean_df))
     )
+    tier_warnings = check_reachability_tier_drift(feat_df)
+    for _w in tier_warnings:
+        print(f"[export][WARN] {_w}", flush=True)
 
     print("[export] Segmentation ...", flush=True)
     labels_df, seg_metrics = build_segmentation_frame(feat_df, k=6, random_state=42)
@@ -198,10 +205,45 @@ def run_export(
         "silhouette": float(seg_metrics.get("silhouette", 0.0)),
         "bootstrap_ari": float(seg_metrics.get("bootstrap_ari", 0.0)),
         "noise_rate": float(seg_metrics.get("noise_rate", 0.0)),
+        # Previously dead evaluation metrics, wired per IMP-A03 / issue #55.
+        "davies_bouldin": float(seg_metrics.get("davies_bouldin", 0.0)),
+        "calinski_harabasz": float(seg_metrics.get("calinski_harabasz", 0.0)),
     }
     manifest_payload["propensity_metrics"] = {
         "auc_roc": float(prop_metrics.get("auc_roc", 0.0)),
         "brier_score": float(prop_metrics.get("brier_score", 0.0)),
+    }
+    # PSI of the tier distribution vs the frozen reference shares
+    # (evaluation/psi.py, previously dead, wired per IMP-A03 / issue #55).
+    # Shares are expanded into pseudo-samples at bin centers (0.1/0.5/0.9,
+    # 1000 draws) so the sample-based PSI function computes the share-based
+    # statistic exactly (quantization error < 1e-3).
+    import numpy as _np
+
+    from population_segmentation.evaluation.psi import population_stability_index
+
+    _ref_shares = {"low": 0.3491, "medium": 0.2887, "high": 0.3622}
+    _cur = feat_df["reachability_tier"].value_counts(normalize=True)
+    _centers = [0.1, 0.5, 0.9]
+    _tiers = ("low", "medium", "high")
+    _ref_counts = (_np.array([_ref_shares[k] for k in _tiers]) * 1000).astype(int)
+    _cur_vals = [_cur.get(k, 0.0) for k in _tiers]
+    _cur_counts = (
+        _np.array([float(v) if v is not None else 0.0 for v in _cur_vals]) * 1000
+    ).astype(int)
+    _tier_psi = population_stability_index(
+        _np.repeat(_centers, _ref_counts),
+        _np.repeat(_centers, _cur_counts),
+        n_bins=3,
+    )
+    manifest_payload["reachability_tier_qa"] = {
+        "tier_share_psi_vs_reference": float(_tier_psi),
+        "tier_shares": {
+            str(k): float(v)
+            for k, v in feat_df["reachability_tier"].value_counts(normalize=True).items()
+        },
+        "tolerance": dict(load_tier_share_tolerance()),
+        "warnings": tier_warnings,
     }
     write_model_run_manifest(manifest_path, manifest_payload)
     mlflow_metrics: dict[str, float] = {

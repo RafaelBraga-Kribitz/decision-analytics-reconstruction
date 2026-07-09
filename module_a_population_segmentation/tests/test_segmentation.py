@@ -57,10 +57,11 @@ def feature_df(config: dict) -> pd.DataFrame:  # type: ignore[type-arg]
 def test_dbscan_noise_rate_below_threshold(feature_df: pd.DataFrame) -> None:
     from population_segmentation.models.segmentation import DBSCANNoiseFilter
 
-    # Default eps=2.0 / min_samples=5 are calibrated to PCA(5)-reduced space.
-    # Raw 13-D with eps=0.7 was previously masking ~82% noise; the new params
-    # genuinely produce < 1% noise (measured ≈ 0% at n=10k).
-    filt = DBSCANNoiseFilter(eps=2.0, min_samples=5)
+    # eps=1.0 / min_samples=5 re-derived from the k-distance diagnostic on the
+    # 18-column one-hot matrix (IMP-A03 / issue #55): 5-NN p99.5 = 0.97, so
+    # eps=1.0 sits past the elbow. The old eps=2.0 flagged exactly 0 rows
+    # (dead pre-pass); the new value yields ~0.14% noise at n=15k.
+    filt = DBSCANNoiseFilter(eps=1.0, min_samples=5)
     res = filt.fit_transform(feature_df)
     assert res["noise_rate"] < 0.01
 
@@ -85,11 +86,14 @@ def test_kmeans_bootstrap_ari_above_threshold(feature_df: pd.DataFrame) -> None:
 
     seg = KMeansSegmenter(k=6, random_state=42)
     out = seg.fit_predict(feature_df)
-    # Gate set to 0.70: platform-stable two-subsample method (P2-5).
-    # Method compares two independent 80% subsample fits on shared rows only,
-    # eliminating macOS/Linux BLAS divergence. Measured ~0.75-0.80 at n=15k.
-    # 0.70 is the reliably-achievable floor; still well above random (≈0.0).
-    assert out["bootstrap_ari"] > 0.70
+    # Definition changed 2026-07-09 (IMP-A03 / issue #55): bootstrap_ari is now
+    # the single canonical reference-labeling ARI
+    # (evaluation/clustering_metrics.compute_bootstrap_ari); the two-subsample
+    # implementation was removed. Observed 0.5418 on the post-IMP-A02 18-column
+    # one-hot matrix at n=15k/seed=42/k=6. 0.50 is a regression-ratchet floor
+    # (observed minus margin), matching model_params.yaml
+    # bootstrap_ari_threshold — see reports/module_a/k_sweep_2026-07-09.md.
+    assert out["bootstrap_ari"] > 0.50
 
 
 def test_segment_size_coverage(feature_df: pd.DataFrame) -> None:

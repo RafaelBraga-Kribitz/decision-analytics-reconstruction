@@ -46,10 +46,116 @@ def load_reachability_weights(config_path: Path | None = None) -> ReachabilityWe
     }
 
 
+class TierBounds(TypedDict):
+    low_max: float
+    high_min: float
+
+
+class TierShareTolerance(TypedDict):
+    min_share: float
+    max_share: float
+
+
+def load_reachability_tier_bounds(config_path: Path | None = None) -> TierBounds:
+    """Load the frozen reachability tier cutpoints from ``model_params.yaml``.
+
+    The cutpoints are fixed reference values (IMP-A05 / issue #56) — a pure
+    per-row function of ``reachability_index``, never re-derived from the
+    current sample's quantiles.
+
+    Args:
+        config_path: Optional override for the YAML path; defaults to
+            ``module_a_population_segmentation/config/model_params.yaml``.
+
+    Returns:
+        Frozen ``low_max``/``high_min`` cutpoints for tier assignment.
+
+    Raises:
+        FileNotFoundError: When ``config_path`` does not exist.
+        KeyError: When ``reachability_tier_bounds`` is missing from the YAML.
+
+    Example:
+        ``load_reachability_tier_bounds()["low_max"]``.
+    """
+    path = config_path or _DEFAULT_MODEL_PARAMS
+    with open(path, encoding="utf-8") as handle:
+        params = yaml.safe_load(handle)
+    raw = params["reachability_tier_bounds"]
+    return {"low_max": float(raw["low_max"]), "high_min": float(raw["high_min"])}
+
+
+def load_tier_share_tolerance(config_path: Path | None = None) -> TierShareTolerance:
+    """Load the per-tier share tolerance band for the drift check.
+
+    Args:
+        config_path: Optional override for the YAML path; defaults to
+            ``module_a_population_segmentation/config/model_params.yaml``.
+
+    Returns:
+        ``min_share``/``max_share`` band each tier's share must stay within.
+
+    Raises:
+        FileNotFoundError: When ``config_path`` does not exist.
+        KeyError: When ``reachability_tier_bounds.tier_share_tolerance`` is
+            missing from the YAML.
+
+    Example:
+        ``load_tier_share_tolerance()["min_share"]``.
+    """
+    path = config_path or _DEFAULT_MODEL_PARAMS
+    with open(path, encoding="utf-8") as handle:
+        params = yaml.safe_load(handle)
+    raw = params["reachability_tier_bounds"]["tier_share_tolerance"]
+    return {"min_share": float(raw["min_share"]), "max_share": float(raw["max_share"])}
+
+
+def check_reachability_tier_drift(
+    df: pd.DataFrame,
+    *,
+    tolerance: TierShareTolerance | None = None,
+) -> list[str]:
+    """Compare per-tier shares against the configured tolerance band.
+
+    The cutpoints themselves are never re-binned at runtime; drift is
+    surfaced, not absorbed (IMP-A05 / issue #56).
+
+    Args:
+        df: Feature frame carrying ``reachability_tier``.
+        tolerance: Optional override for the band; defaults to
+            ``model_params.yaml`` ``tier_share_tolerance``.
+
+    Returns:
+        One warning string per tier whose share falls outside
+        ``[min_share, max_share]`` — a signal that the input distribution has
+        drifted from the reference run the cutpoints were frozen against.
+        Empty list means no drift.
+
+    Raises:
+        KeyError: If ``reachability_tier`` is absent from ``df``.
+
+    Example:
+        ``check_reachability_tier_drift(feature_frame)``.
+    """
+    tol = tolerance or load_tier_share_tolerance()
+    shares = df["reachability_tier"].value_counts(normalize=True)
+    warnings: list[str] = []
+    for tier in ("low", "medium", "high"):
+        raw_share = shares.get(tier, 0.0)
+        share = float(raw_share) if raw_share is not None else 0.0
+        if not tol["min_share"] <= share <= tol["max_share"]:
+            warnings.append(
+                f"reachability_tier drift: tier '{tier}' share {share:.4f} outside "
+                f"tolerance [{tol['min_share']}, {tol['max_share']}] — input "
+                "distribution departs from the frozen-reference run (IMP-A05)"
+            )
+    return warnings
+
+
 def build_reachability_features(
     df: pd.DataFrame,
     *,
     reachability_weights: ReachabilityWeights | None = None,
+    reachability_tier_bounds: TierBounds | None = None,
 ) -> pd.DataFrame:
     """Combine digital and broadcast penetration into reachability indices and tiers.
 
@@ -58,6 +164,10 @@ def build_reachability_features(
             and ``rural_flag``.
         reachability_weights: Optional override for index weights; defaults to
             ``model_params.yaml`` ``reachability_weights``.
+        reachability_tier_bounds: Optional override for the frozen tier
+            cutpoints; defaults to ``model_params.yaml``
+            ``reachability_tier_bounds`` (fixed reference — never derived
+            from the current sample).
 
     Returns:
         Copy of ``df`` with ``reachability_*`` columns, tertile labels, and compound
@@ -95,11 +205,10 @@ def build_reachability_features(
         + weights["broadcast_radio"] * out["reachability_broadcast_radio"]
     ).clip(0.0, 1.0)
 
-    q_low = out["reachability_index"].quantile(0.33)
-    q_high = out["reachability_index"].quantile(0.66)
+    bounds = reachability_tier_bounds or load_reachability_tier_bounds()
     out["reachability_tier"] = "medium"
-    out.loc[out["reachability_index"] <= q_low, "reachability_tier"] = "low"
-    out.loc[out["reachability_index"] >= q_high, "reachability_tier"] = "high"
+    out.loc[out["reachability_index"] <= bounds["low_max"], "reachability_tier"] = "low"
+    out.loc[out["reachability_index"] >= bounds["high_min"], "reachability_tier"] = "high"
 
     out["urban_digital_compound"] = (~out["rural_flag"]) & out["internet_access_flag"]
     out["rural_offline_compound"] = out["rural_flag"] & (~out["internet_access_flag"])
