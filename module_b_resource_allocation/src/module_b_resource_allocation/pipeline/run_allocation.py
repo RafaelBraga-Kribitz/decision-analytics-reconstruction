@@ -49,6 +49,7 @@ from module_b_resource_allocation.routing.cost_matrix import build_cost_matrix
 from module_b_resource_allocation.utils.allocation_output_gate import (
     validate_allocation_output_df,
 )
+from module_b_resource_allocation.utils.contract_gate import validate_named_contract
 
 logger = logging.getLogger(__name__)
 
@@ -107,6 +108,7 @@ def _write_secondary_artifacts(
 ) -> tuple[dict[str, str], pd.DataFrame, pd.DataFrame, int]:
     try:
         reach_caps = build_allocation_features()
+        validate_named_contract(reach_caps, "reachability_caps_dept_channel")
         reach_csv = args.out_dir / f"reach_caps_{args.scenario}.csv"
         reach_caps.to_csv(reach_csv, index=False)
 
@@ -115,8 +117,12 @@ def _write_secondary_artifacts(
         fx_df.to_csv(fx_csv, index=False)
 
         routing_df = build_cost_matrix(scenario=args.routing_scenario, seed=args.seed)
+        validate_named_contract(routing_df, "routing_cost_matrix")
         routing_csv = args.out_dir / f"routing_cost_matrix_{args.routing_scenario}.csv"
         routing_df.to_csv(routing_csv, index=False)
+    except ValueError as exc:
+        logger.error("secondary artifact contract gate: %s", exc)
+        return {}, pd.DataFrame(), pd.DataFrame(), 3
     except OSError as exc:
         logger.exception("failed writing secondary artifacts: %s", exc)
         return {}, pd.DataFrame(), pd.DataFrame(), 4
@@ -139,17 +145,27 @@ def _write_counterfactual_artifacts(
     args: argparse.Namespace,
 ) -> tuple[dict[str, str], int]:
     cf = run_broadcast_to_direct(result, routing_df, shift_share=args.shift_share)
+    # Counterfactual allocation is a contracted artifact: gate it before writing.
+    # Coverage is disabled — spend is heuristically reallocated so the solver's
+    # per-department floor no longer applies — but all declared field/row
+    # constraints (labels, bounds, keys) still hold.
+    validate_allocation_output_df(cf.counterfactual_allocation, enforce_coverage=False)
     cf_csv = args.out_dir / "allocation_broadcast_to_direct.csv"
     cf_parquet = args.out_dir / "allocation_broadcast_to_direct.parquet"
     cf_caps_csv = args.out_dir / "reach_caps_broadcast_to_direct.csv"
     deltas_csv = args.out_dir / "allocation_broadcast_to_direct_deltas.csv"
     rc_parquet = args.out_dir / "reallocation_counterfactuals.parquet"
     try:
+        reallocation_table = build_reallocation_counterfactuals_table(cf)
+        validate_named_contract(reallocation_table, "reallocation_counterfactuals")
         cf.counterfactual_allocation.to_csv(cf_csv, index=False)
         cf.counterfactual_allocation.to_parquet(cf_parquet, index=False)
         reach_caps.to_csv(cf_caps_csv, index=False)
         cf.deltas.to_csv(deltas_csv, index=False)
-        build_reallocation_counterfactuals_table(cf).to_parquet(rc_parquet, index=False)
+        reallocation_table.to_parquet(rc_parquet, index=False)
+    except ValueError as exc:
+        logger.error("counterfactual artifact contract gate: %s", exc)
+        return {}, 3
     except OSError as exc:
         logger.exception("failed writing counterfactual artifacts: %s", exc)
         return {}, 4

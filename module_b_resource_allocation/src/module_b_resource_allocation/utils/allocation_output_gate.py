@@ -8,6 +8,7 @@ from typing import Any, Final, cast
 
 import pandas as pd
 import yaml
+from contract_core import Contract, check_frame, parse_contract
 
 from module_b_resource_allocation.constants import (
     ALLOCATION_ROWS,
@@ -29,6 +30,25 @@ def _quality_gates() -> dict[str, Any]:
     with open(_CONTRACT_PATH) as f:
         contract = yaml.safe_load(f)
     return cast(dict[str, Any], contract.get("quality_gates", {}))
+
+
+@lru_cache(maxsize=1)
+def _shared_contract() -> Contract:
+    """Parse ``allocation_output.yaml`` once for the shared declarative core."""
+    with open(_CONTRACT_PATH) as f:
+        spec = yaml.safe_load(f)
+    return parse_contract(spec, source="allocation_output")
+
+
+def _validate_declared_constraints(df: pd.DataFrame, errors: list[str]) -> None:
+    """Enforce every declared field/row constraint via the shared core.
+
+    This layers the module-agnostic constraints (nullable, allowed_values,
+    min/max such as ``tc_rate_pyg_per_usd`` in [4500, 7000] and
+    ``reach_utilization`` <= 1.5, iso_week pattern, per-field unique) on top of
+    the bespoke budget/coverage gates below.
+    """
+    errors.extend(check_frame(df, _shared_contract()))
 
 
 def _validate_structural_keys(df: pd.DataFrame, errors: list[str]) -> None:
@@ -105,6 +125,7 @@ def validate_allocation_output_df(df: pd.DataFrame, *, enforce_coverage: bool = 
         ``validate_allocation_output_df(result.allocation)`` at the end of the CLI pipeline.
     """
     errors: list[str] = []
+    _validate_declared_constraints(df, errors)
     _validate_structural_keys(df, errors)
     gates = _quality_gates()
     _validate_budget_envelope(df, gates, errors)

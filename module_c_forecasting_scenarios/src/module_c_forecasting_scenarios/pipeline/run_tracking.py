@@ -46,6 +46,7 @@ def main(argv: list[str] | None = None) -> None:
         validate_dataframe_contract(exit_df, "polls_clean_exit_wave")
     args.out_dir.mkdir(parents=True, exist_ok=True)
     seed = build_house_effect_seed_matrix(tracking, m_star, series)
+    validate_dataframe_contract(seed, "house_effect_seed_matrix")
     seed.to_csv(args.out_dir / "house_effect_seed_matrix.csv", index=False)
     audit = build_polling_transparency_audit(tracking)
     audit.to_csv(args.out_dir / "polling_transparency_audit.csv", index=False)
