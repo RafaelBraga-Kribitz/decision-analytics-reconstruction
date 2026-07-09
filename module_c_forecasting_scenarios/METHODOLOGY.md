@@ -151,6 +151,95 @@ If exit_df has < 2 rows: return summary stub with `note="insufficient_exit_rows_
 
 ---
 
+## Monte Carlo Scenario Stratification & Reweighting (IMP-C08 / audit C14)
+
+`scenarios/monte_carlo.py` draws its scenario ensemble in **equal thirds**
+across the canonical buckets (`baseline` / `extreme_tracker` /
+`compounded_herd`). Equal-thirds allocation is a **variance-reduction
+design** — it guarantees every bucket has enough draws for a conditional
+(per-bucket) view even when a bucket is rare or absent from the tracking
+data. It is **not** a claim that the three buckets are equally likely.
+
+### Importance weights
+
+Every draw carries a `draw_weight` column:
+
+```
+draw_weight(bucket) = empirical_prevalence(bucket) / design_share(bucket)
+```
+
+- `empirical_prevalence(bucket)` is the fraction of **observed** tracking
+  polls assigned to that bucket (`features.shock_scores.scenario_bucket_for_margin`
+  applied to real poll rows) — recomputed fresh from the tracking data on
+  every run (`scenarios.monte_carlo.empirical_bucket_prevalence`), never
+  cached, so it cannot silently drift from the data it describes.
+- `design_share(bucket)` is that bucket's equal-thirds sampling fraction
+  (~1/3 regardless of the data).
+
+Any statistic **pooled across buckets** (mean, quantile, box plot spanning
+all three buckets) must use `draw_weight`
+(`scenarios.monte_carlo.weighted_pooled_mean`,
+`weighted_pooled_quantile`) — an unweighted pool across equal-thirds draws
+silently asserts a uniform scenario prior nobody chose. **Per-bucket
+(conditional-on-scenario) views do not need the weight** — they are exactly
+what equal allocation is for, and remain valid either way.
+
+A bucket with **zero observed prevalence** (no tracking poll fell into it)
+is still drawn at its equal-thirds floor from `shock_params.yaml:bucket_priors`
+(`draw_source=synthetic_prior`) so conditional exploration of that bucket
+stays possible, but its `draw_weight` is exactly `0.0` — it contributes
+nothing to pooled statistics. This is the documented
+"hypothetical (prevalence 0 in observed data)" case.
+
+### MC standard error under weighting (effective sample size)
+
+Once draws are importance-weighted, the relevant sample size for a pooled
+statistic's Monte Carlo standard error is not the raw draw count but the
+**Kish effective sample size**:
+
+```
+n_eff = (sum(w))^2 / sum(w^2)
+```
+
+(`scenarios.monte_carlo.effective_sample_size`). The MC-SE of a weighted
+pooled mean scales as `sigma / sqrt(n_eff)`, not `sigma / sqrt(n)` — the more
+concentrated the weights (e.g. the degenerate case where one bucket holds
+all the observed prevalence), the fewer effective draws the pooled statistic
+actually rests on, even though `n` (the raw draw count) is unchanged. The
+post-mortem report (`portfolio/quarto/post_mortem.qmd`, `tbl-mc-summary`)
+publishes `n_eff` alongside the weighted pooled mean for this reason.
+
+### Draw-budget justification (`_mc_n`)
+
+`_mc_n()` (`scenarios/monte_carlo.py`) returns 10 000 draws in the full run
+and 600 under `MC_FAST=1`. The full-run value is derived from a stated
+MC-standard-error target, not asserted:
+
+```
+MC-SE = sigma / sqrt(n)
+target MC-SE <= 0.1 pp, conservative sigma <= 10 pp (order of magnitude of
+  the extreme-bucket margin cutoff, shock_params.yaml:m_star_extreme_pp)
+=> n = (sigma / target_MC-SE)^2 = (10 / 0.1)^2 = 10 000
+```
+
+`MC_FAST=1` (600 draws, 200 per bucket at equal thirds) is an **engineering
+budget for CI runtime**, not an MC-SE-derived value — MC-SE at n=600 is
+`10 / sqrt(600) ~= 0.41` pp, far looser than the full run's target. `MC_FAST`
+output is never used for report-grade statistics, only for
+schema/contract/mapping tests that need bucket coverage rather than
+precision. Any future edit to `_mc_n`'s constants must update this
+derivation in the same change (the constant and its justification live
+together) — a bare constant edit without accompanying arithmetic is a
+review-blocking regression of this disclosure.
+
+### Exchangeability of pooled draws
+
+Monte Carlo draws are exchangeable — `draw_id` is a monotone index with no
+temporal or ordering meaning (`reports/eda/generate_eda.py` charts C5/C6/C10
+disclose this explicitly; do not plot draws against a "draw chunk" x-axis).
+
+---
+
 ## Sampler Configuration
 
 **File:** `config/pymc_sampler.yaml`

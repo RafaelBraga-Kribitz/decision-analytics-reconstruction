@@ -279,17 +279,38 @@ else:
 
 ```{python}
 #| label: tbl-mc-summary
+#| tbl-cap: >
+#|   Pooled Monte Carlo shock-scale summary. Equal-thirds stratification across
+#|   scenario buckets is a variance-reduction DESIGN, not a claim the three
+#|   buckets are equally likely (IMP-C08 / audit C14) — the weighted row below
+#|   corrects the pool back to the buckets' empirical prevalence among observed
+#|   tracking polls via draw_weight = prevalence(bucket) / design_share(bucket).
+#|   The unweighted row is shown only to make that correction visible; it is
+#|   NOT the headline pooled statistic.
 if mc is not None:
     n_draws = len(mc)
     n_buckets = mc["scenario_bucket"].nunique() if "scenario_bucket" in mc.columns else "N/A"
-    shock_stats = mc["shock_scale"].describe().round(3) if "shock_scale" in mc.columns else None
+    has_weight = "draw_weight" in mc.columns and "shock_scale" in mc.columns
+    if has_weight:
+        w = mc["draw_weight"].to_numpy(dtype=float)
+        x = mc["shock_scale"].to_numpy(dtype=float)
+        total_w = w.sum()
+        weighted_mean = float((w * x).sum() / total_w) if total_w > 0 else float("nan")
+        sw, sw2 = float(w.sum()), float((w * w).sum())
+        n_eff = (sw * sw / sw2) if sw2 > 0 else 0.0
+        unweighted_mean = float(x.mean())
+        unweighted_std = float(x.std())
+    else:
+        weighted_mean = n_eff = unweighted_mean = unweighted_std = float("nan")
     display(HTML(f"""
     <table style='font-size:13px;border-collapse:collapse'>
     <tr><th style='padding:4px 12px;text-align:left'>Metric</th><th style='padding:4px 12px'>Value</th></tr>
     <tr><td style='padding:4px 12px'>Total draws</td><td style='padding:4px 12px'>{n_draws:,}</td></tr>
     <tr><td style='padding:4px 12px'>Scenario buckets</td><td style='padding:4px 12px'>{n_buckets}</td></tr>
-    {'<tr><td style="padding:4px 12px">Shock scale mean</td><td style="padding:4px 12px">'+str(round(float(shock_stats["mean"]),3))+'</td></tr>' if shock_stats is not None else ''}
-    {'<tr><td style="padding:4px 12px">Shock scale std</td><td style="padding:4px 12px">'+str(round(float(shock_stats["std"]),3))+'</td></tr>' if shock_stats is not None else ''}
+    {'<tr><td style="padding:4px 12px">Shock scale mean (unweighted — equal-thirds pool, NOT the headline stat)</td><td style="padding:4px 12px">'+str(round(unweighted_mean,3))+'</td></tr>' if has_weight else ''}
+    {'<tr><td style="padding:4px 12px">Shock scale std (unweighted)</td><td style="padding:4px 12px">'+str(round(unweighted_std,3))+'</td></tr>' if has_weight else ''}
+    {'<tr><td style="padding:4px 12px"><b>Shock scale mean (prevalence-weighted — headline)</b></td><td style="padding:4px 12px"><b>'+str(round(weighted_mean,3))+'</b></td></tr>' if has_weight else ''}
+    {'<tr><td style="padding:4px 12px">Effective sample size under weighting (Kish n_eff)</td><td style="padding:4px 12px">'+str(round(n_eff,1))+'</td></tr>' if has_weight else ''}
     </table>
     """))
 ```
