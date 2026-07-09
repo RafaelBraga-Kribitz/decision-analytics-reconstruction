@@ -100,8 +100,11 @@ def cluster_profiles(df: pd.DataFrame, labels: np.ndarray) -> pd.DataFrame:
             "youth": df["youth_flag"].astype(float),
             "dependency": df["structural_dependency_encoded"].astype(float),
             "strength": df["preference_proxy_strength"].astype(float),
-            "opposition": (df["preference_proxy_encoded"] == 1).astype(float),
-            "no_preference": (df["preference_proxy_encoded"] == 3).astype(float),
+            # One-hot sources (IMP-A02): profile features are derived from the
+            # same columns the clusters were fit on, so label assignment needs
+            # no columns beyond FEATURE_COLUMNS.
+            "opposition": df["preference_proxy_is_B"].astype(float),
+            "no_preference": df["preference_proxy_is_none"].astype(float),
             "nbi_stress": df["nbi_stress_prior_scaled"].astype(float),
             "cluster": labels,
         }

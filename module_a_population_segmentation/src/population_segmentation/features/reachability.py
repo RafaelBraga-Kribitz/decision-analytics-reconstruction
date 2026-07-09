@@ -63,9 +63,19 @@ def load_reachability_tier_bounds(config_path: Path | None = None) -> TierBounds
     per-row function of ``reachability_index``, never re-derived from the
     current sample's quantiles.
 
+    Args:
+        config_path: Optional override for the YAML path; defaults to
+            ``module_a_population_segmentation/config/model_params.yaml``.
+
+    Returns:
+        Frozen ``low_max``/``high_min`` cutpoints for tier assignment.
+
     Raises:
         FileNotFoundError: When ``config_path`` does not exist.
         KeyError: When ``reachability_tier_bounds`` is missing from the YAML.
+
+    Example:
+        ``load_reachability_tier_bounds()["low_max"]``.
     """
     path = config_path or _DEFAULT_MODEL_PARAMS
     with open(path, encoding="utf-8") as handle:
@@ -77,10 +87,20 @@ def load_reachability_tier_bounds(config_path: Path | None = None) -> TierBounds
 def load_tier_share_tolerance(config_path: Path | None = None) -> TierShareTolerance:
     """Load the per-tier share tolerance band for the drift check.
 
+    Args:
+        config_path: Optional override for the YAML path; defaults to
+            ``module_a_population_segmentation/config/model_params.yaml``.
+
+    Returns:
+        ``min_share``/``max_share`` band each tier's share must stay within.
+
     Raises:
         FileNotFoundError: When ``config_path`` does not exist.
         KeyError: When ``reachability_tier_bounds.tier_share_tolerance`` is
             missing from the YAML.
+
+    Example:
+        ``load_tier_share_tolerance()["min_share"]``.
     """
     path = config_path or _DEFAULT_MODEL_PARAMS
     with open(path, encoding="utf-8") as handle:
@@ -96,11 +116,25 @@ def check_reachability_tier_drift(
 ) -> list[str]:
     """Compare per-tier shares against the configured tolerance band.
 
-    Returns one warning string per tier whose share falls outside
-    ``[min_share, max_share]`` — a signal that the input distribution has
-    drifted from the reference run the cutpoints were frozen against. The
-    cutpoints themselves are never re-binned at runtime; drift is surfaced,
-    not absorbed.
+    The cutpoints themselves are never re-binned at runtime; drift is
+    surfaced, not absorbed (IMP-A05 / issue #56).
+
+    Args:
+        df: Feature frame carrying ``reachability_tier``.
+        tolerance: Optional override for the band; defaults to
+            ``model_params.yaml`` ``tier_share_tolerance``.
+
+    Returns:
+        One warning string per tier whose share falls outside
+        ``[min_share, max_share]`` — a signal that the input distribution has
+        drifted from the reference run the cutpoints were frozen against.
+        Empty list means no drift.
+
+    Raises:
+        KeyError: If ``reachability_tier`` is absent from ``df``.
+
+    Example:
+        ``check_reachability_tier_drift(feature_frame)``.
     """
     tol = tolerance or load_tier_share_tolerance()
     shares = df["reachability_tier"].value_counts(normalize=True)
