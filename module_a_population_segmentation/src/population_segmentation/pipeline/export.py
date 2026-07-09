@@ -75,7 +75,11 @@ def run_export(
     )
     from population_segmentation.features.behavioral import build_behavioral_features
     from population_segmentation.features.demographic import build_demographic_features
-    from population_segmentation.features.reachability import build_reachability_features
+    from population_segmentation.features.reachability import (
+        build_reachability_features,
+        check_reachability_tier_drift,
+        load_tier_share_tolerance,
+    )
     from population_segmentation.models.propensity import PropensityModel
     from population_segmentation.models.segmentation import build_segmentation_frame
 
@@ -104,6 +108,9 @@ def run_export(
     feat_df = build_reachability_features(
         build_behavioral_features(build_demographic_features(clean_df))
     )
+    tier_warnings = check_reachability_tier_drift(feat_df)
+    for _w in tier_warnings:
+        print(f"[export][WARN] {_w}", flush=True)
 
     print("[export] Segmentation ...", flush=True)
     labels_df, seg_metrics = build_segmentation_frame(feat_df, k=6, random_state=42)
@@ -202,6 +209,14 @@ def run_export(
     manifest_payload["propensity_metrics"] = {
         "auc_roc": float(prop_metrics.get("auc_roc", 0.0)),
         "brier_score": float(prop_metrics.get("brier_score", 0.0)),
+    }
+    manifest_payload["reachability_tier_qa"] = {
+        "tier_shares": {
+            str(k): float(v)
+            for k, v in feat_df["reachability_tier"].value_counts(normalize=True).items()
+        },
+        "tolerance": dict(load_tier_share_tolerance()),
+        "warnings": tier_warnings,
     }
     write_model_run_manifest(manifest_path, manifest_payload)
     mlflow_metrics: dict[str, float] = {

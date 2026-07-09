@@ -33,12 +33,11 @@ def build_behavioral_features(df: pd.DataFrame) -> pd.DataFrame:
 
     out["structural_dependency_encoded"] = out["structural_dependency_proxy"].astype(int)
 
-    min_val = out["nbi_stress_prior"].min()
-    max_val = out["nbi_stress_prior"].max()
-    if max_val == min_val:
-        out["nbi_stress_prior_scaled"] = 0.0
-    else:
-        out["nbi_stress_prior_scaled"] = (out["nbi_stress_prior"] - min_val) / (max_val - min_val)
+    # generator.py clips raw NBI stress to the fixed [0, 1] range
+    # (np.clip(nbi_vals + nbi_noise, 0.0, 1.0), data/generator.py:335). Scale
+    # against that contractual bound, not the sample's own min()/max(), so the
+    # same raw value maps identically across sample sizes and seeds (IMP-A05).
+    out["nbi_stress_prior_scaled"] = out["nbi_stress_prior"].clip(0.0, 1.0)
 
     out["language_jopara_encoded"] = out["jopara_flag"].astype(int)
     out["language_guarani_flag"] = out["language_census_bucket"] == "guarani_only"

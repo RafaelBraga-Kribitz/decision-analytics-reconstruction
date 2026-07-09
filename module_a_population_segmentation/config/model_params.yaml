@@ -16,6 +16,9 @@
 #
 # Wired to runtime:
 #   - reachability_weights                 → features/reachability.load_reachability_weights()
+#   - reachability_tier_bounds             → features/reachability.load_reachability_tier_bounds()
+#   - reachability_tier_bounds.tier_share_tolerance
+#                                          → features/reachability.check_reachability_tier_drift()
 #
 # Planned: a config-loading adapter in pipeline/export.py to read these
 # values and pass them into model constructors, eliminating the duplication.
@@ -92,6 +95,24 @@ propensity:
   shap_sample_size: 10000         # Entities sampled for SHAP analysis
 
 # ─── Reachability index weights (wired in features/reachability.py) ───────────
+# ─── Reachability tier cutpoints (fixed reference; IMP-A05 / issue #56) ────────
+# Frozen once from a reference run: seed=42, n=15,000 (the canonical
+# test_segmentation.py fixture size), derived 2026-07-09 from the previous
+# 33rd/66th-percentile binning of reachability_index. reachability_tier is a
+# pure per-row function of reachability_index against these bounds — never
+# recomputed from the current run's own .quantile(). Dev (sample_size: 100000)
+# and full (N_full: 4260816) runs bind to these exact numbers; re-deriving
+# them is a reviewed config change, not runtime behavior.
+reachability_tier_bounds:
+  low_max: 0.3760000050067902   # reachability_index <= low_max  => "low"
+  high_min: 0.5255000025033951  # reachability_index >= high_min => "high"
+  # Per-tier share tolerance band for check_reachability_tier_drift(); a
+  # share outside this band warns in the export manifest (reachability_tier_qa)
+  # — cutpoints are not silently re-binned.
+  tier_share_tolerance:
+    min_share: 0.15
+    max_share: 0.55
+
 reachability_weights:
   digital: 0.25
   broadcast_tv: 0.25
