@@ -50,3 +50,19 @@ fields:
     nullable: false
     allowed_values: [tracking_sample, synthetic_prior]
     description: Whether the draw was sampled from tracking or synthesized.
+  draw_weight:
+    type: float64
+    nullable: false
+    min: 0
+    description: >
+      Importance weight = empirical_prevalence(scenario_bucket) /
+      design_share(scenario_bucket), constant within a bucket for a given run
+      (IMP-C08 / audit C14). Equal-thirds sampling is a variance-reduction
+      DESIGN, not a likelihood claim; any statistic pooled across buckets
+      (mean, quantile) must be weighted by this column — an unweighted pool
+      silently asserts a uniform scenario prior nobody chose. A weight of
+      0.0 is legitimate and expected for a bucket with zero observed
+      prevalence in the tracking data (draw_source=synthetic_prior in that
+      case): it may still be drawn at the design floor for conditional
+      (per-bucket) exploration, but contributes nothing to pooled statistics
+      — hypothetical, not observed.

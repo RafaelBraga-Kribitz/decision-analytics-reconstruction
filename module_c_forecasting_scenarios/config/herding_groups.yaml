@@ -1,0 +1,58 @@
+# Explicit conglomerate-carrier -> herding-group mapping (IMP-C04 / audit C5).
+#
+# Resolution is CASE-FOLDED EXACT MATCH on the normalized carrier string —
+# substring containment, alias guessing, and case-fold coincidences are
+# prohibited resolution mechanisms (see herding_weights.resolve_herding_group).
+# A carrier absent from `groups` resolves to `default_group` and emits a
+# structured warning; it is never silently assigned a non-default group.
+#
+# A missing/null carrier (no conglomerate metadata recorded for the poll) is a
+# distinct, expected state — it resolves to `default_group` WITHOUT a warning,
+# because "no carrier recorded" is not an identity-resolution failure.
+default_group: baseline
+
+groups:
+  vierci: elevated
+  ica: elevated
+
+# rho_herd(date_window, group) covariance-proxy lookup. `march_window` is
+# 2018-03-15..31, `april_window` is 2018-04-01..15 (both inclusive); all other
+# publication dates resolve to `outside_window`. `april_window` and
+# `outside_window` do not vary by group (matches the pre-mapping-table
+# behavior being replaced here) — only `march_window` distinguishes the
+# elevated group from baseline.
+covariance_matrix:
+  march_window:
+    elevated: 0.55
+    baseline: 0.35
+  april_window:
+    elevated: 0.25
+    baseline: 0.25
+  outside_window:
+    elevated: 0.05
+    baseline: 0.05
+
+# Provenance ledger (IMP-C04 acceptance criterion 1). Every numeric value in
+# `groups`-derived resolution and `covariance_matrix` above is a `hypothesis`,
+# not an `estimated` value: no historical polling-error dataset backs these
+# covariance-proxy magnitudes or the elevated/baseline carrier split. See
+# `module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md` for the
+# bucket-reassignment sensitivity envelope these hypothesis values carry.
+provenance:
+  groups:
+    source: hypothesis
+    rationale: >
+      Vierci and ICA carriers were flagged in post-hoc review of the 2018
+      tracking period as clustering their releases in the same 2-week window
+      (late March), which is the mechanism rho_herd is a proxy for. No
+      cross-cycle carrier dataset exists to estimate this split statistically;
+      it is a documented modeling hypothesis, not a fitted classification.
+    sensitivity_reference: module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md
+  covariance_matrix:
+    source: hypothesis
+    rationale: >
+      0.55/0.35/0.25/0.05 are hand-set covariance-proxy magnitudes intended to
+      rank-order herding risk (elevated-March > baseline-March > April >
+      outside) rather than to reproduce a fitted correlation. No historical
+      poll-clustering dataset was used to fit these values.
+    sensitivity_reference: module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md

@@ -4,6 +4,11 @@ lambda1: 0.08
 lambda2: 0.35
 lambda3: 0.12
 m_star_extreme_pp: 12.0
+# Scenario-bucket thresholds (features/shock_scores.py:scenario_bucket_for_margin).
+# A poll is "opaque" when phi < phi_opaque_threshold; the herd-covariance proxy
+# is "elevated" for bucketing purposes when rho > rho_herd_threshold.
+phi_opaque_threshold: 0.35
+rho_herd_threshold: 0.4
 outcome_event_date: "2018-04-22"
 clip_days_before_outcome: 45
 shock_multiplier: 1.0
@@ -23,3 +28,110 @@ bucket_priors:
   compounded_herd:
     log_mean: 0.60
     log_sd: 0.45
+
+# Provenance ledger (IMP-C04 acceptance criterion 1 / audit C5). Every
+# hand-set scalar above carries a row here: `estimated` (dataset, method,
+# standard error) or `hypothesis` (rationale + sensitivity envelope
+# reference). None of the values below are estimated from a historical
+# polling-error dataset — all are pre-registered modeling hypotheses, and all
+# carry the same sensitivity artifact reference:
+# module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md
+# (regenerate via reports/generate_shock_herding_sensitivity.py).
+#
+# Herding-covariance values (0.55 / 0.35 / 0.25 / 0.05) live operationally in
+# config/herding_groups.yaml (their consumer), which carries its own
+# provenance block; they are cross-referenced here per the same ledger
+# convention so a reader of *this* file sees the complete hand-set-parameter
+# inventory for the shock/herding subsystem in one place.
+provenance:
+  lambda1:
+    source: hypothesis
+    rationale: >
+      Weight on |m_poll - m_star| in the shock score. Chosen so a 12pp poll
+      deviation contributes roughly comparable magnitude to a fully-opaque
+      poll's transparency term (lambda2 * 1.0); not fit against outcome data.
+    sensitivity_reference: module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md
+  lambda2:
+    source: hypothesis
+    rationale: >
+      Weight on (1 - phi), the transparency-opacity term. Set as the dominant
+      term in the shock score (largest of the three lambdas) on the modeling
+      judgment that non-disclosure is the strongest available shock signal;
+      not fit against outcome data.
+    sensitivity_reference: module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md
+  lambda3:
+    source: hypothesis
+    rationale: >
+      Weight on rho_herd, the herd-correlation proxy. Smallest of the three
+      lambdas on the judgment that herding risk is a secondary signal relative
+      to margin deviation and opacity; not fit against outcome data.
+    sensitivity_reference: module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md
+  m_star_extreme_pp:
+    source: hypothesis
+    rationale: >
+      12pp margin deviation from the calibration anchor is asserted as the
+      "extreme" cut for scenario bucketing — roughly 3x a typical 8-wave
+      tracking poll's observed spread in the canonical fixture. Not fit
+      against a historical distribution of true polling errors.
+    sensitivity_reference: module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md
+  phi_opaque_threshold:
+    source: hypothesis
+    rationale: >
+      phi < 0.35 marks a poll "opaque" for bucketing. 0.35 sits below the
+      midpoint of phi's [0.08, 1.0] range, asserted as a low-transparency cut;
+      not fit against realized poll accuracy (see IMP-C02 for phi's own
+      calibration status).
+    sensitivity_reference: module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md
+  rho_herd_threshold:
+    source: hypothesis
+    rationale: >
+      rho > 0.4 marks "elevated" herd-covariance for the compounded_herd
+      bucket condition. Set above the April-window covariance (0.25) and
+      below the March-elevated covariance (0.55) so only the March-elevated
+      group can trigger it; not fit against outcome data.
+    sensitivity_reference: module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md
+  herding_covariance_march_elevated:
+    source: hypothesis
+    rationale: >
+      rho_herd = 0.55 for carriers in the "elevated" herding group during the
+      March 15-31 window (see config/herding_groups.yaml). Highest of the four
+      covariance-proxy values by construction (elevated-March is the most
+      herd-prone cell in the design). Not fit against a historical
+      poll-clustering dataset.
+    sensitivity_reference: module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md
+  herding_covariance_march_baseline:
+    source: hypothesis
+    rationale: >
+      rho_herd = 0.35 for non-elevated carriers during the March 15-31 window.
+      Not fit against a historical poll-clustering dataset.
+    sensitivity_reference: module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md
+  herding_covariance_april:
+    source: hypothesis
+    rationale: >
+      rho_herd = 0.25 for all carriers during the April 1-15 window (closer to
+      the outcome event, still asserted as elevated relative to baseline). Not
+      fit against a historical poll-clustering dataset.
+    sensitivity_reference: module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md
+  herding_covariance_outside:
+    source: hypothesis
+    rationale: >
+      rho_herd = 0.05 (near-zero) outside the two tracked windows — the
+      documented "no elevated herding risk" floor. Not fit against a
+      historical poll-clustering dataset.
+    sensitivity_reference: module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md
+  clip_days_before_outcome:
+    source: hypothesis
+    rationale: >
+      45-day window before the outcome event over which the shock score
+      linearly scales to zero at the window's start. Chosen to span roughly
+      the full tracking period observed in the canonical fixture; not fit
+      against outcome data.
+    sensitivity_reference: module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md
+  shock_multiplier:
+    source: hypothesis
+    rationale: >
+      Global multiplier on the shock score, identity-scaled (1.0) by default.
+      Exposed as a scenario-override knob (see baseline_shock_zero and
+      run_monte_carlo_scenarios' shock_multiplier parameter); it is a manual
+      override lever, not a value derived from outcome data.
+    sensitivity_reference: module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md
