@@ -16,10 +16,13 @@ _EXPECTED_ROOTS = frozenset(
     }
 )
 
-# The one sanctioned non-module package: the shared declarative contract
-# validator every module gate layers on (issue #64 / IMP-C07).
+# The sanctioned non-module packages under shared/src:
+# - contract_core: shared declarative contract validator every module gate
+#   layers on (issue #64 / IMP-C07).
+# - visual_system: one canonical colorblind-safe segment palette + figure
+#   template every chart surface consumes (issue #66 / IMP-V01).
 _SHARED_ROOT = "shared"
-_SHARED_INCLUDE = "contract_core"
+_SHARED_INCLUDES = frozenset({"contract_core", "visual_system"})
 
 
 def _load_poetry_packages() -> list[dict[str, str]]:
@@ -42,9 +45,9 @@ def _package_src_dir(pkg: dict[str, str]) -> Path:
 
 def test_poetry_packages_point_to_existing_module_roots_with_sources() -> None:
     packages = _load_poetry_packages()
-    assert len(packages) == 4, (
-        "Expected exactly four Poetry packages: the three modules plus the "
-        f"shared {_SHARED_INCLUDE!r} core. Adding another package is an "
+    assert len(packages) == 5, (
+        "Expected exactly five Poetry packages: the three modules plus the "
+        f"shared {sorted(_SHARED_INCLUDES)} cores. Adding another package is an "
         "architecture change — update ARCHITECTURE.md and this guardrail "
         "deliberately."
     )
@@ -52,13 +55,13 @@ def test_poetry_packages_point_to_existing_module_roots_with_sources() -> None:
     assert roots == _EXPECTED_ROOTS | {_SHARED_ROOT}, f"Unexpected package roots {roots}"
 
 
-def test_shared_root_packages_only_contract_core() -> None:
+def test_shared_root_packages_are_sanctioned() -> None:
     shared_includes = {
         pkg["include"]
         for pkg in _load_poetry_packages()
         if (_REPO_ROOT / pkg["from"]).resolve().parent.name == _SHARED_ROOT
     }
-    assert shared_includes == {_SHARED_INCLUDE}, (
-        f"Unexpected shared packages {shared_includes}; only {_SHARED_INCLUDE!r} "
-        "is sanctioned under shared/src"
+    assert shared_includes == set(_SHARED_INCLUDES), (
+        f"Unexpected shared packages {shared_includes}; only "
+        f"{sorted(_SHARED_INCLUDES)} are sanctioned under shared/src"
     )

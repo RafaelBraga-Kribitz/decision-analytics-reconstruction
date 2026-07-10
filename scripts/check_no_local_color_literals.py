@@ -31,7 +31,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "shared" / "src"))
 
-from visual_system.palette import SEGMENT_LABELS  # noqa: E402
+from visual_system.palette import SEGMENT_LABELS  # noqa: E402 -- after sys.path insert
 
 _CANONICAL = frozenset(SEGMENT_LABELS)
 _HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")

@@ -31,7 +31,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "shared" / "src"))
 
-from visual_system.palette import SEGMENT_COLORS  # noqa: E402
+from visual_system.palette import SEGMENT_COLORS  # noqa: E402 -- after sys.path insert
 
 # Minimum acceptable CIE76 deltaE (Euclidean distance in CIE Lab space)
 # between two segment colors *as simulated* under a given CVD type. A

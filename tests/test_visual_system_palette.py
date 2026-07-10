@@ -26,8 +26,8 @@ from population_segmentation.utils.schema import CANONICAL_SEGMENT_LABELS
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "shared" / "src"))
 
-from visual_system import palette  # noqa: E402
-from visual_system.figure_template import annotate_source  # noqa: E402
+from visual_system import palette  # noqa: E402 -- after sys.path insert
+from visual_system.figure_template import annotate_source  # noqa: E402 -- after sys.path insert
 
 
 def test_palette_labels_match_canonical() -> None:
