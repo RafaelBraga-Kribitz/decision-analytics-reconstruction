@@ -26,9 +26,11 @@ the artifact, the frame falls back to YAML priors and a uniform weight.
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 from typing import Final, cast
 
+import numpy as np
 import pandas as pd
 import yaml
 
@@ -37,10 +39,13 @@ from module_b_resource_allocation.features.diminishing_returns import build_dr_p
 from module_b_resource_allocation.features.district_tiers import build_district_tiers
 from module_b_resource_allocation.features.module_a_ingestion import (
     CHANNEL_PENETRATION_SOURCE,
+    UNCERTAINTY_FLAG,
     department_media_profile,
     load_segment_department_reachability,
 )
 from module_b_resource_allocation.features.reach_caps import build_reach_caps
+
+logger = logging.getLogger(__name__)
 
 _CONFIG_DIR: Final[Path] = Path(__file__).resolve().parents[3] / "config"
 
@@ -152,9 +157,36 @@ def build_allocation_features(
             df.loc[replace, "reach_cap_share"] = measured[replace]
             df.loc[replace, "provenance"] = "MODULE_A"
         propensity_by_dept = cast(pd.Series, profile["mean_participation_propensity"]).to_dict()
-        df["dept_mean_propensity"] = dept_series.map(propensity_by_dept).fillna(1.0)
+        mapped = dept_series.map(propensity_by_dept)
+        # Disclosed fallback (IMP-B02 / issue #58): departments Module A did
+        # not cover keep the neutral 1.0 weight, but the substitution is now
+        # recorded per row and counted — never silent. Rows sourced from an
+        # artifact predating the v1.1.0 uncertainty columns are flagged
+        # MODULE_A_NO_UNCERTAINTY, never unqualified MODULE_A.
+        df["dept_mean_propensity"] = mapped.fillna(1.0)
+        uncertainty_ok = bool(profile[UNCERTAINTY_FLAG].iloc[0])
+        measured_source = "MODULE_A" if uncertainty_ok else "MODULE_A_NO_UNCERTAINTY"
+        df["dept_mean_propensity_source"] = np.where(
+            mapped.notna(), measured_source, "NEUTRAL_FALLBACK"
+        )
+        df["dept_propensity_ci_low"] = dept_series.map(
+            cast(pd.Series, profile["propensity_ci_low"]).to_dict()
+        )
+        df["dept_propensity_ci_high"] = dept_series.map(
+            cast(pd.Series, profile["propensity_ci_high"]).to_dict()
+        )
+        n_fallback = int((df["dept_mean_propensity_source"] == "NEUTRAL_FALLBACK").sum())
+        if n_fallback:
+            logger.warning(
+                "dept_mean_propensity NEUTRAL_FALLBACK applied to %d row(s) — "
+                "departments missing from the Module A profile",
+                n_fallback,
+            )
     else:
         df["dept_mean_propensity"] = 1.0
+        df["dept_mean_propensity_source"] = "NEUTRAL_FALLBACK"
+        df["dept_propensity_ci_low"] = np.nan
+        df["dept_propensity_ci_high"] = np.nan
 
     def _reachable(row: pd.Series) -> int:
         cap = float(row["reach_cap_share"])
@@ -181,6 +213,9 @@ def build_allocation_features(
         "diminishing_returns_k",
         "diminishing_returns_inflection_pct",
         "dept_mean_propensity",
+        "dept_mean_propensity_source",
+        "dept_propensity_ci_low",
+        "dept_propensity_ci_high",
         "provenance",
     ]
     return cast(pd.DataFrame, df[column_order])

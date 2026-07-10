@@ -96,11 +96,65 @@ def load_segment_department_reachability(path: Path | None = None) -> pd.DataFra
     return df
 
 
+#: z multiplier for the propagated ~95% propensity interval.
+_CI_Z: Final[float] = 1.959963984540054
+
+#: Column flagging whether the loaded artifact carried uncertainty columns.
+UNCERTAINTY_FLAG: Final[str] = "uncertainty_available"
+
+
+def validate_department_profile(profile: pd.DataFrame) -> None:
+    """Abort on a degenerate/inverted propensity interval (IMP-B02 NFR).
+
+    Args:
+        profile: Output of :func:`department_media_profile`.
+
+    Returns:
+        None.
+
+    Raises:
+        ValueError: If any department's interval fails
+            ``propensity_ci_low <= mean_participation_propensity <=
+            propensity_ci_high`` (NaN intervals — the degraded no-uncertainty
+            path — are exempt; they are flagged, not bounded).
+
+    Example:
+        Called by :func:`department_media_profile` before returning.
+    """
+    if "propensity_ci_low" not in profile.columns:
+        return
+    has_ci = profile["propensity_ci_low"].notna() & profile["propensity_ci_high"].notna()
+    sub = cast(pd.DataFrame, profile[has_ci])
+    bad = cast(
+        pd.DataFrame,
+        sub[
+            (sub["propensity_ci_low"] > sub["mean_participation_propensity"])
+            | (sub["mean_participation_propensity"] > sub["propensity_ci_high"])
+        ],
+    )
+    if not bad.empty:
+        raise ValueError(
+            "inverted propensity interval (ci_low <= mean <= ci_high violated) for "
+            f"department(s): {sorted(bad.index.tolist())} — contract violation, not a warning"
+        )
+
+
 def department_media_profile(seg_dept: pd.DataFrame) -> pd.DataFrame:
     """Reduce segment×department rows to one measured profile row per department.
 
     All means are weighted by ``segment_size``; empty (size-0) cells are
     excluded so dense-grid NaN placeholders never poison the averages.
+
+    Uncertainty propagation (IMP-B02 / issue #58): when the artifact carries
+    ``participation_propensity_se`` (handshake contract v1.1.0), the
+    department standard error is propagated from the segment-cell SEs under
+    the weighted mean — ``se_dept = sqrt(sum(w_i^2 se_i^2)) / sum(w_i)`` —
+    and returned as a ~95% interval (``propensity_ci_low``/``_high``,
+    clipped to [0, 1]). Cells with undefined SE (n<=1) contribute zero to the
+    propagation. When the artifact predates the contract change,
+    ``uncertainty_available`` is False and the interval columns are NaN — the
+    consumer must flag degraded confidence, never treat missing uncertainty
+    as zero uncertainty.
 
     Args:
         seg_dept: Frame from :func:`load_segment_department_reachability`.
@@ -108,10 +162,13 @@ def department_media_profile(seg_dept: pd.DataFrame) -> pd.DataFrame:
     Returns:
         DataFrame indexed by ``department`` with columns ``tv_penetration``,
         ``radio_penetration``, ``whatsapp_penetration``, ``internet_access``,
-        ``mean_participation_propensity`` — all in [0, 1].
+        ``mean_participation_propensity`` (all in [0, 1]), plus
+        ``propensity_ci_low``, ``propensity_ci_high`` and the boolean
+        ``uncertainty_available``.
 
     Raises:
-        ValueError: If no department has any populated segment cell.
+        ValueError: If no department has any populated segment cell, or a
+            propagated interval is inverted.
 
     Example:
         ``department_media_profile(seg_df).loc["Central", "tv_penetration"]``.
@@ -120,21 +177,43 @@ def department_media_profile(seg_dept: pd.DataFrame) -> pd.DataFrame:
     if populated.empty:
         raise ValueError("Module A reachability artifact has no populated segment cells")
 
+    has_uncertainty = "participation_propensity_se" in populated.columns
+
     def _weighted(group: pd.DataFrame) -> pd.Series:
         w = group["segment_size"].to_numpy(dtype=float)
-        return pd.Series(
-            {
-                "tv_penetration": float(np.average(group["mean_tv_penetration"], weights=w)),
-                "radio_penetration": float(np.average(group["mean_radio_penetration"], weights=w)),
-                "whatsapp_penetration": float(
-                    np.average(group["mean_whatsapp_penetration"], weights=w)
-                ),
-                "internet_access": float(np.average(group["pct_internet_access"], weights=w)),
-                "mean_participation_propensity": float(
-                    np.average(group["mean_participation_propensity"], weights=w)
-                ),
-            }
-        )
+        row = {
+            "tv_penetration": float(np.average(group["mean_tv_penetration"], weights=w)),
+            "radio_penetration": float(np.average(group["mean_radio_penetration"], weights=w)),
+            "whatsapp_penetration": float(
+                np.average(group["mean_whatsapp_penetration"], weights=w)
+            ),
+            "internet_access": float(np.average(group["pct_internet_access"], weights=w)),
+            "mean_participation_propensity": float(
+                np.average(group["mean_participation_propensity"], weights=w)
+            ),
+        }
+        if has_uncertainty:
+            se = group["participation_propensity_se"].to_numpy(dtype=float)
+            se = np.nan_to_num(se, nan=0.0)  # n<=1 cells: undefined SE contributes zero
+            se_dept = float(np.sqrt(np.sum((w * se) ** 2)) / max(1e-9, float(w.sum())))
+            mean = row["mean_participation_propensity"]
+            row["propensity_ci_low"] = max(0.0, mean - _CI_Z * se_dept)
+            row["propensity_ci_high"] = min(1.0, mean + _CI_Z * se_dept)
+        else:
+            row["propensity_ci_low"] = float("nan")
+            row["propensity_ci_high"] = float("nan")
+        return pd.Series(row)
 
-    profile = populated.groupby("department")[list(_REQUIRED_COLUMNS)].apply(_weighted)
-    return cast(pd.DataFrame, profile.clip(lower=0.0, upper=1.0))
+    cols = [c for c in populated.columns if c != "department"]
+    profile = populated.groupby("department")[cols].apply(_weighted)
+    value_cols = [
+        "tv_penetration",
+        "radio_penetration",
+        "whatsapp_penetration",
+        "internet_access",
+        "mean_participation_propensity",
+    ]
+    profile[value_cols] = cast(pd.DataFrame, profile[value_cols]).clip(lower=0.0, upper=1.0)
+    profile[UNCERTAINTY_FLAG] = has_uncertainty
+    validate_department_profile(cast(pd.DataFrame, profile))
+    return cast(pd.DataFrame, profile)

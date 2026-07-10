@@ -18,9 +18,9 @@
 # renaming an existing key, changing an existing key's type/meaning, or
 # removing/repointing a chart_id.
 schema_version: 1
-run_id: 1252ce644c59
-git_commit: 1252ce644c59c0a0595fdf0e6f32db7abe62d771
-generated_at: '2026-07-09'
+run_id: 03dabf52ae80
+git_commit: 03dabf52ae8003ece23342d265644bb329f03cb7
+generated_at: '2026-07-10'
 data_manifest: data/processed/model_run_manifest.json
 canonical_sample_size: 50000
 segmentation_label_hash: 02e4166d85151bca

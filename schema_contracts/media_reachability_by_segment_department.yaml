@@ -1,5 +1,5 @@
 schema_name: media_reachability_by_segment_department
-schema_version: "1.0.0"
+schema_version: "1.1.0"
 description: >
   Department-grained companion to media_reachability_by_segment.
   One row per (segment_label, department) pair.  Required so Module B can
@@ -7,6 +7,14 @@ description: >
   granularity its LP/MILP actually consumes.
   Produced by: module_a (aggregation step).
   Consumed by: Module B (reach caps per department per segment).
+  v1.1.0 (IMP-B02 / issue #58): each measured mean carries a *_se standard
+  error (sample std / sqrt(n) of the cell; NaN for n<=1 cells) so uncertainty
+  crosses the A->B boundary instead of point estimates being treated as
+  certain. UNCERTAINTY PROVENANCE: participation_propensity_se is the
+  DESCRIPTIVE dispersion of the shipped propensity scores — which includes
+  the cosmetic within-department spread documented in the propensity model
+  card (F-079) — quantifying cell-mean stability under entity resampling,
+  not model/posterior uncertainty.
 
 unique_key:
   - segment_label
@@ -70,7 +78,18 @@ fields:
     nullable: true
     min: 0.0
     max: 1.0
+  participation_propensity_se:
+    type: float32
+    nullable: true
+    min: 0.0
+    max: 1.0
+    description: Standard error of the cell mean (descriptive score dispersion — see contract description).
   pct_internet_access:
+    type: float32
+    nullable: true
+    min: 0.0
+    max: 1.0
+  pct_internet_access_se:
     type: float32
     nullable: true
     min: 0.0
@@ -80,12 +99,27 @@ fields:
     nullable: true
     min: 0.0
     max: 1.0
+  mean_tv_penetration_se:
+    type: float32
+    nullable: true
+    min: 0.0
+    max: 1.0
   mean_radio_penetration:
     type: float32
     nullable: true
     min: 0.0
     max: 1.0
+  mean_radio_penetration_se:
+    type: float32
+    nullable: true
+    min: 0.0
+    max: 1.0
   mean_whatsapp_penetration:
+    type: float32
+    nullable: true
+    min: 0.0
+    max: 1.0
+  mean_whatsapp_penetration_se:
     type: float32
     nullable: true
     min: 0.0

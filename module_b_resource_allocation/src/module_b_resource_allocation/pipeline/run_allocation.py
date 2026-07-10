@@ -43,6 +43,9 @@ from module_b_resource_allocation.reporting.duals_export import (
     write_budget_dual_csv,
     write_reach_cap_duals_csv,
 )
+from module_b_resource_allocation.reporting.input_noise_sensitivity import (
+    compute_input_noise_sensitivity,
+)
 from module_b_resource_allocation.reporting.parameter_sensitivity import (
     compute_parameter_sensitivity,
 )
@@ -222,6 +225,24 @@ def _attach_sensitivity_artifacts(
     param_csv = args.out_dir / f"parameter_sensitivity_{args.scenario}.csv"
     pd.DataFrame(param_rows).to_csv(param_csv, index=False)
     artifacts["parameter_sensitivity_csv"] = str(param_csv)
+
+    # Input-noise sensitivity (IMP-B02 / issue #58): how much Module A's own
+    # propagated propensity uncertainty moves the recommendation. Skipped
+    # only when the feature frame carries no intervals at all (pre-IMP-B02
+    # artifact) — and that skip is recorded, never silent.
+    try:
+        noise_rows = compute_input_noise_sensitivity(
+            scenario_id=args.scenario,
+            fx_series_id=args.fx_series,
+            solver_seed=args.seed,
+        )
+        manifest_extras["input_noise_sensitivity"] = noise_rows
+        noise_csv = args.out_dir / f"input_noise_sensitivity_{args.scenario}.csv"
+        pd.DataFrame(noise_rows).to_csv(noise_csv, index=False)
+        artifacts["input_noise_sensitivity_csv"] = str(noise_csv)
+    except KeyError as exc:
+        manifest_extras["input_noise_sensitivity_skipped"] = str(exc)
+        logger.warning("input-noise sensitivity skipped: %s", exc)
     try:
         db = write_budget_dual_csv(result, args.out_dir, args.scenario)
         dr = write_reach_cap_duals_csv(result, args.out_dir, args.scenario)
