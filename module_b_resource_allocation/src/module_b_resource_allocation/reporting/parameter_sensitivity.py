@@ -29,6 +29,11 @@ from module_b_resource_allocation.features import diminishing_returns as _dr
 from module_b_resource_allocation.models import allocation as _alloc
 from module_b_resource_allocation.models.allocation import build_problem, solve
 
+# One sweep-artifact row: parameter_family/direction/solver_status are str;
+# perturbation_pct, the contact/budget totals, and pct_change are float;
+# stability_breach is bool.
+SensitivityRow = dict[str, str | float | bool]
+
 # Perturbation magnitudes per family (fraction of the baseline value).
 TIER_PENALTY_PCT: float = 0.20
 SCENARIO_WEEK_PCT: float = 0.20
@@ -134,7 +139,7 @@ def compute_parameter_sensitivity(
     fx_series_id: str,
     solver_seed: int,
     budget_usd: float | None = None,
-) -> list[dict[str, Any]]:
+) -> list[SensitivityRow]:
     """Re-solve the MILP under ±perturbation of each unmeasured coefficient family.
 
     Args:
@@ -162,7 +167,7 @@ def compute_parameter_sensitivity(
         solver_seed=solver_seed,
         budget_usd=budget,
     )
-    rows: list[dict[str, Any]] = [
+    rows: list[SensitivityRow] = [
         {
             "parameter_family": "baseline",
             "direction": "baseline",
