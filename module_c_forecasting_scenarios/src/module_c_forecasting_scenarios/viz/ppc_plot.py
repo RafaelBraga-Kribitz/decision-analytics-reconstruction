@@ -52,10 +52,27 @@ def generate_ppc_plot(
     q90 = np.percentile(ppc_ordered, 90.0, axis=0)
     q975 = np.percentile(ppc_ordered, 97.5, axis=0)
 
-    ax.fill_between(x, q025, q975, alpha=0.15, color="#636EFA", label="95% PPC interval")
-    ax.fill_between(x, q10, q90, alpha=0.25, color="#636EFA", label="80% PPC interval")
-    ax.fill_between(x, q25, q75, alpha=0.40, color="#636EFA", label="50% PPC interval")
-    ax.plot(x, q50, color="#636EFA", linewidth=1.5, linestyle="--", label="PPC median")
+    # Nested intervals in distinct lightness steps of one hue (IMP-V05 /
+    # issue #69): decodable in grayscale, where the old alpha-only stacking
+    # of a single color was not. Each band also carries a direct right-edge
+    # label so no legend lookup is needed.
+    band_specs = (
+        (q025, q975, "#c6dbef", "95%"),
+        (q10, q90, "#6baed6", "80%"),
+        (q25, q75, "#2171b5", "50%"),
+    )
+    for lo, hi, color, level in band_specs:
+        ax.fill_between(x, lo, hi, color=color, alpha=1.0, label=f"{level} PPC interval")
+        ax.annotate(
+            level,
+            xy=(float(x[-1]), float((lo[-1] + hi[-1]) / 2.0)),
+            xytext=(6, 0),
+            textcoords="offset points",
+            va="center",
+            fontsize=8,
+            color="#25282b",
+        )
+    ax.plot(x, q50, color="#08306b", linewidth=1.5, linestyle="--", label="PPC median")
     ax.scatter(x, obs, color="#EF553B", zorder=5, s=80, label="Observed polls (pp)")
 
     ax.set_xticks(x)
