@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -116,6 +117,34 @@ def _make_national_reference_labels(n: int, national_rate: float, seed: int = 42
     return (np.random.default_rng(seed).random(n) < national_rate).astype(int)
 
 
+def _render_shap_summary(model: Any, x_scaled: np.ndarray, feature_names: list[str]) -> None:
+    """Render the SHAP mean-|SHAP| bar summary with explicit figure ownership.
+
+    ``shap.summary_plot(show=False)`` returns ``None`` on the pinned shap
+    version (verified), so the figure it drew is captured explicitly with no
+    ambient state from other tabs — ``None`` can never reach ``st.pyplot``
+    and two renders of the same inputs are identical (IMP-V06 / issue #70).
+    """
+    import shap
+
+    with st.spinner("Computing SHAP values..."):
+        explainer = shap.LinearExplainer(model, x_scaled, feature_names=feature_names)
+        shap_values = explainer.shap_values(x_scaled)
+        shap_vals = shap_values[1] if isinstance(shap_values, list) else shap_values
+
+    plt.close("all")
+    shap.summary_plot(shap_vals, x_scaled, feature_names=feature_names, plot_type="bar", show=False)
+    fig_shap = plt.gcf()
+    if not fig_shap.axes:
+        raise RuntimeError("shap.summary_plot drew no axes — cannot render SHAP tab")
+    st.pyplot(fig_shap, use_container_width=True)
+    plt.close(fig_shap)
+    st.write(
+        "**Interpretation:** Features ordered by mean |SHAP value|. "
+        "Higher = more important for model predictions."
+    )
+
+
 def main() -> None:
     st.set_page_config(page_title="Module A Dashboard", layout="wide")
     st.title("Module A — Population Modeling and Segmentation")
@@ -219,19 +248,7 @@ def main() -> None:
             )
 
         if importance_type == "Summary (mean |SHAP|)":
-            with st.spinner("Computing SHAP values..."):
-                explainer = shap.LinearExplainer(model, x_scaled, feature_names=feature_names)
-                shap_values = explainer.shap_values(x_scaled)
-                shap_vals = shap_values[1] if isinstance(shap_values, list) else shap_values
-
-            fig = shap.summary_plot(
-                shap_vals, x_scaled, feature_names=feature_names, plot_type="bar", show=False
-            )
-            st.pyplot(fig, use_container_width=True)
-            st.write(
-                "**Interpretation:** Features ordered by mean |SHAP value|. "
-                "Higher = more important for model predictions."
-            )
+            _render_shap_summary(model, x_scaled, feature_names)
 
         else:
             entity_idx = st.slider("Select entity", 0, len(feat) - 1, 0)

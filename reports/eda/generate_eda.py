@@ -37,6 +37,7 @@ OUT.mkdir(parents=True, exist_ok=True)
 sys.path.insert(0, str(ROOT / "shared" / "src"))
 from visual_system.palette import (  # noqa: E402
     SEGMENT_COLORS as SEG_COLORS,
+    SEGMENT_DISPLAY_ORDER,
     SEGMENT_LINESTYLES,
     SEGMENT_MARKERS,
 )
@@ -236,14 +237,9 @@ FIGURE_STAMP = f"run {FIGURE_RUN_ID} · model {FIGURE_MODEL_VERSION}"
 # MODULE A — POPULATION & SEGMENTS
 # ════════════════════════════════════════════════════════════════════════════
 print("── Module A charts ──")
-SEG_ORDER = [
-    "youth_volatile",
-    "urban_high_volatility",
-    "rural_committed",
-    "rural_low_propensity",
-    "structurally_dependent_bloc",
-    "committed_opposition",
-]
+# Presentation order comes from the shared visual system (IMP-V06) so the
+# dashboard and the static report rank segments identically.
+SEG_ORDER = list(SEGMENT_DISPLAY_ORDER)
 
 
 @safe_chart("A1")
