@@ -130,22 +130,83 @@ class PropensityModel:
         auc = float(roc_auc_score(y_test, prob_test))
         brier = float(brier_score_loss(y_test, prob_test))
 
+        # Honest discrimination metric (IMP-A01 / F-079): auc_roc is CIRCULAR —
+        # the synthetic target and department_logit_offset both derive from
+        # calibration_anchors.department_participation_rates, so auc_roc mostly
+        # measures that shared lookup table. auc_roc_ablated refits the same
+        # split WITHOUT department_logit_offset (the leaked feature) and is the
+        # number gated in CI and quoted in the README. One extra LR fit on the
+        # train partition — well within the export runtime budget.
+        auc_ablated, keep = self._ablated_auc(x_train, x_test, y_train, y_test, x.shape[1])
+
         pred = pd.Series(prob_final, index=df.index, name="participation_propensity")
         calibration = self._calibration_report(pred, df, a)
 
         feature_names = list(FEATURES) + ["department_logit_offset", "gender_youth_interaction"]
+        ablated_feature_names = [n for i, n in enumerate(feature_names) if i in keep]
 
         return {
             "predictions": pred,
             "raw_logit_score": pd.Series(raw_all, index=df.index),
             "department_rake_multiplier": dept_multipliers,
-            "metrics": {"auc_roc": auc, "brier_score": brier},
+            "metrics": {
+                # auc_roc is circular (label and strongest feature share one
+                # anchor table) — kept for continuity, never gated. The gated,
+                # README-quoted discrimination figure is auc_roc_ablated.
+                "auc_roc": auc,
+                "auc_roc_ablated": auc_ablated,
+                "brier_score": brier,
+            },
             "calibration": calibration,
             "fitted_model": base,
             "scaler": scaler,
             "feature_names": feature_names,
+            "ablated_feature_names": ablated_feature_names,
             "x_all_scaled": x_all_s,
         }
+
+    def _ablated_auc(
+        self,
+        x_train: Any,  # Any: train_test_split's overloads return loosely-typed arrays
+        x_test: Any,
+        y_train: Any,
+        y_test: Any,
+        n_features: int,
+    ) -> tuple[float, list[int]]:
+        """Refit on the same split without ``department_logit_offset`` and score.
+
+        The honest Gate A8 metric (IMP-A01 / F-079): the leaked anchor-derived
+        feature is structurally excluded before fitting, so the returned AUC
+        cannot read the label's source table through that column. The kept
+        column indices are returned so callers can expose the ablated feature
+        list for leakage checks.
+
+        Args:
+            x_train: Training design matrix (full feature set).
+            x_test: Test design matrix (full feature set).
+            y_train: Training labels.
+            y_test: Test labels.
+            n_features: Total column count of the full design matrix.
+
+        Returns:
+            ``(auc_roc_ablated, kept_column_indices)``.
+
+        Raises:
+            ValueError: Propagated from sklearn on degenerate inputs.
+
+        Example:
+            Called once per :meth:`fit_predict`; deterministic under
+            ``random_state``.
+        """
+        offset_idx = len(FEATURES)  # department_logit_offset column position
+        keep = [i for i in range(n_features) if i != offset_idx]
+        scaler_abl = StandardScaler()
+        x_train_abl = scaler_abl.fit_transform(np.asarray(x_train)[:, keep])
+        x_test_abl = scaler_abl.transform(np.asarray(x_test)[:, keep])
+        base_abl = LogisticRegression(max_iter=1000, random_state=self.random_state)
+        base_abl.fit(x_train_abl, y_train)
+        prob_test_abl = base_abl.predict_proba(x_test_abl)[:, 1]
+        return float(roc_auc_score(y_test, prob_test_abl)), keep
 
     def _feature_matrix(self, df: pd.DataFrame, anchors: dict[str, Any]) -> np.ndarray:
         x = df[FEATURES].copy()
@@ -246,11 +307,15 @@ class PropensityModel:
         return out, pd.Series(dept.map(multipliers).to_numpy(), index=dept.index)
 
     def _entity_spread_signal(self, df: pd.DataFrame) -> np.ndarray:
-        """Entity-level spread driver independent of department logit offset.
+        """Composite z-score driving the COSMETIC dispersion restoration step.
 
-        Raw classifier logits collapse within departments when
-        ``department_logit_offset`` dominates; this composite uses behavioral
-        and demographic features so post-rake spread restores individual variation.
+        This is not modeled uncertainty and not "individual variation" in any
+        inferential sense (IMP-A01 / F-079): it z-scores eight unrelated
+        demographic/behavioral columns and sums them, purely so the post-rake
+        distribution is not visually collapsed within departments. The model
+        card's Known Limitations section states this; a principled replacement
+        (prediction-interval or per-entity bootstrap variance) would supersede
+        this step.
         """
         spread_cols = [
             "age_bin_encoded",
@@ -275,9 +340,12 @@ class PropensityModel:
     ) -> np.ndarray:
         """Affine remap within departments using zero-mean entity z-scores.
 
-        Platt scaling and department raking collapse dispersion; this step
-        re-spreads propensity around each department's raked mean while
-        preserving department means for calibration gates.
+        COSMETIC dispersion restoration (IMP-A01 / F-079): Platt scaling and
+        department raking collapse dispersion; this step re-spreads propensity
+        around each department's raked mean to a fixed ``individual_spread_std``
+        while preserving department means for calibration gates. The spread is
+        an affine rescale of :meth:`_entity_spread_signal`'s composite z-score —
+        not a posterior, bootstrap, or any other uncertainty-derived quantity.
         """
         out = prob.copy()
         spread_std = self.individual_spread_std

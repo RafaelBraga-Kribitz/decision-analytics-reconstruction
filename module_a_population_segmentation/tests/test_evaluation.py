@@ -22,16 +22,17 @@ def test_calibration_metric_functions() -> None:
     assert reliability_deviation(y_true, y_prob, n_bins=3) >= 0.0
 
 
-def test_auc_floor() -> None:
-    """Gate A8: ROC-AUC on test split must clear configured floor."""
+def test_compute_auc_orders_correctly() -> None:
+    """Unit check of the compute_auc helper on a hand-built array.
+
+    NOT a model gate (IMP-A01 / F-079): this exercises only the metric
+    helper. The real Gate A8 lives in
+    tests/test_propensity.py::test_auc_floor_ablated_gate, which fits the
+    actual PropensityModel and gates metrics["auc_roc_ablated"].
+    """
     y_true = np.array([0, 1, 0, 1, 1, 0, 1, 0], dtype=int)
     y_prob = np.array([0.1, 0.8, 0.2, 0.7, 0.9, 0.3, 0.85, 0.15], dtype=float)
-    auc = compute_auc(y_true, y_prob)
-    threshold = 0.70
-    assert auc >= threshold, (
-        f"AUC {auc:.4f} below floor {threshold:.2f} — investigate "
-        f"target leakage or training instability"
-    )
+    assert compute_auc(y_true, y_prob) == 1.0  # perfectly ordered toy input
 
 
 def test_clustering_metric_functions() -> None:

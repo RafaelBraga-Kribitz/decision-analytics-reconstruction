@@ -125,9 +125,27 @@ propensity:
   # so 0.235 still requires the model to out-perform a constant-rate predictor).
   # The original gate of 0.22 was only satisfied by capping the raw metric.
   brier_threshold: 0.237
-  auc_floor: 0.70                 # Gate A8: enforced in CI (see test_auc_floor)
+  # auc_floor applies to the CIRCULAR auc_roc and is informational only — that
+  # metric's label and strongest feature share one anchor table and it is not
+  # gated anywhere (IMP-A01 / F-079). The former comment claimed enforcement
+  # via test_auc_floor, a toy-array test that never called the model; retired.
+  auc_floor: 0.70
+  # Gate A8 (enforced in CI: tests/test_propensity.py::test_auc_floor_ablated_gate,
+  # which fits the real PropensityModel on the 15k fixture): floor on
+  # auc_roc_ablated, computed with department_logit_offset structurally
+  # excluded. Measured 0.8908 at n=15k seed=42 — essentially equal to the
+  # circular 0.8907, because the synthetic label is generated from covariates
+  # that remain in the feature set; no AUC variant here is a generalization
+  # metric (model card §Limitations). Floor set to 0.85 as a regression
+  # tripwire (margin for fixture-size/sampling variance), not a skill claim.
+  auc_floor_ablated: 0.85
   reliability_max_deviation_pp: 3.0  # Gate: max deviation per reliability decile
-  individual_spread_std: 0.095      # Post-rake within-dept std from entity feature z-scores (F-052)
+  # Post-rake within-dept std (F-052). COSMETIC dispersion restoration — an
+  # affine rescale of a composite feature z-score, not modeled uncertainty
+  # (IMP-A01). Tests construct PropensityModel with THIS value (not the
+  # dataclass default) so the shipped parquet's configuration is what CI
+  # exercises.
+  individual_spread_std: 0.095
   shap_sample_size: 10000         # Entities sampled for SHAP analysis
 
 # ─── Reachability index weights (wired in features/reachability.py) ───────────
