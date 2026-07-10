@@ -257,17 +257,35 @@ def _unit_cost_usd(row: pd.Series, layer: FxLayer, iso_week: str) -> float:
     return float(row["unit_cost_pyg"]) / layer.rate(iso_week, tier)  # type: ignore[arg-type]  # tier is str; layer.rate expects FxTier Literal; str(row[...]) ensures valid value
 
 
+# Objective coefficient families with no measured anchor. Values are unchanged
+# from the original inline literals; promoted to module-level dicts so the
+# provenance manifest (config/allocation_parameter_provenance.yaml) and the
+# parameter-sensitivity sweep (reporting/parameter_sensitivity.py) share one
+# overridable source of truth (IMP-B01 / issue #57). Every value here must carry
+# a provenance entry, enforced by scripts/check_allocation_parameter_provenance.py.
+_SCENARIO_WEEK_WEIGHTS: dict[str, dict[str, float]] = {
+    "early_lock": {"cutoff_week": 5.0, "early": 1.15, "late": 0.95},
+    "late_flex": {"cutoff_week": 7.0, "early": 0.92, "late": 1.20},
+}
+
+_TIER_PENALTY: dict[str, float] = {
+    "stronghold": 1.00,
+    "swing": 1.10,
+    "opposition": 0.85,
+    "negligible": 0.55,
+}
+
+
 def _scenario_week_weight(scenario_id: str, week_idx: int) -> float:
     """Per-week emphasis multiplier (priors only; does not change budget envelope)."""
-    if scenario_id == "early_lock":
-        return 1.15 if week_idx <= 5 else 0.95
-    if scenario_id == "late_flex":
-        return 0.92 if week_idx <= 7 else 1.20
-    return 1.0
+    curve = _SCENARIO_WEEK_WEIGHTS.get(scenario_id)
+    if curve is None:
+        return 1.0
+    return curve["early"] if week_idx <= curve["cutoff_week"] else curve["late"]
 
 
 def _tier_penalty(tier: str) -> float:
-    return {"stronghold": 1.00, "swing": 1.10, "opposition": 0.85, "negligible": 0.55}[tier]
+    return _TIER_PENALTY[tier]
 
 
 def _propensity_weight(cap_row: pd.Series) -> float:

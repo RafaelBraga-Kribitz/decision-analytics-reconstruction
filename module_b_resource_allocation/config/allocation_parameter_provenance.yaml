@@ -1,0 +1,219 @@
+# config/allocation_parameter_provenance.yaml
+# Provenance ledger for every hand-set objective coefficient in Module B's
+# MILP (IMP-B01 / issue #57). Three of the six objective multipliers trace to
+# the anchored persuasion stack in constants.py; the families below did not,
+# and this file makes the absence of a measured source explicit rather than
+# leaving invented multipliers undisclosed. provenance is one of
+# constants.VALID_PROVENANCE (VERIFIED|PRIOR|ESTIMATED|NEUTRAL). Completeness
+# and value-parity vs the code are enforced by
+# scripts/check_allocation_parameter_provenance.py.
+schema_version: 1
+coefficient_families:
+  tier_penalty:
+    source_symbol: module_b_resource_allocation/models/allocation.py::_TIER_PENALTY
+    values:
+      stronghold:
+        value: 1.0
+        provenance: NEUTRAL
+        source: "identity \u2014 no measured persuasion differential for this tier"
+      swing:
+        value: 1.1
+        provenance: ESTIMATED
+        source: 'assumption: swing departments weighted to 1.1x persuasion value;
+          no calibration data (IMP-B01 discloses the gap)'
+      opposition:
+        value: 0.85
+        provenance: ESTIMATED
+        source: 'assumption: opposition departments weighted to 0.85x persuasion value;
+          no calibration data (IMP-B01 discloses the gap)'
+      negligible:
+        value: 0.55
+        provenance: ESTIMATED
+        source: 'assumption: negligible departments weighted to 0.55x persuasion value;
+          no calibration data (IMP-B01 discloses the gap)'
+  scenario_week_weight:
+    source_symbol: module_b_resource_allocation/models/allocation.py::_SCENARIO_WEEK_WEIGHTS
+    values:
+      early_lock.early:
+        value: 1.15
+        provenance: ESTIMATED
+        source: 'assumption: early_lock early-window emphasis multiplier; prior-only,
+          does not move the budget envelope'
+      early_lock.late:
+        value: 0.95
+        provenance: ESTIMATED
+        source: 'assumption: early_lock late-window emphasis multiplier; prior-only,
+          does not move the budget envelope'
+      late_flex.early:
+        value: 0.92
+        provenance: ESTIMATED
+        source: 'assumption: late_flex early-window emphasis multiplier; prior-only,
+          does not move the budget envelope'
+      late_flex.late:
+        value: 1.2
+        provenance: ESTIMATED
+        source: 'assumption: late_flex late-window emphasis multiplier; prior-only,
+          does not move the budget envelope'
+  diminishing_returns:
+    source_symbol: module_b_resource_allocation/features/diminishing_returns.py
+    channels:
+      whatsapp_chatbot:
+        sat_share:
+          value: 0.04
+          provenance: ESTIMATED
+          source: assumed saturation share of budget per (dept,channel) cell; no spend-response
+            calibration
+        inflection_pct:
+          value: 0.4
+          provenance: ESTIMATED
+          source: assumed inflection point of the concave reach curve; uncalibrated
+        k_shape:
+          value: 1.2
+          provenance: ESTIMATED
+          source: assumed curvature (k) of the concave reach curve; uncalibrated
+      messenger_chatbot:
+        sat_share:
+          value: 0.03
+          provenance: ESTIMATED
+          source: assumed saturation share of budget per (dept,channel) cell; no spend-response
+            calibration
+        inflection_pct:
+          value: 0.4
+          provenance: ESTIMATED
+          source: assumed inflection point of the concave reach curve; uncalibrated
+        k_shape:
+          value: 1.2
+          provenance: ESTIMATED
+          source: assumed curvature (k) of the concave reach curve; uncalibrated
+      facebook_ads:
+        sat_share:
+          value: 0.05
+          provenance: ESTIMATED
+          source: assumed saturation share of budget per (dept,channel) cell; no spend-response
+            calibration
+        inflection_pct:
+          value: 0.45
+          provenance: ESTIMATED
+          source: assumed inflection point of the concave reach curve; uncalibrated
+        k_shape:
+          value: 1.0
+          provenance: ESTIMATED
+          source: assumed curvature (k) of the concave reach curve; uncalibrated
+      sms:
+        sat_share:
+          value: 0.03
+          provenance: ESTIMATED
+          source: assumed saturation share of budget per (dept,channel) cell; no spend-response
+            calibration
+        inflection_pct:
+          value: 0.45
+          provenance: ESTIMATED
+          source: assumed inflection point of the concave reach curve; uncalibrated
+        k_shape:
+          value: 1.1
+          provenance: ESTIMATED
+          source: assumed curvature (k) of the concave reach curve; uncalibrated
+      email:
+        sat_share:
+          value: 0.02
+          provenance: ESTIMATED
+          source: assumed saturation share of budget per (dept,channel) cell; no spend-response
+            calibration
+        inflection_pct:
+          value: 0.35
+          provenance: ESTIMATED
+          source: assumed inflection point of the concave reach curve; uncalibrated
+        k_shape:
+          value: 0.9
+          provenance: ESTIMATED
+          source: assumed curvature (k) of the concave reach curve; uncalibrated
+      tv_spots:
+        sat_share:
+          value: 0.1
+          provenance: ESTIMATED
+          source: assumed saturation share of budget per (dept,channel) cell; no spend-response
+            calibration
+        inflection_pct:
+          value: 0.5
+          provenance: ESTIMATED
+          source: assumed inflection point of the concave reach curve; uncalibrated
+        k_shape:
+          value: 0.8
+          provenance: ESTIMATED
+          source: assumed curvature (k) of the concave reach curve; uncalibrated
+      radio_spots:
+        sat_share:
+          value: 0.08
+          provenance: ESTIMATED
+          source: assumed saturation share of budget per (dept,channel) cell; no spend-response
+            calibration
+        inflection_pct:
+          value: 0.5
+          provenance: ESTIMATED
+          source: assumed inflection point of the concave reach curve; uncalibrated
+        k_shape:
+          value: 0.9
+          provenance: ESTIMATED
+          source: assumed curvature (k) of the concave reach curve; uncalibrated
+      billboards:
+        sat_share:
+          value: 0.06
+          provenance: ESTIMATED
+          source: assumed saturation share of budget per (dept,channel) cell; no spend-response
+            calibration
+        inflection_pct:
+          value: 0.55
+          provenance: ESTIMATED
+          source: assumed inflection point of the concave reach curve; uncalibrated
+        k_shape:
+          value: 0.7
+          provenance: ESTIMATED
+          source: assumed curvature (k) of the concave reach curve; uncalibrated
+      rallies_events:
+        sat_share:
+          value: 0.05
+          provenance: ESTIMATED
+          source: assumed saturation share of budget per (dept,channel) cell; no spend-response
+            calibration
+        inflection_pct:
+          value: 0.4
+          provenance: ESTIMATED
+          source: assumed inflection point of the concave reach curve; uncalibrated
+        k_shape:
+          value: 1.3
+          provenance: ESTIMATED
+          source: assumed curvature (k) of the concave reach curve; uncalibrated
+      canvassing:
+        sat_share:
+          value: 0.06
+          provenance: ESTIMATED
+          source: assumed saturation share of budget per (dept,channel) cell; no spend-response
+            calibration
+        inflection_pct:
+          value: 0.35
+          provenance: ESTIMATED
+          source: assumed inflection point of the concave reach curve; uncalibrated
+        k_shape:
+          value: 1.4
+          provenance: ESTIMATED
+          source: assumed curvature (k) of the concave reach curve; uncalibrated
+      sound_cars:
+        sat_share:
+          value: 0.03
+          provenance: ESTIMATED
+          source: assumed saturation share of budget per (dept,channel) cell; no spend-response
+            calibration
+        inflection_pct:
+          value: 0.4
+          provenance: ESTIMATED
+          source: assumed inflection point of the concave reach curve; uncalibrated
+        k_shape:
+          value: 0.8
+          provenance: ESTIMATED
+          source: assumed curvature (k) of the concave reach curve; uncalibrated
+  coverage_lower_bound_pct:
+    source_symbol: module_b_resource_allocation/constants.py::COVERAGE_LOWER_BOUND_PCT
+    value: 0.8
+    provenance: ESTIMATED
+    source: 'policy floor: every department must receive >=80% of its proportional
+      budget share; governance choice, not measured'

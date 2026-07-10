@@ -43,6 +43,9 @@ from module_b_resource_allocation.reporting.duals_export import (
     write_budget_dual_csv,
     write_reach_cap_duals_csv,
 )
+from module_b_resource_allocation.reporting.parameter_sensitivity import (
+    compute_parameter_sensitivity,
+)
 from module_b_resource_allocation.reporting.run_markdown import render_allocation_run_markdown
 from module_b_resource_allocation.reporting.scenario_benchmark import write_scenario_benchmark_csv
 from module_b_resource_allocation.routing.cost_matrix import build_cost_matrix
@@ -199,6 +202,26 @@ def _attach_sensitivity_artifacts(
         artifacts["budget_expansion_curve_csv"] = str(curve_csv)
     except Exception as exc:  # pragma: no cover
         logger.warning("budget expansion CSV skipped: %s", exc)
+
+    # Objective-coefficient sensitivity (IMP-B01 / issue #57): a run is not
+    # complete without this tornado sweep over the unmeasured coefficient
+    # families. Breaches are surfaced as a named warning, never left silent.
+    param_rows = compute_parameter_sensitivity(
+        scenario_id=args.scenario,
+        fx_series_id=args.fx_series,
+        solver_seed=args.seed,
+    )
+    manifest_extras["parameter_sensitivity"] = param_rows
+    breaches = [r for r in param_rows if r.get("stability_breach")]
+    manifest_extras["parameter_stability_breaches"] = [
+        f"{r['parameter_family']}({r['direction']}): {r['pct_change'] * 100:.1f}% swing"
+        for r in breaches
+    ]
+    for b in manifest_extras["parameter_stability_breaches"]:
+        logger.warning("parameter stability breach: %s", b)
+    param_csv = args.out_dir / f"parameter_sensitivity_{args.scenario}.csv"
+    pd.DataFrame(param_rows).to_csv(param_csv, index=False)
+    artifacts["parameter_sensitivity_csv"] = str(param_csv)
     try:
         db = write_budget_dual_csv(result, args.out_dir, args.scenario)
         dr = write_reach_cap_duals_csv(result, args.out_dir, args.scenario)
