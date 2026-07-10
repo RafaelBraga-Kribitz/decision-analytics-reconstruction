@@ -386,7 +386,15 @@ def chart_a4():
 
     fig, ax = plt.subplots(figsize=(13, 8))
     cmap = LinearSegmentedColormap.from_list("rw", ["#ffffff", RED])
-    im = ax.imshow(heat.values, aspect="auto", cmap=cmap, vmin=0, vmax=1)
+    # IMP-V05 / issue #69: color scale bounded to the observed range (padded
+    # to 0.05 ticks) with the range disclosed in the subtitle — the former
+    # fixed [0, 1] scale washed out all real variation in a ~0.5-0.7 metric,
+    # and a data-min/max scale without disclosure would fabricate contrast.
+    obs_min = float(np.nanmin(heat.values))
+    obs_max = float(np.nanmax(heat.values))
+    scale_lo = np.floor(obs_min / 0.05) * 0.05
+    scale_hi = np.ceil(obs_max / 0.05) * 0.05
+    im = ax.imshow(heat.values, aspect="auto", cmap=cmap, vmin=scale_lo, vmax=scale_hi)
 
     ax.set_xticks(range(len(heat.columns)))
     ax.set_xticklabels([c.replace("_", "\n") for c in heat.columns], fontsize=9)
@@ -410,6 +418,8 @@ def chart_a4():
     plt.colorbar(im, ax=ax, label="Mean Participation Propensity")
     ax.set_title(
         "A4 — Mean Participation Propensity by Department × Segment\n"
+        f"Color scale spans the observed range [{obs_min:.2f}, {obs_max:.2f}] "
+        f"(shown [{scale_lo:.2f}, {scale_hi:.2f}]) — the matrix is near-constant; see F-052.\n"
         "Note: propensity calibrated at dept-level — within-segment spread reflects geography, not individual behavior"
     )
     fig.text(0.5, -0.01, SOURCE, ha="center", fontsize=7.5, color=GREY)
@@ -637,7 +647,11 @@ def chart_a9():
     corr = pop[num_cols].corr()
 
     fig, ax = plt.subplots(figsize=(11, 9))
-    cmap = LinearSegmentedColormap.from_list("rw_rb", ["#1a6eb5", "#ffffff", "#e60000"])
+    # IMP-V05 / issue #69: colorblind-safe diverging ramp (Okabe-Ito blue ↔
+    # vermillion, matching the shared palette) instead of the brand blue/red
+    # pair; sign is additionally carried by the +/− glyphs in the cell
+    # annotations below, so it never depends on hue alone.
+    cmap = LinearSegmentedColormap.from_list("rw_rb", ["#0072B2", "#ffffff", "#D55E00"])
     mask = np.triu(np.ones_like(corr, dtype=bool), k=1)
 
     im = ax.imshow(np.ma.array(corr.values, mask=mask), cmap=cmap, vmin=-1, vmax=1, aspect="auto")
@@ -658,7 +672,9 @@ def chart_a9():
             ax.text(
                 j,
                 i,
-                f"{val:.2f}",
+                # Explicit +/− glyph: sign-redundant encoding so the sign
+                # survives grayscale and CVD (IMP-V05).
+                f"{val:+.2f}",
                 ha="center",
                 va="center",
                 fontsize=7,
@@ -1274,7 +1290,12 @@ chart_b7()
 
 @safe_chart("B8")
 def chart_b8():
-    """B8: Reach caps vs actual expected contacts (dual axis, top 10 depts)."""
+    """B8: Reach caps, expected contacts, and budget as aligned small multiples.
+
+    IMP-V05 / issue #69: replaces the former twinx dual-axis form — pairing
+    unrelated quantitative scales on one plot invites spurious visual
+    correlation. Three panels share one department ordering instead.
+    """
     dept_agg = (
         alloc_base.groupby("department")
         .agg(
@@ -1289,50 +1310,34 @@ def chart_b8():
     caps_agg = caps_base.groupby("department")["reachable_audience"].sum().reset_index()
     caps_agg.columns = ["department", "reach_cap"]
     merged = dept_agg.merge(caps_agg, on="department", how="left")
-
-    fig, ax1 = plt.subplots(figsize=(12, 6))
     x = range(len(merged))
-    w = 0.35
 
-    ax1.bar(
-        [xi - w / 2 for xi in x],
-        merged["reach_cap"],
-        width=w,
-        color=GREY,
-        alpha=0.7,
-        label="Reach Cap (Population Proxy)",
+    fig, (ax_cap, ax_exp, ax_bud) = plt.subplots(
+        3, 1, figsize=(12, 9), sharex=True, gridspec_kw={"hspace": 0.15}
     )
-    ax1.bar(
-        [xi + w / 2 for xi in x],
-        merged["total_expected"],
-        width=w,
-        color=RED,
-        alpha=0.85,
-        label="Expected Contacts (multi-channel cumulative)",
-    )
-    ax1.set_ylabel("Contacts / Audience Size")
-    ax1.set_xticks(list(x))
-    ax1.set_xticklabels(merged["department"], rotation=30, ha="right", fontsize=9)
-    ax1.legend(loc="upper left")
+    ax_cap.bar(x, merged["reach_cap"], color=GREY, alpha=0.8)
+    ax_cap.set_ylabel("Reach Cap\n(unique voters)", fontsize=9)
+    ax_exp.bar(x, merged["total_expected"], color=RED, alpha=0.85)
+    ax_exp.set_ylabel("Expected Contacts\n(multi-channel cumulative)", fontsize=9)
+    ax_bud.plot(list(x), merged["total_budget"], color=BLUE, marker="D", lw=2, ms=6)
+    ax_bud.set_ylabel("Total Budget (USD)", fontsize=9)
+    ax_bud.set_xticks(list(x))
+    ax_bud.set_xticklabels(merged["department"], rotation=30, ha="right", fontsize=9)
 
-    ax2 = ax1.twinx()
-    ax2.plot(
-        list(x), merged["total_budget"], color=BLUE, marker="D", lw=2, ms=6, label="Budget (USD)"
+    ax_cap.set_title(
+        "B8 — Reach Cap, Expected Contacts, and Budget (Top 10 Departments)\n"
+        "(contacts = cumulative channel touches; cap = unique voter ceiling; "
+        "aligned panels, one department order)"
     )
-    ax2.set_ylabel("Total Budget (USD)", color=BLUE)
-    ax2.tick_params(axis="y", colors=BLUE)
-    ax2.legend(loc="upper right")
-
-    ax1.set_title("B8 — Reach Cap vs Expected Contacts (Top 10 Departments)\n(contacts = cumulative channel touches; cap = unique voter ceiling)")
-    ax1.annotate(
+    ax_bud.annotate(
         "expected_contacts counts cumulative multi-channel exposures (a voter may be touched across TV, radio, and WhatsApp); reach_cap is a unique reachable-voter ceiling. A ratio > 1 reflects multi-channel scheduling, not a constraint violation.",
-        xy=(0.5, -0.18),
+        xy=(0.5, -0.42),
         xycoords="axes fraction",
         ha="center",
         fontsize=7.5,
         color=GREY,
     )
-    fig.text(0.5, -0.02, SOURCE, ha="center", fontsize=7.5, color=GREY)
+    fig.text(0.5, -0.015, SOURCE, ha="center", fontsize=7.5, color=GREY)
     fig.tight_layout()
     save_fig(fig, "B8_reach_caps_vs_contacts.png")
 
@@ -2041,45 +2046,31 @@ def chart_s2():
     ax.axvline(med_reach, color=GREY, lw=1, ls="--")
     ax.axhline(med_prop, color=GREY, lw=1, ls="--")
 
-    xlim = ax.get_xlim()
-    ylim = ax.get_ylim()
-    # All four quadrant labels
-    ax.text(
-        xlim[0] + (med_reach - xlim[0]) * 0.5,
-        med_prop + (ylim[1] - med_prop) * 0.85,
-        "Low Reach\nHigh Propensity",
-        ha="center",
-        fontsize=8,
-        color=GREY,
-        style="italic",
-    )
-    ax.text(
-        med_reach + (xlim[1] - med_reach) * 0.5,
-        med_prop + (ylim[1] - med_prop) * 0.85,
-        "High Reach\nHigh Propensity",
-        ha="center",
-        fontsize=8,
-        color=GREY,
-        style="italic",
-    )
-    ax.text(
-        xlim[0] + (med_reach - xlim[0]) * 0.5,
-        ylim[0] + (med_prop - ylim[0]) * 0.15,
-        "Low Reach\nLow Propensity",
-        ha="center",
-        fontsize=8,
-        color=GREY,
-        style="italic",
-    )
-    ax.text(
-        med_reach + (xlim[1] - med_reach) * 0.5,
-        ylim[0] + (med_prop - ylim[0]) * 0.15,
-        "High Reach\nLow Propensity",
-        ha="center",
-        fontsize=8,
-        color=GREY,
-        style="italic",
-    )
+    # Quadrant labels derived from quadrant position (AUD-S2 / IMP-V05 /
+    # issue #69): the text is computed from the same (reach, propensity)
+    # semantics that place it, so a label can never describe the wrong
+    # quadrant. Placed at the axes corners — always inside the quadrant they
+    # name, since the median split lines are interior. "Above/below" is
+    # relative to the median of the six segment means (dashed lines),
+    # disclosed in the footnote below.
+    for reach_high in (False, True):
+        for prop_high in (False, True):
+            label = (
+                f"{'Above' if reach_high else 'Below'}-median reach\n"
+                f"{'above' if prop_high else 'below'}-median propensity"
+            )
+            ax.text(
+                0.99 if reach_high else 0.01,
+                0.985 if prop_high else 0.015,
+                label,
+                transform=ax.transAxes,
+                ha="right" if reach_high else "left",
+                va="top" if prop_high else "bottom",
+                fontsize=8,
+                color=GREY,
+                style="italic",
+                zorder=1,
+            )
 
     ax.set_xlabel("Mean Reachability Index")
     ax.set_ylabel("Mean Participation Propensity")
@@ -2088,11 +2079,15 @@ def chart_s2():
         "(bubble size = segment size)"
     )
     ax.annotate(
-        "Note: propensity and reachability both use internet_access_flag as an input — "
-        "axes are not fully independent. rural_committed occupies high-propensity / low-reachability quadrant.",
-        xy=(0.5, -0.14),
+        "Quadrant split at the median of the six segment means (dashed lines) — relative rank, "
+        "not absolute high/low.\n"
+        "Propensity and reachability both use internet_access_flag as an input — axes are not "
+        "fully independent.\n"
+        "rural_committed sits in the above-median-propensity / below-median-reach quadrant.",
+        xy=(0.5, -0.26),
         xycoords="axes fraction",
         ha="center",
+        va="bottom",
         fontsize=7.5,
         color=GREY,
     )
