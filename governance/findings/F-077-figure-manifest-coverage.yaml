@@ -1,0 +1,47 @@
+id: F-077
+title: "Notebook chart pipeline invisible to figure manifest; duplicate generators drift (B8)"
+status: closed
+severity: medium
+kind: recurrence_invariant
+category: fragmented_standards
+opened_at: 2026-07-10
+closed_at: 2026-07-10
+recurrence_count: 1
+owner: remediator
+finding: >
+  governance/FIGURE_MANIFEST.yaml bound every figures: entry to one of two
+  generators (reports/eda/generate_eda.py, module_a_.../pipeline/export.py);
+  reports/eda/build_notebook.py — 1,952 lines re-implementing the same Johnny
+  Decimal chart IDs (A1-A13, B1-B8, C-series, S-series) as matplotlib code
+  cells — appeared zero times, so the notebook pipeline had no lineage. The
+  duplication had already produced divergence: notebook B8
+  (build_notebook.py, "# B8 —" code cell) drew horizontal reach_cap bars with a
+  twinx expected_contacts line, while canonical B8
+  (reports/eda/generate_eda.py:1268-1330) drew grouped reach_cap/
+  expected_contacts bars with a twinx total_budget line — same chart ID,
+  different form and metric pairing. F-049 caught the identical drift class
+  once (notebook C2 estimand) and fixed it point-wise; the structural
+  duplication that produced it was left in place.
+remediation: >
+  IMP-V02 / issue #67 subordinated the notebook to the canonical factory:
+  build_notebook.py chart cells no longer draw — each displays the
+  manifest-registered PNG produced by generate_eda.py via a figure_cell()
+  helper driven by FIGURE_MANIFEST.yaml. scripts/check_figure_manifest_coverage.py
+  makes the single-sourcing structural: it fails if any tracked figure under
+  reports/ lacks a manifest entry, if a manifest generator does not resolve to
+  a source file, if two generators claim one figure path, or if any
+  build_notebook.py code cell titled with a canonical chart ID contains
+  matplotlib/plotly drawing calls (the re-implementation guard that generalizes
+  check_eda_notebook_chart_parity.py from per-chart parity to structural
+  single-sourcing).
+verification_script: scripts/check_figure_manifest_coverage.py
+artifacts:
+  - scripts/check_figure_manifest_coverage.py
+  - reports/eda/build_notebook.py
+  - governance/FIGURE_MANIFEST.yaml
+notes: >
+  The gate is static (filesystem walk + YAML parse + source scan, no chart
+  rendering), so the Adversary re-verifies it on every PR without generated
+  data. recurrence_count=1 because F-049 previously re-found the same
+  notebook/factory drift class. Spec:
+  governance/improvement_plan/IMP-V02_chart-single-sourcing.md.

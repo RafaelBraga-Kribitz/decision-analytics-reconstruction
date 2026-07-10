@@ -38,6 +38,52 @@ def code(source: str) -> nbformat.NotebookNode:
 
 
 # ---------------------------------------------------------------------------
+# Canonical figure cells (IMP-V02 / issue #67)
+# ---------------------------------------------------------------------------
+# Chart cells no longer re-draw charts. Each displays the manifest-registered
+# PNG produced by the canonical factory (reports/eda/generate_eda.py), so the
+# notebook and the static report can never diverge for the same chart ID.
+# scripts/check_figure_manifest_coverage.py enforces that no chart-ID-titled
+# code cell contains independent plotting logic.
+import yaml as _yaml  # noqa: E402
+
+_MANIFEST_PATH = Path(__file__).resolve().parents[2] / "governance" / "FIGURE_MANIFEST.yaml"
+_MANIFEST = _yaml.safe_load(_MANIFEST_PATH.read_text(encoding="utf-8"))
+_FIG_PATH_BY_ID = {f["chart_id"]: f["path"] for f in _MANIFEST["figures"]}
+
+
+def figure_cell(chart_id: str) -> nbformat.NotebookNode:
+    """Emit a code cell that displays a canonical, manifest-registered figure.
+
+    Args:
+        chart_id: A ``chart_id`` present in ``governance/FIGURE_MANIFEST.yaml``
+            (e.g. ``"B8_reach_caps_vs_contacts"``). The cell keeps a
+            ``# <short> —`` header for Johnny-Decimal traceability but contains
+            no plotting logic — just a display of the factory's PNG.
+
+    Returns:
+        A notebook code cell that resolves the figure path (whether the
+        notebook is executed from the repo root or from ``reports/eda/``) and
+        displays it.
+
+    Raises:
+        KeyError: If ``chart_id`` is not in the figure manifest.
+    """
+    path = _FIG_PATH_BY_ID[chart_id]
+    short = chart_id.split("_", 1)[0]
+    fname = Path(path).name
+    return new_code_cell(
+        f"# {short} \u2014 canonical figure, single-sourced from "
+        f"reports/eda/generate_eda.py via governance/FIGURE_MANIFEST.yaml\n"
+        f"from pathlib import Path\n"
+        f"from IPython.display import Image, display\n"
+        f"_p = next((c for c in (Path({path!r}), Path({fname!r})) if c.exists()), "
+        f"Path({path!r}))\n"
+        f"display(Image(filename=str(_p)))\n"
+    )
+
+
+# ---------------------------------------------------------------------------
 # Cell definitions
 # ---------------------------------------------------------------------------
 
@@ -282,35 +328,7 @@ The **Johnny Decimal** chart convention used throughout this section labels each
 )
 
 # ── A1 — Segment Size Distribution ──────────────────────────────────────────
-cells.append(code("""
-# A1 — Segment Size Distribution
-seg_counts = pop["segment_label"].value_counts().sort_values()
-seg_labels = [s.replace("_", " ").title() for s in seg_counts.index]
-pcts       = seg_counts / seg_counts.sum() * 100
-
-fig, ax = plt.subplots(figsize=(10, 5), facecolor="white")
-colors_ordered = [SEG_COLORS[list(pop["segment_label"].unique()).index(s)
-                              if s in pop["segment_label"].unique() else 0]
-                  for s in seg_counts.index]
-
-bars = ax.barh(seg_labels, seg_counts.values, color=[SEG_COLORS[i % 6] for i in range(len(seg_counts))],
-               height=0.6, edgecolor="white", linewidth=0.8)
-
-for bar, pct, cnt in zip(bars, pcts, seg_counts):
-    ax.text(bar.get_width() + 30, bar.get_y() + bar.get_height()/2,
-            f"{cnt:,}  ({pct:.1f}%)", va="center", ha="left",
-            fontsize=10, color=COLOR["CHARCOAL"])
-
-ax.set_xlabel("Voter Records (n)")
-ax.set_ylabel("")
-ax.set_title("A1 — Segment Size Distribution", fontweight=700)
-ax.set_xlim(0, seg_counts.max() * 1.35)
-ax.spines["left"].set_visible(False)
-ax.tick_params(axis="y", length=0)
-ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x, _: f"{int(x):,}"))
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('A1_segment_sizes'))
 
 cells.append(
     md(
@@ -321,31 +339,7 @@ cells.append(
 )
 
 # ── A2 — Age Distribution per Segment ───────────────────────────────────────
-cells.append(code("""
-# A2 — Age Distribution per Segment (faceted histograms)
-seg_order  = pop["segment_label"].value_counts().index.tolist()
-seg_labels_map = {s: s.replace("_", " ").title() for s in seg_order}
-
-fig, axes = plt.subplots(2, 3, figsize=(14, 7), facecolor="white")
-axes = axes.flatten()
-
-for i, seg_name in enumerate(seg_order):
-    ax   = axes[i]
-    data = pop.loc[pop["segment_label"] == seg_name, "age_on_event_date"].dropna()
-    color= SEG_COLORS[i % 6]
-    ax.hist(data, bins=25, color=color, alpha=0.85, edgecolor="white", linewidth=0.6)
-    ax.axvline(data.median(), color=COLOR["CHARCOAL"], lw=1.5, ls="--", label=f"Median {data.median():.0f}")
-    ax.set_title(seg_labels_map[seg_name], fontweight=700, fontsize=10)
-    ax.set_xlabel("Age")
-    ax.set_ylabel("Count")
-    ax.legend(fontsize=8)
-    ax.spines["top"].set_visible(False)
-    ax.spines["right"].set_visible(False)
-
-fig.suptitle("A2 — Age Distribution by Segment", fontsize=14, fontweight=700, y=1.01)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('A2_age_distribution_by_segment'))
 
 cells.append(
     md(
@@ -356,38 +350,7 @@ cells.append(
 )
 
 # ── A3 — Gender per Segment ──────────────────────────────────────────────────
-cells.append(code("""
-# A3 — Gender % per Segment (stacked horizontal bar)
-gender_grp = (pop.groupby(["segment_label", "gender"]).size()
-                 .unstack(fill_value=0)
-                 .apply(lambda r: r / r.sum() * 100, axis=1))
-gender_grp = gender_grp.reindex(seg_order)
-gender_cols  = gender_grp.columns.tolist()
-gender_colors = [COLOR["BLUE"], COLOR["RED"], COLOR["GREY"]]
-
-fig, ax = plt.subplots(figsize=(11, 5), facecolor="white")
-left = np.zeros(len(gender_grp))
-for j, (gcol, gcol_color) in enumerate(zip(gender_cols, gender_colors)):
-    vals = gender_grp[gcol].values
-    bars = ax.barh([s.replace("_", " ").title() for s in gender_grp.index],
-                   vals, left=left, color=gcol_color, label=gcol.upper(),
-                   height=0.55, edgecolor="white")
-    for bar, v, l in zip(bars, vals, left):
-        if v > 5:
-            ax.text(l + v/2, bar.get_y() + bar.get_height()/2,
-                    f"{v:.0f}%", ha="center", va="center",
-                    fontsize=9, color="white", fontweight=600)
-    left += vals
-
-ax.set_xlabel("Share (%)")
-ax.set_title("A3 — Gender Composition by Segment", fontweight=700)
-ax.set_xlim(0, 100)
-ax.legend(loc="lower right", ncol=3)
-ax.spines["left"].set_visible(False)
-ax.tick_params(axis="y", length=0)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('A3_gender_by_segment'))
 
 cells.append(
     md(
@@ -398,29 +361,7 @@ cells.append(
 )
 
 # ── A4 — Heatmap: Department × Segment Propensity ────────────────────────────
-cells.append(code("""
-# A4 — Department x Segment Mean Participation Propensity Heatmap
-pivot = (pop.groupby(["department", "segment_label"])["participation_propensity"]
-            .mean()
-            .unstack(fill_value=np.nan))
-pivot.columns = [c.replace("_", " ").title() for c in pivot.columns]
-pivot.index   = [d.title() for d in pivot.index]
-pivot = pivot.sort_index()
-
-fig, ax = plt.subplots(figsize=(13, 9), facecolor="white")
-sns.heatmap(pivot, ax=ax, cmap="RdYlGn", annot=True, fmt=".2f",
-            linewidths=0.4, linecolor="white",
-            cbar_kws={"label": "Mean Participation Propensity"},
-            annot_kws={"size": 7})
-ax.set_title("A4 — Department × Segment: Mean Participation Propensity",
-             fontweight=700, pad=12)
-ax.set_xlabel("Segment")
-ax.set_ylabel("Department")
-ax.tick_params(axis="x", rotation=30, labelsize=9)
-ax.tick_params(axis="y", rotation=0,  labelsize=8)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('A4_propensity_heatmap_dept_segment'))
 
 cells.append(
     md(
@@ -431,42 +372,7 @@ cells.append(
 )
 
 # ── A5 — Violin: Propensity per Segment ─────────────────────────────────────
-cells.append(code("""
-# A5 — Violin Plot: Participation Propensity per Segment
-order = (pop.groupby("segment_label")["participation_propensity"]
-            .median().sort_values(ascending=False).index.tolist())
-labels_ordered = [s.replace("_", " ").title() for s in order]
-
-fig, ax = plt.subplots(figsize=(12, 6), facecolor="white")
-parts = ax.violinplot(
-    [pop.loc[pop["segment_label"]==s, "participation_propensity"].dropna().values
-     for s in order],
-    positions=range(len(order)), widths=0.7,
-    showmedians=True, showextrema=False
-)
-for i, (pc, color) in enumerate(zip(parts["bodies"], SEG_COLORS)):
-    pc.set_facecolor(color)
-    pc.set_alpha(0.75)
-    pc.set_edgecolor(COLOR["CHARCOAL"])
-    pc.set_linewidth(0.8)
-parts["cmedians"].set_colors(COLOR["CHARCOAL"])
-parts["cmedians"].set_linewidth(2)
-
-# Overlay box stats
-for i, s in enumerate(order):
-    vals = pop.loc[pop["segment_label"]==s, "participation_propensity"].dropna()
-    q25, q75 = vals.quantile([0.25, 0.75])
-    ax.vlines(i, q25, q75, color=COLOR["CHARCOAL"], lw=4, alpha=0.5)
-
-ax.set_xticks(range(len(order)))
-ax.set_xticklabels(labels_ordered, rotation=20, ha="right")
-ax.set_xlabel("Segment")
-ax.set_ylabel("Participation Propensity")
-ax.set_title("A5 — Participation Propensity Distribution by Segment", fontweight=700)
-ax.set_ylim(-0.05, 1.05)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('A5_propensity_violin_by_segment'))
 
 cells.append(
     md(
@@ -477,32 +383,7 @@ cells.append(
 )
 
 # ── A6 — Urban vs Rural per Segment ─────────────────────────────────────────
-cells.append(code("""
-# A6 — Urban vs Rural % per Segment
-urb_grp = (pop.groupby("segment_label")["rural_flag"]
-              .value_counts(normalize=True)
-              .unstack(fill_value=0) * 100)
-urb_grp.columns = ["Urban", "Rural"]
-urb_grp = urb_grp.reindex(seg_order)
-labels_ = [s.replace("_","").replace("_"," ").title() for s in seg_order]
-
-fig, ax = plt.subplots(figsize=(10, 5), facecolor="white")
-x = np.arange(len(urb_grp))
-w = 0.35
-ax.bar(x - w/2, urb_grp["Urban"], width=w, label="Urban",
-       color=COLOR["BLUE"], edgecolor="white")
-ax.bar(x + w/2, urb_grp["Rural"], width=w, label="Rural",
-       color=COLOR["AMBER"], edgecolor="white")
-ax.set_xticks(x)
-ax.set_xticklabels([s.replace("_"," ").title() for s in seg_order],
-                   rotation=22, ha="right")
-ax.set_ylabel("Share (%)")
-ax.set_title("A6 — Urban vs Rural Composition by Segment", fontweight=700)
-ax.legend()
-ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda y,_: f"{y:.0f}%"))
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('A6_urban_rural_by_segment'))
 
 cells.append(
     md(
@@ -513,44 +394,7 @@ cells.append(
 )
 
 # ── A7 — Language Composition per Segment ────────────────────────────────────
-cells.append(code("""
-# A7 — Language Bucket Composition per Segment (stacked bar)
-lang_grp = (pop.groupby(["segment_label", "language_census_bucket"]).size()
-               .unstack(fill_value=0)
-               .apply(lambda r: r/r.sum()*100, axis=1))
-lang_grp = lang_grp.reindex(seg_order)
-lang_cols   = ["guarani_only", "jopara_bilingual", "spanish_only", "other"]
-lang_colors = [COLOR["GREEN"], COLOR["AMBER"], COLOR["BLUE"], COLOR["GREY"]]
-lang_labels = ["Guarani Only", "Jopara Bilingual", "Spanish Only", "Other"]
-
-# Keep only available columns
-lang_cols_avail   = [c for c in lang_cols   if c in lang_grp.columns]
-lang_colors_avail = [lang_colors[lang_cols.index(c)] for c in lang_cols_avail]
-lang_labels_avail = [lang_labels[lang_cols.index(c)] for c in lang_cols_avail]
-
-fig, ax = plt.subplots(figsize=(11, 5), facecolor="white")
-left = np.zeros(len(lang_grp))
-for lc, lcolor, llabel in zip(lang_cols_avail, lang_colors_avail, lang_labels_avail):
-    vals = lang_grp[lc].fillna(0).values
-    bars = ax.bar(range(len(lang_grp)), vals, bottom=left,
-                  label=llabel, color=lcolor, edgecolor="white", width=0.6)
-    for bar, v, l in zip(bars, vals, left):
-        if v > 7:
-            ax.text(bar.get_x() + bar.get_width()/2, l + v/2,
-                    f"{v:.0f}%", ha="center", va="center",
-                    fontsize=8, color="white", fontweight=600)
-    left += vals
-
-ax.set_xticks(range(len(seg_order)))
-ax.set_xticklabels([s.replace("_"," ").title() for s in seg_order],
-                   rotation=22, ha="right")
-ax.set_ylabel("Share (%)")
-ax.set_title("A7 — Language Composition by Segment", fontweight=700)
-ax.set_ylim(0, 105)
-ax.legend(loc="upper right", ncol=2, fontsize=9)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('A7_language_by_segment'))
 
 cells.append(
     md(
@@ -561,30 +405,7 @@ cells.append(
 )
 
 # ── A8 — Structural Dependency Rate per Segment ──────────────────────────────
-cells.append(code("""
-# A8 — Structural Dependency Flag Rate per Segment
-dep_rate = (pop.groupby("segment_label")["structural_dependency_proxy"]
-               .mean()
-               .sort_values(ascending=False) * 100)
-seg_labels_dep = [s.replace("_"," ").title() for s in dep_rate.index]
-colors_dep     = [SEG_COLORS[list(seg_order).index(s) % 6]
-                  if s in seg_order else COLOR["GREY"]
-                  for s in dep_rate.index]
-
-fig, ax = plt.subplots(figsize=(10, 5), facecolor="white")
-bars = ax.barh(seg_labels_dep, dep_rate.values, color=colors_dep,
-               height=0.55, edgecolor="white")
-for bar, v in zip(bars, dep_rate.values):
-    ax.text(bar.get_width() + 0.5, bar.get_y() + bar.get_height()/2,
-            f"{v:.1f}%", va="center", ha="left", fontsize=10)
-ax.set_xlabel("Structural Dependency Rate (%)")
-ax.set_title("A8 — Structural Dependency Flag Rate by Segment (sorted)", fontweight=700)
-ax.set_xlim(0, dep_rate.max() * 1.2)
-ax.spines["left"].set_visible(False)
-ax.tick_params(axis="y", length=0)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('A8_structural_dependency_by_segment'))
 
 cells.append(
     md(
@@ -595,36 +416,7 @@ cells.append(
 )
 
 # ── A9 — Correlation Heatmap ─────────────────────────────────────────────────
-cells.append(code("""
-# A9 — Correlation Matrix of Numeric Columns
-num_cols = [
-    "age_on_event_date", "participation_propensity", "preference_proxy_strength",
-    "nbi_stress_prior", "reachability_index", "reachability_digital",
-    "reachability_broadcast_tv", "reachability_broadcast_radio",
-    "media_penetration_tv", "media_penetration_radio", "media_penetration_whatsapp",
-    "nbi_stress_prior_scaled",
-]
-num_cols = [c for c in num_cols if c in pop.columns]
-corr = pop[num_cols].corr()
-
-# Mask upper triangle
-mask = np.triu(np.ones_like(corr, dtype=bool), k=1)
-
-fig, ax = plt.subplots(figsize=(12, 9), facecolor="white")
-sns.heatmap(corr, mask=mask, ax=ax, cmap="coolwarm", center=0,
-            annot=True, fmt=".2f", linewidths=0.3, linecolor="#eeeeee",
-            annot_kws={"size": 7},
-            cbar_kws={"shrink": 0.8, "label": "Pearson r"})
-ax.set_title("A9 — Correlation Matrix: Numeric Features (lower triangle)",
-             fontweight=700, pad=12)
-short_names = [c.replace("reachability_", "reach_").replace("media_penetration_", "pen_")
-               .replace("participation_", "part_").replace("preference_proxy_", "pref_")
-               for c in num_cols]
-ax.set_xticklabels(short_names, rotation=35, ha="right", fontsize=8)
-ax.set_yticklabels(short_names, rotation=0, fontsize=8)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('A9_correlation_heatmap'))
 
 cells.append(
     md(
@@ -635,51 +427,7 @@ cells.append(
 )
 
 # ── A10 — PCA Biplot ─────────────────────────────────────────────────────────
-cells.append(code("""
-# A10 — PCA Biplot (PC1 vs PC2) coloured by segment
-pca_cols = [
-    "age_on_event_date", "participation_propensity", "preference_proxy_strength",
-    "nbi_stress_prior", "reachability_index", "media_penetration_tv",
-    "media_penetration_radio", "media_penetration_whatsapp",
-]
-pca_cols = [c for c in pca_cols if c in pop.columns]
-pca_data = pop[pca_cols + ["segment_label"]].dropna()
-
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(pca_data[pca_cols])
-pca = PCA(n_components=2, random_state=42)
-components = pca.fit_transform(X_scaled)
-
-fig, ax = plt.subplots(figsize=(11, 8), facecolor="white")
-for i, seg_name in enumerate(seg_order):
-    mask_ = pca_data["segment_label"] == seg_name
-    ax.scatter(components[mask_, 0], components[mask_, 1],
-               c=SEG_COLORS[i % 6], label=seg_name.replace("_"," ").title(),
-               alpha=0.45, s=18, edgecolors="none")
-
-# Loading arrows — top 5 features by PC1 loading magnitude
-loadings  = pca.components_.T
-top5_idx  = np.argsort(np.abs(loadings[:, 0]))[-5:]
-scale     = 4.0
-for idx in top5_idx:
-    ax.annotate("", xy=(loadings[idx,0]*scale, loadings[idx,1]*scale),
-                xytext=(0, 0),
-                arrowprops=dict(arrowstyle="->", color=COLOR["CHARCOAL"], lw=1.5))
-    ax.text(loadings[idx,0]*scale*1.08, loadings[idx,1]*scale*1.08,
-            pca_cols[idx].replace("_"," ").replace("media penetration ","")
-                         .replace("participation propensity","propensity"),
-            fontsize=8, color=COLOR["CHARCOAL"], ha="center")
-
-ev = pca.explained_variance_ratio_
-ax.set_xlabel(f"PC1 ({ev[0]*100:.1f}% var. explained)")
-ax.set_ylabel(f"PC2 ({ev[1]*100:.1f}% var. explained)")
-ax.set_title("A10 — PCA Biplot: Voter Records Coloured by Segment", fontweight=700)
-ax.axhline(0, color=COLOR["GREY"], lw=0.6, ls="--")
-ax.axvline(0, color=COLOR["GREY"], lw=0.6, ls="--")
-ax.legend(loc="upper right", fontsize=8, markerscale=1.5)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('A10_pca_biplot'))
 
 cells.append(
     md(
@@ -690,41 +438,7 @@ cells.append(
 )
 
 # ── A11 — NBI Stress Prior by Department ─────────────────────────────────────
-cells.append(code("""
-# A11 — NBI Stress Prior per Department (box plot, sorted by median)
-dept_nbi  = pop.groupby("department")["nbi_stress_prior"].median().sort_values()
-dept_order_nbi = dept_nbi.index.tolist()
-region_map = pop.drop_duplicates("department").set_index("department")["department_region"]
-
-region_palette = {
-    "Oriental": COLOR["BLUE"],
-    "Chaco":    COLOR["AMBER"],
-    "Metro":    COLOR["GREEN"],
-}
-
-fig, ax = plt.subplots(figsize=(12, 7), facecolor="white")
-data_list = [pop.loc[pop["department"]==d,"nbi_stress_prior"].dropna().values
-             for d in dept_order_nbi]
-bp = ax.boxplot(data_list, vert=False, patch_artist=True,
-                flierprops=dict(marker=".", markersize=3, alpha=0.4),
-                medianprops=dict(color=COLOR["CHARCOAL"], lw=2))
-
-for patch, dept in zip(bp["boxes"], dept_order_nbi):
-    reg = region_map.get(dept, "Oriental")
-    patch.set_facecolor(region_palette.get(reg, COLOR["GREY"]))
-    patch.set_alpha(0.75)
-
-ax.set_yticks(range(1, len(dept_order_nbi)+1))
-ax.set_yticklabels([d.title() for d in dept_order_nbi], fontsize=8)
-ax.set_xlabel("NBI Stress Prior (0 = no deprivation, 1 = extreme)")
-ax.set_title("A11 — NBI Stress Prior by Department (sorted by median)", fontweight=700)
-
-legend_patches = [mpatches.Patch(color=c, label=l)
-                  for l, c in region_palette.items()]
-ax.legend(handles=legend_patches, loc="lower right", fontsize=9)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('A11_nbi_stress_by_department'))
 
 cells.append(
     md(
@@ -735,26 +449,7 @@ cells.append(
 )
 
 # ── A12 — Reachability KDE per Segment ───────────────────────────────────────
-cells.append(code("""
-# A12 — Reachability Index KDE per Segment
-fig, ax = plt.subplots(figsize=(11, 6), facecolor="white")
-
-for i, seg_name in enumerate(seg_order):
-    vals = pop.loc[pop["segment_label"]==seg_name, "reachability_index"].dropna()
-    kde  = stats.gaussian_kde(vals, bw_method=0.3)
-    x_   = np.linspace(0, 1, 300)
-    y_   = kde(x_)
-    color= SEG_COLORS[i % 6]
-    ax.plot(x_, y_, color=color, lw=2, label=seg_name.replace("_"," ").title())
-    ax.fill_between(x_, y_, alpha=0.12, color=color)
-
-ax.set_xlabel("Reachability Index (0 = unreachable, 1 = fully reachable)")
-ax.set_ylabel("Density")
-ax.set_title("A12 — Reachability Index Distribution by Segment (KDE)", fontweight=700)
-ax.legend(fontsize=9, loc="upper left")
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('A12_reachability_distribution'))
 
 cells.append(
     md(
@@ -765,52 +460,7 @@ cells.append(
 )
 
 # ── A13 — Preference Proxy Distribution ──────────────────────────────────────
-cells.append(code("""
-# A13 — Dual Panel: Preference Proxy Distribution + Strength by Voting Intent
-fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 6), facecolor="white")
-
-# Left: preference_proxy distribution per segment
-pref_counts = (pop.groupby(["segment_label","preference_proxy"]).size()
-                  .unstack(fill_value=0)
-                  .apply(lambda r: r/r.sum()*100, axis=1))
-pref_counts = pref_counts.reindex(seg_order)
-pref_cols_available = [c for c in ["A","B","other","none"] if c in pref_counts.columns]
-pref_palette = {"A": COLOR["BLUE"], "B": COLOR["RED"],
-                "other": COLOR["GREY"], "none": COLOR["AMBER"]}
-
-x = np.arange(len(pref_counts))
-width = 0.2
-for j, pc in enumerate(pref_cols_available):
-    ax1.bar(x + j*width, pref_counts[pc].fillna(0), width=width,
-            label=f"Pref {pc}", color=pref_palette.get(pc, COLOR["GREY"]),
-            edgecolor="white")
-
-ax1.set_xticks(x + width*(len(pref_cols_available)-1)/2)
-ax1.set_xticklabels([s.replace("_"," ").title() for s in seg_order],
-                    rotation=25, ha="right", fontsize=8)
-ax1.set_ylabel("Share (%)")
-ax1.set_title("Preference Proxy Distribution by Segment", fontweight=700, fontsize=11)
-ax1.legend(fontsize=8)
-
-# Right: preference proxy strength by segment
-box_data = [pop.loc[pop["segment_label"]==s,"preference_proxy_strength"].dropna().values
-            for s in seg_order]
-bp = ax2.boxplot(box_data, labels=[s.replace("_"," ").title() for s in seg_order],
-                 patch_artist=True,
-                 medianprops=dict(color=COLOR["CHARCOAL"], lw=2),
-                 flierprops=dict(marker=".", markersize=3, alpha=0.4))
-for patch, color in zip(bp["boxes"], SEG_COLORS):
-    patch.set_facecolor(color)
-    patch.set_alpha(0.75)
-ax2.set_xticklabels([s.replace("_"," ").title() for s in seg_order],
-                    rotation=25, ha="right", fontsize=8)
-ax2.set_ylabel("Preference Proxy Strength")
-ax2.set_title("Preference Proxy Strength by Segment", fontweight=700, fontsize=11)
-
-fig.suptitle("A13 — Preference Profile by Segment", fontsize=13, fontweight=700, y=1.01)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('A13_preference_strength_by_segment'))
 
 cells.append(
     md(
@@ -858,32 +508,7 @@ print(f"Avg spend per dept:     ${total_usd/n_depts:>12,.0f} USD")
 """))
 
 # ── B1 — Budget by Department ────────────────────────────────────────────────
-cells.append(code("""
-# B1 — Total USD by Department, sorted, coloured by region
-dept_budget = (alloc.groupby(["department","region"])["budget_allocation_usd"]
-                    .sum().reset_index()
-                    .sort_values("budget_allocation_usd"))
-region_pal  = {"Oriental": COLOR["BLUE"], "Chaco": COLOR["AMBER"],
-               "Metro":    COLOR["GREEN"]}
-bar_colors  = [region_pal.get(r, COLOR["GREY"]) for r in dept_budget["region"]]
-
-fig, ax = plt.subplots(figsize=(11, 8), facecolor="white")
-bars = ax.barh(dept_budget["department"].str.title(), dept_budget["budget_allocation_usd"],
-               color=bar_colors, height=0.65, edgecolor="white")
-for bar, v in zip(bars, dept_budget["budget_allocation_usd"]):
-    ax.text(bar.get_width() + 2000, bar.get_y() + bar.get_height()/2,
-            f"${v/1e3:.0f}K", va="center", ha="left", fontsize=9)
-ax.set_xlabel("Total Budget (USD)")
-ax.set_title("B1 — Total Budget Allocation by Department", fontweight=700)
-ax.set_xlim(0, dept_budget["budget_allocation_usd"].max() * 1.2)
-ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x,_: f"${x/1e3:.0f}K"))
-ax.spines["left"].set_visible(False)
-ax.tick_params(axis="y", length=0)
-legend_patches = [mpatches.Patch(color=c, label=l) for l,c in region_pal.items()]
-ax.legend(handles=legend_patches, loc="lower right")
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('B1_budget_by_department'))
 
 cells.append(
     md(
@@ -894,25 +519,7 @@ cells.append(
 )
 
 # ── B2 — Weekly Budget by Channel ────────────────────────────────────────────
-cells.append(code("""
-# B2 — Weekly Budget by Channel Type (multi-line)
-weekly_ch = (alloc.groupby(["week_index","channel_type"])["budget_allocation_usd"]
-                  .sum().unstack(fill_value=0))
-ch_palette = {ct: SEG_COLORS[i % 6] for i,ct in enumerate(weekly_ch.columns)}
-
-fig, ax = plt.subplots(figsize=(12, 6), facecolor="white")
-for ct in weekly_ch.columns:
-    ax.plot(weekly_ch.index, weekly_ch[ct], lw=2.5,
-            color=ch_palette[ct], label=ct.replace("_"," ").title(), marker="o",
-            markersize=5, markerfacecolor="white", markeredgewidth=1.5)
-ax.set_xlabel("Campaign Week Index")
-ax.set_ylabel("Weekly Budget (USD)")
-ax.set_title("B2 — Weekly Budget by Channel Type", fontweight=700)
-ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda y,_: f"${y/1e3:.0f}K"))
-ax.legend(fontsize=9)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('B2_weekly_budget_by_channel_type'))
 
 cells.append(
     md(
@@ -923,38 +530,7 @@ cells.append(
 )
 
 # ── B3 — Broadcast vs Direct Budget Share ────────────────────────────────────
-cells.append(code("""
-# B3 — Stacked Area: Broadcast vs Direct Budget Share by Week
-weekly_type = (alloc.assign(
-    broad_direct=alloc["channel_type"].map(
-        lambda x: "Broadcast" if x in ("broadcast","tv","radio") else "Direct")
-    )
-    .groupby(["week_index","broad_direct"])["budget_allocation_usd"]
-    .sum().unstack(fill_value=0))
-if "Broadcast" not in weekly_type.columns:
-    # Try to detect from actual channel_type values
-    all_types = alloc["channel_type"].unique()
-    broad_kws = ["broadcast","tv","radio","billboard"]
-    alloc2 = alloc.copy()
-    alloc2["broad_direct"] = alloc2["channel_type"].apply(
-        lambda x: "Broadcast" if any(k in x.lower() for k in broad_kws) else "Direct")
-    weekly_type = (alloc2.groupby(["week_index","broad_direct"])["budget_allocation_usd"]
-                        .sum().unstack(fill_value=0))
-
-cols_ = list(weekly_type.columns)
-colors_ = [COLOR["BLUE"], COLOR["AMBER"]][:len(cols_)]
-
-fig, ax = plt.subplots(figsize=(12, 5), facecolor="white")
-ax.stackplot(weekly_type.index, [weekly_type[c] for c in cols_],
-             labels=cols_, colors=colors_, alpha=0.85)
-ax.set_xlabel("Campaign Week Index")
-ax.set_ylabel("Budget (USD)")
-ax.set_title("B3 — Broadcast vs Direct Budget: Weekly Stacked Area", fontweight=700)
-ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda y,_: f"${y/1e3:.0f}K"))
-ax.legend(loc="upper left")
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('B3_broadcast_vs_direct_budget'))
 
 cells.append(
     md(
@@ -965,26 +541,7 @@ cells.append(
 )
 
 # ── B4 — Reach Utilisation Heatmap ───────────────────────────────────────────
-cells.append(code("""
-# B4 — Reach Utilisation: Department x Channel Heatmap
-util_pivot = (alloc.groupby(["department","channel"])["reach_utilization"]
-                   .mean().unstack(fill_value=np.nan))
-util_pivot.index = [d.title() for d in util_pivot.index]
-util_pivot.columns = [c.replace("_"," ").title() for c in util_pivot.columns]
-
-fig, ax = plt.subplots(figsize=(16, 9), facecolor="white")
-sns.heatmap(util_pivot, ax=ax, cmap="YlOrRd", vmin=0, vmax=1,
-            annot=True, fmt=".2f", linewidths=0.3, linecolor="white",
-            annot_kws={"size": 6.5},
-            cbar_kws={"label": "Mean Reach Utilisation (0–1)"})
-ax.set_title("B4 — Mean Reach Utilisation: Department × Channel", fontweight=700, pad=12)
-ax.set_xlabel("Channel")
-ax.set_ylabel("Department")
-ax.tick_params(axis="x", rotation=35, labelsize=8)
-ax.tick_params(axis="y", rotation=0,  labelsize=8)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('B4_reach_utilisation_heatmap'))
 
 cells.append(
     md(
@@ -995,38 +552,7 @@ cells.append(
 )
 
 # ── B5 — Cost per Persuasion Contact ─────────────────────────────────────────
-cells.append(code("""
-# B5 — Cost per Persuasion Contact vs Department (bubble=total budget)
-dept_agg = alloc.groupby("department").agg(
-    total_usd=("budget_allocation_usd","sum"),
-    total_contacts=("persuasion_adjusted_contacts","sum"),
-    region=("region","first")
-).reset_index()
-dept_agg["cost_per_contact"] = (
-    dept_agg["total_usd"] / dept_agg["total_contacts"].replace(0, np.nan)
-)
-dept_agg = dept_agg.dropna(subset=["cost_per_contact"])
-region_pal  = {"Oriental": COLOR["BLUE"], "Chaco": COLOR["AMBER"],
-               "Metro": COLOR["GREEN"]}
-colors_ = [region_pal.get(r, COLOR["GREY"]) for r in dept_agg["region"]]
-
-fig, ax = plt.subplots(figsize=(12, 7), facecolor="white")
-scatter = ax.scatter(
-    dept_agg["cost_per_contact"],
-    dept_agg["department"].str.title(),
-    s=dept_agg["total_usd"]/300,
-    c=colors_, alpha=0.8, edgecolors=COLOR["CHARCOAL"], linewidths=0.6
-)
-ax.set_xlabel("Cost per Persuasion-Adjusted Contact (USD)")
-ax.set_ylabel("")
-ax.set_title("B5 — Cost per Persuasion Contact by Department (bubble size = total budget)", fontweight=700)
-ax.spines["left"].set_visible(False)
-ax.tick_params(axis="y", length=0)
-legend_patches = [mpatches.Patch(color=c, label=l) for l,c in region_pal.items()]
-ax.legend(handles=legend_patches, loc="lower right")
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('B5_cost_per_persuasion_contact'))
 
 cells.append(
     md(
@@ -1037,31 +563,7 @@ cells.append(
 )
 
 # ── B6 — FX Rate Series ──────────────────────────────────────────────────────
-cells.append(code("""
-# B6 — FX Rate (PYG/USD) over Weeks with retail spread band
-fig, ax = plt.subplots(figsize=(11, 5), facecolor="white")
-
-ref_col    = "tc_ref_pyg_per_usd"
-retail_col = "tc_retail_pyg_per_usd"
-x_         = range(len(fx))
-
-ax.plot(x_, fx[ref_col], color=COLOR["BLUE"], lw=2.5, label="Reference Rate",
-        marker="o", markersize=5, markerfacecolor="white", markeredgewidth=1.5)
-ax.plot(x_, fx[retail_col], color=COLOR["RED"], lw=2, ls="--",
-        label="Retail Rate (with spread)", marker="s", markersize=4)
-ax.fill_between(x_, fx[ref_col], fx[retail_col],
-                alpha=0.18, color=COLOR["AMBER"], label="Retail Spread")
-
-ax.set_xticks(x_)
-ax.set_xticklabels(fx["iso_week"], rotation=30, ha="right", fontsize=9)
-ax.set_xlabel("ISO Week")
-ax.set_ylabel("PYG per USD")
-ax.set_title("B6 — FX Rate Series (PYG/USD): Reference vs Retail", fontweight=700)
-ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda y,_: f"{y:,.0f}"))
-ax.legend()
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('B6_fx_rate_series'))
 
 cells.append(
     md(
@@ -1072,26 +574,7 @@ cells.append(
 )
 
 # ── B7 — Routing Cost Matrix ──────────────────────────────────────────────────
-cells.append(code("""
-# B7 — Routing Cost Matrix Heatmap
-route_pivot = (routing.groupby(["origin_department","destination_department"])
-                      ["travel_time_minutes"].mean()
-                      .unstack(fill_value=np.nan))
-route_pivot.index   = [d.title() for d in route_pivot.index]
-route_pivot.columns = [d.title() for d in route_pivot.columns]
-
-fig, ax = plt.subplots(figsize=(13, 11), facecolor="white")
-sns.heatmap(route_pivot, ax=ax, cmap="Blues", annot=True, fmt=".0f",
-            linewidths=0.3, linecolor="white", annot_kws={"size": 7},
-            cbar_kws={"label": "Mean Travel Time (minutes)"})
-ax.set_title("B7 — Routing Cost Matrix: Mean Travel Time (minutes)", fontweight=700, pad=12)
-ax.set_xlabel("Destination Department")
-ax.set_ylabel("Origin Department")
-ax.tick_params(axis="x", rotation=35, labelsize=8)
-ax.tick_params(axis="y", rotation=0,  labelsize=8)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('B7_routing_cost_matrix'))
 
 cells.append(
     md(
@@ -1102,37 +585,7 @@ cells.append(
 )
 
 # ── B8 — Reach Caps vs Expected Contacts ─────────────────────────────────────
-cells.append(code("""
-# B8 — Top 10 Departments: Reach Caps (bar) vs Expected Contacts (line)
-dept_b8 = alloc.groupby("department").agg(
-    reach_cap=("reach_cap_population_proxy","sum"),
-    contacts=("expected_contacts","sum"),
-    budget=("budget_allocation_usd","sum")
-).nlargest(10, "reach_cap").sort_values("reach_cap", ascending=True)
-
-fig, ax1 = plt.subplots(figsize=(12, 6), facecolor="white")
-ax2 = ax1.twinx()
-
-y_pos = np.arange(len(dept_b8))
-ax1.barh(y_pos, dept_b8["reach_cap"], color=COLOR["BLUE"], alpha=0.75,
-         height=0.55, label="Reach Cap")
-ax2.plot(dept_b8["contacts"], y_pos, color=COLOR["RED"], lw=2.5,
-         marker="D", markersize=7, label="Expected Contacts")
-
-ax1.set_yticks(y_pos)
-ax1.set_yticklabels([d.title() for d in dept_b8.index], fontsize=9)
-ax1.set_xlabel("Reach Cap (population proxy)", color=COLOR["BLUE"])
-ax2.set_xlabel("Expected Contacts", color=COLOR["RED"])
-ax1.set_title("B8 — Top 10 Departments: Reach Cap vs Expected Contacts", fontweight=700)
-ax2.tick_params(axis="x", colors=COLOR["RED"])
-ax1.tick_params(axis="x", colors=COLOR["BLUE"])
-
-lines1, labels1 = ax1.get_legend_handles_labels()
-lines2, labels2 = ax2.get_legend_handles_labels()
-ax1.legend(lines1+lines2, labels1+labels2, loc="lower right", fontsize=9)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('B8_reach_caps_vs_contacts'))
 
 cells.append(
     md(
@@ -1155,37 +608,7 @@ The Monte Carlo module then propagates uncertainty through 10,000 draws across t
 - Committed Opposition segment's high B-preference strength is the primary persuasion-efficiency tail risk"""))
 
 # ── C1 — Tracking Retrodiction ───────────────────────────────────────────────
-cells.append(code("""
-# C1 — Bayesian Tracking Retrodiction (2018 Series A): Posterior Mean + 94% HDI
-forecast["date"] = pd.to_datetime(forecast["date"])
-series_list = forecast["series_tag"].unique()
-palette_c   = {s: SEG_COLORS[i % 6] for i, s in enumerate(series_list)}
-
-fig, ax = plt.subplots(figsize=(14, 6), facecolor="white")
-for series in series_list:
-    df_ = forecast[forecast["series_tag"]==series].sort_values("date")
-    c_  = palette_c[series]
-    ax.plot(df_["date"], df_["posterior_mean_preference_margin_pp"],
-            lw=2.5, color=c_, label=f"Series {series}")
-    ax.fill_between(df_["date"],
-                    df_["posterior_hdi_low_pp"],
-                    df_["posterior_hdi_high_pp"],
-                    alpha=0.15, color=c_)
-
-# Election day (April 22, 2018)
-election_date = pd.Timestamp("2018-04-22")
-ax.axvline(election_date, color=COLOR["RED"], ls="--", lw=1.8, label="Election Day")
-ax.axhline(0, color=COLOR["CHARCOAL"], lw=0.8, ls=":")
-ax.set_xlabel("Date")
-ax.set_ylabel("Posterior Preference Margin (pp)")
-ax.set_title("C1 — Bayesian Tracking Retrodiction: Posterior Mean Preference Margin + 94% HDI",
-             fontweight=700)
-ax.legend(fontsize=9)
-ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%b %d"))
-plt.setp(ax.xaxis.get_majorticklabels(), rotation=30, ha="right")
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('C1_forecast_timeline'))
 
 cells.append(
     md(
@@ -1196,32 +619,7 @@ cells.append(
 )
 
 # ── C2 — Final-Day Posterior Margin ───────────────────────────────────────────
-cells.append(code("""
-# C2 — Final-Day Posterior Margin (mean + 94% HDI)
-last_row = forecast.sort_values("date").iloc[-1]
-last_date = last_row["date"]
-mean_v = float(last_row["posterior_mean_preference_margin_pp"])
-hdi_lo = float(last_row["posterior_hdi_low_pp"])
-hdi_hi = float(last_row["posterior_hdi_high_pp"])
-
-fig, ax = plt.subplots(figsize=(11, 4), facecolor="white")
-ax.axvspan(hdi_lo, hdi_hi, color=COLOR["RED"], alpha=0.25, label="94% HDI")
-ax.axvline(mean_v, color=COLOR["CHARCOAL"], lw=2.5, label=f"Posterior mean: {mean_v:.1f} pp")
-ax.axvline(0, color=COLOR["GREY"], lw=1.2, ls="--", label="Toss-up (0 pp)")
-ax.axvline(3.7, color=COLOR["AMBER"], lw=1.5, ls=":", label="TSJE Series A anchor (+3.70 pp)")
-pad = max(2.0, (hdi_hi - hdi_lo) * 0.35)
-ax.set_xlim(min(hdi_lo, 0, 3.7) - pad, max(hdi_hi, mean_v, 3.7) + pad)
-ax.set_ylim(0, 1)
-ax.set_yticks([])
-ax.set_xlabel("Preference Margin (pp, Candidate A vs B)")
-ax.set_title(
-    f"C2 — Final-Day Posterior Margin (mean + 94% HDI)\\n({last_date.strftime('%d %b %Y')})",
-    fontweight=700,
-)
-ax.legend(fontsize=9, loc="upper left")
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('C2_posterior_margin_final'))
 
 cells.append(
     md(
@@ -1232,34 +630,7 @@ cells.append(
 )
 
 # ── C3 — Battleground Win Probabilities ──────────────────────────────────────
-cells.append(code("""
-# C3 — Battleground Win Probabilities (sorted horizontal bar)
-battle_sorted = battle.sort_values("win_probability_a")
-colors_c3 = [COLOR["BLUE"] if p >= 0.5 else COLOR["RED"]
-             for p in battle_sorted["win_probability_a"]]
-
-fig, ax = plt.subplots(figsize=(10, 7), facecolor="white")
-bars = ax.barh(battle_sorted["department"].str.title(),
-               battle_sorted["win_probability_a"],
-               color=colors_c3, height=0.6, edgecolor="white")
-for bar, v in zip(bars, battle_sorted["win_probability_a"]):
-    ax.text(bar.get_width() + 0.005, bar.get_y() + bar.get_height()/2,
-            f"{v:.1%}", va="center", ha="left", fontsize=9)
-ax.axvline(0.5, color=COLOR["CHARCOAL"], lw=1.5, ls="--", label="50% threshold")
-ax.set_xlabel("Win Probability (Candidate A)")
-ax.set_title(
-    "C3 — Battleground Win Probability by Department\\n"
-    "(Series A · swing model calibrated to TSJE 2018 returns (illustrative — posterior-dependent))",
-    fontweight=700,
-)
-ax.set_xlim(0, 1.05)
-ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x,_: f"{x:.0%}"))
-ax.legend()
-ax.spines["left"].set_visible(False)
-ax.tick_params(axis="y", length=0)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('C3_battleground_win_probability'))
 
 cells.append(
     md(
@@ -1270,26 +641,7 @@ cells.append(
 )
 
 # ── C4 — House Effects Forest Plot ───────────────────────────────────────────
-cells.append(code("""
-# C4 — House Effects: Forest Plot
-fig, ax = plt.subplots(figsize=(9, 5), facecolor="white")
-y_pos = range(len(house_eff))
-ax.scatter(house_eff["house_effect_posterior_mean"], list(y_pos),
-           color=COLOR["BLUE"], zorder=5, s=80, label="Posterior Mean")
-for i, row in house_eff.iterrows():
-    ax.hlines(i, row["house_effect_hdi_low"], row["house_effect_hdi_high"],
-              color=COLOR["BLUE"], alpha=0.7, lw=3)
-ax.axvline(0, color=COLOR["CHARCOAL"], lw=1.5, ls="--", label="Zero (no effect)")
-ax.set_yticks(list(y_pos))
-ax.set_yticklabels(house_eff["pollster_id"].str.upper(), fontsize=10)
-ax.set_xlabel("House Effect (pp)")
-ax.set_title("C4 — Pollster House Effects: Forest Plot (94% HDI)", fontweight=700)
-ax.legend(fontsize=9)
-ax.spines["left"].set_visible(False)
-ax.tick_params(axis="y", length=0)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('C4_house_effects_forest'))
 
 # House-effect prose is DERIVED from the same posterior_house_effects.parquet the
 # C4 chart plots, so the notebook can never contradict the figure or the EDA report
@@ -1313,30 +665,7 @@ cells.append(
 )
 
 # ── C5 — MC Fan Chart ────────────────────────────────────────────────────────
-cells.append(code("""
-# C5 — Fan Chart: MC Shock Scale Percentile Bands by Scenario Bucket
-fig, ax = plt.subplots(figsize=(12, 6), facecolor="white")
-for bucket, color in [("baseline", COLOR["BLUE"]), ("extreme_tracker", COLOR["RED"])]:
-    subset = mc[mc["scenario_bucket"]==bucket]["shock_scale"].values
-    # Treat draw_id index as x-axis (sorted draw order)
-    subset_sorted = np.sort(subset)
-    x_ = np.linspace(0, 1, len(subset_sorted))
-    pcts = [10, 25, 50, 75, 90]
-    pct_vals = np.percentile(subset, pcts)
-    label_name = bucket.replace("_"," ").title()
-    for j, (lo, hi) in enumerate(zip(pcts[:-1], pcts[1:])):
-        alpha_ = 0.35 - j*0.07
-        ax.fill_between(x_, np.percentile(subset, lo), np.percentile(subset, hi),
-                        alpha=alpha_, color=color)
-    ax.axhline(np.median(subset), color=color, lw=2, label=f"{label_name} median")
-
-ax.set_xlabel("Quantile of Draws")
-ax.set_ylabel("Shock Scale")
-ax.set_title("C5 — MC Shock Scale: Percentile Fan by Scenario Bucket", fontweight=700)
-ax.legend(fontsize=9)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('C5_mc_scenario_fan_chart'))
 
 cells.append(
     md(
@@ -1347,25 +676,7 @@ cells.append(
 )
 
 # ── C6 — Shock Scale KDE ─────────────────────────────────────────────────────
-cells.append(code("""
-# C6 — Overlaid KDE: Shock Scale per Scenario Bucket
-fig, ax = plt.subplots(figsize=(10, 5), facecolor="white")
-for bucket, color, ls in [("baseline", COLOR["BLUE"], "-"),
-                           ("extreme_tracker", COLOR["RED"], "--")]:
-    vals  = mc[mc["scenario_bucket"]==bucket]["shock_scale"].values
-    kde   = stats.gaussian_kde(vals, bw_method=0.25)
-    x_    = np.linspace(vals.min()-0.1, vals.max()+0.1, 400)
-    y_    = kde(x_)
-    label = bucket.replace("_"," ").title()
-    ax.plot(x_, y_, lw=2.5, color=color, ls=ls, label=label)
-    ax.fill_between(x_, y_, alpha=0.15, color=color)
-ax.set_xlabel("Shock Scale")
-ax.set_ylabel("Density")
-ax.set_title("C6 — Shock Scale KDE: Baseline vs Extreme Tracker", fontweight=700)
-ax.legend(fontsize=9)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('C6_shock_scale_distribution'))
 
 cells.append(
     md(
@@ -1376,28 +687,7 @@ cells.append(
 )
 
 # ── C7 — Exit Model Forest Plot ──────────────────────────────────────────────
-cells.append(code("""
-# C7 — Exit Model Parameter Forest Plot
-fig, ax = plt.subplots(figsize=(9, 5), facecolor="white")
-y_pos = range(len(exit_m))
-colors_c7 = [COLOR["BLUE"] if row["posterior_mean"] > 0 else COLOR["RED"]
-             for _, row in exit_m.iterrows()]
-ax.scatter(exit_m["posterior_mean"], list(y_pos),
-           color=colors_c7, zorder=5, s=80)
-for i, row in exit_m.iterrows():
-    ax.hlines(i, row["hdi_low"], row["hdi_high"],
-              color=colors_c7[i], alpha=0.7, lw=3)
-ax.axvline(0, color=COLOR["CHARCOAL"], lw=1.5, ls="--", label="Zero effect")
-ax.set_yticks(list(y_pos))
-ax.set_yticklabels(exit_m["parameter"].str.replace("_"," ").str.title(), fontsize=10)
-ax.set_xlabel("Parameter Value (posterior mean + 94% HDI)")
-ax.set_title("C7 — Exit Model: Parameter Posterior Summary", fontweight=700)
-ax.legend(fontsize=9)
-ax.spines["left"].set_visible(False)
-ax.tick_params(axis="y", length=0)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('C7_exit_model_posteriors'))
 
 cells.append(
     md(
@@ -1408,37 +698,7 @@ cells.append(
 )
 
 # ── C8 — Win Prob vs Propensity ──────────────────────────────────────────────
-cells.append(code("""
-# C8 — Department Win Probability vs Mean Participation Propensity
-dept_prop = pop.groupby("department")["participation_propensity"].mean().reset_index()
-dept_prop.columns = ["department","mean_propensity"]
-c8_data = battle.merge(dept_prop, on="department", how="left")
-offsets = [(6, 4), (6, -10), (-48, 4), (6, 12), (-48, -10), (14, 0)]
-
-fig, ax = plt.subplots(figsize=(11, 7), facecolor="white")
-ax.scatter(c8_data["mean_propensity"], c8_data["win_probability_a"],
-           color=COLOR["BLUE"], s=80, alpha=0.8,
-           edgecolors=COLOR["CHARCOAL"], linewidths=0.6)
-for i, row in c8_data.iterrows():
-    ox, oy = offsets[i % len(offsets)]
-    ax.annotate(row["department"].title(),
-                xy=(row["mean_propensity"], row["win_probability_a"]),
-                xytext=(ox, oy), textcoords="offset points", fontsize=7.5)
-ax.axhline(0.5, color=COLOR["RED"], lw=1.2, ls="--", alpha=0.7, label="50% win threshold")
-wp = c8_data["win_probability_a"]
-ax.set_ylim(0, 1)
-ax.set_xlabel("Mean Participation Propensity")
-ax.set_ylabel("Win Probability (Candidate A)")
-ax.set_title(
-    "C8 — Department Win Probability vs Mean Participation Propensity\\n"
-    "(Series A · swing model calibrated to TSJE 2018 returns (illustrative — posterior-dependent))",
-    fontweight=700,
-)
-ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda y,_: f"{y:.0%}"))
-ax.legend(fontsize=9)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('C8_win_prob_vs_propensity'))
 
 cells.append(
     md(
@@ -1449,28 +709,7 @@ cells.append(
 )
 
 # ── C9 — Polling Transparency Audit ──────────────────────────────────────────
-cells.append(code("""
-# C9 — House Effect Magnitude per Pollster (from polling_transparency_audit)
-fig, ax = plt.subplots(figsize=(9, 5), facecolor="white")
-colors_c9 = [SEG_COLORS[i % 6] for i, p in enumerate(audit["pollster_id"].unique())]
-pollster_palette = {p: SEG_COLORS[i%6] for i,p in enumerate(audit["pollster_id"].unique())}
-
-for pollster, grp in audit.groupby("pollster_id"):
-    color = pollster_palette[pollster]
-    ax.bar(grp["iso_week"], grp["mean_phi_transparency"],
-           label=pollster.upper(), color=color, alpha=0.8,
-           width=0.35, edgecolor="white")
-
-ax.axhline(1.0, color=COLOR["CHARCOAL"], lw=1.2, ls="--", label="Full transparency (1.0)")
-ax.set_xlabel("ISO Week")
-ax.set_ylabel("Mean Phi (Transparency Score)")
-ax.set_title("C9 — Polling Transparency Score by Pollster and Wave", fontweight=700)
-ax.legend(fontsize=9)
-ax.set_ylim(0, 1.15)
-plt.setp(ax.xaxis.get_majorticklabels(), rotation=20, ha="right")
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('C9_polling_transparency_audit'))
 
 cells.append(
     md(
@@ -1481,32 +720,7 @@ cells.append(
 )
 
 # ── C10 — MC Win Probability Histogram ───────────────────────────────────────
-cells.append(code("""
-# C10 — MC Win Probability Distribution
-# Derive: win if shock_scale <= median(baseline shock_scale)
-baseline_median = mc.loc[mc["scenario_bucket"]=="baseline","shock_scale"].median()
-mc_win = (mc["shock_scale"] <= baseline_median).astype(int)
-win_pct = mc_win.mean()
-
-fig, ax = plt.subplots(figsize=(10, 5), facecolor="white")
-ax.hist(mc["shock_scale"], bins=60, color=COLOR["GREY"], alpha=0.6,
-        edgecolor="white", label="All draws")
-ax.hist(mc.loc[mc["shock_scale"]<=baseline_median,"shock_scale"],
-        bins=30, color=COLOR["GREEN"], alpha=0.8,
-        edgecolor="white", label=f"Win condition draws ({win_pct:.1%})")
-ax.axvline(baseline_median, color=COLOR["CHARCOAL"], lw=2, ls="--",
-           label=f"Baseline median threshold ({baseline_median:.2f})")
-ax.set_xlabel("Shock Scale")
-ax.set_ylabel("Number of MC Draws")
-ax.set_title("C10 — MC Win Probability Histogram (Win condition: shock_scale <= baseline median)",
-             fontweight=700)
-ax.legend(fontsize=9)
-plt.tight_layout()
-plt.show()
-
-print(f"Win condition satisfied in {win_pct:.1%} of {len(mc):,} MC draws")
-print(f"Baseline median threshold: {baseline_median:.3f}")
-"""))
+cells.append(figure_cell('C10_mc_win_probability_histogram'))
 
 cells.append(
     md(
@@ -1534,34 +748,7 @@ The synthesis charts (S1–S5) draw simultaneously on population, allocation, an
 )
 
 # ── S1 — Segment × Channel Budget Heatmap ────────────────────────────────────
-cells.append(code("""
-# S1 — Segment x Channel Budget Heatmap
-# Map departments to dominant segment, then aggregate budget
-dept_seg = (pop.groupby(["department","segment_label"]).size()
-               .reset_index(name="count")
-               .sort_values("count",ascending=False)
-               .drop_duplicates("department")
-               [["department","segment_label"]])
-
-alloc_s1 = alloc.merge(dept_seg, on="department", how="left")
-seg_ch = (alloc_s1.groupby(["segment_label","channel_type"])["budget_allocation_usd"]
-                  .sum().unstack(fill_value=0))
-seg_ch.index = [i.replace("_"," ").title() for i in seg_ch.index]
-seg_ch.columns = [c.replace("_"," ").title() for c in seg_ch.columns]
-
-fig, ax = plt.subplots(figsize=(12, 7), facecolor="white")
-sns.heatmap(seg_ch, ax=ax, cmap="Blues", annot=True,
-            fmt=".0f", linewidths=0.4, linecolor="white",
-            annot_kws={"size": 8},
-            cbar_kws={"label": "Total Budget (USD)"})
-ax.set_title("S1 — Budget Allocation: Segment × Channel Type (USD)", fontweight=700, pad=12)
-ax.set_xlabel("Channel Type")
-ax.set_ylabel("Dominant Segment (by department)")
-ax.tick_params(axis="x", rotation=30, labelsize=9)
-ax.tick_params(axis="y", rotation=0,  labelsize=9)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('S1_segment_budget_heatmap'))
 
 cells.append(
     md(
@@ -1572,52 +759,7 @@ cells.append(
 )
 
 # ── S2 — Propensity vs Reachability 4-Quadrant ───────────────────────────────
-cells.append(code("""
-# S2 — 4-Quadrant Scatter: Propensity vs Reachability by Segment
-s2_data = pop.groupby("segment_label").agg(
-    propensity=("participation_propensity","mean"),
-    reachability=("reachability_index","mean"),
-    n=("entity_id","count")
-).reset_index()
-
-med_prop  = s2_data["propensity"].median()
-med_reach = s2_data["reachability"].median()
-
-fig, ax = plt.subplots(figsize=(11, 8), facecolor="white")
-for i, row in s2_data.iterrows():
-    color = SEG_COLORS[list(seg_order).index(row["segment_label"]) % 6] \
-            if row["segment_label"] in seg_order else COLOR["GREY"]
-    ax.scatter(row["reachability"], row["propensity"],
-               s=row["n"]/8, color=color, alpha=0.85,
-               edgecolors=COLOR["CHARCOAL"], linewidths=0.8, zorder=5)
-    ax.annotate(row["segment_label"].replace("_"," ").title(),
-                xy=(row["reachability"], row["propensity"]),
-                xytext=(8, 4), textcoords="offset points", fontsize=8)
-
-ax.axhline(med_prop,  color=COLOR["GREY"], lw=1.2, ls="--")
-ax.axvline(med_reach, color=COLOR["GREY"], lw=1.2, ls="--")
-
-# Quadrant labels
-ax.text(med_reach*0.52, s2_data["propensity"].max()*0.95,
-        "High Value / Hard to Reach", ha="center", fontsize=9,
-        color=COLOR["AMBER"], fontweight=600)
-ax.text(s2_data["reachability"].max()*0.92, s2_data["propensity"].max()*0.95,
-        "High Value / Easy to Reach", ha="center", fontsize=9,
-        color=COLOR["GREEN"], fontweight=600)
-ax.text(med_reach*0.52, s2_data["propensity"].min()*1.08,
-        "Low Value / Hard to Reach", ha="center", fontsize=9,
-        color=COLOR["GREY"], fontweight=600)
-ax.text(s2_data["reachability"].max()*0.92, s2_data["propensity"].min()*1.08,
-        "Low Value / Easy to Reach", ha="center", fontsize=9,
-        color=COLOR["BLUE"], fontweight=600)
-
-ax.set_xlabel("Mean Reachability Index")
-ax.set_ylabel("Mean Participation Propensity")
-ax.set_title("S2 — Propensity vs Reachability: 4-Quadrant Segment Matrix (bubble size = n)",
-             fontweight=700)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('S2_propensity_reachability_matrix'))
 
 cells.append(
     md(
@@ -1628,37 +770,7 @@ cells.append(
 )
 
 # ── S3 — Persuasion Contacts per USD by Channel/Region ───────────────────────
-cells.append(code("""
-# S3 — Persuasion Contacts per USD by Channel, Grouped by Region
-s3 = alloc.groupby(["channel_type","region"]).agg(
-    contacts=("persuasion_adjusted_contacts","sum"),
-    budget=("budget_allocation_usd","sum")
-).reset_index()
-s3["contacts_per_usd"] = s3["contacts"] / s3["budget"].replace(0, np.nan)
-s3 = s3.dropna(subset=["contacts_per_usd"])
-
-regions  = s3["region"].unique()
-channels = s3["channel_type"].unique()
-x_  = np.arange(len(channels))
-w_  = 0.25
-region_pal = {"Oriental": COLOR["BLUE"], "Chaco": COLOR["AMBER"], "Metro": COLOR["GREEN"]}
-
-fig, ax = plt.subplots(figsize=(13, 6), facecolor="white")
-for j, reg in enumerate(regions):
-    subset = s3[s3["region"]==reg].set_index("channel_type")["contacts_per_usd"]
-    vals   = [subset.get(ch, 0) for ch in channels]
-    ax.bar(x_ + j*w_, vals, width=w_, label=reg,
-           color=region_pal.get(reg, COLOR["GREY"]), edgecolor="white", alpha=0.85)
-
-ax.set_xticks(x_ + w_)
-ax.set_xticklabels([c.replace("_"," ").title() for c in channels],
-                   rotation=30, ha="right")
-ax.set_ylabel("Persuasion Contacts per USD")
-ax.set_title("S3 — Persuasion Contacts per USD by Channel and Region", fontweight=700)
-ax.legend(fontsize=9)
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('S3_channel_roi_by_region'))
 
 cells.append(
     md(
@@ -1669,45 +781,7 @@ cells.append(
 )
 
 # ── S4 — Department Priority Matrix ──────────────────────────────────────────
-cells.append(code("""
-# S4 — Department Priority Matrix: Bubble Chart
-dept_prop2 = pop.groupby(["department","department_region"])[
-    "participation_propensity"].mean().reset_index()
-dept_budget = alloc.groupby("department")["budget_allocation_usd"].sum().reset_index()
-s4 = (battle.merge(dept_prop2, on="department", how="left")
-            .merge(dept_budget, on="department", how="left"))
-s4 = s4.dropna(subset=["win_probability_a","participation_propensity","budget_allocation_usd"])
-
-region_pal = {"Oriental": COLOR["BLUE"], "Chaco": COLOR["AMBER"], "Metro": COLOR["GREEN"]}
-colors_s4  = [region_pal.get(r, COLOR["GREY"]) for r in s4["department_region"]]
-
-fig, ax = plt.subplots(figsize=(13, 8), facecolor="white")
-scatter = ax.scatter(
-    s4["win_probability_a"],
-    s4["participation_propensity"],
-    s=s4["budget_allocation_usd"]/500,
-    c=colors_s4, alpha=0.75,
-    edgecolors=COLOR["CHARCOAL"], linewidths=0.7
-)
-for _, row in s4.iterrows():
-    ax.annotate(row["department"].title(),
-                xy=(row["win_probability_a"], row["participation_propensity"]),
-                xytext=(6, 3), textcoords="offset points", fontsize=8)
-
-ax.set_xlabel("Win Probability (Candidate A)")
-ax.set_ylabel("Mean Participation Propensity")
-ax.set_title(
-    "S4 — Department Priority Matrix (bubble size = total budget, colour = region)\\n"
-    "(Series A · swing model calibrated to TSJE 2018 returns (illustrative — posterior-dependent))",
-    fontweight=700,
-)
-ax.set_xlim(0, 1.05)
-ax.xaxis.set_major_formatter(mticker.FuncFormatter(lambda x,_: f"{x:.0%}"))
-legend_patches = [mpatches.Patch(color=c, label=l) for l,c in region_pal.items()]
-ax.legend(handles=legend_patches, loc="lower left")
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('S4_department_priority_matrix'))
 
 cells.append(
     md(
@@ -1718,39 +792,7 @@ cells.append(
 )
 
 # ── S5 — Efficiency Frontier ─────────────────────────────────────────────────
-cells.append(code("""
-# S5 — Reach Utilisation vs Persuasion Contacts by Department, coloured by solver_status
-s5 = alloc.groupby(["department","solver_status"]).agg(
-    reach_util=("reach_utilization","mean"),
-    contacts=("persuasion_adjusted_contacts","sum")
-).reset_index()
-status_pal = {
-    "optimal":  COLOR["GREEN"],
-    "feasible": COLOR["BLUE"],
-    "infeasible": COLOR["RED"],
-}
-
-fig, ax = plt.subplots(figsize=(12, 7), facecolor="white")
-for status, grp in s5.groupby("solver_status"):
-    color = status_pal.get(status, COLOR["GREY"])
-    ax.scatter(grp["reach_util"], grp["contacts"],
-               s=70, color=color, alpha=0.8,
-               edgecolors=COLOR["CHARCOAL"], linewidths=0.6,
-               label=status.title(), zorder=5)
-    for _, row in grp.iterrows():
-        ax.annotate(row["department"].title(),
-                    xy=(row["reach_util"], row["contacts"]),
-                    xytext=(5, 3), textcoords="offset points", fontsize=7.5)
-
-ax.set_xlabel("Mean Reach Utilisation (0–1)")
-ax.set_ylabel("Total Persuasion-Adjusted Contacts")
-ax.set_title("S5 — Efficiency Frontier: Reach Utilisation vs Contacts by Department",
-             fontweight=700)
-ax.legend(fontsize=9)
-ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda y,_: f"{int(y):,}"))
-plt.tight_layout()
-plt.show()
-"""))
+cells.append(figure_cell('S5_efficiency_frontier'))
 
 cells.append(
     md(
