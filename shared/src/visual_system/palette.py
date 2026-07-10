@@ -47,6 +47,20 @@ SEGMENT_LABELS: Final[tuple[str, ...]] = (
     "youth_volatile",
 )
 
+# Shared presentation order for segment charts (IMP-V06 / issue #70): the
+# order the static report has always used (formerly ``generate_eda.py``'s
+# local ``SEG_ORDER``), now owned here so the dashboard and every other
+# surface rank segments identically. A segment's rank must never differ
+# between surfaces; both the EDA factory and the dashboard import this.
+SEGMENT_DISPLAY_ORDER: Final[tuple[str, ...]] = (
+    "youth_volatile",
+    "urban_high_volatility",
+    "rural_committed",
+    "rural_low_propensity",
+    "structurally_dependent_bloc",
+    "committed_opposition",
+)
+
 # Okabe-Ito colorblind-safe qualitative palette (vermillion, blue, orange,
 # reddish purple, bluish green, sky blue — the six-hue subset commonly
 # recommended for categorical charts once black and yellow are excluded).
