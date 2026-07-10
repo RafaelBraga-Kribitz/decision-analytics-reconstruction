@@ -10,7 +10,10 @@ from pathlib import Path
 import pandas as pd
 import yaml
 
-from module_c_forecasting_scenarios.geo.heatmap import export_battleground_department_table
+from module_c_forecasting_scenarios.geo.heatmap import (
+    export_battleground_department_table,
+    write_anchor_comparison,
+)
 from module_c_forecasting_scenarios.paths import module_config_dir, repo_root
 from module_c_forecasting_scenarios.pipeline.run_exit import main as run_exit_main
 from module_c_forecasting_scenarios.pipeline.run_monte_carlo import main as run_monte_carlo_main
@@ -41,10 +44,38 @@ def main(argv: list[str] | None = None) -> None:
     with open(module_config_dir() / "calibration.yaml") as f:
         series = str(yaml.safe_load(f)["series"]).strip().upper()
     daily = pd.read_parquet(args.out_dir / "tracking" / "daily_posterior_forecast.parquet")
-    export_battleground_department_table(
+    anchored_table = export_battleground_department_table(
         daily,
         args.out_dir / "battleground" / "battleground_department_probability.parquet",
         calibration_series=series,
+        anchored=True,
+    )
+    # IMP-C05 unanchored companion: re-fit the tracking model without the
+    # outcome anchor and publish the companion battleground table plus the
+    # anchored-vs-unanchored flip list, so the anchored (retrodiction) table
+    # is never the only published view.
+    run_tracking_main(
+        [
+            "--raw-csv",
+            str(args.raw_csv),
+            "--out-dir",
+            str(args.out_dir / "tracking_unanchored"),
+            "--no-outcome-anchor",
+        ]
+    )
+    daily_unanchored = pd.read_parquet(
+        args.out_dir / "tracking_unanchored" / "daily_posterior_forecast.parquet"
+    )
+    unanchored_table = export_battleground_department_table(
+        daily_unanchored,
+        args.out_dir / "battleground" / "battleground_department_probability_unanchored.parquet",
+        calibration_series=series,
+        anchored=False,
+    )
+    write_anchor_comparison(
+        anchored_table,
+        unanchored_table,
+        args.out_dir / "battleground" / "battleground_anchor_comparison.md",
     )
     qsrc = repo_root() / "module_c_forecasting_scenarios/portfolio/quarto/post_mortem.qmd"
     qdst = args.out_dir / "post_mortem.qmd"

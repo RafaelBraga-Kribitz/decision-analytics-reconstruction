@@ -19,6 +19,7 @@ win_probability_a = P(Candidate A / Abdo wins the department).
 
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 from typing import Any, cast
@@ -31,14 +32,32 @@ from scipy.stats import norm
 from module_c_forecasting_scenarios.config import load_sampler_config
 from module_c_forecasting_scenarios.data.contract_validate import validate_dataframe_contract
 
-MODEL_VERSION = "c_battleground_v0.2"
+MODEL_VERSION = "c_battleground_v0.3"
 
-# Idiosyncratic per-department uncertainty (pp). Sets a floor on each dept HDI
-# width so that near-the-margin departments are not called as near-certain when
-# the tracking posterior alone is narrow — justified by unmodelled local factors
-# (candidate strength, local issues, ground game). Value calibrated to give
-# ~15–20 pp HDI width for swing departments at typical national posterior widths.
+# Idiosyncratic per-department uncertainty (pp): a floor on each department's
+# margin dispersion representing unmodelled local factors (candidate strength,
+# local issues, ground game).
+#
+# PROVENANCE — illustrative assumption (IMP-C05 / issue #63): this value is
+# NOT estimated from data. Estimating it would require department-level
+# poll-vs-result residuals across elections; this reconstruction carries only
+# national tracking polls plus the single realized 2018 department table the
+# swing factors are derived from (their in-sample residual is zero by
+# construction, so it cannot identify this parameter). Per the IMP-C05 spec's
+# fallback, the parameter and every artifact it touches are therefore labeled
+# ``illustrative`` in the schema contract and report captions. Do not justify
+# a new value by a target visual property ("gives ~X pp width") — either
+# derive it from a documented reference or keep the illustrative label.
 _SIGMA_IDIO_PP: float = 1.5
+_SIGMA_IDIO_PROVENANCE = "illustrative_assumption_not_estimated"
+
+# The estimand of every battleground artifact: outcome data enters twice —
+# (1) the national posterior is softly anchored to the verified outcome
+# (config/calibration.yaml use_outcome_anchor) and (2) the swing factors are
+# derived from the realized TSJE department results. The schema contract and
+# report captions must carry this disclosure (F-078 recurrence invariant).
+_ESTIMAND_ANCHORED = "retrodiction"
+_ESTIMAND_UNANCHORED = "unanchored_retrodiction"
 
 # Loaded from pymc_sampler.yaml for sync with tracking model (0.94 = 94% HDI).
 _HDI_PROB: float = float(load_sampler_config().get("hdi_prob", 0.94))
@@ -99,23 +118,45 @@ def export_battleground_department_table(
     out_path: Path,
     *,
     calibration_series: str,
+    anchored: bool = True,
 ) -> pd.DataFrame:
     """Map last-day tracking posterior to per-department win probability.
 
-    Uses a calibrated hierarchical model (v0.2):
+    Uses a calibrated hierarchical model (v0.3):
       • Each department's margin tracks the national margin linearly via its
         TSJE-derived swing factor (partial pooling toward the national result).
       • National posterior uncertainty propagates through the swing factor;
-        idiosyncratic noise (_SIGMA_IDIO_PP = 1.5 pp) is added in quadrature.
+        idiosyncratic noise (``_SIGMA_IDIO_PP``, an illustrative assumption —
+        see its provenance comment) is added in quadrature.
       • win_probability_a = P(Abdo/Candidate A wins dept j) = Φ(m_dept / σ_dept).
 
-    Writes three outputs alongside out_path:
-    - ``{stem}.parquet``  — contract-validated 4-column table
+    Args:
+        daily_forecast: Daily posterior frame; the last row's mean/HDI drive
+            the mapping.
+        out_path: Destination parquet path (siblings written alongside).
+        calibration_series: Active calibration series label (``A``/``B``).
+        anchored: Whether ``daily_forecast`` came from an outcome-anchored
+            tracking fit. Controls the exported ``estimand`` label
+            (``retrodiction`` vs ``unanchored_retrodiction`` — the swing
+            factors are outcome-derived either way) and the manifest.
+
+    Returns:
+        The contract-validated table that was written.
+
+    Raises:
+        QAGateFailure: If the exported frame violates the schema contract.
+        AssertionError: If any row violates
+            ``0 <= hdi_low <= win_probability_a <= hdi_high <= 1``.
+
+    Writes four outputs alongside out_path:
+    - ``{stem}.parquet``  — contract-validated table (incl. estimand + HDI)
     - ``{stem}.geojson``  — null-geometry GeoJSON (backward compat)
     - ``battleground_probability_heatmap.geojson`` — polygon choropleth
+    - ``{stem}_manifest.json`` — sigma provenance, hdi_prob, input hash
     """
     df_fc = daily_forecast.sort_values("date")
     last = df_fc.iloc[-1]
+    estimand = _ESTIMAND_ANCHORED if anchored else _ESTIMAND_UNANCHORED
 
     m_pp = float(last["posterior_mean_preference_margin_pp"])
     hdi_lo = float(last.get("posterior_hdi_low_pp", m_pp - 2.0))  # type: ignore[arg-type]
@@ -145,6 +186,9 @@ def export_battleground_department_table(
                 "calibration_series": calibration_series,
                 "win_probability_a": win_prob_a,
                 "model_version": MODEL_VERSION,
+                "estimand": estimand,
+                "hdi_low": min(wp_at_nat_lo, wp_at_nat_hi),
+                "hdi_high": max(wp_at_nat_lo, wp_at_nat_hi),
                 "_posterior_win_prob": win_prob_a,
                 "_hdi_low": min(wp_at_nat_lo, wp_at_nat_hi),
                 "_hdi_high": max(wp_at_nat_lo, wp_at_nat_hi),
@@ -154,8 +198,27 @@ def export_battleground_department_table(
     full = pd.DataFrame(rows)
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
-    contract_cols = ["department", "calibration_series", "win_probability_a", "model_version"]
+    contract_cols = [
+        "department",
+        "calibration_series",
+        "win_probability_a",
+        "model_version",
+        "estimand",
+        "hdi_low",
+        "hdi_high",
+    ]
     out = cast(pd.DataFrame, full[contract_cols].copy())
+    # False-precision guard (IMP-C05 NFR): every exported row carries an
+    # interval that brackets its point estimate, all in [0, 1]. Violations
+    # abort the export before anything is written.
+    assert bool(
+        (
+            (out["hdi_low"] >= 0.0)
+            & (out["hdi_low"] <= out["win_probability_a"])
+            & (out["win_probability_a"] <= out["hdi_high"])
+            & (out["hdi_high"] <= 1.0)
+        ).all()
+    ), "battleground export violates 0 <= hdi_low <= win_probability_a <= hdi_high <= 1"
     validate_dataframe_contract(out, "battleground_department_probability")
     out.to_parquet(out_path, index=False)
 
@@ -175,24 +238,122 @@ def export_battleground_department_table(
         json.dumps({"type": "FeatureCollection", "features": null_features})
     )
 
-    dept_polys = _load_department_polygons()
-    heatmap_features: list[dict[str, Any]] = [
-        {
-            "type": "Feature",
-            "properties": {
-                "department": str(r["department"]),
-                "posterior_win_prob": float(r["_posterior_win_prob"]),
-                "hdi_low": float(r["_hdi_low"]),
-                "hdi_high": float(r["_hdi_high"]),
-                "calibration_series": calibration_series,
-            },
-            "geometry": dept_polys.get(str(r["department"])),
-        }
-        for _, r in full.iterrows()
-    ]
-    heatmap_path = out_path.parent / "battleground_probability_heatmap.geojson"
-    heatmap_path.write_text(
-        json.dumps({"type": "FeatureCollection", "features": heatmap_features}, indent=2)
-    )
+    if anchored:
+        # The polygon choropleth keeps its stable filename and is only ever
+        # the anchored run's view — the unanchored companion must not clobber
+        # it (its table lives under its own stem).
+        dept_polys = _load_department_polygons()
+        heatmap_features: list[dict[str, Any]] = [
+            {
+                "type": "Feature",
+                "properties": {
+                    "department": str(r["department"]),
+                    "posterior_win_prob": float(r["_posterior_win_prob"]),
+                    "hdi_low": float(r["_hdi_low"]),
+                    "hdi_high": float(r["_hdi_high"]),
+                    "calibration_series": calibration_series,
+                    "estimand": estimand,
+                },
+                "geometry": dept_polys.get(str(r["department"])),
+            }
+            for _, r in full.iterrows()
+        ]
+        heatmap_path = out_path.parent / "battleground_probability_heatmap.geojson"
+        heatmap_path.write_text(
+            json.dumps({"type": "FeatureCollection", "features": heatmap_features}, indent=2)
+        )
+
+    # Run manifest (IMP-C05 reproducibility NFR): records the sigma value and
+    # its provenance, the HDI level, the estimand, and the hash of the swing
+    # factors' input data.
+    manifest = {
+        "model_version": MODEL_VERSION,
+        "estimand": estimand,
+        "anchored_national_posterior": anchored,
+        "sigma_idio_pp": _SIGMA_IDIO_PP,
+        "sigma_idio_provenance": _SIGMA_IDIO_PROVENANCE,
+        "hdi_prob": _HDI_PROB,
+        "tsje_input_sha256": hashlib.sha256(_TSJE_CSV.read_bytes()).hexdigest(),
+        "outcome_data_entry_points": [
+            (
+                "national posterior outcome anchor (config/calibration.yaml use_outcome_anchor)"
+                if anchored
+                else "none at the national layer (unanchored companion run)"
+            ),
+            "swing factors derived from realized tsje_2018_department_results.csv",
+        ],
+    }
+    manifest_path = out_path.parent / f"{out_path.stem}_manifest.json"
+    manifest_path.write_text(json.dumps(manifest, indent=2))
 
     return out
+
+
+def write_anchor_comparison(
+    anchored_table: pd.DataFrame,
+    unanchored_table: pd.DataFrame,
+    out_path: Path,
+) -> pd.DataFrame:
+    """Publish the anchored-vs-unanchored companion comparison with flip list.
+
+    Args:
+        anchored_table: Contract table from the anchored run.
+        unanchored_table: Contract table from the unanchored companion run.
+        out_path: Destination markdown path for the comparison artifact.
+
+    Returns:
+        Per-department comparison frame (anchored/unanchored probabilities,
+        classification flip flag).
+
+    Raises:
+        ValueError: If the two tables are numerically identical — the
+            "unanchored" run silently consumed the anchor (IMP-C05 negative
+            constraint), or if department sets differ.
+
+    Example:
+        ``write_anchor_comparison(anchored, unanchored, Path("cmp.md"))``
+    """
+    a = anchored_table.set_index("department")["win_probability_a"]
+    u = unanchored_table.set_index("department")["win_probability_a"]
+    if set(a.index) != set(u.index):
+        raise ValueError("anchored and unanchored tables cover different departments")
+    u = u.reindex(a.index)
+    if bool(np.allclose(a.to_numpy(), u.to_numpy())):
+        raise ValueError(
+            "anchored and unanchored battleground tables are numerically identical — "
+            "the companion run silently consumed the outcome anchor (IMP-C05)"
+        )
+    cmp_df = pd.DataFrame(
+        {
+            "department": a.index,
+            "win_probability_a_anchored": a.to_numpy(),
+            "win_probability_a_unanchored": u.to_numpy(),
+        }
+    )
+    cmp_df["classification_flip"] = (cmp_df["win_probability_a_anchored"] > 0.5) != (
+        cmp_df["win_probability_a_unanchored"] > 0.5
+    )
+    flips = cmp_df[cmp_df["classification_flip"]]["department"].tolist()
+
+    lines = [
+        "# Battleground anchored vs unanchored companion",
+        "",
+        "The anchored table is a **retrodiction** (outcome-anchored national posterior x "
+        "outcome-derived swing factors). The companion below re-runs the tracking fit with "
+        "`use_outcome_anchor: false`; swing factors remain outcome-derived in both, so "
+        "neither column is an out-of-sample forecast.",
+        "",
+        f"Departments whose >0.5 classification flips: " f"{', '.join(flips) if flips else 'none'}",
+        "",
+        "| Department | anchored P(A) | unanchored P(A) | flip |",
+        "|---|---|---|---|",
+    ]
+    for _, r in cmp_df.sort_values("department").iterrows():
+        lines.append(
+            f"| {r['department']} | {r['win_probability_a_anchored']:.3f} "
+            f"| {r['win_probability_a_unanchored']:.3f} "
+            f"| {'YES' if bool(r['classification_flip']) else ''} |"
+        )
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text("\n".join(lines) + "\n")
+    return cmp_df

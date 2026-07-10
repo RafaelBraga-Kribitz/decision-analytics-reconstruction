@@ -114,3 +114,67 @@ def test_battleground_recovers_real_ganar_strongholds(tmp_path: Path) -> None:
         )
     # And a known Abdo landslide (Asunción) must be near-certain for Candidate A.
     assert win["Asuncion"] > 0.9, f"Asuncion P(Abdo)={win['Asuncion']:.3f} too low"
+
+
+def test_battleground_interval_brackets_point_estimate(
+    daily_fixture: pd.DataFrame, tmp_path: Path
+) -> None:
+    """IMP-C05: every exported row carries 0 <= hdi_low <= p <= hdi_high <= 1."""
+    df = export_battleground_department_table(
+        daily_fixture, tmp_path / "bg.parquet", calibration_series="A"
+    )
+    assert {"estimand", "hdi_low", "hdi_high"} <= set(df.columns)
+    assert (df["hdi_low"] >= 0).all() and (df["hdi_high"] <= 1).all()
+    assert (df["hdi_low"] <= df["win_probability_a"]).all()
+    assert (df["win_probability_a"] <= df["hdi_high"]).all()
+    assert (df["estimand"] == "retrodiction").all()
+
+
+def test_battleground_manifest_records_sigma_provenance(
+    daily_fixture: pd.DataFrame, tmp_path: Path
+) -> None:
+    export_battleground_department_table(
+        daily_fixture, tmp_path / "bg.parquet", calibration_series="A"
+    )
+    manifest = json.loads((tmp_path / "bg_manifest.json").read_text())
+    assert manifest["sigma_idio_provenance"] == "illustrative_assumption_not_estimated"
+    assert manifest["estimand"] == "retrodiction"
+    assert len(manifest["tsje_input_sha256"]) == 64
+    assert len(manifest["outcome_data_entry_points"]) == 2
+
+
+def test_unanchored_companion_labeled_and_no_choropleth_clobber(
+    daily_fixture: pd.DataFrame, tmp_path: Path
+) -> None:
+    df = export_battleground_department_table(
+        daily_fixture, tmp_path / "bg_unanchored.parquet", calibration_series="A", anchored=False
+    )
+    assert (df["estimand"] == "unanchored_retrodiction").all()
+    # the stable-name choropleth belongs to the anchored run only
+    assert not (tmp_path / "battleground_probability_heatmap.geojson").exists()
+
+
+def test_anchor_comparison_flip_list_and_divergence_guard(
+    daily_fixture: pd.DataFrame, tmp_path: Path
+) -> None:
+    from module_c_forecasting_scenarios.geo.heatmap import write_anchor_comparison
+
+    anchored = export_battleground_department_table(
+        daily_fixture, tmp_path / "a.parquet", calibration_series="A"
+    )
+    shifted = daily_fixture.copy()
+    shifted["posterior_mean_preference_margin_pp"] = [-1.0, -1.2]
+    shifted["posterior_hdi_low_pp"] = [-2.5, -2.7]
+    shifted["posterior_hdi_high_pp"] = [0.5, 0.3]
+    unanchored = export_battleground_department_table(
+        shifted, tmp_path / "u.parquet", calibration_series="A", anchored=False
+    )
+    cmp_df = write_anchor_comparison(anchored, unanchored, tmp_path / "cmp.md")
+    # a sign flip of the national margin must flip departments that move with it
+    assert cmp_df["classification_flip"].any()
+    text = (tmp_path / "cmp.md").read_text()
+    assert "flip" in text and "retrodiction" in text
+
+    # silent re-anchoring guard: identical tables must raise
+    with pytest.raises(ValueError, match="identical"):
+        write_anchor_comparison(anchored, anchored.copy(), tmp_path / "cmp2.md")

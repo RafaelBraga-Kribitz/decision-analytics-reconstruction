@@ -1,0 +1,33 @@
+id: F-078
+title: "Battleground department probabilities consume outcome data twice without contract disclosure"
+category: fake_completion
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-07-10
+closed_at: 2026-07-10
+recurrence_count: 0
+evidence: |
+  module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/geo/heatmap.py
+  derives swing factors from the realized tsje_2018_department_results.csv
+  (_swing_factors) and multiplies them by a national posterior that is
+  outcome-anchored (module_c_forecasting_scenarios/config/calibration.yaml
+  use_outcome_anchor: true, sigma 0.5pp;
+  module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/models/tracking/hierarchical.py).
+  The retrodiction framing was documented in code comments, but
+  schema_contracts/battleground_department_probability.yaml (v1.0.0) and the
+  post_mortem.qmd captions disclosed neither outcome-data entry point, and the
+  idiosyncratic sigma was justified by a target visual width ("calibrated to
+  give ~15-20 pp HDI width"). Downstream consumers could read the schema and
+  mistake retrodiction for forecast — the F-055/F-056 defect class at the
+  contract layer.
+verification_script: scripts/check_battleground_circularity_disclosure.py
+notes: |
+  Closed by IMP-C05 (issue #63): contract v1.1.0 declares the retrodiction
+  estimand, both outcome-data entry points, and the ILLUSTRATIVE sigma; the
+  exported table carries estimand + bounded hdi_low/hdi_high (exporter
+  asserts hdi_low <= win_probability_a <= hdi_high in [0,1]); the Quarto
+  battleground chart draws the interval and its caption/narrative carry the
+  disclosure; heatmap.py records _SIGMA_IDIO_PROVENANCE and bans the
+  width-target justification. The verification script re-checks all three
+  surfaces (contract description + fields, qmd section, heatmap source).
+  Spec: governance/improvement_plan/IMP-C05_geo-uncertainty-integrity.md
