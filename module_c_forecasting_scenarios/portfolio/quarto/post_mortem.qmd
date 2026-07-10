@@ -319,33 +319,45 @@ if mc is not None:
 
 ## Department-Level Outcome Probability
 
-Win-probability per geographic unit, derived by mapping the last-day posterior margin through a logistic transformation with synthetic geographic heterogeneity. Departments with higher participation propensity and lower friction receive stronger prior weight.
+Win-probability per geographic unit (model `c_battleground_v0.3`): each department's margin tracks the national posterior linearly via its TSJE-derived swing factor, with an illustrative idiosyncratic dispersion floor added in quadrature. **Estimand disclosure (retrodiction):** outcome data enters twice — the national posterior is outcome-anchored and the swing factors are derived from the realized 2018 TSJE department results — so these probabilities are a retrodiction, not an out-of-sample forecast. The unanchored companion table below removes the anchor (swing factors remain outcome-derived).
 
 ```{python}
 #| label: fig-battleground
-#| fig-cap: "Posterior win probability by department — Series A calibration."
+#| fig-cap: "Posterior win probability by department with HDI interval — Series A calibration. Retrodiction: outcome-anchored national posterior × outcome-derived swing factors; idiosyncratic dispersion floor is an illustrative assumption (see schema contract)."
 
 if battle is not None:
     b = battle.sort_values("win_probability_a")
+    _has_hdi = {"hdi_low", "hdi_high"} <= set(b.columns)
     fig = go.Figure(go.Bar(
         x=b["win_probability_a"],
         y=b["department"],
         orientation="h",
         marker=dict(
             color=b["win_probability_a"],
-            colorscale="RdYlGn",
-            cmin=0.3,
-            cmax=0.7,
+            # Colorblind-safe Okabe-Ito diverging ramp (blue = B leads,
+            # vermillion = A leads), full [0,1] scale — no undisclosed
+            # truncation (IMP-V05/IMP-C05).
+            colorscale=[[0.0, "#0072B2"], [0.5, "#f7f7f7"], [1.0, "#D55E00"]],
+            cmin=0.0,
+            cmax=1.0,
             colorbar=dict(title="Win prob."),
         ),
+        error_x=dict(
+            type="data",
+            symmetric=False,
+            array=(b["hdi_high"] - b["win_probability_a"]) if _has_hdi else None,
+            arrayminus=(b["win_probability_a"] - b["hdi_low"]) if _has_hdi else None,
+            color="#25282b",
+            thickness=1.4,
+        ) if _has_hdi else None,
         text=[f"{v:.1%}" for v in b["win_probability_a"]],
         textposition="outside",
     ))
     fig.add_vline(x=0.5, line_dash="dash", line_color="#888", annotation_text="50%")
     fig.update_layout(
-        title="Department-level outcome probability (Series A, synthetic mapping)",
-        xaxis_title="Win probability — preference proxy A",
-        xaxis=dict(range=[0, 1], tickformat=".0%"),
+        title="Department-level outcome probability with HDI (Series A, retrodiction)",
+        xaxis_title="Win probability — preference proxy A (whiskers: HDI)",
+        xaxis=dict(range=[0, 1.05], tickformat=".0%"),
         yaxis_title="Department",
         template="plotly_white",
         height=520,
@@ -354,6 +366,18 @@ if battle is not None:
     fig.show()
 else:
     display(HTML("<p><em>Battleground data not found — run <code>make module-c-all</code>.</em></p>"))
+```
+
+```{python}
+#| label: tbl-battleground-anchor-comparison
+#| fig-cap: "Anchored vs unanchored companion — departments whose classification flips."
+
+_cmp_path = _resolve_data_path("MODULE_C_BATTLEGROUND_DIR", "data/processed/module_c/run_all/battleground") / "battleground_anchor_comparison.md"
+if _cmp_path.exists():
+    from IPython.display import Markdown as _Markdown
+    display(_Markdown(_cmp_path.read_text()))
+else:
+    display(HTML("<p><em>Anchored-vs-unanchored companion not found — run <code>make module-c-all</code> (IMP-C05 companion run).</em></p>"))
 ```
 
 ```{python}

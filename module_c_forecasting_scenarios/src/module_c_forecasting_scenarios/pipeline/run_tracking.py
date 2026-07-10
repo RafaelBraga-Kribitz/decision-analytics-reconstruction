@@ -32,6 +32,14 @@ def main(argv: list[str] | None = None) -> None:
     p.add_argument("--raw-csv", type=Path, required=True)
     p.add_argument("--out-dir", type=Path, required=True)
     p.add_argument("--calibration-yaml", type=Path, default=None)
+    p.add_argument(
+        "--no-outcome-anchor",
+        action="store_true",
+        help=(
+            "Override calibration.yaml and fit WITHOUT the outcome anchor — "
+            "used for the IMP-C05 unanchored companion battleground table."
+        ),
+    )
     args = p.parse_args(argv)
     cal_path = args.calibration_yaml or (module_config_dir() / "calibration.yaml")
     with open(cal_path) as f:
@@ -51,7 +59,7 @@ def main(argv: list[str] | None = None) -> None:
     audit = build_polling_transparency_audit(tracking)
     audit.to_csv(args.out_dir / "polling_transparency_audit.csv", index=False)
     anchor_sigma = float(cal.get("outcome_anchor_sigma_pp", 0.5))
-    use_anchor = bool(cal.get("use_outcome_anchor", True))
+    use_anchor = bool(cal.get("use_outcome_anchor", True)) and not args.no_outcome_anchor
     _, daily, houses = run_tracking_fit_and_export(
         tracking,
         args.out_dir,
@@ -69,6 +77,7 @@ def main(argv: list[str] | None = None) -> None:
         "outcome_event_date": outcome.isoformat(),
         "repo_root": str(repo_root()),
         "n_tracking_waves": len(tracking),
+        "use_outcome_anchor": use_anchor,
     }
     (args.out_dir / "run_tracking_manifest.json").write_text(json.dumps(manifest, indent=2))
     log_run_params(cast(dict[str, object], manifest))
