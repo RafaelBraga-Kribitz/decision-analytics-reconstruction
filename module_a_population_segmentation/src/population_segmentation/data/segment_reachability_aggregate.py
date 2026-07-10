@@ -212,6 +212,17 @@ def aggregate_media_reachability_by_segment_department(df: pd.DataFrame) -> pd.D
         pct_rural=("rural_flag", "mean"),
         pct_jopara=("jopara_flag", "mean"),
         pct_structural_dependency=("structural_dependency_encoded", "mean"),
+        # Uncertainty columns (IMP-B02 / issue #58): standard error of each
+        # cell mean (sample std / sqrt(n); NaN for n<=1 cells). For the
+        # propensity this is DESCRIPTIVE dispersion of the shipped scores —
+        # which includes the cosmetic within-department spread documented in
+        # the propensity model card (F-079) — quantifying how much the cell
+        # mean would move under entity resampling, not model uncertainty.
+        participation_propensity_se=("participation_propensity", "sem"),
+        pct_internet_access_se=("internet_access_flag", "sem"),
+        mean_tv_penetration_se=("media_penetration_tv", "sem"),
+        mean_radio_penetration_se=("media_penetration_radio", "sem"),
+        mean_whatsapp_penetration_se=("media_penetration_whatsapp", "sem"),
     ).reset_index()
 
     # Build the dense (segment, department) frame and left-join observed values.
@@ -248,6 +259,11 @@ def aggregate_media_reachability_by_segment_department(df: pd.DataFrame) -> pd.D
         "pct_rural",
         "pct_jopara",
         "pct_structural_dependency",
+        "participation_propensity_se",
+        "pct_internet_access_se",
+        "mean_tv_penetration_se",
+        "mean_radio_penetration_se",
+        "mean_whatsapp_penetration_se",
     ]
     for col in float_cols:
         out[col] = out[col].astype("float32")
@@ -273,10 +289,15 @@ def aggregate_media_reachability_by_segment_department(df: pd.DataFrame) -> pd.D
         "segment_size_pct_of_department",
         "segment_size_pct_of_segment",
         "mean_participation_propensity",
+        "participation_propensity_se",
         "pct_internet_access",
+        "pct_internet_access_se",
         "mean_tv_penetration",
+        "mean_tv_penetration_se",
         "mean_radio_penetration",
+        "mean_radio_penetration_se",
         "mean_whatsapp_penetration",
+        "mean_whatsapp_penetration_se",
         "pct_rural",
         "pct_jopara",
         "pct_structural_dependency",
