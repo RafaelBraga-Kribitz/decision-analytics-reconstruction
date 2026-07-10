@@ -158,7 +158,12 @@ VALID_SCENARIOS: Final[frozenset[str]] = frozenset(
     {SCENARIO_BASELINE, SCENARIO_EARLY_LOCK, SCENARIO_LATE_FLEX, SCENARIO_BROADCAST_TO_DIRECT}
 )
 
-VALID_PROVENANCE: Final[frozenset[str]] = frozenset({"VERIFIED", "PRIOR", "ESTIMATED"})
+# NEUTRAL: a coefficient deliberately set to the identity value (1.0) because no
+# measured anchor exists — the documented "carries the neutral 1.0" discipline
+# (see CHANNELS above). Distinct from ESTIMATED (a non-identity guess) so the
+# provenance manifest can tell "we chose not to differentiate" apart from "we
+# guessed a differentiating value" (IMP-B01 / issue #57).
+VALID_PROVENANCE: Final[frozenset[str]] = frozenset({"VERIFIED", "PRIOR", "ESTIMATED", "NEUTRAL"})
 
 
 # ---------------------------------------------------------------------------
