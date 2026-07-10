@@ -9,6 +9,7 @@ packages = [
     { include = "module_b_resource_allocation", from = "module_b_resource_allocation/src" },
     { include = "module_c_forecasting_scenarios", from = "module_c_forecasting_scenarios/src" },
     { include = "contract_core", from = "shared/src" },
+    { include = "visual_system", from = "shared/src" },
 ]
 
 [tool.poetry.dependencies]
