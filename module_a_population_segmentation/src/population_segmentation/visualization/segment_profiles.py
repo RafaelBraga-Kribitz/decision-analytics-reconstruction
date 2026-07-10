@@ -3,9 +3,19 @@
 
 from __future__ import annotations
 
+import sys
+from pathlib import Path
+
 import pandas as pd
 import plotly.express as px
 from plotly.graph_objects import Figure
+
+# Shared visual system (IMP-V01 / issue #66): the dashboard's segment chart
+# uses the one canonical colorblind-safe palette instead of Plotly Express's
+# default colorway, so it matches the static report and the notebook. See
+# shared/src/visual_system/ and scripts/check_no_local_color_literals.py.
+sys.path.insert(0, str(Path(__file__).resolve().parents[4] / "shared" / "src"))
+from visual_system.palette import SEGMENT_COLORS, SEGMENT_LABELS
 
 
 def segment_profile_table(df: pd.DataFrame) -> pd.DataFrame:
@@ -53,7 +63,9 @@ def segment_size_chart(profile_df: pd.DataFrame) -> Figure:
         profile_df: Output of :func:`segment_profile_table`.
 
     Returns:
-        Plotly Express bar figure.
+        Plotly Express bar figure, bars ordered by the canonical segment
+        sequence and colored by the shared colorblind-safe palette so the
+        dashboard matches the static report and notebook.
 
     Raises:
         KeyError: If ``segment_label`` or ``segment_size`` is missing.
@@ -61,4 +73,13 @@ def segment_size_chart(profile_df: pd.DataFrame) -> Figure:
     Example:
         Quick QA plot after re-running segmentation with a new ``k``.
     """
-    return px.bar(profile_df, x="segment_label", y="segment_size", title="Segment size")
+    order = [label for label in SEGMENT_LABELS if label in set(profile_df["segment_label"])]
+    return px.bar(
+        profile_df,
+        x="segment_label",
+        y="segment_size",
+        title="Segment size",
+        color="segment_label",
+        color_discrete_map=SEGMENT_COLORS,
+        category_orders={"segment_label": order},
+    )

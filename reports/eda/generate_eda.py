@@ -30,6 +30,21 @@ DATA = ROOT / "data" / "processed"
 OUT = ROOT / "reports" / "eda"
 OUT.mkdir(parents=True, exist_ok=True)
 
+# Shared visual system (IMP-V01 / issue #66): one colorblind-safe segment
+# palette, redundant non-color encodings, and figure-template conventions for
+# every chart surface in the repo. This is the *only* place segment colors may
+# come from (scripts/check_no_local_color_literals.py enforces it).
+sys.path.insert(0, str(ROOT / "shared" / "src"))
+from visual_system.palette import (  # noqa: E402
+    SEGMENT_COLORS as SEG_COLORS,
+    SEGMENT_LINESTYLES,
+    SEGMENT_MARKERS,
+)
+from visual_system.figure_template import (  # noqa: E402
+    SOURCE_TEXT as SOURCE,
+    annotate_source,
+)
+
 # ── Brand palette ────────────────────────────────────────────────────────────
 RED = "#e60000"
 CHARCOAL = "#25282b"
@@ -42,14 +57,10 @@ TEAL = "#17becf"
 GREY = "#adb5bd"
 WHITE = "#ffffff"
 
-SEG_COLORS = {
-    "rural_committed": RED,
-    "urban_high_volatility": BLUE,
-    "structurally_dependent_bloc": ORANGE,
-    "committed_opposition": PURPLE,
-    "rural_low_propensity": TEAL,
-    "youth_volatile": GREEN,
-}
+# Segment colors come from the shared visual system (imported above as
+# SEG_COLORS). The former local RED/BLUE/ORANGE/... brand assignment paired
+# RED with GREEN in a six-segment legend — unreadable under deuteranopia; see
+# governance/improvement_plan/IMP-V01_visual-system.md.
 
 # ── Global rcParams ──────────────────────────────────────────────────────────
 plt.rcParams.update(
@@ -77,7 +88,7 @@ plt.rcParams.update(
     }
 )
 
-SOURCE = "Source: Paraguay Campaign Data Pipeline 2018 | April 2026"
+# SOURCE is imported from the shared figure template (visual_system) above.
 ILLUSTRATIVE_BATTLE_SUB = "Series A · swing model calibrated to TSJE 2018 returns (illustrative — posterior-dependent)"
 CHACO_DEPARTMENTS = frozenset({"Presidente Hayes", "Boqueron", "Alto Paraguay"})
 DPI = 160
@@ -114,12 +125,6 @@ def save_fig(fig: plt.Figure, fname: str) -> None:
     manifest.append({"file": str(path.relative_to(ROOT)), "size_kb": round(size / 1024, 1)})
     _succeeded += 1
     print(f"  [OK] {fname}  ({size/1024:.1f} KB)")
-
-
-def annotate_source(ax: plt.Axes) -> None:
-    ax.annotate(
-        SOURCE, xy=(0.5, -0.13), xycoords="axes fraction", ha="center", fontsize=7.5, color=GREY
-    )
 
 
 def _region_for_department(department: str) -> str:
@@ -713,6 +718,9 @@ def chart_a10():
             Z[mask, 1],
             label=seg.replace("_", " ").title(),
             color=SEG_COLORS.get(seg, GREY),
+            # Redundant non-color encoding (IMP-V01): marker shape carries
+            # segment identity so the legend survives grayscale / CVD.
+            marker=SEGMENT_MARKERS.get(seg, "o"),
             alpha=0.35,
             s=18,
             edgecolors="none",
@@ -831,6 +839,9 @@ def chart_a12():
             histtype="step",
             lw=2.0,
             color=SEG_COLORS.get(seg, GREY),
+            # Redundant non-color encoding (IMP-V01): each segment's step
+            # outline carries a distinct linestyle for grayscale / CVD legibility.
+            linestyle=SEGMENT_LINESTYLES.get(seg, "solid"),
             label=seg.replace("_", " ").title(),
         )
 
@@ -2013,6 +2024,9 @@ def chart_s2():
             row["mean_propensity"],
             s=row["n"] / 3,
             color=color,
+            # Redundant non-color encoding (IMP-V01): marker shape carries
+            # segment identity alongside the direct label.
+            marker=SEGMENT_MARKERS.get(row["segment_label"], "o"),
             edgecolors=CHARCOAL,
             lw=0.7,
             alpha=0.85,

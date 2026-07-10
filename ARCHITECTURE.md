@@ -13,7 +13,9 @@ The installable Poetry packages ([`pyproject.toml`](pyproject.toml) `[tool.poetr
 - **Module A (population segmentation):** [`module_a_population_segmentation/`](module_a_population_segmentation/) — packaged from `module_a_population_segmentation/src` as `population_segmentation`.
 - **Module B (resource allocation):** [`module_b_resource_allocation/`](module_b_resource_allocation/) — packaged from `module_b_resource_allocation/src` as `module_b_resource_allocation`.
 - **Module C (forecasting scenarios):** [`module_c_forecasting_scenarios/`](module_c_forecasting_scenarios/) — packaged from `module_c_forecasting_scenarios/src` as `module_c_forecasting_scenarios`.
-- **Shared contract core:** [`shared/`](shared/) — packaged from `shared/src` as `contract_core`; the declarative `schema_contracts/*.yaml` validator every module gate layers on (issue #64 / IMP-C07). The only sanctioned non-module package.
+- **Shared packages:** [`shared/`](shared/) — packaged from `shared/src`. Two sanctioned non-module packages:
+  - `contract_core`: the declarative `schema_contracts/*.yaml` validator every module gate layers on (issue #64 / IMP-C07).
+  - `visual_system`: one canonical colorblind-safe segment palette + figure template that every chart surface (the EDA factory, the notebook builder, the Module A dashboard) consumes, so a single taxonomy never renders under three different color systems (issue #66 / IMP-V01).
 
 Layout invariants are covered by [`tests/test_architecture_three_module_layout.py`](tests/test_architecture_three_module_layout.py).
 

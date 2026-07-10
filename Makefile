@@ -270,6 +270,8 @@ verify: audit
 	@echo "── make verify ────────────────────────────────────────────"
 	@$(MAKE) doc-registry-verify
 	@poetry run python scripts/check_terminology.py
+	@poetry run python scripts/check_palette_cvd_contrast.py
+	@poetry run python scripts/check_no_local_color_literals.py
 	@if ls tests/governance/test_*.py >/dev/null 2>&1; then \
 		poetry run pytest tests/governance/ -q; \
 	else \

@@ -12,6 +12,18 @@ import nbformat
 import pandas as pd
 from nbformat.v4 import new_code_cell, new_markdown_cell, new_notebook
 
+# Shared visual system (IMP-V01 / issue #66): segment colors come from the one
+# canonical colorblind-safe palette, never a local hex list. See
+# shared/src/visual_system/ and scripts/check_no_local_color_literals.py. The
+# deeper notebook single-sourcing (chart bodies) is tracked separately by
+# IMP-V02 / issue #67.
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "shared" / "src"))
+from visual_system.palette import SEGMENT_LABELS, get_segment_color  # noqa: E402
+
+# Positional segment palette in canonical segment order, sourced from the
+# shared module so it can never drift from generate_eda.py's colors again.
+_SHARED_SEG_COLORS = [get_segment_color(label) for label in SEGMENT_LABELS]
+
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -95,14 +107,7 @@ COLOR = dict(
     LIGHT="#f7f7f8",
 )
 
-SEG_COLORS = [
-    COLOR["BLUE"],
-    COLOR["GREEN"],
-    COLOR["AMBER"],
-    COLOR["RED"],
-    COLOR["PURPLE"],
-    COLOR["GREY"],
-]
+SEG_COLORS = list(_SHARED_SEG_COLORS)
 
 # ── Project root (notebook lives in reports/eda/) ────────────────────────────
 PROJECT_ROOT = Path("../..").resolve()
@@ -190,8 +195,7 @@ COLOR = dict(
     RED="#e60000", CHARCOAL="#25282b", GREY="#8a8e94", BLUE="#3b82f6",
     GREEN="#10b981", AMBER="#f59e0b", PURPLE="#8b5cf6", LIGHT="#f7f7f8",
 )
-SEG_COLORS = [COLOR["BLUE"], COLOR["GREEN"], COLOR["AMBER"],
-              COLOR["RED"], COLOR["PURPLE"], COLOR["GREY"]]
+SEG_COLORS = list(_SHARED_SEG_COLORS)
 
 # ── Cell 3 — Section 1 header ───────────────────────────────────────────────
 cells.append(
