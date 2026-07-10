@@ -30,7 +30,12 @@ MODEL_PARAMS = ROOT / "module_a_population_segmentation" / "config" / "model_par
 
 
 def write_reliability_diagram(out_path: Path) -> None:
-    from population_segmentation.visualization.calibration_curves import reliability_frame
+    # Shared IMP-V04 builder: square axes, 45-degree reference, Wilson
+    # intervals, count-scaled markers, in-canvas disclaimer. No local drawing.
+    from population_segmentation.visualization.calibration_curves import (
+        reliability_chart,
+        reliability_frame,
+    )
 
     pop = pd.read_parquet(DATA / "population_master_clean.parquet")
     with open(ANCHORS, encoding="utf-8") as f:
@@ -41,14 +46,7 @@ def write_reliability_diagram(out_path: Path) -> None:
     y_prob = pop["participation_propensity"].to_numpy()
     frame = reliability_frame(y_true, y_prob)
 
-    fig, ax = plt.subplots(figsize=(8, 5))
-    ax.plot(frame["predicted_mean"], frame["observed_mean"], "o-", label="Model", color="#e60000")
-    ax.plot([0, 1], [0, 1], "--", color="#25282b", label="Perfect calibration")
-    ax.set_xlabel("Predicted mean propensity (bin)")
-    ax.set_ylabel("Observed rate (national-reference labels)")
-    ax.set_title("Reliability diagram — national-rate reference diagnostic")
-    ax.legend(fontsize=9)
-    fig.tight_layout()
+    fig = reliability_chart(frame, subtitle="national-rate reference diagnostic")
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path, dpi=150, bbox_inches="tight")
     plt.close(fig)

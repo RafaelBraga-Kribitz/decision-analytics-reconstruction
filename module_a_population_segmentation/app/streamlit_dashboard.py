@@ -165,7 +165,12 @@ def main() -> None:
         )
         y_prob = feat["participation_propensity"].to_numpy()
         rel = reliability_frame(y_true, y_prob)
-        st.plotly_chart(reliability_chart(rel), use_container_width=True)
+        # Shared IMP-V04 builder returns a matplotlib Figure (square axes,
+        # Wilson intervals, in-canvas disclaimer) — rendered via st.pyplot.
+        st.pyplot(
+            reliability_chart(rel, subtitle="national-rate reference diagnostic"),
+            use_container_width=True,
+        )
         st.write("Calibration summary (post-rake department means vs TSJE anchors)")
         st.json(prop["calibration"])
 

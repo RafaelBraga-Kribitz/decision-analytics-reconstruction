@@ -33,8 +33,14 @@ from visual_system.palette import (
     get_segment_linestyle,
     get_segment_marker,
 )
+from visual_system.reliability import (
+    CIRCULARITY_DISCLAIMER,
+    reliability_diagram,
+    reliability_frame,
+)
 
 __all__ = [
+    "CIRCULARITY_DISCLAIMER",
     "SEGMENT_COLORS",
     "SEGMENT_HATCHES",
     "SEGMENT_LABELS",
@@ -48,4 +54,6 @@ __all__ = [
     "get_segment_hatch",
     "get_segment_linestyle",
     "get_segment_marker",
+    "reliability_diagram",
+    "reliability_frame",
 ]
