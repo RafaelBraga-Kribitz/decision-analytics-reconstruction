@@ -56,8 +56,10 @@ Concretely:
 - The single strongest feature (`department_logit_offset`) encodes the logit of those same TSJE department participation rates.
 - AUC measures separation between these two quantities that share the same source signal.
 
+**Ablation result (IMP-A01 / F-079):** removing `department_logit_offset` from the feature set and refitting (`auc_roc_ablated`, the figure now gated in CI via `tests/test_propensity.py::test_auc_floor_ablated_gate`) leaves AUC essentially unchanged — 0.8908 vs 0.8907 at n=15k, seed=42. The circularity is a property of the synthetic reconstruction itself, not of one feature: the label is *generated* from department, youth, and gender covariates that remain in the feature set, so any model over those covariates recovers the generating probabilities. The CI gate on `auc_roc_ablated` (floor 0.85) is a regression tripwire for broken features/scaling/splits, not a skill claim.
+
 **Implications for the reader:**
-- AUC ≈ 0.89 is **not a generalization metric**. It does not represent out-of-sample discriminative ability on real entity-level data.
+- AUC ≈ 0.89 is **not a generalization metric** — in either the circular or the ablated variant. It does not represent out-of-sample discriminative ability on real entity-level data.
 - With real held-out microdata the expected AUC would fall to the **0.70–0.80 range** typical of participation-propensity literature.
 - The **Brier score comparison** (model 0.1185 vs naive ≈ 0.24) is the more defensible figure: both are measured against the same synthetic target, so the baseline is equally circular — the comparison isolates the model's structural improvement over the department-mean naive estimator.
 - The **reliability diagram** (max deviation < 3 pp) and **department-level calibration gates** (A10) are the most meaningful quality signals for the synthetic reconstruction setting.
@@ -66,5 +68,5 @@ Concretely:
 
 - Target is synthetic and calibrated to TSJE anchors, not externally observed at entity level.
 - AUC-ROC is circular (see § Limitations of reported AUC); Brier vs naive is the primary discrimination metric.
-- Department-level calibration is exact via rake; within-department individual variation is not calibrated.
+- Department-level calibration is exact via rake; within-department spread is a **cosmetic dispersion restoration step** — an affine rescale of a composite z-score of eight unrelated demographic/behavioral columns to a fixed `individual_spread_std` (0.095 in production) — not a posterior, bootstrap, or any uncertainty-derived quantity. It exists so the post-rake distribution is not visually collapsed; a principled replacement (prediction-interval or per-entity bootstrap variance) would supersede it (IMP-A01).
 - National and gender/youth calibration are limited by incomplete dept data in calibration_anchors.yaml.

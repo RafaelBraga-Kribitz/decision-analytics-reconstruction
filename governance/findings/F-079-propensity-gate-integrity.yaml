@@ -1,0 +1,48 @@
+id: F-079
+title: "Propensity AUC gate is circular and untested; production spread param untested"
+category: fake_completion
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-07-10
+closed_at: 2026-07-10
+recurrence_count: 0
+evidence: |
+  module_a_population_segmentation/src/population_segmentation/pipeline/models/propensity.py
+  _synthetic_target derives the binary label from
+  anchors["department_participation_rates"]; _feature_matrix encodes the same
+  dict as department_logit_offset, the strongest feature
+  (reports/model_card_propensity.md). AUC ~0.89 is therefore circular, as the
+  model card documents, but module_a_population_segmentation/README.md stated
+  "AUC-ROC > 0.70" with no caveat.
+  module_a_population_segmentation/tests/test_evaluation.py test_auc_floor
+  computed roc_auc_score on a hand-built 8-element array and never called
+  PropensityModel.fit_predict; config/model_params.yaml claimed "Gate A8:
+  enforced in CI (see test_auc_floor)" — false, the test could not detect a
+  model regression.
+  propensity.py individual_spread_std default is 0.065; pipeline/export.py
+  overrides to 0.095 via model_params.yaml in production;
+  tests/test_propensity.py constructed PropensityModel(random_state=42) with
+  no override, so the shipped participation_propensity.parquet spread (0.095)
+  was never exercised by any test.
+  Measured closure evidence: ablating department_logit_offset leaves AUC
+  essentially unchanged (0.8908 ablated vs 0.8907 circular at n=15k seed=42) —
+  the synthetic label is generated from covariates that remain in the feature
+  set, so the circularity is a property of the reconstruction, not one
+  feature. Disclosed in the model card; the ablated gate is a regression
+  tripwire, not a skill claim.
+verification_script: scripts/check_propensity_gate_integrity.py
+notes: |
+  Closed by IMP-A01: fit_predict now computes auc_roc_ablated (offset
+  structurally excluded; ablated_feature_names exposed for the leakage
+  check); Gate A8 moved to tests/test_propensity.py::test_auc_floor_ablated_gate
+  which fits the real model on the 15k fixture and gates the ablated metric
+  against model_params.yaml auc_floor_ablated (0.85); the toy test was
+  retired to a helper-unit check with an explicit not-a-gate note; every
+  test_propensity gate constructs PropensityModel with individual_spread_std
+  read from model_params.yaml (production_spread_std fixture); README gate
+  line quotes the ablated metric with the circularity caveat; the spread
+  functions are labeled cosmetic dispersion restoration in code and model
+  card. The verification script statically re-checks all three surfaces.
+  Spec: governance/improvement_plan/IMP-A01_propensity-honesty.md
+  Related: F-052 (closed) introduced individual_spread_std; this finding is
+  about the evaluation design and test/prod parity around that mechanism.
