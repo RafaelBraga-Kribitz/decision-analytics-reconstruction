@@ -16,7 +16,7 @@ The Bayesian tracking model closes at a **3.7 pp preference margin** on fixture 
 Central is non-negotiable. With the largest voter count by department and the highest Youth Volatile concentration in the country, Central determines whether Candidate A wins with a thin mandate or a historic one. The challenge: reach utilisation is below cap in weeks 10–14, meaning the campaign is leaving contacts on the table during the crucial final push. Recommended action: increase WhatsApp chatbot activation in Central's urban districts by 20% in weeks 11–14 and deploy a targeted youth ground operation in Asunción metro.
 
 **2. Caaguazu (Budget: $468K, Modelled Win Prob: 55.6%, Propensity: ~0.58)**
-Caaguazu is the efficiency sweet spot. It has the highest win probability of all Oriental departments, a strong Rural Committed presence (high propensity), and a lower cost-per-persuasion-contact than Central or Alto Paraná. It is currently underfunded relative to its composite priority score. A $75K budget increase from Central savings would deliver approximately 24,000 additional persuasion-adjusted contacts here.
+Caaguazu is the efficiency sweet spot. It has the highest win probability of all Oriental departments, a strong Rural Committed presence (high propensity), and a lower cost-per-persuasion-contact than Central or Alto Paraná. It is currently underfunded relative to its composite priority score. Because its cost-per-persuasion-contact runs lower than Central's or Alto Paraná's (see B5), a dollar reallocated here from an over-served metro department buys more persuasion-adjusted contacts than it does at origin — the size of that gain is whatever the Module B solver reports on re-run, not a figure fixed in this brief.
 
 **3. Itapua (Budget: $494K, Modelled Win Prob: 90.7%, Propensity: ~0.65)**
 Itapúa has the highest mean participation propensity of any department with significant Rural Committed presence. It is the dominant department for that segment. Radio is the primary reach channel. At near-saturation on reach utilisation, the channel is performing well — the risk is a budget cut that disrupts this performance. Protect Itapúa's radio budget unconditionally and explore whether a modest canvassing supplement in rural municipalities can push propensity-weighted turnout past 70%.
@@ -54,15 +54,16 @@ Itapúa has the highest mean participation propensity of any department with sig
 
 ---
 
-## Where Budget Is Being Wasted
+## Where Budget Is Being Underused
 
-**1. Billboard spend in low-tier departments:** Reach utilisation is effectively zero. Estimated waste: ~$45–60K.
-**2. SMS campaigns:** No measurable persuasion contact generation. Estimated waste: ~$30–45K.
-**3. Front-loaded bilateral spend (weeks 1–4):** Direct contact made 10+ weeks before election day has negligible retention effect. Estimated efficiency loss: 20–30% of early bilateral spend.
-**4. Any persuasion spend on Committed Opposition:** This segment's preference strength distribution is tightly clustered at high B-values. No campaign intervention will move them. Estimated misallocated spend: ~$24K.
-**5. Broadcast-to-direct scenario exploration:** The counterfactual redistributes the channel mix without increasing aggregate persuasion contacts; treat it as a sensitivity check, not a strategy.
+The solver runs reach-constrained — every department sits at reach_utilization = 1.0 (see B4) — so "underused" here means spend on channels that add little incremental reach, ranked by reach utilisation, not audited dollar overspend. Channel-level spend is not a committed artifact in this repo, so the items below carry no dollar estimate; they identify *where* to reallocate inside the fixed envelope, not *how much* is recoverable.
 
-**Total estimated reclaimable budget:** ~$150–180K (approximately 2.5–3% of total baseline), which redirected to Caaguazu canvassing and weeks 11–13 WhatsApp activation would deliver an estimated 45,000–60,000 additional propensity-weighted contacts.
+**1. Billboards and SMS:** the two lowest reach-utilisation channels — near-zero utilisation across most departments (B4). Reallocating their spend toward radio (highest rural utilisation) and direct channels is strictly reach-improving.
+**2. Front-loaded bilateral spend (weeks 1–4):** direct contact made 10+ weeks before election day has low modelled retention; shifting it toward weeks 11–13 raises effective late-campaign contact. This is a modelling-assumption argument, not a measured loss.
+**3. Persuasion spend on Committed Opposition:** this segment's B-preference strength is tightly clustered at high values, so persuasion contacts here are low-value regardless of volume. Redirect toward persuadable segments.
+**4. Broadcast-to-direct scenario exploration:** the counterfactual redistributes the channel mix without increasing aggregate persuasion contacts; treat it as a sensitivity check, not a strategy.
+
+**Reclaimable share:** the moves above shift spend *between* channels inside the fixed $6,029,991 envelope; they do not change the total, and its recoverable magnitude cannot be quoted here because the channel-level allocation output is not a committed artifact. The persuasion-adjusted payoff of any reallocation is whatever the Module B solver reports on re-run — not a number fixed in this brief.
 
 ---
 
@@ -79,7 +80,7 @@ Itapúa has the highest mean participation propensity of any department with sig
 **Low but non-zero systemic risk:**
 - Model miscalibration: Only 8 poll waves feed the tracking model. If all three pollsters share an unmeasured systematic bias not captured by the house effect model, the posterior could be significantly wrong. Diversify polling sources.
 
-**Bottom line:** Candidate A wins this election under virtually all scenarios. The campaign's job from this point forward is to define the size and mandate of that victory. Invest in turnout. Protect Rural Committed. Mobilise Youth Volatile. Redirect wasted spend. Commission more polling. The data supports all of these recommendations with high confidence.
+**Bottom line:** The outcome fact is the verified TSJE anchor — Candidate A carried the 2018 presidential election by +3.70 pp. The illustrative tracking model reproduces that direction (posterior 3.7 pp, 94% HDI 2.9–4.7 pp), but its wide HDI and 0%–100% department win-probability range reflect genuine uncertainty from sparse fixture polls — not a near-certain sweep, and several GANAR-winning departments sit below 50%. Read this brief as decision-support machinery, not a forecast. The defensible recommendations — invest in turnout, protect Rural Committed's irreplaceable radio/canvassing reach, mobilise the high-reachability Youth Volatile segment, reallocate the lowest reach-utilisation channel spend, and widen polling coverage — follow from the allocation and reachability structure and hold across the plausible range of the true margin. Their support is structural, not a claim of statistical certainty about the outcome.
 
 ---
 

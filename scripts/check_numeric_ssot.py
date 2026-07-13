@@ -119,6 +119,30 @@ FORBIDDEN_IN_PUBLIC: tuple[tuple[str, re.Pattern[str], tuple[Path, ...]], ...] =
             REPO_ROOT / "reports" / "eda" / "eda_report.md",
         ),
     ),
+    # --- issue #98: forbidden confidence register in the EDA brief -------------
+    # The outputs are ILLUSTRATIVE (see epistemic_boundaries.md); certainty
+    # language ("with high confidence", "under virtually all scenarios") over an
+    # illustrative fixture posterior is exactly the register violation #98 fixed.
+    # Scan both the committed brief/report AND the generator that emits them, so a
+    # regeneration cannot re-introduce the phrasing.
+    (
+        "brief_high_confidence",
+        re.compile(r"with high confidence", re.I),
+        (
+            REPO_ROOT / "reports" / "eda" / "strategic_brief.md",
+            REPO_ROOT / "reports" / "eda" / "eda_report.md",
+            REPO_ROOT / "reports" / "eda" / "generate_eda.py",
+        ),
+    ),
+    (
+        "brief_virtually_all_scenarios",
+        re.compile(r"under virtually all scenarios", re.I),
+        (
+            REPO_ROOT / "reports" / "eda" / "strategic_brief.md",
+            REPO_ROOT / "reports" / "eda" / "eda_report.md",
+            REPO_ROOT / "reports" / "eda" / "generate_eda.py",
+        ),
+    ),
     # --- issue #91: stale Module A / Module C metric values ---------------------
     # These figures were superseded by the model cards + a seed-42 pipeline run.
     # Reappearance in any SSOT-family doc, model card, or module README signals the
