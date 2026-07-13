@@ -52,7 +52,7 @@ portfolio-grade analytical system rather than a single notebook or dashboard.
 ### 3.2 Project Goal
 
 Deliver a governed, reproducible three-module analytics platform that turns a
-population dataset, resource constraints, and survey measurement inputs into
+synthetic voter population, resource constraints, and poll inputs into
 traceable allocation and scenario outputs.
 
 ### 3.3 Success Criteria

@@ -120,8 +120,8 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 **Key finding:** Youth Volatile and Rural Low Propensity display higher reachability (peak 0.75–0.95), driven by better digital and TV coverage. Rural Committed has a bimodal distribution with many individuals at very low reachability (<0.5).
 **Strategic implication:** A significant minority of Rural Committed is effectively unreachable by any modelled media — these individuals require in-person canvassing, which is expensive. Budget for in-person contact in those micro-zones.
 
-### A13 — Preference Proxy Strength by Segment and Voting Intent
-**What it shows:** Histogram of preference proxy strength, broken out by voting intent (A/B/other/none) within each segment.
+### A13 — Vote-Preference Strength by Segment and Voting Intent
+**What it shows:** Histogram of vote-preference strength, broken out by voting intent (A/B/other/none) within each segment.
 **Key finding:** Candidate A preference strength (Intent A) peaks above 0.5 in most segments. Youth Volatile shows a wide, flat distribution for Intent A indicating many soft supporters. Committed Opposition's Intent B strength is concentrated at high values — these are firm opponents.
 **Strategic implication:** Soft Intent A supporters in Youth Volatile are the primary persuasion/mobilisation opportunity. Hard Intent B in Committed Opposition are a lost cause for persuasion — do not waste budget there.
 
@@ -175,7 +175,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 ### C1 — Bayesian Tracking Retrodiction (2018 Series A)
 **What it shows:** 142-day Bayesian preference-margin *retrodiction* — in-sample tracking of the past 2018 Series A window, read against the verified +3.70 pp TSJE outcome anchor (drawn on the panel), **not** an out-of-sample forecast — with 94% HDI bands.
-**Key finding:** Candidate A's posterior mean preference margin closes near **3.7 pp** on fixture polls (Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp). The 94% HDI is wide (3.0 to 4.7 pp), reflecting only 4 survey measurement waves.
+**Key finding:** Candidate A's posterior mean preference margin closes near **3.7 pp** on fixture polls (Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp). The 94% HDI is wide (2.9 to 4.7 pp), reflecting only 8 poll waves.
 **Strategic implication:** The lead is robust but the HDI is wide — more polling waves would dramatically tighten the uncertainty bounds. The campaign should commission 2–3 additional poll waves in the final 6 weeks.
 
 ### C2 — Calibrated Terminal Posterior Distribution
@@ -266,7 +266,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 5. **Commission 2–3 additional polling waves before election day.** The 94% HDI spans ±30 pp — an enormous uncertainty range for strategic planning. Even one additional high-quality poll wave (n≥800) would cut this uncertainty by approximately one-third. CAPLI is the recommended pollster.
 
-6. **Back-load 15% of bilateral direct spend from weeks 1–4 to weeks 11–14.** Direct contact is most effective when proximate to the outcome event. Current front-loading may be wasting goodwill and persuasion capital on contacts made too early for participating entities to retain.
+6. **Back-load 15% of bilateral direct spend from weeks 1–4 to weeks 11–14.** Direct contact is most effective when proximate to election day. Current front-loading may be wasting goodwill and persuasion capital on contacts made too early for participating voters to retain.
 
 7. **Do not invest in Committed Opposition persuasion.** This segment has a mean propensity of 0.65 and high preference strength for Candidate B. The cost of persuading even a marginal share of this group far exceeds the returns. Redirect any persuasion budget earmarked for this segment to Youth Volatile micro-targeting.
 

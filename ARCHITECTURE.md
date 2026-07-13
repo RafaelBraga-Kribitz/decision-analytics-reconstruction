@@ -33,7 +33,7 @@ Root [`Makefile`](Makefile) dev targets use Poetry for the interpreter and pre-c
 
 The default `make test` path runs pytest with shared `$(COV_FLAGS)` (terminal and XML coverage reports) and excludes the `slow` marker; that contract is guarded by [`tests/test_architecture_makefile_test_coverage_contract.py`](tests/test_architecture_makefile_test_coverage_contract.py).
 
-Mermaid diagrams, detailed contract tables, and the entity walkthrough below are guarded by [`tests/test_architecture_md_content_contract.py`](tests/test_architecture_md_content_contract.py).
+Mermaid diagrams, detailed contract tables, and the voter walkthrough below are guarded by [`tests/test_architecture_md_content_contract.py`](tests/test_architecture_md_content_contract.py).
 
 The full inventory of YAML contracts lives under [`schema_contracts/`](schema_contracts/) (field specs in each `*.yaml`).
 
@@ -75,7 +75,7 @@ flowchart TB
   end
   aout --> tr
   pcmc --> tr
-  sm_inputs[ModuleC_survey_measurement_inputs]
+  sm_inputs[ModuleC_tracking_poll_inputs]
   sm_inputs --> tr
 ```
 
@@ -168,7 +168,7 @@ Tables summarize [`schema_contracts/`](schema_contracts/) YAML. Each table lists
 
 #### Contract: population_master_clean.yaml
 
-Source: [`schema_contracts/population_master_clean.yaml`](schema_contracts/population_master_clean.yaml). One row per **entity** in the cleaned **population dataset** after Module A cleaning and scoring.
+Source: [`schema_contracts/population_master_clean.yaml`](schema_contracts/population_master_clean.yaml). One row per **synthetic voter record** in the cleaned **synthetic voter population** after Module A cleaning and scoring.
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -178,7 +178,7 @@ Source: [`schema_contracts/population_master_clean.yaml`](schema_contracts/popul
 | department | string | Enumerated department labels |
 | municipality | string | Max null rate gate |
 | municipality_imputed | bool | Imputation flag |
-| age_on_event_date | int16 | Age at **outcome event** window; min 18 max 115 |
+| age_on_event_date | int16 | Age at the **2018 election** date; min 18 max 115 |
 | age_out_of_range | bool | QA flag |
 | dob_ambiguous | bool | Max rate gate |
 | gender | string | Allowed M, F, unknown with unknown max rate |
@@ -188,7 +188,7 @@ Source: [`schema_contracts/population_master_clean.yaml`](schema_contracts/popul
 | jopara_flag | bool | Language interaction flag |
 | preference_proxy | string | Allowed A, B, other, none |
 | preference_proxy_strength | float32 | Unit interval strength |
-| participation_propensity | float32 | **Participation rate** proxy; national mean anchor in YAML |
+| participation_propensity | float32 | **Turnout** proxy; national mean anchor in YAML |
 | structural_dependency_proxy | bool | Structural dependency indicator |
 | internet_access_flag | bool | Access flag |
 | media_penetration_tv | float32 | Unit interval |
@@ -205,7 +205,7 @@ Source: [`schema_contracts/population_master_clean.yaml`](schema_contracts/popul
 
 #### Contract: segment_labels.yaml
 
-Source: [`schema_contracts/segment_labels.yaml`](schema_contracts/segment_labels.yaml). One row per **entity**; joins to `population_master_clean` on `entity_id`.
+Source: [`schema_contracts/segment_labels.yaml`](schema_contracts/segment_labels.yaml). One row per **voter**; joins to `population_master_clean` on `entity_id`.
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -234,12 +234,12 @@ Source: [`schema_contracts/segment_labels.yaml`](schema_contracts/segment_labels
 
 #### Contract: participation_propensity.yaml
 
-Source: [`schema_contracts/participation_propensity.yaml`](schema_contracts/participation_propensity.yaml). One row per **entity**; joins on `entity_id`.
+Source: [`schema_contracts/participation_propensity.yaml`](schema_contracts/participation_propensity.yaml). One row per **voter**; joins on `entity_id`.
 
 | Field | Type | Notes |
 | --- | --- | --- |
 | entity_id | int64 | Foreign key to population_master_clean.entity_id |
-| participation_propensity | float32 | Platt-calibrated **participation rate** score post rake |
+| participation_propensity | float32 | Platt-calibrated **turnout** score post rake |
 | raw_logit_score | float32 | Pre-Platt logit |
 | department_rake_multiplier | float32 | Department rake factor |
 | gate_presidente_hayes_mean | calibration | ENFORCED department gate in YAML |
@@ -263,7 +263,7 @@ Source: [`schema_contracts/participation_propensity.yaml`](schema_contracts/part
 
 #### Contract: allocation_output.yaml
 
-Source: [`schema_contracts/allocation_output.yaml`](schema_contracts/allocation_output.yaml). One row per department, channel, and week in the **program** window; unique key in YAML lists department, channel, week_index.
+Source: [`schema_contracts/allocation_output.yaml`](schema_contracts/allocation_output.yaml). One row per department, channel, and week in the **campaign** window; unique key in YAML lists department, channel, week_index.
 
 | Field | Type | Notes |
 | --- | --- | --- |
@@ -296,17 +296,17 @@ Source: [`schema_contracts/allocation_output.yaml`](schema_contracts/allocation_
 
 #### Contract: polls_clean_tracking_wave.yaml
 
-Source: [`schema_contracts/polls_clean_tracking_wave.yaml`](schema_contracts/polls_clean_tracking_wave.yaml). Cleaned tracking **survey measurement** rows for Module C; unique key `poll_wave_id` in YAML.
+Source: [`schema_contracts/polls_clean_tracking_wave.yaml`](schema_contracts/polls_clean_tracking_wave.yaml). Cleaned tracking **poll** rows for Module C; unique key `poll_wave_id` in YAML.
 
 | Field | Type | Notes |
 | --- | --- | --- |
 | poll_wave_id | string | Unique key member |
-| pollster_id | string | Measurement firm identifier |
+| pollster_id | string | Polling firm identifier |
 | publication_date | date | Release date |
 | field_window_start | date | Field window start |
 | field_window_end | date | Field window end |
-| preference_proxy_a_pct | float64 | Preference proxy share A |
-| preference_proxy_b_pct | float64 | Preference proxy share B |
+| preference_proxy_a_pct | float64 | Vote-preference share A |
+| preference_proxy_b_pct | float64 | Vote-preference share B |
 | m_poll_pp | float64 | Margin in percentage points |
 | redistribution_rule | string | exclude, proportional_AB, redistribute_third_party |
 | phi_transparency | float64 | Transparency score zero to one |
@@ -324,15 +324,15 @@ Source: [`schema_contracts/polls_clean_tracking_wave.yaml`](schema_contracts/pol
 | _meta_consumer_module_c | metadata | Tracking PyMC feature table |
 | _meta_exit_wave_contract | metadata | Use polls_clean_exit_wave for exit rows per YAML description |
 
-### Walkthrough: one entity
+### Walkthrough: one voter
 
-1. Draw an **entity** row in the synthetic **population dataset** from Module A configuration in [`module_a_population_segmentation/config/generation.yaml`](module_a_population_segmentation/config/generation.yaml).
-2. Run the generator and cleaning path so the row exists in the `population_master_clean` artifact that must satisfy [`schema_contracts/population_master_clean.yaml`](schema_contracts/population_master_clean.yaml), including `entity_id`, geography fields, and **preference proxy** fields used downstream.
+1. Draw a **synthetic voter record** (`entity_id`) in the synthetic **voter population** from Module A configuration in [`module_a_population_segmentation/config/generation.yaml`](module_a_population_segmentation/config/generation.yaml).
+2. Run the generator and cleaning path so the row exists in the `population_master_clean` artifact that must satisfy [`schema_contracts/population_master_clean.yaml`](schema_contracts/population_master_clean.yaml), including `entity_id`, geography fields, and **vote-preference proxy** fields used downstream.
 3. Attach segmentation output so the same `entity_id` appears in [`schema_contracts/segment_labels.yaml`](schema_contracts/segment_labels.yaml) with a stable `segment_id` between zero and five.
-4. Attach propensity output so the same `entity_id` appears in [`schema_contracts/participation_propensity.yaml`](schema_contracts/participation_propensity.yaml) with a bounded **participation rate** proxy after calibration gates documented in that YAML.
-5. Module B joins those Module A artifacts under the same keys when building weekly **program** spend; exported rows must match [`schema_contracts/allocation_output.yaml`](schema_contracts/allocation_output.yaml) for each department, channel, and week triple.
+4. Attach propensity output so the same `entity_id` appears in [`schema_contracts/participation_propensity.yaml`](schema_contracts/participation_propensity.yaml) with a bounded **turnout** proxy after calibration gates documented in that YAML.
+5. Module B joins those Module A artifacts under the same keys when building weekly **campaign** spend; exported rows must match [`schema_contracts/allocation_output.yaml`](schema_contracts/allocation_output.yaml) for each department, channel, and week triple.
 6. Module C consumes allocation rows as priors or side information for scenario work while keeping calibration series tags consistent with contract rules.
-7. Separately, Module C ingests press-release **survey measurement** tables that validate against [`schema_contracts/polls_clean_tracking_wave.yaml`](schema_contracts/polls_clean_tracking_wave.yaml), including `calibration_series` and `series_tag` alignment for tracking runs.
+7. Separately, Module C ingests press-release **poll** tables that validate against [`schema_contracts/polls_clean_tracking_wave.yaml`](schema_contracts/polls_clean_tracking_wave.yaml), including `calibration_series` and `series_tag` alignment for tracking runs.
 8. Forecast outputs (for example daily posterior summaries) are governed by additional contracts under [`schema_contracts/`](schema_contracts/); this walkthrough stops at the five tables above to avoid duplicating every downstream artifact.
 
 ---

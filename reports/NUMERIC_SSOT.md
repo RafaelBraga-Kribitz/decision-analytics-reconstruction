@@ -5,14 +5,14 @@ docs disagree with this table, **this table wins**. Regenerate pipeline metrics
 via `scripts/generate_golden_metrics.py`; CI gates them in
 `tests/test_golden_metrics.py`.
 
-## Scale and program window
+## Scale and campaign window
 
 | Quantity | Canonical value | Notes |
 |---|---|---|
-| Production population run | **50,000** entities | Default `make pipeline-dev` / clone-local sample |
-| Full-scale design reference | **4,260,816** entities | TSJE 2018 roll; design-scale narrative only |
+| Production population run | **50,000** voters | Default `make pipeline-dev` / clone-local sample |
+| Full-scale design reference | **4,260,816** voters | TSJE 2018 roll; design-scale narrative only |
 | Dashboard demo sample | **15,000** | Streamlit subsample; not production run size |
-| Program scope | **18 weeks** (full operational program) | Historical program window |
+| Campaign scope | **18 weeks** (full operational campaign) | Historical campaign window |
 | Reconstruction pipeline window | **14 ISO weeks** (2018-W01..W14) | Only weeks with operational data in this repo; 2,772 MILP rows |
 | Budget envelope (code) | **$6M USD** | `constants.py` / `budget_envelope.yaml`; sole budget figure in narrative |
 
@@ -21,8 +21,8 @@ via `scripts/generate_golden_metrics.py`; CI gates them in
 | Quantity | Series A | Series B |
 |---|---|---|
 | Preference margin | **+3.70 pp** (46.43% vs 42.73%) | **+3.88 pp** (48.96% vs 45.08%) |
-| Outcome event date | 2018-04-22 | same |
-| National participation rate | **61.25%** | same anchor family |
+| Election date | 2018-04-22 | same |
+| National turnout | **61.25%** | same anchor family |
 
 **63.6% participation is wrong** — use 61.25% everywhere.
 
@@ -35,7 +35,7 @@ Provable from `data/processed/module_b/run_manifest_baseline.json` → `baseline
 | MILP optimized vs department-uniform naive | Linearized persuasion-proxy lift | **~54.77%** (`linearized_lift_pct_milp_vs_naive`) |
 | Budget envelope | Total USD allocated | **$6,029,991** (within $6M ±0.5% gate) |
 
-This is a **solver comparator on the reconstruction envelope**, not a verified historical causal claim about the 2018 program.
+This is a **solver comparator on the reconstruction envelope**, not a verified historical causal claim about the 2018 campaign.
 
 ## Module A quality gates (enforced in CI)
 
@@ -70,20 +70,20 @@ and `model_card_segmentation.md`.
 |---|---|---|
 | MC draws (default) | 10,000 | 600 when `MC_FAST=1` |
 | Scenario buckets | 3 canonical (`baseline`, `extreme_tracker`, `compounded_herd`) | equal-weight stratified sampling |
-| Tracking survey waves (fixture) | **8** | 8 `tracking` rows in `polls_raw_fixture.csv` (+ 4 exit surveys); golden metric `n_tracking_waves=8` |
+| Tracking poll waves (fixture) | **8** | 8 `tracking` rows in `polls_raw_fixture.csv` (+ 4 exit surveys); golden metric `n_tracking_waves=8` |
 | NUTS divergences (full run) | **0** (v0.4 non-centered reparam) | CI-enforced via slow-lane tests (issue #60 / PR #73; max R̂ 1.00673, ESS ≥ 1864). Earlier nonzero divergence counts predate the v0.4 reparameterization. |
-| Walk-forward coverage | sparse fixture | not "validated" on withheld real survey measurements |
+| Walk-forward coverage | sparse fixture | not "validated" on withheld real polls |
 | Battleground win probability (fixture posterior) | **[0.001, 1.000]** range (v0.2 swing model) | calibrated to TSJE 2018 dept returns; GANAR-winning depts show <0.5; relative ordering is empirical |
 
 ## Forbidden headline claims
 
 - Causal "with/without analytics → +3.70 pp" or "underperformed by 2–4 pp" counterfactuals (unverifiable)
-- Posterior tracking margin as substitute for verified +3.70 pp without "illustrative fixture survey measurements" disclaimer
+- Posterior tracking margin as substitute for verified +3.70 pp without "illustrative fixture polls" disclaimer
 - Win probability expressed as a single narrow "certainty" claim (v0.2 model range is [0.001, 1.000]; GANAR-winning depts show near-zero probability for Candidate A)
 - Any alternate historical budget figure in public narrative (use **$6M** only)
 - AUC as generalization evidence
 - 75% extreme-tracker draw share (legacy equal-weight misread; use live bucket counts)
-- "CONFIDENTIAL program memo" fiction tone in generated briefs
+- "CONFIDENTIAL campaign memo" fiction tone in generated briefs
 
 ## Provenance
 

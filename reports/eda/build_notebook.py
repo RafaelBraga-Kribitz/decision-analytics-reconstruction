@@ -250,7 +250,7 @@ cells.append(
 
 Before any modelling or visualisation, we subject every dataset to a systematic quality audit. The pipeline ingests raw voter-registry exports, census overlays, and pollster microdata — each with its own provenance and failure modes. Rigorous quality gating at this stage prevents downstream conclusions from being artifacts of data artefacts.
 
-Key concerns going in: (a) entity deduplication across sources, (b) propensity scores outside the probability simplex, (c) budget allocations violating non-negativity, and (d) a known pipeline defect in the Monte Carlo module where `alloc_mean_persuasion_contacts` is hardwired to zero in the current build."""
+Key concerns going in: (a) voter-record deduplication across sources, (b) propensity scores outside the probability simplex, (c) budget allocations violating non-negativity, and (d) a known pipeline defect in the Monte Carlo module where `alloc_mean_persuasion_contacts` is hardwired to zero in the current build."""
     )
 )
 
@@ -459,7 +459,7 @@ cells.append(
     )
 )
 
-# ── A13 — Preference Proxy Distribution ──────────────────────────────────────
+# ── A13 — Vote-Preference Distribution ───────────────────────────────────────
 cells.append(figure_cell('A13_preference_strength_by_segment'))
 
 cells.append(
@@ -612,7 +612,7 @@ cells.append(figure_cell('C1_forecast_timeline'))
 
 cells.append(
     md(
-        """**Finding:** The posterior mean preference margin on fixture polls is data-derived from `daily_posterior_forecast.parquet` (illustrative — not verified outcome; TSJE anchor +3.70 pp). The 94% HDI is wide due to only four survey measurement waves, reflecting epistemic uncertainty on sparse fixtures.
+        """**Finding:** The posterior mean preference margin on fixture polls is data-derived from `daily_posterior_forecast.parquet` (illustrative — not verified outcome; TSJE anchor +3.70 pp). The 94% HDI is wide due to only 8 poll waves, reflecting epistemic uncertainty on sparse fixtures.
 
 **Strategic implication:** Commission at least two additional poll waves in weeks 11–13 to narrow the HDI and provide the campaign with actionable final-week intelligence. The current uncertainty band is too wide for confident resource reallocation in the final sprint."""
     )
@@ -625,7 +625,7 @@ cells.append(
     md(
         """**Finding:** The final-day posterior mean and 94% HDI are read directly from `daily_posterior_forecast.parquet` (illustrative fixture posterior — not verified outcome; TSJE Series A anchor is +3.70 pp). This chart is the same estimand as the canonical PNG emitted by `generate_eda.py`.
 
-**Strategic implication:** Narrow the HDI with additional survey measurement waves before the final sprint; the interval width drives how aggressively the campaign can reallocate in weeks 11–13."""
+**Strategic implication:** Narrow the HDI with additional poll waves before the final sprint; the interval width drives how aggressively the campaign can reallocate in weeks 11–13."""
     )
 )
 
@@ -923,7 +923,7 @@ cells.append(md("""## Appendix: Data Dictionary
 | population_master | language_census_bucket | str | guarani_only / jopara_bilingual / spanish_only / other |
 | population_master | jopara_flag | bool | True if primary language is Jopara bilingual |
 | population_master | preference_proxy | str | Revealed preference signal: A / B / other / none |
-| population_master | preference_proxy_strength | float32 | Confidence in preference proxy (0–1) |
+| population_master | preference_proxy_strength | float32 | Confidence in vote-preference (0–1) |
 | population_master | structural_dependency_proxy | bool | True if household shows social transfer dependency indicators |
 | population_master | nbi_stress_prior | float32 | Unsatisfied basic needs stress prior (0 = none, 1 = extreme) |
 | population_master | reachability_index | float64 | Composite reachability score (0–1); higher = easier to contact |

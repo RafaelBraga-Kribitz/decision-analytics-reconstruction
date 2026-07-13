@@ -1,9 +1,9 @@
 
 # Module C — Probabilistic Forecasting & Scenario Analysis
 
-Bayesian hierarchical aggregation of noisy, structurally biased survey measurements into a daily preference-proxy track with uncertainty bands. Monte Carlo shock-score engine maps posterior draws to interpretable decision scenarios.
+Bayesian hierarchical aggregation of noisy, structurally biased polls into a daily vote-preference track with uncertainty bands. Monte Carlo shock-score engine maps posterior draws to interpretable decision scenarios.
 
-**Verified outcome anchor:** +3.70 pp margin, April 22 2018 (TSJE official, 61.25% participation, 4.26M entities).
+**Verified outcome anchor:** +3.70 pp margin, April 22 2018 (TSJE official, 61.25% turnout, 4.26M voters).
 
 ## Models
 
@@ -21,7 +21,7 @@ Sampler: PyMC NUTS (full) or fixture-backed fast CI (MC_FAST mode).
 
 ### 2. Exit / quickcount
 
-Exit-survey-measurement bias model with OEA timing + EU observation-window flags. Produces last-mile posterior adjustment on outcome event day.
+Exit-poll bias model with OEA timing + EU observation-window flags. Produces last-mile posterior adjustment on election day.
 
 ### 3. Monte Carlo shock-score
 
@@ -80,7 +80,7 @@ uses a 50-draw fixture and does not run them. See `ROADMAP.md` § Module C.
 ## Walk-forward validation
 
 Walk-forward cross-validation is implemented on the sparse Paraguay fixture
-(held-out final-week survey measurements). Coverage on this synthetic setup is **not**
+(held-out final-week polls). Coverage on this synthetic setup is **not**
 external validation — see `VALIDATION.md` and `epistemic_boundaries.md`.
 
 ## Tests and CI
