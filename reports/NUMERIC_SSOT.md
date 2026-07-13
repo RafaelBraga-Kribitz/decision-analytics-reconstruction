@@ -44,12 +44,18 @@ below values measured on the synthetic reference run, so they guarantee output
 stability under the fixed seed — they do not certify model quality against any
 held-out real data.
 
-| Metric | Gate | Measured (reference run) | Do not headline |
+| Metric | Gate | Measured (run config) | Do not headline |
 |---|---|---|---|
-| Silhouette | **> 0.22** | 0.2566 | 0.35 aspirational gate is retired |
-| Bootstrap ARI | **> 0.70** (test) | 0.7615 | README 0.77 is test threshold, not measured |
-| Brier (propensity) | **< 0.237** | 0.071 | 0.22 claim is wrong |
-| AUC-ROC | — | 0.9679 | **Circular** (target encodes calibration anchors); never headline |
+| Silhouette | **> 0.22** | 0.2562 (50k production run, seed 42; 0.2689 at 15k fixture) | 0.35 aspirational gate is retired |
+| Bootstrap ARI | **≥ 0.40** (50k gate; 0.50 test floor) | 0.4304 (50k production run, seed 42; 0.5418 at 15k fixture) | the retired two-subsample ARI (the old "> 0.70" gate) is superseded by canonical `compute_bootstrap_ari` (IMP-A03/#55) |
+| Brier (propensity) | **< 0.237** | 0.1185 (15k holdout, seed 42, model card; 0.1212 at 50k production run, seed 42) | 0.22 claim is wrong; any Brier below ~0.11 is stale/unsourced |
+| AUC-ROC | — | ≈0.89 (0.8907, circular; 15k holdout & 50k production, seed 42) | **Circular** (target encodes calibration anchors); never headline; any AUC above ~0.90 is a stale claim |
+
+Module A propensity metrics are essentially sample-size invariant (15k Brier 0.1185
+≈ 50k Brier 0.1212; AUC 0.8907 at both). Where a value legitimately differs by run
+size it is annotated inline above. Full per-gate detail and the AUC circularity
+argument live in `module_a_population_segmentation/reports/model_card_propensity.md`
+and `model_card_segmentation.md`.
 
 ## Module B allocation grid
 
@@ -64,7 +70,8 @@ held-out real data.
 |---|---|---|
 | MC draws (default) | 10,000 | 600 when `MC_FAST=1` |
 | Scenario buckets | 3 canonical (`baseline`, `extreme_tracker`, `compounded_herd`) | equal-weight stratified sampling |
-| NUTS divergences (full run) | 14 measured | **does not block** portfolio delivery; tracked in README diagnostics |
+| Tracking survey waves (fixture) | **8** | 8 `tracking` rows in `polls_raw_fixture.csv` (+ 4 exit surveys); golden metric `n_tracking_waves=8` |
+| NUTS divergences (full run) | **0** (v0.4 non-centered reparam) | CI-enforced via slow-lane tests (issue #60 / PR #73; max R̂ 1.00673, ESS ≥ 1864). Earlier nonzero divergence counts predate the v0.4 reparameterization. |
 | Walk-forward coverage | sparse fixture | not "validated" on withheld real survey measurements |
 | Battleground win probability (fixture posterior) | **[0.001, 1.000]** range (v0.2 swing model) | calibrated to TSJE 2018 dept returns; GANAR-winning depts show <0.5; relative ordering is empirical |
 

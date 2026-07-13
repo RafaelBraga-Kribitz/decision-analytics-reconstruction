@@ -56,5 +56,5 @@ For synthetic data independence assumptions and limitations, see [`reports/stati
 
 - **Pandera runtime schema contracts** (`evaluation/schema_validator.py`) — enforced at cleaner exit and feature frame exit; raises `SchemaError` on any column-level violation.
 - **Custom QA gates** (`data/validator.py`) — 13 calibration anchor checks; `QAGateFailure` halts pipeline.
-- A4/A5/A6/A11 via segmentation tests (silhouette > 0.22, bootstrap ARI > 0.77).
+- A4/A5/A6/A11 via segmentation tests (silhouette > 0.22, bootstrap ARI ≥ 0.40 at the 50k production run / 0.50 test floor — canonical `compute_bootstrap_ari`, IMP-A03/#55; the earlier 0.77 gate was the retired two-subsample metric).
 - A7/A8/A9/A10 via propensity tests (ablated AUC-ROC > 0.85 with `department_logit_offset` excluded — the unablated AUC ≈ 0.89 is circular, see model card §Limitations; Brier < 0.237; reliability deviation < 3 pp).
