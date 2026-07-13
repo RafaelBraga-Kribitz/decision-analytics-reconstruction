@@ -55,7 +55,7 @@ here once it is verifiably live.
 | Scenario ID | Description |
 |-------------|-------------|
 | `baseline` | Uniform 14-week calendar, unconstrained routing |
-| `early_lock` | Spend committed in weeks 1–6 before preference-proxy update |
+| `early_lock` | Spend committed in weeks 1–6 before vote-preference update |
 | `late_flex` | Budget held back until week 8; rapid deployment |
 | `broadcast_to_direct` | Counterfactual: shift x% from broadcast to direct channels |
 

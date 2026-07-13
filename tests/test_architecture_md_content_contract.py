@@ -64,7 +64,7 @@ def test_architecture_md_has_two_mermaid_blocks() -> None:
 
 def test_architecture_md_has_walkthrough_heading() -> None:
     text = _architecture_text()
-    assert "### Walkthrough: one entity" in text
+    assert "### Walkthrough: one voter" in text
 
 
 def test_architecture_md_contract_tables_have_minimum_rows() -> None:

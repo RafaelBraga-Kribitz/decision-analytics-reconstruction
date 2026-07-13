@@ -1,4 +1,4 @@
-# Paraguay Program Analytics — Strategic Brief
+# Paraguay Campaign Analytics — Strategic Brief
 **Portfolio reconstruction brief | Generated from pipeline artifacts**
 **Date:** June 14, 2026 | **Analyst:** Decision Analytics Reconstruction
 
@@ -13,7 +13,7 @@ The Bayesian tracking model closes at a **3.7 pp preference margin** on fixture 
 ## Top 3 Priority Departments
 
 **1. Central (Budget: $1.92M, Modelled Win Prob: 2.4%, Propensity: ~0.55)**
-Central is non-negotiable. With the largest entity count by department and the highest Youth Volatile concentration in the country, Central determines whether Candidate A wins with a thin mandate or a historic one. The challenge: reach utilisation is below cap in weeks 10–14, meaning the program is leaving contacts on the table during the crucial final push. Recommended action: increase WhatsApp chatbot activation in Central's urban districts by 20% in weeks 11–14 and deploy a targeted youth ground operation in Asunción metro.
+Central is non-negotiable. With the largest voter count by department and the highest Youth Volatile concentration in the country, Central determines whether Candidate A wins with a thin mandate or a historic one. The challenge: reach utilisation is below cap in weeks 10–14, meaning the campaign is leaving contacts on the table during the crucial final push. Recommended action: increase WhatsApp chatbot activation in Central's urban districts by 20% in weeks 11–14 and deploy a targeted youth ground operation in Asunción metro.
 
 **2. Caaguazu (Budget: $468K, Modelled Win Prob: 55.6%, Propensity: ~0.58)**
 Caaguazu is the efficiency sweet spot. It has the highest win probability of all Oriental departments, a strong Rural Committed presence (high propensity), and a lower cost-per-persuasion-contact than Central or Alto Paraná. It is currently underfunded relative to its composite priority score. A $75K budget increase from Central savings would deliver approximately 24,000 additional persuasion-adjusted contacts here.
@@ -27,14 +27,14 @@ Itapúa has the highest mean participation propensity of any department with sig
 
 **Double Down:**
 - **Youth Volatile (21.6% of population, propensity 0.63):** High reachability — the mobilisation opportunity. Digital-first (WhatsApp, Facebook), Jopara-friendly content, peer-to-peer activation via youth networks.
-- **Rural Committed (14.9% of population):** Baseline propensity (0.64, typical of every segment) but distinctively low reachability. The case for protecting this segment is reachability, not a propensity edge: radio + canvassing are the only channels that reach it, so each contact is hard to replace. Do not sacrifice these entities to cut costs.
+- **Rural Committed (14.9% of population):** Baseline propensity (0.64, typical of every segment) but distinctively low reachability. The case for protecting this segment is reachability, not a propensity edge: radio + canvassing are the only channels that reach it, so each contact is hard to replace. Do not sacrifice these voters to cut costs.
 
 **Maintain:**
 - **Urban High Volatility (15.7%):** Good reachability, propensity 0.58. Currently receiving fair budget share. No change needed — the strategy is working.
 - **Structurally Dependent Bloc (16.6%):** High rural, high NBI stress. Sensitive segment requiring careful messaging. Maintain current radio + community organiser approach.
 
 **Deprioritise:**
-- **Committed Opposition (16.5%):** Participation propensity 0.65 (baseline, like every segment — it does *not* make them a mobilisation target), but their high, tightly clustered B-preference strength makes them locked opposition-aligned entities. Any persuasion spend here is waste. Reallocate immediately.
+- **Committed Opposition (16.5%):** Participation propensity 0.65 (baseline, like every segment — it does *not* make them a mobilisation target), but their high, tightly clustered B-preference strength makes them locked opposition-aligned voters. Any persuasion spend here is waste. Reallocate immediately.
 - **Rural Low Propensity (14.7%):** Propensity 0.57 — despite the name, in the same narrow band as every other segment; the label reflects its cluster profile, not a distinctly low turnout score. Passive presence only — no active spend increases warranted.
 
 ---

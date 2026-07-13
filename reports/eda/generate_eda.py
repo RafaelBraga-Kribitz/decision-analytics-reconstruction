@@ -2877,8 +2877,8 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 **Key finding:** Youth Volatile and Rural Low Propensity display higher reachability (peak 0.75–0.95), driven by better digital and TV coverage. Rural Committed has a bimodal distribution with many individuals at very low reachability (<0.5).
 **Strategic implication:** A significant minority of Rural Committed is effectively unreachable by any modelled media — these individuals require in-person canvassing, which is expensive. Budget for in-person contact in those micro-zones.
 
-### A13 — Preference Proxy Strength by Segment and Voting Intent
-**What it shows:** Histogram of preference proxy strength, broken out by voting intent (A/B/other/none) within each segment.
+### A13 — Vote-Preference Strength by Segment and Voting Intent
+**What it shows:** Histogram of vote-preference strength, broken out by voting intent (A/B/other/none) within each segment.
 **Key finding:** Candidate A preference strength (Intent A) peaks above 0.5 in most segments. Youth Volatile shows a wide, flat distribution for Intent A indicating many soft supporters. Committed Opposition's Intent B strength is concentrated at high values — these are firm opponents.
 **Strategic implication:** Soft Intent A supporters in Youth Volatile are the primary persuasion/mobilisation opportunity. Hard Intent B in Committed Opposition are a lost cause for persuasion — do not waste budget there.
 
@@ -2932,7 +2932,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 
 ### C1 — Bayesian Tracking Retrodiction (2018 Series A)
 **What it shows:** 142-day Bayesian preference-margin *retrodiction* — in-sample tracking of the past 2018 Series A window, read against the verified +3.70 pp TSJE outcome anchor (drawn on the panel), **not** an out-of-sample forecast — with 94% HDI bands.
-**Key finding:** Candidate A's posterior mean preference margin closes near **{forecast_final_mean:.1f} pp** on fixture polls ({_illustrative_tracking_note}). The 94% HDI is wide ({forecast_final_hdi_lo:.1f} to {forecast_final_hdi_hi:.1f} pp), reflecting only 4 survey measurement waves.
+**Key finding:** Candidate A's posterior mean preference margin closes near **{forecast_final_mean:.1f} pp** on fixture polls ({_illustrative_tracking_note}). The 94% HDI is wide ({forecast_final_hdi_lo:.1f} to {forecast_final_hdi_hi:.1f} pp), reflecting only 8 poll waves.
 **Strategic implication:** The lead is robust but the HDI is wide — more polling waves would dramatically tighten the uncertainty bounds. The campaign should commission 2–3 additional poll waves in the final 6 weeks.
 
 ### C2 — Calibrated Terminal Posterior Distribution
@@ -3023,7 +3023,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 
 5. **Commission 2–3 additional polling waves before election day.** The 94% HDI spans ±30 pp — an enormous uncertainty range for strategic planning. Even one additional high-quality poll wave (n≥800) would cut this uncertainty by approximately one-third. CAPLI is the recommended pollster.
 
-6. **Back-load 15% of bilateral direct spend from weeks 1–4 to weeks 11–14.** Direct contact is most effective when proximate to the outcome event. Current front-loading may be wasting goodwill and persuasion capital on contacts made too early for participating entities to retain.
+6. **Back-load 15% of bilateral direct spend from weeks 1–4 to weeks 11–14.** Direct contact is most effective when proximate to election day. Current front-loading may be wasting goodwill and persuasion capital on contacts made too early for participating voters to retain.
 
 7. **Do not invest in Committed Opposition persuasion.** This segment has a mean propensity of {_co_prop:.2f} and high preference strength for Candidate B. The cost of persuading even a marginal share of this group far exceeds the returns. Redirect any persuasion budget earmarked for this segment to Youth Volatile micro-targeting.
 
@@ -3087,7 +3087,7 @@ print(f"  [OK] eda_report.md  ({report_path.stat().st_size/1024:.1f} KB)")
 # ════════════════════════════════════════════════════════════════════════════
 print("\n── Writing strategic_brief.md ──")
 
-strategic_brief = f"""# Paraguay Program Analytics — Strategic Brief
+strategic_brief = f"""# Paraguay Campaign Analytics — Strategic Brief
 **Portfolio reconstruction brief | Generated from pipeline artifacts**
 **Date:** June 14, 2026 | **Analyst:** Decision Analytics Reconstruction
 
@@ -3102,7 +3102,7 @@ The Bayesian tracking model closes at a **{forecast_final_mean:.1f} pp preferenc
 ## Top 3 Priority Departments
 
 **1. Central (Budget: ${_b1_central/1e6:.2f}M, Modelled Win Prob: {_dept_win_prob('Central'):.1%}, Propensity: ~0.55)**
-Central is non-negotiable. With the largest entity count by department and the highest Youth Volatile concentration in the country, Central determines whether Candidate A wins with a thin mandate or a historic one. The challenge: reach utilisation is below cap in weeks 10–14, meaning the program is leaving contacts on the table during the crucial final push. Recommended action: increase WhatsApp chatbot activation in Central's urban districts by 20% in weeks 11–14 and deploy a targeted youth ground operation in Asunción metro.
+Central is non-negotiable. With the largest voter count by department and the highest Youth Volatile concentration in the country, Central determines whether Candidate A wins with a thin mandate or a historic one. The challenge: reach utilisation is below cap in weeks 10–14, meaning the campaign is leaving contacts on the table during the crucial final push. Recommended action: increase WhatsApp chatbot activation in Central's urban districts by 20% in weeks 11–14 and deploy a targeted youth ground operation in Asunción metro.
 
 **2. Caaguazu (Budget: ${_b1_caaguazu/1e3:,.0f}K, Modelled Win Prob: {_dept_win_prob('Caaguazu'):.1%}, Propensity: ~0.58)**
 Caaguazu is the efficiency sweet spot. It has the highest win probability of all Oriental departments, a strong Rural Committed presence (high propensity), and a lower cost-per-persuasion-contact than Central or Alto Paraná. It is currently underfunded relative to its composite priority score. A $75K budget increase from Central savings would deliver approximately 24,000 additional persuasion-adjusted contacts here.
@@ -3116,14 +3116,14 @@ Itapúa has the highest mean participation propensity of any department with sig
 
 **Double Down:**
 - **Youth Volatile ({_yv_pct:.1f}% of population, propensity {_yv_prop:.2f}):** High reachability — the mobilisation opportunity. Digital-first (WhatsApp, Facebook), Jopara-friendly content, peer-to-peer activation via youth networks.
-- **Rural Committed ({_rc_pct:.1f}% of population):** Baseline propensity ({_rc_prop:.2f}, typical of every segment) but distinctively low reachability. The case for protecting this segment is reachability, not a propensity edge: radio + canvassing are the only channels that reach it, so each contact is hard to replace. Do not sacrifice these entities to cut costs.
+- **Rural Committed ({_rc_pct:.1f}% of population):** Baseline propensity ({_rc_prop:.2f}, typical of every segment) but distinctively low reachability. The case for protecting this segment is reachability, not a propensity edge: radio + canvassing are the only channels that reach it, so each contact is hard to replace. Do not sacrifice these voters to cut costs.
 
 **Maintain:**
 - **Urban High Volatility ({_uhv_pct:.1f}%):** Good reachability, propensity {_uhv_prop:.2f}. Currently receiving fair budget share. No change needed — the strategy is working.
 - **Structurally Dependent Bloc ({_sdb_pct:.1f}%):** High rural, high NBI stress. Sensitive segment requiring careful messaging. Maintain current radio + community organiser approach.
 
 **Deprioritise:**
-- **Committed Opposition ({_co_pct:.1f}%):** Participation propensity {_co_prop:.2f} (baseline, like every segment — it does *not* make them a mobilisation target), but their high, tightly clustered B-preference strength makes them locked opposition-aligned entities. Any persuasion spend here is waste. Reallocate immediately.
+- **Committed Opposition ({_co_pct:.1f}%):** Participation propensity {_co_prop:.2f} (baseline, like every segment — it does *not* make them a mobilisation target), but their high, tightly clustered B-preference strength makes them locked opposition-aligned voters. Any persuasion spend here is waste. Reallocate immediately.
 - **Rural Low Propensity ({_rlp_pct:.1f}%):** Propensity {_rlp_prop:.2f} — despite the name, in the same narrow band as every other segment; the label reflects its cluster profile, not a distinctly low turnout score. Passive presence only — no active spend increases warranted.
 
 ---

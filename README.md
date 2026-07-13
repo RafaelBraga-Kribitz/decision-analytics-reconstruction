@@ -40,9 +40,9 @@ down, F-021 has regressed and must be reopened.
 | Quantity | Value |
 |---|---|
 | Outcome margin | **+3.70 pp** (46.43% vs 42.73%) |
-| Participation rate | **61.25%** |
-| Production run scale | **50,000** entities (4.26M design reference) |
-| Program window | **14 weeks** |
+| Turnout | **61.25%** |
+| Production run scale | **50,000** voters (4.26M design reference) |
+| Campaign window | **14 weeks** |
 
 Full table: [`reports/NUMERIC_SSOT.md`](reports/NUMERIC_SSOT.md).
 

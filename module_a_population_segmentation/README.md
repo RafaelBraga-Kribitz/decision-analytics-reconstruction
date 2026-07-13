@@ -31,9 +31,9 @@ Optional container flow (see repo root `docker-compose.yml`): Colima + `docker c
 
 | Artifact | Description | Consumer |
 |----------|-------------|---------|
-| `population_master_clean.parquet` | 4.26M entities, 14-step cleaned | Module B, Module C |
+| `population_master_clean.parquet` | 4.26M voters, 14-step cleaned | Module B, Module C |
 | `segment_labels.parquet` | 6 behavioral segments (DBSCAN + K-Means) | Module B |
-| `participation_propensity.parquet` | Calibrated propensity scores per entity | Module B, Module C |
+| `participation_propensity.parquet` | Calibrated propensity scores per voter | Module B, Module C |
 | `media_reachability_by_segment.csv` | Channel reach proportions per segment | Module B |
 
 ---

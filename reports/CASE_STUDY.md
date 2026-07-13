@@ -1,7 +1,7 @@
 
 # Case Study — Decision Analytics Reconstruction
 
-Practitioner reconstruction of a national-scale program analytics stack: population
+Practitioner reconstruction of a national-scale campaign analytics stack: population
 modeling (Module A), constrained resource allocation (Module B), and probabilistic
 scenario analysis (Module C). **Canonical numbers:** see
 [`NUMERIC_SSOT.md`](NUMERIC_SSOT.md).
@@ -10,19 +10,19 @@ scenario analysis (Module C). **Canonical numbers:** see
 
 ## Business framing
 
-**Setting.** A time-constrained program targeted a national eligible population
-(**4,260,816** entities at full electoral-roll scale; **50,000** in the default
+**Setting.** A time-constrained campaign targeted a national eligible population
+(**4,260,816** voters at full electoral-roll scale; **50,000** in the default
 production reconstruction run) to influence a verifiable binary outcome on a fixed
 date.
 
 **Constraints.**
 
-- **18-week** program scope; reconstruction pipeline models **weeks 1–14** (2018-W01–W14) where operational data exists
+- **18-week** campaign scope; reconstruction pipeline models **weeks 1–14** (2018-W01–W14) where operational data exists
 - **$6M USD** solver envelope (sole budget figure in portfolio narrative)
-- 18 geographic units, 11 reach channels, 8 fixture tracking survey waves (+ 4 exit surveys)
+- 18 geographic units, 11 reach channels, 8 fixture tracking poll waves (+ 4 exit surveys)
 
 **Verified outcome (TSJE, Series A):** **+3.70 pp** margin (46.43% vs 42.73%);
-national participation rate **61.25%**.
+national turnout **61.25%**.
 
 We do **not** claim a causal counterfactual ("analytics added X pp"). The
 reconstruction demonstrates how segmentation, optimization, and forecasting
@@ -42,7 +42,7 @@ production run, seed 42); bootstrap ARI **≥ 0.40** at 50k / **0.50** test floo
 two-subsample ARI (~0.76) are superseded (IMP-A03/#55).
 
 **Propensity model:** Platt-calibrated logistic regression with department raking
-to participation anchors. **Brier 0.1185** (15k holdout, seed 42; 0.1212 at the
+to turnout anchors. **Brier 0.1185** (15k holdout, seed 42; 0.1212 at the
 50k production run) vs gate **< 0.237**. Reported **AUC ≈0.89 is circular** (target
 shares calibration anchors with features) — see model card; do not headline AUC as
 generalization.
@@ -96,8 +96,8 @@ Run full chain: `make pipeline-full`. Golden metrics: `reports/golden_metrics.js
 
 Methods transfer to territory planning, SKU allocation, and churn programs when
 the same structure applies: heterogeneous units, constrained budgets, noisy
-signals, single outcome event. Scale numbers above are reconstruction-specific;
-swap entity definitions and anchors for other domains.
+signals, single verifiable outcome. Scale numbers above are reconstruction-specific;
+swap voter-record definitions and anchors for other domains.
 
 *See `ARCHITECTURE.md`, module READMEs, and `epistemic_boundaries.md` for artifact
 status (verified / calibrated / simulated / illustrative).*
