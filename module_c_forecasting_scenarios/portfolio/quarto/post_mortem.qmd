@@ -77,6 +77,20 @@ battle_geo_df = (
     pd.DataFrame([f["properties"] for f in battle_geo["features"]])
     if battle_geo is not None else None
 )
+
+# TSJE 2018 actual department winners (for overlay on poll-implied chart).
+_tsje_path = (
+    _find_repo_root()
+    / "module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/geo/tsje_2018_department_results.csv"
+)
+if _tsje_path.exists():
+    _tsje = pd.read_csv(_tsje_path)
+    _tsje["tsje_winner"] = np.where(
+        _tsje["abdo_anr_votes"] > _tsje["alegre_ganar_votes"], "Abdo (ANR)", "GANAR"
+    )
+    TSJE_WINNER = dict(zip(_tsje["department_ascii"], _tsje["tsje_winner"]))
+else:
+    TSJE_WINNER = {}
 ```
 
 ## Context
@@ -337,13 +351,13 @@ if mc is not None:
 
 ---
 
-## Department-Level Outcome Probability
+## Department-Level Win Probability
 
-Win-probability per geographic unit (model `c_battleground_v0.3`): each department's margin tracks the national posterior linearly via its TSJE-derived swing factor, with an illustrative idiosyncratic dispersion floor added in quadrature. **Estimand disclosure (retrodiction):** outcome data enters twice — the national posterior is outcome-anchored and the swing factors are derived from the realized 2018 TSJE department results — so these probabilities are a retrodiction, not an out-of-sample forecast. The unanchored companion table below removes the anchor (swing factors remain outcome-derived).
+Poll-implied win probability per geographic unit (model `c_battleground_v0.4`): each department's margin tracks the **unanchored** national posterior linearly via its TSJE-derived swing factor, with an illustrative idiosyncratic dispersion floor added in quadrature. HDI whiskers propagate national margin uncertainty through percentile sampling on win probability. **Estimand disclosure:** swing factors are derived from the realized 2018 TSJE department results — this is not an out-of-sample forecast. The retrodiction companion table below uses an outcome-anchored national posterior (outcome data enters twice).
 
 ```{python}
 #| label: fig-battleground
-#| fig-cap: "Posterior win probability by department with HDI interval — Series A calibration. Retrodiction: outcome-anchored national posterior × outcome-derived swing factors; idiosyncratic dispersion floor is an illustrative assumption (see schema contract)."
+#| fig-cap: "Poll-implied department win probability with HDI interval — Series A. Unanchored national posterior × outcome-derived swing factors; idiosyncratic dispersion floor is an illustrative assumption (see schema contract). Diamonds mark TSJE 2018 actual winner."
 
 if battle is not None:
     b = battle.sort_values("win_probability_a")
@@ -372,16 +386,38 @@ if battle is not None:
         ) if _has_hdi else None,
         text=[f"{v:.1%}" for v in b["win_probability_a"]],
         textposition="outside",
+        name="Poll-implied P(A)",
     ))
+    if TSJE_WINNER:
+        _tsje_labels = [TSJE_WINNER.get(d, "?") for d in b["department"]]
+        fig.add_trace(go.Scatter(
+            x=[1.02] * len(b),
+            y=b["department"],
+            mode="markers+text",
+            marker=dict(
+                symbol="diamond",
+                size=9,
+                color=["#D55E00" if "Abdo" in w else "#0072B2" for w in _tsje_labels],
+                line=dict(width=1, color="#25282b"),
+            ),
+            text=[w.split()[0] for w in _tsje_labels],
+            textposition="middle right",
+            textfont=dict(size=8),
+            hovertext=[f"TSJE 2018: {w}" for w in _tsje_labels],
+            hoverinfo="text",
+            name="TSJE 2018 winner",
+        ))
     fig.add_vline(x=0.5, line_dash="dash", line_color="#888", annotation_text="50%")
     fig.update_layout(
-        title="Department-level outcome probability with HDI (Series A, retrodiction)",
+        title="Poll-implied department win probability with HDI (Series A)",
         xaxis_title="Win probability — preference proxy A (whiskers: HDI)",
-        xaxis=dict(range=[0, 1.05], tickformat=".0%"),
+        xaxis=dict(range=[0, 1.12], tickformat=".0%"),
         yaxis_title="Department",
         template="plotly_white",
         height=520,
-        margin=dict(l=120),
+        margin=dict(l=120, r=60),
+        showlegend=True,
+        legend=dict(x=0.01, y=0.01, bgcolor="rgba(255,255,255,0.8)"),
     )
     fig.show()
 else:
@@ -390,14 +426,14 @@ else:
 
 ```{python}
 #| label: tbl-battleground-anchor-comparison
-#| fig-cap: "Anchored vs unanchored companion — departments whose classification flips."
+#| fig-cap: "Poll-implied vs retrodiction companion — departments whose classification flips."
 
 _cmp_path = _resolve_data_path("MODULE_C_BATTLEGROUND_DIR", "data/processed/module_c/run_all/battleground") / "battleground_anchor_comparison.md"
 if _cmp_path.exists():
     from IPython.display import Markdown as _Markdown
     display(_Markdown(_cmp_path.read_text()))
 else:
-    display(HTML("<p><em>Anchored-vs-unanchored companion not found — run <code>make module-c-all</code> (IMP-C05 companion run).</em></p>"))
+    display(HTML("<p><em>Poll-implied vs retrodiction companion not found — run <code>make module-c-all</code>.</em></p>"))
 ```
 
 ```{python}
@@ -555,7 +591,7 @@ else:
 | Sampler | NUTS, 4 chains × 1 000 draws, `target_accept=0.95` | Configured |
 | Exit measurement bias | Bayesian regression: intercept + OEA timing + release window flags | Implemented |
 | Monte Carlo engine | 10 000 draws × shock scale × scenario bucket | Implemented |
-| Battleground mapping | TSJE 2018 swing factors × outcome-anchored national posterior (`c_battleground_v0.3`) | Implemented |
+| Battleground mapping | TSJE 2018 swing factors × unanchored national posterior (`c_battleground_v0.4`, poll-implied) | Implemented |
 
 **Reproducibility:** `MC_FAST=0 make module-c-all --raw-csv <polls.csv> --out-dir data/processed/module_c/`
 re-runs the full pipeline deterministically (NUTS stochastic; posterior means stable across runs given sufficient draws).
