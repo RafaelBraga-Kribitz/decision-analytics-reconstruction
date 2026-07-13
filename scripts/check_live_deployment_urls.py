@@ -23,8 +23,13 @@ URLS = {
     "module_c_quarto": "https://RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction/",
 }
 
-_MAX_RETRIES = 3
-_BACKOFF_BASE = 2
+# Retry delays sized to outlast a full Render free-tier cold start (~60-120 s
+# observed; the old 2s/4s/8s ≈ 14 s window caused recurrences 1-3). Total wait
+# ≈ 245 s plus per-request timeouts. A keep-alive workflow
+# (.github/workflows/keepalive.yml) additionally pings Module A every 10 min
+# so the probe rarely sees a cold instance at all.
+_RETRY_DELAYS = (5, 10, 20, 40, 80, 90)
+_MAX_RETRIES = len(_RETRY_DELAYS) + 1
 
 
 def _is_timeout(exc: URLError) -> bool:
@@ -36,18 +41,22 @@ def _status(url: str) -> int | str:
     req = Request(url, headers={"User-Agent": "decision-analytics-governance-check/1.0"})
     for attempt in range(_MAX_RETRIES):
         try:
-            with urlopen(req, timeout=15) as response:
+            with urlopen(req, timeout=30) as response:
                 return int(response.status)
         except HTTPError as exc:
+            # 502/503/504 while a free-tier instance boots deserves a retry too.
+            if exc.code in (502, 503, 504) and attempt < _MAX_RETRIES - 1:
+                time.sleep(_RETRY_DELAYS[attempt])
+                continue
             return int(exc.code)
         except URLError as exc:
             if _is_timeout(exc) and attempt < _MAX_RETRIES - 1:
-                time.sleep(_BACKOFF_BASE**attempt)
+                time.sleep(_RETRY_DELAYS[attempt])
                 continue
             return exc.reason.__class__.__name__
         except TimeoutError:
             if attempt < _MAX_RETRIES - 1:
-                time.sleep(_BACKOFF_BASE**attempt)
+                time.sleep(_RETRY_DELAYS[attempt])
                 continue
             return "Timeout"
     return "Timeout"
