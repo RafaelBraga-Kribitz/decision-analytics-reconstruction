@@ -77,7 +77,7 @@ Itapúa has the highest mean participation propensity of any department with sig
 - Participation depression in Youth Volatile: this segment's propensity is 0.56. If youth registration or turnout infrastructure fails (long queues, administrative errors), the mandate could shrink materially.
 
 **Low but non-zero systemic risk:**
-- Model miscalibration: Only 4 poll waves feed the tracking model. If all four pollsters share an unmeasured systematic bias not captured by the house effect model, the posterior could be significantly wrong. Diversify polling sources.
+- Model miscalibration: Only 8 poll waves feed the tracking model. If all four pollsters share an unmeasured systematic bias not captured by the house effect model, the posterior could be significantly wrong. Diversify polling sources.
 
 **Bottom line:** Candidate A wins this election under virtually all scenarios. The campaign's job from this point forward is to define the size and mandate of that victory. Invest in turnout. Protect Rural Committed. Mobilise Youth Volatile. Redirect wasted spend. Commission more polling. The data supports all of these recommendations with high confidence.
 
