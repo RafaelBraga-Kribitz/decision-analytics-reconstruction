@@ -13,12 +13,15 @@ jobs:
     steps:
       - name: Extract issue number from PR body
         id: extract
+        env:
+          # Passed via env, never interpolated into the script: a PR body
+          # containing backticks or $() must not execute on the runner.
+          PR_BODY: ${{ github.event.pull_request.body }}
         run: |
-          body="${{ github.event.pull_request.body }}"
           # Look for "Fixes #123", "Closes #123", "Resolves #123", etc.
-          if [[ $body =~ [Ff][Ii][Xx][Ee][Ss][[:space:]]*#([0-9]+) ]] || \
-             [[ $body =~ [Cc][Ll][Oo][Ss][Ee][Ss][[:space:]]*#([0-9]+) ]] || \
-             [[ $body =~ [Rr][Ee][Ss][Oo][Ll][Vv][Ee][Ss][[:space:]]*#([0-9]+) ]]; then
+          if [[ $PR_BODY =~ [Ff][Ii][Xx][Ee][Ss][[:space:]]*#([0-9]+) ]] || \
+             [[ $PR_BODY =~ [Cc][Ll][Oo][Ss][Ee][Ss][[:space:]]*#([0-9]+) ]] || \
+             [[ $PR_BODY =~ [Rr][Ee][Ss][Oo][Ll][Vv][Ee][Ss][[:space:]]*#([0-9]+) ]]; then
             echo "issue_number=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
             echo "Found issue #${BASH_REMATCH[1]}"
           else
