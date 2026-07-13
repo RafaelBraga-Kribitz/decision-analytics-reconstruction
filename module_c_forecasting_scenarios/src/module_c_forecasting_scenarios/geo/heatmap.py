@@ -32,7 +32,7 @@ from scipy.stats import norm
 from module_c_forecasting_scenarios.config import load_sampler_config
 from module_c_forecasting_scenarios.data.contract_validate import validate_dataframe_contract
 
-MODEL_VERSION = "c_battleground_v0.3"
+MODEL_VERSION = "c_battleground_v0.4"
 
 # Idiosyncratic per-department uncertainty (pp): a floor on each department's
 # margin dispersion representing unmodelled local factors (candidate strength,
@@ -51,13 +51,15 @@ MODEL_VERSION = "c_battleground_v0.3"
 _SIGMA_IDIO_PP: float = 1.5
 _SIGMA_IDIO_PROVENANCE = "illustrative_assumption_not_estimated"
 
-# The estimand of every battleground artifact: outcome data enters twice —
-# (1) the national posterior is softly anchored to the verified outcome
-# (config/calibration.yaml use_outcome_anchor) and (2) the swing factors are
-# derived from the realized TSJE department results. The schema contract and
-# report captions must carry this disclosure (F-078 recurrence invariant).
-_ESTIMAND_ANCHORED = "retrodiction"
-_ESTIMAND_UNANCHORED = "unanchored_retrodiction"
+# Primary published estimand: poll-implied win probabilities from an unanchored
+# national posterior × TSJE-derived swing factors (swing still outcome-derived).
+_ESTIMAND_POLL_IMPLIED = "poll_implied"
+# Secondary diagnostic: outcome-anchored national posterior × same swing factors —
+# outcome data enters twice (F-078); not for decision support.
+_ESTIMAND_RETRODICTION = "retrodiction"
+
+# Grid size for percentile HDI on win_prob (propagate national margin uncertainty).
+_HDI_GRID_N = 201
 
 # Loaded from pymc_sampler.yaml for sync with tracking model (0.94 = 94% HDI).
 _HDI_PROB: float = float(load_sampler_config().get("hdi_prob", 0.94))
@@ -113,22 +115,53 @@ def _swing_factors(df: pd.DataFrame) -> dict[str, float]:
     return dict(zip(df["department_ascii"], df["swing"], strict=True))
 
 
+def _win_prob_hdi(
+    swing: float,
+    m_pp: float,
+    hdi_lo: float,
+    hdi_hi: float,
+    sigma_national: float,
+    sigma_dept: float,
+) -> tuple[float, float, float]:
+    """Point estimate and percentile HDI on win_prob under national margin uncertainty.
+
+    Propagates uncertainty by evaluating Φ(swing × m_k / σ_dept) over a grid of
+    national margins from hdi_lo to hdi_hi (uniform) plus the posterior mean,
+    then taking symmetric percentiles at ``_HDI_PROB``.
+    """
+    lo = min(hdi_lo, hdi_hi)
+    hi = max(hdi_lo, hdi_hi)
+    m_grid = np.linspace(lo, hi, _HDI_GRID_N)
+    if not np.any(np.isclose(m_grid, m_pp)):
+        m_grid = np.sort(np.append(m_grid, m_pp))
+    wp_samples = norm.cdf(swing * m_grid / sigma_dept)
+    alpha = (1.0 - _HDI_PROB) / 2.0
+    hdi_low = float(np.quantile(wp_samples, alpha))
+    hdi_high = float(np.quantile(wp_samples, 1.0 - alpha))
+    win_prob = float(norm.cdf(swing * m_pp / sigma_dept))
+    hdi_low = min(hdi_low, win_prob)
+    hdi_high = max(hdi_high, win_prob)
+    return win_prob, hdi_low, hdi_high
+
+
 def export_battleground_department_table(
     daily_forecast: pd.DataFrame,
     out_path: Path,
     *,
     calibration_series: str,
-    anchored: bool = True,
+    anchored: bool = False,
+    primary: bool = False,
 ) -> pd.DataFrame:
     """Map last-day tracking posterior to per-department win probability.
 
-    Uses a calibrated hierarchical model (v0.3):
+    Uses a calibrated hierarchical model (v0.4):
       • Each department's margin tracks the national margin linearly via its
         TSJE-derived swing factor (partial pooling toward the national result).
       • National posterior uncertainty propagates through the swing factor;
         idiosyncratic noise (``_SIGMA_IDIO_PP``, an illustrative assumption —
         see its provenance comment) is added in quadrature.
       • win_probability_a = P(Abdo/Candidate A wins dept j) = Φ(m_dept / σ_dept).
+      • HDI on win_prob uses percentile propagation over the national margin grid.
 
     Args:
         daily_forecast: Daily posterior frame; the last row's mean/HDI drive
@@ -136,9 +169,11 @@ def export_battleground_department_table(
         out_path: Destination parquet path (siblings written alongside).
         calibration_series: Active calibration series label (``A``/``B``).
         anchored: Whether ``daily_forecast`` came from an outcome-anchored
-            tracking fit. Controls the exported ``estimand`` label
-            (``retrodiction`` vs ``unanchored_retrodiction`` — the swing
-            factors are outcome-derived either way) and the manifest.
+            tracking fit. ``False`` → ``poll_implied`` (primary); ``True`` →
+            ``retrodiction`` (diagnostic). Swing factors are outcome-derived
+            either way.
+        primary: When ``True``, write the polygon choropleth GeoJSON (only the
+            primary poll_implied export should set this).
 
     Returns:
         The contract-validated table that was written.
@@ -156,7 +191,7 @@ def export_battleground_department_table(
     """
     df_fc = daily_forecast.sort_values("date")
     last = df_fc.iloc[-1]
-    estimand = _ESTIMAND_ANCHORED if anchored else _ESTIMAND_UNANCHORED
+    estimand = _ESTIMAND_RETRODICTION if anchored else _ESTIMAND_POLL_IMPLIED
 
     m_pp = float(last["posterior_mean_preference_margin_pp"])
     hdi_lo = float(last.get("posterior_hdi_low_pp", m_pp - 2.0))  # type: ignore[arg-type]
@@ -170,16 +205,11 @@ def export_battleground_department_table(
     rows: list[dict[str, Any]] = []
     for dept in DEPARTMENTS:
         swing = swings.get(dept, 0.0)
-        dept_m = swing * m_pp
         # Uncertainty: national variance amplified by swing, plus idiosyncratic floor.
         sigma_dept = float(np.sqrt((swing * sigma_national) ** 2 + _SIGMA_IDIO_PP**2))
-        # P(Abdo wins dept j) = P(dept_margin > 0) = Φ(dept_m / σ_dept)
-        win_prob_a = float(norm.cdf(dept_m / sigma_dept))
-        # Choropleth HDI: scenario bounds on win_prob at the 94% HDI limits of the
-        # national margin (not a posterior HDI on win_prob itself, but interpretable
-        # as the range of plausible win probabilities under the national posterior).
-        wp_at_nat_lo = float(norm.cdf(swing * hdi_lo / sigma_dept))
-        wp_at_nat_hi = float(norm.cdf(swing * hdi_hi / sigma_dept))
+        win_prob_a, hdi_low, hdi_high = _win_prob_hdi(
+            swing, m_pp, hdi_lo, hdi_hi, sigma_national, sigma_dept
+        )
         rows.append(
             {
                 "department": dept,
@@ -187,11 +217,11 @@ def export_battleground_department_table(
                 "win_probability_a": win_prob_a,
                 "model_version": MODEL_VERSION,
                 "estimand": estimand,
-                "hdi_low": min(wp_at_nat_lo, wp_at_nat_hi),
-                "hdi_high": max(wp_at_nat_lo, wp_at_nat_hi),
+                "hdi_low": hdi_low,
+                "hdi_high": hdi_high,
                 "_posterior_win_prob": win_prob_a,
-                "_hdi_low": min(wp_at_nat_lo, wp_at_nat_hi),
-                "_hdi_high": max(wp_at_nat_lo, wp_at_nat_hi),
+                "_hdi_low": hdi_low,
+                "_hdi_high": hdi_high,
             }
         )
 
@@ -238,10 +268,10 @@ def export_battleground_department_table(
         json.dumps({"type": "FeatureCollection", "features": null_features})
     )
 
-    if anchored:
-        # The polygon choropleth keeps its stable filename and is only ever
-        # the anchored run's view — the unanchored companion must not clobber
-        # it (its table lives under its own stem).
+    if primary:
+        # The polygon choropleth keeps its stable filename and belongs to the
+        # primary poll_implied export — the retrodiction companion must not
+        # clobber it.
         dept_polys = _load_department_polygons()
         heatmap_features: list[dict[str, Any]] = [
             {
@@ -290,68 +320,69 @@ def export_battleground_department_table(
 
 
 def write_anchor_comparison(
-    anchored_table: pd.DataFrame,
-    unanchored_table: pd.DataFrame,
+    poll_implied_table: pd.DataFrame,
+    retrodiction_table: pd.DataFrame,
     out_path: Path,
 ) -> pd.DataFrame:
-    """Publish the anchored-vs-unanchored companion comparison with flip list.
+    """Publish poll-implied vs retrodiction companion comparison with flip list.
 
     Args:
-        anchored_table: Contract table from the anchored run.
-        unanchored_table: Contract table from the unanchored companion run.
+        poll_implied_table: Primary contract table (unanchored national posterior).
+        retrodiction_table: Diagnostic table (outcome-anchored national posterior).
         out_path: Destination markdown path for the comparison artifact.
 
     Returns:
-        Per-department comparison frame (anchored/unanchored probabilities,
+        Per-department comparison frame (poll-implied/retrodiction probabilities,
         classification flip flag).
 
     Raises:
         ValueError: If the two tables are numerically identical — the
-            "unanchored" run silently consumed the anchor (IMP-C05 negative
+            retrodiction run silently consumed the anchor (IMP-C05 negative
             constraint), or if department sets differ.
 
     Example:
-        ``write_anchor_comparison(anchored, unanchored, Path("cmp.md"))``
+        ``write_anchor_comparison(poll_implied, retrodiction, Path("cmp.md"))``
     """
-    a = anchored_table.set_index("department")["win_probability_a"]
-    u = unanchored_table.set_index("department")["win_probability_a"]
+    u = poll_implied_table.set_index("department")["win_probability_a"]
+    a = retrodiction_table.set_index("department")["win_probability_a"]
     if set(a.index) != set(u.index):
-        raise ValueError("anchored and unanchored tables cover different departments")
+        raise ValueError("poll_implied and retrodiction tables cover different departments")
     u = u.reindex(a.index)
     if bool(np.allclose(a.to_numpy(), u.to_numpy())):
         raise ValueError(
-            "anchored and unanchored battleground tables are numerically identical — "
-            "the companion run silently consumed the outcome anchor (IMP-C05)"
+            "poll_implied and retrodiction battleground tables are numerically identical — "
+            "the retrodiction run silently consumed the outcome anchor (IMP-C05)"
         )
     cmp_df = pd.DataFrame(
         {
             "department": a.index,
-            "win_probability_a_anchored": a.to_numpy(),
-            "win_probability_a_unanchored": u.to_numpy(),
+            "win_probability_a_poll_implied": u.to_numpy(),
+            "win_probability_a_retrodiction": a.to_numpy(),
         }
     )
-    cmp_df["classification_flip"] = (cmp_df["win_probability_a_anchored"] > 0.5) != (
-        cmp_df["win_probability_a_unanchored"] > 0.5
-    )
+    cmp_df["classification_flip"] = (
+        cmp_df["win_probability_a_poll_implied"] > 0.5
+    ) != (cmp_df["win_probability_a_retrodiction"] > 0.5)
     flips = cmp_df[cmp_df["classification_flip"]]["department"].tolist()
 
     lines = [
-        "# Battleground anchored vs unanchored companion",
+        "# Battleground poll-implied vs retrodiction companion",
         "",
-        "The anchored table is a **retrodiction** (outcome-anchored national posterior x "
-        "outcome-derived swing factors). The companion below re-runs the tracking fit with "
-        "`use_outcome_anchor: false`; swing factors remain outcome-derived in both, so "
-        "neither column is an out-of-sample forecast.",
+        "The **poll-implied** column is the primary published view (unanchored national "
+        "posterior × TSJE-derived swing factors). The **retrodiction** column is a "
+        "calibration diagnostic (outcome-anchored national posterior × the same swing "
+        "factors). Swing factors remain outcome-derived in both; neither column is an "
+        "out-of-sample forecast.",
         "",
-        f"Departments whose >0.5 classification flips: " f"{', '.join(flips) if flips else 'none'}",
+        f"Departments whose >0.5 classification flips: {', '.join(flips) if flips else 'none'}",
         "",
-        "| Department | anchored P(A) | unanchored P(A) | flip |",
+        "| Department | poll-implied P(A) | retrodiction P(A) | flip |",
         "|---|---|---|---|",
     ]
     for _, r in cmp_df.sort_values("department").iterrows():
         lines.append(
-            f"| {r['department']} | {r['win_probability_a_anchored']:.3f} "
-            f"| {r['win_probability_a_unanchored']:.3f} "
+            f"| {r['department']} | {r['win_probability_a_poll_implied']:.3f} "
+            f"| {r['win_probability_a_retrodiction']:.3f} "
             f"| {'YES' if bool(r['classification_flip']) else ''} |"
         )
     out_path.parent.mkdir(parents=True, exist_ok=True)

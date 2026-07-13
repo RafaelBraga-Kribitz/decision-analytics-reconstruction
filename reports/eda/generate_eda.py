@@ -1475,17 +1475,36 @@ chart_c2()
 
 @safe_chart("C3")
 def chart_c3():
-    """C3: Battleground department bar: P(win A), coloured by above/below 0.5."""
+    """C3: Poll-implied battleground department bar with HDI whiskers."""
     bg = battleground.sort_values("win_probability_a", ascending=True)
+    _has_hdi = {"hdi_low", "hdi_high"} <= set(bg.columns)
 
     colors = [RED if p >= 0.5 else BLUE for p in bg["win_probability_a"]]
 
     fig, ax = plt.subplots(figsize=(10, 7))
-    bars = ax.barh(bg["department"], bg["win_probability_a"], color=colors, edgecolor=WHITE, lw=0.4)
+    y_pos = np.arange(len(bg))
+    xerr = None
+    if _has_hdi:
+        xerr = np.array(
+            [
+                bg["win_probability_a"].values - bg["hdi_low"].values,
+                bg["hdi_high"].values - bg["win_probability_a"].values,
+            ]
+        )
+    bars = ax.barh(
+        y_pos,
+        bg["win_probability_a"],
+        color=colors,
+        edgecolor=WHITE,
+        lw=0.4,
+        xerr=xerr,
+        error_kw=dict(ecolor=CHARCOAL, capsize=2, linewidth=1.0, elinewidth=1.0),
+    )
+    ax.set_yticks(y_pos)
+    ax.set_yticklabels(bg["department"])
     ax.axvline(0.5, color=CHARCOAL, lw=1.5, ls="--", label="50% threshold")
 
     for bar, val in zip(bars, bg["win_probability_a"].values):
-        # Replace 100.0% ceiling label with ≥99% to avoid false precision
         label = "≥99%" if val >= 0.999 else f"{val:.1%}"
         ax.text(
             bar.get_width() + 0.003,
@@ -1504,13 +1523,13 @@ def chart_c3():
     ax.set_xlim(0, 1.08)
     ax.set_xlabel("P(Win — Candidate A)")
     ax.set_title(
-        "C3 — Battleground Department Win Probability (Candidate A)\n"
-        "GANAR departments show <5% win probability; 'certain' ANR departments carry uncertainty\n"
+        "C3 — Poll-Implied Department Win Probability (Candidate A)\n"
+        "GANAR strongholds (Central, Alto Paraná) show low P(A); whiskers = 94% HDI\n"
         f"{ILLUSTRATIVE_BATTLE_SUB}"
     )
     ax.annotate(
         "Exterior dept (GANAR winner) absent — no polygon in GeoJSON. "
-        "Near-certain (≥99%) departments: model assigns ceiling probability, not exactly 100%.",
+        "Primary table uses unanchored national posterior (c_battleground_v0.4).",
         xy=(0.5, -0.12),
         xycoords="axes fraction",
         ha="center",
@@ -2526,6 +2545,7 @@ _b1_central = float(_dept_budget.get("Central", 0.0))
 _b1_alto = float(_dept_budget.get("Alto Parana", 0.0))
 _b1_itapua = float(_dept_budget.get("Itapua", 0.0))
 _b1_caaguazu = float(_dept_budget.get("Caaguazu", 0.0))
+_b1_san_pedro = float(_dept_budget.get("San Pedro", 0.0))
 _b1_top3_share = (_b1_central + _b1_alto + _b1_itapua) / total_budget * 100
 _n_dept_under_50k = int((_dept_budget < 50_000).sum())
 _central_alto_share_pct = (_b1_central + _b1_alto) / total_budget * 100
@@ -2813,9 +2833,9 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 **Strategic implication:** The campaign is in a "protecting the lead" posture. The strategic priority shifts from persuasion to turnout maximisation among A-leaning segments, particularly Youth Volatile and Rural Committed.
 
 ### C3 — Battleground Department Win Probability
-**What it shows:** Horizontal bar chart of P(Win, Candidate A) by department.
-**Key finding:** All 18 departments show modelled win probability in the **{_min_win_prob:.1%}–{_max_win_prob:.1%}** range ({_illustrative_tracking_note}). Central ({_dept_win_prob('Central'):.1%}) and Caaguazu ({_dept_win_prob('Caaguazu'):.1%}) are among the highest.
-**Strategic implication:** There are no true "battleground" departments in the classical sense — all show strong favourability. However, the narrow spread means mobilisation in high-turnout departments (Central, Alto Paraná) will determine the final mandate margin.
+**What it shows:** Horizontal bar chart of poll-implied P(Win, Candidate A) by department with 94% HDI whiskers (unanchored national posterior × TSJE swing factors, `c_battleground_v0.4`).
+**Key finding:** Modelled win probabilities span **{_min_win_prob:.1%}–{_max_win_prob:.1%}** ({_illustrative_tracking_note}). GANAR strongholds Central ({_dept_win_prob('Central'):.1%}) and Alto Paraná ({_dept_win_prob('Alto Parana'):.1%}) sit well below 50%; Caaguazu ({_dept_win_prob('Caaguazu'):.1%}) and San Pedro ({_dept_win_prob('San Pedro'):.1%}) are the closest competitive departments.
+**Strategic implication:** Geographic risk is heterogeneous — budget in Central and Alto Paraná targets turnout/defence in GANAR territory, not persuasion swing. Caaguazu and San Pedro are the true battlegrounds where marginal contacts can shift the mandate.
 
 ### C4 — House Effects Forest Plot
 **What it shows:** Posterior mean ± 94% HDI for each pollster's house effect (bias toward Candidate A).
@@ -2973,11 +2993,11 @@ The Bayesian tracking model closes at a **{forecast_final_mean:.1f} pp preferenc
 
 ## Top 3 Priority Departments
 
-**1. Central (Budget: ${_b1_central/1e6:.2f}M, Modelled Win Prob: {_dept_win_prob('Central'):.1%}, Propensity: ~0.55)**
-Central is non-negotiable. With the largest entity count by department and the highest Youth Volatile concentration in the country, Central determines whether Candidate A wins with a thin mandate or a historic one. The challenge: reach utilisation is below cap in weeks 10–14, meaning the program is leaving contacts on the table during the crucial final push. Recommended action: increase WhatsApp chatbot activation in Central's urban districts by 20% in weeks 11–14 and deploy a targeted youth ground operation in Asunción metro.
+**1. Caaguazu (Budget: ${_b1_caaguazu/1e3:,.0f}K, Modelled Win Prob: {_dept_win_prob('Caaguazu'):.1%}, Propensity: ~0.58)**
+Caaguazu is the top battleground department — poll-implied win probability sits near the 50% threshold with visible HDI uncertainty. A strong Rural Committed presence (high propensity) and lower cost-per-persuasion-contact than metro departments make it the efficiency sweet spot for marginal persuasion spend.
 
-**2. Caaguazu (Budget: ${_b1_caaguazu/1e3:,.0f}K, Modelled Win Prob: {_dept_win_prob('Caaguazu'):.1%}, Propensity: ~0.58)**
-Caaguazu is the efficiency sweet spot. It has the highest win probability of all Oriental departments, a strong Rural Committed presence (high propensity), and a lower cost-per-persuasion-contact than Central or Alto Paraná. It is currently underfunded relative to its composite priority score. A $75K budget increase from Central savings would deliver approximately 24,000 additional persuasion-adjusted contacts here.
+**2. San Pedro (Budget: ${_b1_san_pedro/1e3:,.0f}K, Modelled Win Prob: {_dept_win_prob('San Pedro'):.1%}, Propensity: ~0.58)**
+San Pedro ranks among the most competitive departments after Caaguazu. Radio and canvassing channels reach Rural Committed voters efficiently here; protecting budget through the final fortnight is critical.
 
 **3. Itapua (Budget: ${_b1_itapua/1e3:,.0f}K, Modelled Win Prob: {_dept_win_prob('Itapua'):.1%}, Propensity: ~0.65)**
 Itapúa has the highest mean participation propensity of any department with significant Rural Committed presence. It is the dominant department for that segment. Radio is the primary reach channel. At near-saturation on reach utilisation, the channel is performing well — the risk is a budget cut that disrupts this performance. Protect Itapúa's radio budget unconditionally and explore whether a modest canvassing supplement in rural municipalities can push propensity-weighted turnout past 70%.

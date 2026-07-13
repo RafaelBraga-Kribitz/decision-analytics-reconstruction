@@ -18,174 +18,174 @@
 # renaming an existing key, changing an existing key's type/meaning, or
 # removing/repointing a chart_id.
 schema_version: 1
-run_id: 03dabf52ae80
-git_commit: 03dabf52ae8003ece23342d265644bb329f03cb7
-generated_at: '2026-07-10'
+run_id: ce53106d15f6
+git_commit: ce53106d15f6518b53e4141fe750cc4b92a8598c
+generated_at: '2026-07-14'
 data_manifest: data/processed/model_run_manifest.json
 canonical_sample_size: 50000
-segmentation_label_hash: 02e4166d85151bca
+segmentation_label_hash: dc4cd3b516cadf3b
 figures:
 - chart_id: A10_pca_biplot
-  path: reports/eda/A10_pca_biplot.png
+  path: reports\eda\A10_pca_biplot.png
   generator: reports/eda/generate_eda.py
   save_name: A10_pca_biplot.png
 - chart_id: A11_nbi_stress_by_department
-  path: reports/eda/A11_nbi_stress_by_department.png
+  path: reports\eda\A11_nbi_stress_by_department.png
   generator: reports/eda/generate_eda.py
   save_name: A11_nbi_stress_by_department.png
 - chart_id: A12_reachability_distribution
-  path: reports/eda/A12_reachability_distribution.png
+  path: reports\eda\A12_reachability_distribution.png
   generator: reports/eda/generate_eda.py
   save_name: A12_reachability_distribution.png
 - chart_id: A13_preference_strength_by_segment
-  path: reports/eda/A13_preference_strength_by_segment.png
+  path: reports\eda\A13_preference_strength_by_segment.png
   generator: reports/eda/generate_eda.py
   save_name: A13_preference_strength_by_segment.png
 - chart_id: A1_segment_sizes
-  path: reports/eda/A1_segment_sizes.png
+  path: reports\eda\A1_segment_sizes.png
   generator: reports/eda/generate_eda.py
   save_name: A1_segment_sizes.png
 - chart_id: A2_age_distribution_by_segment
-  path: reports/eda/A2_age_distribution_by_segment.png
+  path: reports\eda\A2_age_distribution_by_segment.png
   generator: reports/eda/generate_eda.py
   save_name: A2_age_distribution_by_segment.png
 - chart_id: A3_gender_by_segment
-  path: reports/eda/A3_gender_by_segment.png
+  path: reports\eda\A3_gender_by_segment.png
   generator: reports/eda/generate_eda.py
   save_name: A3_gender_by_segment.png
 - chart_id: A4_propensity_heatmap_dept_segment
-  path: reports/eda/A4_propensity_heatmap_dept_segment.png
+  path: reports\eda\A4_propensity_heatmap_dept_segment.png
   generator: reports/eda/generate_eda.py
   save_name: A4_propensity_heatmap_dept_segment.png
 - chart_id: A5_propensity_violin_by_segment
-  path: reports/eda/A5_propensity_violin_by_segment.png
+  path: reports\eda\A5_propensity_violin_by_segment.png
   generator: reports/eda/generate_eda.py
   save_name: A5_propensity_violin_by_segment.png
 - chart_id: A6_urban_rural_by_segment
-  path: reports/eda/A6_urban_rural_by_segment.png
+  path: reports\eda\A6_urban_rural_by_segment.png
   generator: reports/eda/generate_eda.py
   save_name: A6_urban_rural_by_segment.png
 - chart_id: A7_language_by_segment
-  path: reports/eda/A7_language_by_segment.png
+  path: reports\eda\A7_language_by_segment.png
   generator: reports/eda/generate_eda.py
   save_name: A7_language_by_segment.png
 - chart_id: A8_structural_dependency_by_segment
-  path: reports/eda/A8_structural_dependency_by_segment.png
+  path: reports\eda\A8_structural_dependency_by_segment.png
   generator: reports/eda/generate_eda.py
   save_name: A8_structural_dependency_by_segment.png
 - chart_id: A9_correlation_heatmap
-  path: reports/eda/A9_correlation_heatmap.png
+  path: reports\eda\A9_correlation_heatmap.png
   generator: reports/eda/generate_eda.py
   save_name: A9_correlation_heatmap.png
 - chart_id: B1_budget_by_department
-  path: reports/eda/B1_budget_by_department.png
+  path: reports\eda\B1_budget_by_department.png
   generator: reports/eda/generate_eda.py
   save_name: B1_budget_by_department.png
 - chart_id: B2_weekly_budget_by_channel_type
-  path: reports/eda/B2_weekly_budget_by_channel_type.png
+  path: reports\eda\B2_weekly_budget_by_channel_type.png
   generator: reports/eda/generate_eda.py
   save_name: B2_weekly_budget_by_channel_type.png
 - chart_id: B3_broadcast_vs_direct_budget
-  path: reports/eda/B3_broadcast_vs_direct_budget.png
+  path: reports\eda\B3_broadcast_vs_direct_budget.png
   generator: reports/eda/generate_eda.py
   save_name: B3_broadcast_vs_direct_budget.png
 - chart_id: B4_reach_utilisation_heatmap
-  path: reports/eda/B4_reach_utilisation_heatmap.png
+  path: reports\eda\B4_reach_utilisation_heatmap.png
   generator: reports/eda/generate_eda.py
   save_name: B4_reach_utilisation_heatmap.png
 - chart_id: B5_cost_per_persuasion_contact
-  path: reports/eda/B5_cost_per_persuasion_contact.png
+  path: reports\eda\B5_cost_per_persuasion_contact.png
   generator: reports/eda/generate_eda.py
   save_name: B5_cost_per_persuasion_contact.png
 - chart_id: B6_fx_rate_series
-  path: reports/eda/B6_fx_rate_series.png
+  path: reports\eda\B6_fx_rate_series.png
   generator: reports/eda/generate_eda.py
   save_name: B6_fx_rate_series.png
 - chart_id: B7_routing_cost_matrix
-  path: reports/eda/B7_routing_cost_matrix.png
+  path: reports\eda\B7_routing_cost_matrix.png
   generator: reports/eda/generate_eda.py
   save_name: B7_routing_cost_matrix.png
 - chart_id: B8_reach_caps_vs_contacts
-  path: reports/eda/B8_reach_caps_vs_contacts.png
+  path: reports\eda\B8_reach_caps_vs_contacts.png
   generator: reports/eda/generate_eda.py
   save_name: B8_reach_caps_vs_contacts.png
 - chart_id: C10_mc_win_probability_histogram
-  path: reports/eda/C10_mc_win_probability_histogram.png
+  path: reports\eda\C10_mc_win_probability_histogram.png
   generator: reports/eda/generate_eda.py
   save_name: C10_mc_win_probability_histogram.png
 - chart_id: C1_forecast_timeline
-  path: reports/eda/C1_forecast_timeline.png
+  path: reports\eda\C1_forecast_timeline.png
   generator: reports/eda/generate_eda.py
   save_name: C1_forecast_timeline.png
 - chart_id: C2_posterior_margin_final
-  path: reports/eda/C2_posterior_margin_final.png
+  path: reports\eda\C2_posterior_margin_final.png
   generator: reports/eda/generate_eda.py
   save_name: C2_posterior_margin_final.png
 - chart_id: C3_battleground_win_probability
-  path: reports/eda/C3_battleground_win_probability.png
+  path: reports\eda\C3_battleground_win_probability.png
   generator: reports/eda/generate_eda.py
   save_name: C3_battleground_win_probability.png
 - chart_id: C4_house_effects_forest
-  path: reports/eda/C4_house_effects_forest.png
+  path: reports\eda\C4_house_effects_forest.png
   generator: reports/eda/generate_eda.py
   save_name: C4_house_effects_forest.png
-- chart_id: C5B_scenario_adjusted_contacts
-  path: reports/eda/C5B_scenario_adjusted_contacts.png
-  generator: reports/eda/generate_eda.py
-  save_name: C5B_scenario_adjusted_contacts.png
 - chart_id: C5_mc_scenario_fan_chart
-  path: reports/eda/C5_mc_scenario_fan_chart.png
+  path: reports\eda\C5_mc_scenario_fan_chart.png
   generator: reports/eda/generate_eda.py
   save_name: C5_mc_scenario_fan_chart.png
+- chart_id: C5B_scenario_adjusted_contacts
+  path: reports\eda\C5B_scenario_adjusted_contacts.png
+  generator: reports/eda/generate_eda.py
+  save_name: C5B_scenario_adjusted_contacts.png
 - chart_id: C6_shock_scale_distribution
-  path: reports/eda/C6_shock_scale_distribution.png
+  path: reports\eda\C6_shock_scale_distribution.png
   generator: reports/eda/generate_eda.py
   save_name: C6_shock_scale_distribution.png
 - chart_id: C7_exit_model_posteriors
-  path: reports/eda/C7_exit_model_posteriors.png
+  path: reports\eda\C7_exit_model_posteriors.png
   generator: reports/eda/generate_eda.py
   save_name: C7_exit_model_posteriors.png
 - chart_id: C8_v2
-  path: reports/eda/C8_v2.png
+  path: reports\eda\C8_v2.png
   generator: reports/eda/generate_eda.py
   save_name: C8_v2.png
 - chart_id: C8_win_prob_vs_propensity
-  path: reports/eda/C8_win_prob_vs_propensity.png
+  path: reports\eda\C8_win_prob_vs_propensity.png
   generator: reports/eda/generate_eda.py
   save_name: C8_win_prob_vs_propensity.png
 - chart_id: C9_polling_transparency_audit
-  path: reports/eda/C9_polling_transparency_audit.png
+  path: reports\eda\C9_polling_transparency_audit.png
   generator: reports/eda/generate_eda.py
   save_name: C9_polling_transparency_audit.png
+- chart_id: eda_overview
+  path: reports\eda\eda_overview.png
+  generator: reports/eda/generate_eda.py
+  save_name: eda_overview.png
 - chart_id: S1_segment_budget_heatmap
-  path: reports/eda/S1_segment_budget_heatmap.png
+  path: reports\eda\S1_segment_budget_heatmap.png
   generator: reports/eda/generate_eda.py
   save_name: S1_segment_budget_heatmap.png
 - chart_id: S2_propensity_reachability_matrix
-  path: reports/eda/S2_propensity_reachability_matrix.png
+  path: reports\eda\S2_propensity_reachability_matrix.png
   generator: reports/eda/generate_eda.py
   save_name: S2_propensity_reachability_matrix.png
 - chart_id: S3_channel_roi_by_region
-  path: reports/eda/S3_channel_roi_by_region.png
+  path: reports\eda\S3_channel_roi_by_region.png
   generator: reports/eda/generate_eda.py
   save_name: S3_channel_roi_by_region.png
 - chart_id: S4_department_priority_matrix
-  path: reports/eda/S4_department_priority_matrix.png
+  path: reports\eda\S4_department_priority_matrix.png
   generator: reports/eda/generate_eda.py
   save_name: S4_department_priority_matrix.png
 - chart_id: S5_efficiency_frontier
-  path: reports/eda/S5_efficiency_frontier.png
+  path: reports\eda\S5_efficiency_frontier.png
   generator: reports/eda/generate_eda.py
   save_name: S5_efficiency_frontier.png
-- chart_id: eda_overview
-  path: reports/eda/eda_overview.png
-  generator: reports/eda/generate_eda.py
-  save_name: eda_overview.png
 - chart_id: reliability_diagram
-  path: reports/module_a/reliability_diagram.png
+  path: reports\module_a\reliability_diagram.png
   generator: module_a_population_segmentation/pipeline/export.py
   save_name: reliability_diagram.png
 - chart_id: shap_summary
-  path: reports/module_a/shap_summary.png
+  path: reports\module_a\shap_summary.png
   generator: module_a_population_segmentation/pipeline/export.py
   save_name: shap_summary.png
