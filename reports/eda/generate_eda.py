@@ -155,6 +155,43 @@ def _stagger_annotate(
         )
 
 
+def _caption_zone(fig: plt.Figure, caption: str, *, bottom: float = 0.18) -> None:
+    """House style: finding-first title, epistemic caveat in a reserved caption band.
+
+    Reserves the bottom ``bottom`` fraction of the figure for the caveat caption
+    and the source line, so neither collides with the x-axis label or tick
+    labels. ``tight_layout`` fits the axes + all its labels into the region
+    ``[bottom, 1]``; the caption and source are placed strictly below ``bottom``,
+    which guarantees no overlap with the axis furniture (the collision mode that
+    the previous per-chart ``annotate(..., xy=(0.5, -0.22))`` offsets produced).
+
+    Args:
+        fig: The figure to lay out.
+        caption: The epistemic caveat text (moved out of the title).
+        bottom: Figure-fraction height reserved for the caption band.
+    """
+    fig.tight_layout(rect=(0, bottom, 1, 1))
+    fig.text(
+        0.5,
+        bottom * 0.5,
+        caption,
+        ha="center",
+        va="center",
+        fontsize=8,
+        color=GREY,
+        wrap=True,
+    )
+    fig.text(
+        0.5,
+        bottom * 0.13,
+        SOURCE,
+        ha="center",
+        va="center",
+        fontsize=7.5,
+        color=GREY,
+    )
+
+
 def safe_chart(label: str):
     """Decorator-factory that catches exceptions so the script never crashes."""
 
@@ -386,6 +423,11 @@ def chart_a4():
 
     fig, ax = plt.subplots(figsize=(13, 8))
     cmap = LinearSegmentedColormap.from_list("rw", ["#ffffff", RED])
+    # Empty (no-population) cells must not read as a low numeric value: the
+    # colormap's low end is near-white, so a blank cell was indistinguishable
+    # from a genuine ~0.45 reading. Render NaN cells on a neutral ground and
+    # overprint a hatch so "no population" is visually distinct from a value.
+    cmap.set_bad("#ececec")
     # IMP-V05 / issue #69: color scale bounded to the observed range (padded
     # to 0.05 ticks) with the range disclosed in the subtitle — the former
     # fixed [0, 1] scale washed out all real variation in a ~0.5-0.7 metric,
@@ -414,16 +456,45 @@ def chart_a4():
                     fontsize=8,
                     color=WHITE if val > 0.6 else CHARCOAL,
                 )
+            else:
+                # Hatched overlay marks an empty cell (no population), so it can
+                # never be misread as a numeric zero / low-propensity reading.
+                ax.add_patch(
+                    mpatches.Rectangle(
+                        (j - 0.5, i - 0.5),
+                        1,
+                        1,
+                        fill=False,
+                        hatch="///",
+                        edgecolor="#9aa0a6",
+                        linewidth=0.0,
+                    )
+                )
 
-    plt.colorbar(im, ax=ax, label="Mean Participation Propensity")
-    ax.set_title(
-        "A4 — Mean Participation Propensity by Department × Segment\n"
-        f"Color scale spans the observed range [{obs_min:.2f}, {obs_max:.2f}] "
-        f"(shown [{scale_lo:.2f}, {scale_hi:.2f}]) — the matrix is near-constant; see F-052.\n"
-        "Note: propensity calibrated at dept-level — within-segment spread reflects geography, not individual behavior"
+    # Range disclosed on the colorbar label itself (not only the title) so the
+    # rescaled colormap cannot be mistaken for a full 0–1 scale — the visible
+    # contrast spans only the narrow observed band (F-053 spirit).
+    plt.colorbar(
+        im,
+        ax=ax,
+        label=(
+            f"Mean Participation Propensity\n"
+            f"(colour spans observed {obs_min:.2f}–{obs_max:.2f}, not 0–1)"
+        ),
     )
-    fig.text(0.5, -0.01, SOURCE, ha="center", fontsize=7.5, color=GREY)
-    fig.tight_layout()
+    # The hatched-cell meaning is stated in the caption ("Hatched cells = no
+    # population"); a proxy legend here would overprint the title (no in-axes
+    # empty space in a full heatmap).
+    ax.set_title("A4 — Mean Participation Propensity by Department × Segment")
+    _caption_zone(
+        fig,
+        f"Colour is robust-scaled to the observed range {obs_min:.2f}–{obs_max:.2f} "
+        f"(shown {scale_lo:.2f}–{scale_hi:.2f}), not 0–1 — the matrix is near-uniform (see F-052), so "
+        "the visible contrast spans only this narrow band. Propensity is calibrated at department "
+        "level, so within-segment spread reflects geography, not individual behaviour. "
+        "Hatched cells = no population (not a zero value).",
+        bottom=0.20,
+    )
     save_fig(fig, "A4_propensity_heatmap_dept_segment.png")
 
 
@@ -1162,41 +1233,59 @@ def chart_b5():
     dept_agg = dept_agg[dept_agg["total_persuasion"] > 0].copy()
     dept_agg["cpp"] = dept_agg["total_budget"] / dept_agg["total_persuasion"]
 
-    fig, ax = plt.subplots(figsize=(11, 6))
-    sc = ax.scatter(
-        dept_agg["total_persuasion"],
-        dept_agg["cpp"],
-        s=dept_agg["total_budget"] / 300,
-        c=dept_agg["total_persuasion"],
-        cmap=LinearSegmentedColormap.from_list("wred", ["#ffffff", RED]),
-        edgecolors=CHARCOAL,
-        lw=0.5,
-        alpha=0.85,
+    # Colour by region instead of by total_persuasion: the previous colorbar
+    # re-encoded the same quantity already on the x-axis (redundant double
+    # encoding). Region is an orthogonal, useful dimension; bubble size keeps
+    # encoding budget.
+    dept_agg = dept_agg.copy()
+    dept_agg["region_color"] = dept_agg["department"].map(
+        lambda d: BLUE if d in CHACO_DEPARTMENTS else RED
     )
 
-    for _, row in dept_agg.iterrows():
-        ax.annotate(
-            row["department"],
-            (row["total_persuasion"], row["cpp"]),
-            textcoords="offset points",
-            xytext=(5, 3),
-            fontsize=8,
+    fig, ax = plt.subplots(figsize=(11, 6.2))
+    for _region, color, label in [("ORIENTAL", RED, "ORIENTAL"), ("CHACO", BLUE, "CHACO")]:
+        mask = dept_agg["region_color"] == color
+        ax.scatter(
+            dept_agg.loc[mask, "total_persuasion"],
+            dept_agg.loc[mask, "cpp"],
+            s=dept_agg.loc[mask, "total_budget"] / 300,
+            color=color,
+            edgecolors=CHARCOAL,
+            lw=0.5,
+            alpha=0.7,
+            label=label,
         )
 
-    plt.colorbar(sc, ax=ax, label="Total Persuasion-Adjusted Contacts")
+    # Staggered offsets reduce the low-x label pile-up (Concepcion/Guaira/
+    # Neembucu/Misiones and Canindeyu/Cordillera/Paraguari overprinted before).
+    _stagger_annotate(
+        ax,
+        dept_agg.sort_values(["total_persuasion", "cpp"]),
+        "total_persuasion",
+        "cpp",
+        "department",
+        fontsize=8,
+    )
+
     ax.set_xlabel("Total Persuasion-Adjusted Contacts")
     ax.set_ylabel("Cost per Persuasion Contact (USD)")
-    ax.set_title("B5 — Cost per Persuasion Contact vs Total Persuasion Contacts\n(bubble size = budget; x-axis decoupled from ratio denominator)")
-    ax.annotate(
-        "x-axis is now total persuasion contacts (not budget) — this decouples the ratio denominator from the horizontal axis; a previous version showed budget on x, creating a tautological self-correlation.",
-        xy=(0.5, -0.22),
-        xycoords="axes fraction",
-        ha="center",
-        fontsize=7.5,
-        color=GREY,
+    ax.set_title("B5 — Cost per Persuasion Contact vs Total Persuasion Contacts")
+    # Fixed-size legend markers: a scatter with an array ``s`` otherwise sizes
+    # the legend swatch from the (huge) Central bubble.
+    region_handles = [
+        plt.Line2D([0], [0], marker="o", linestyle="none", markerfacecolor=RED,
+                   markeredgecolor=CHARCOAL, markersize=9, label="ORIENTAL"),
+        plt.Line2D([0], [0], marker="o", linestyle="none", markerfacecolor=BLUE,
+                   markeredgecolor=CHARCOAL, markersize=9, label="CHACO"),
+    ]
+    ax.legend(handles=region_handles, title="Region", loc="upper right")
+    _caption_zone(
+        fig,
+        "Bubble size encodes budget (the cost ratio's numerator), kept off the axes; the x-axis is "
+        "total persuasion contacts (the ratio denominator), so cost reads against volume without "
+        "re-plotting budget on both axes. Colour marks region (Oriental vs Chaco).",
+        bottom=0.18,
     )
-    annotate_source(ax)
-    fig.tight_layout()
     save_fig(fig, "B5_cost_per_persuasion_contact.png")
 
 
@@ -1360,7 +1449,7 @@ def chart_c1():
     labelling that anchor — and not titling the panel a "forecast" — is the
     AUD-C1 / F-055 closure invariant.
     """
-    fig, ax = plt.subplots(figsize=(13, 5))
+    fig, ax = plt.subplots(figsize=(13, 5.8))
     fc = forecast.sort_values("date")
 
     ax.plot(
@@ -1389,28 +1478,25 @@ def chart_c1():
         label=f"Verified TSJE Series A outcome anchor (+{TSJE_ANCHOR_PP:.2f} pp)",
     )
 
-    ax.set_xlabel("Date (2018 Series A window — past election, known outcome)")
+    ax.set_xlabel("Date — 2018 Series A window (past election, known outcome)")
     ax.set_ylabel("Preference Margin (pp, Candidate A vs B)")
+    # Finding-first title; the epistemic caveat moves to the reserved caption
+    # zone below the axes (house style). "Retrodiction" stays in the title —
+    # F-055 pins that framing.
     ax.set_title(
-        "C1 — Bayesian Tracking Retrodiction: Preference Margin with 94% HDI\n"
-        "(retrospective reconciliation — conditions on the verified outcome anchor; "
-        "not an out-of-sample forecast — see walk-forward validation for that)"
+        "C1 — Bayesian Tracking Retrodiction: Preference Margin vs Verified 2018 Outcome (94% HDI)"
     )
     ax.legend(loc="upper left")
     ax.xaxis.set_major_locator(matplotlib.dates.MonthLocator())
     ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%b %Y"))
     plt.setp(ax.xaxis.get_majorticklabels(), rotation=30, ha="right")
-    ax.annotate(
-        "Retrodiction on fixture polls — in-sample tracking of a known 2018 outcome, "
-        "not a forward forecast. Gold line marks the verified outcome anchor.",
-        xy=(0.5, -0.22),
-        xycoords="axes fraction",
-        ha="center",
-        fontsize=7.5,
-        color=GREY,
+    _caption_zone(
+        fig,
+        "In-sample retrodiction on fixture polls — it tracks the known 2018 Series A outcome and "
+        "conditions on the verified TSJE anchor (gold line); it is not a forward forecast. "
+        "See walk-forward validation for out-of-sample performance.",
+        bottom=0.24,
     )
-    annotate_source(ax)
-    fig.tight_layout()
     save_fig(fig, "C1_forecast_timeline.png")
 
 
@@ -1522,22 +1608,27 @@ def chart_c3():
     )
     ax.set_xlim(0, 1.08)
     ax.set_xlabel("P(Win — Candidate A)")
+    # Title claim is derived from the plotted data at generation time rather than
+    # asserted: the previous "GANAR departments show <5% win probability" was
+    # falsified by the chart's own bars (a Candidate-B-leaning department sits at
+    # ~21%). Compute the B-favoured count and their actual P(win A) span instead.
+    n_total = len(bg)
+    b_favoured = bg[bg["win_probability_a"] < 0.5]
+    n_b = len(b_favoured)
+    b_lo = float(b_favoured["win_probability_a"].min()) if n_b else float("nan")
+    b_hi = float(b_favoured["win_probability_a"].max()) if n_b else float("nan")
     ax.set_title(
         "C3 — Poll-Implied Department Win Probability (Candidate A)\n"
-        "GANAR strongholds (Central, Alto Paraná) show low P(A); whiskers = 94% HDI\n"
-        f"{ILLUSTRATIVE_BATTLE_SUB}"
+        f"{n_b} of {n_total} modelled departments favour Candidate B "
+        f"(P(win A) {b_lo:.0%}–{b_hi:.0%}); the rest favour Candidate A"
     )
-    ax.annotate(
-        "Exterior dept (GANAR winner) absent — no polygon in GeoJSON. "
-        "Primary table uses unanchored national posterior (c_battleground_v0.5).",
-        xy=(0.5, -0.12),
-        xycoords="axes fraction",
-        ha="center",
-        fontsize=7.5,
-        color=GREY,
+    _caption_zone(
+        fig,
+        f"{ILLUSTRATIVE_BATTLE_SUB}. Exterior dept (GANAR winner) absent — no polygon in GeoJSON. "
+        "Primary table uses unanchored national posterior (c_battleground_v0.5). "
+        "Near-certain (≥99%) departments carry the model's ceiling probability, not exactly 100%.",
+        bottom=0.17,
     )
-    annotate_source(ax)
-    fig.tight_layout()
     save_fig(fig, "C3_battleground_win_probability.png")
 
 
@@ -2269,28 +2360,33 @@ def chart_s5():
     )
 
     fig, ax = plt.subplots(figsize=(11, 7))
-    # Plot by region group to get a clean legend
-    for region, color, label in [("ORIENTAL", RED, "ORIENTAL"), ("CHACO", BLUE, "CHACO")]:
+    # Plot by region group to get a clean legend. Bubble divisor raised
+    # 400 -> 900: the dominant Central bubble previously sprawled off the
+    # top-left plot edge and behind the legend. Axis headroom is added below
+    # so no bubble is clipped.
+    for _region, color, label in [("ORIENTAL", RED, "ORIENTAL"), ("CHACO", BLUE, "CHACO")]:
         mask = dept_eff["region_color"] == color
         ax.scatter(
             dept_eff.loc[mask, "mean_reach_util"],
             dept_eff.loc[mask, "total_persuasion"],
-            s=dept_eff.loc[mask, "total_budget"] / 400,
+            s=dept_eff.loc[mask, "total_budget"] / 900,
             color=color,
             edgecolors=CHARCOAL,
             lw=0.6,
-            alpha=0.75,
+            alpha=0.7,
             label=label,
         )
 
-    for _, row in dept_eff.iterrows():
-        ax.annotate(
-            row["department"],
-            (row["mean_reach_util"], row["total_persuasion"]),
-            textcoords="offset points",
-            xytext=(5, 3),
-            fontsize=8,
-        )
+    # Staggered offsets separate the overprinted clusters (the three Chaco
+    # labels at low reach util, and Itapua/Caaguazu at mid-range).
+    _stagger_annotate(
+        ax,
+        dept_eff.sort_values(["mean_reach_util", "total_persuasion"]),
+        "mean_reach_util",
+        "total_persuasion",
+        "department",
+        fontsize=8,
+    )
 
     # Descriptive OLS trend — NOT a Pareto / efficiency frontier (which would be
     # the non-dominated upper envelope, not a regression line) (AUD-S5).
@@ -2306,24 +2402,35 @@ def chart_s5():
         label="OLS linear trend (descriptive)",
     )
 
+    # Headroom so the largest bubbles are not clipped by the plot spines.
+    x_lo, x_hi = dept_eff["mean_reach_util"].min(), dept_eff["mean_reach_util"].max()
+    y_lo, y_hi = dept_eff["total_persuasion"].min(), dept_eff["total_persuasion"].max()
+    x_pad = (x_hi - x_lo) * 0.10 or 0.01
+    y_pad = (y_hi - y_lo) * 0.12 or 1.0
+    ax.set_xlim(x_lo - x_pad, x_hi + x_pad * 1.4)
+    ax.set_ylim(y_lo - y_pad, y_hi + y_pad * 1.6)
+
     ax.set_xlabel("Mean Reach Utilisation")
     ax.set_ylabel("Total Persuasion-Adjusted Contacts")
-    ax.set_title(
-        "S5 — Reach Utilisation vs Persuasion-Adjusted Contacts by Department\n"
-        "(descriptive scatter + OLS trend — not a Pareto efficiency frontier)"
+    ax.set_title("S5 — Reach Utilisation vs Persuasion-Adjusted Contacts by Department")
+    # Fixed-size legend markers (a scatter with an array ``s`` otherwise sizes
+    # the swatch from the giant Central bubble, which then sat behind the legend).
+    s5_handles = [
+        plt.Line2D([0], [0], marker="o", linestyle="none", markerfacecolor=RED,
+                   markeredgecolor=CHARCOAL, markersize=9, label="ORIENTAL"),
+        plt.Line2D([0], [0], marker="o", linestyle="none", markerfacecolor=BLUE,
+                   markeredgecolor=CHARCOAL, markersize=9, label="CHACO"),
+        plt.Line2D([0], [0], color=CHARCOAL, ls="--", lw=1.2, label="OLS linear trend (descriptive)"),
+    ]
+    ax.legend(handles=s5_handles, loc="upper left")
+    _caption_zone(
+        fig,
+        "Descriptive scatter with an OLS linear trend (dashed line). This is "
+        "not a Pareto efficiency frontier (the non-dominated upper envelope). "
+        "Bubble size = budget; colour = region. The file name S5_efficiency_frontier "
+        "is a retained lineage id, not a claim that the panel is a frontier.",
+        bottom=0.17,
     )
-    ax.legend()
-    ax.annotate(
-        "Dashed line is an OLS trend, not a Pareto efficiency frontier (the non-dominated "
-        "envelope). Legacy filename 'efficiency_frontier' retained for lineage.",
-        xy=(0.5, -0.16),
-        xycoords="axes fraction",
-        ha="center",
-        fontsize=7.5,
-        color=GREY,
-    )
-    annotate_source(ax)
-    fig.tight_layout()
     save_fig(fig, "S5_efficiency_frontier.png")
 
 
