@@ -248,26 +248,46 @@ if houses is not None:
 
 ## Monte Carlo Scenario Engine
 
-The scenario engine draws 10 000 paths from the posterior and applies engagement-shock multipliers to generate a distribution over possible outcomes.
+The scenario engine draws 10 000 paths from the posterior and applies engagement-shock multipliers to generate a distribution over possible outcomes. The figure below plots **effective** persuasion contacts per draw (`scenario_adjusted_persuasion_contacts` = baseline handshake mean × per-draw engagement shock). The raw `alloc_mean_persuasion_contacts` scalar is scenario-invariant and is intentionally excluded — plotting it produces a flat line.
 
 ```{python}
 #| label: fig-mc-scenarios
-#| fig-cap: "Monte Carlo draw distribution: persuasion-adjusted engagement contacts per scenario bucket."
+#| fig-cap: "Monte Carlo draw distribution: effective persuasion contacts (baseline mean × engagement shock) per scenario bucket."
 
-if mc is not None and "scenario_bucket" in mc.columns and "alloc_mean_persuasion_contacts" in mc.columns:
-    fig = px.box(
-        mc[mc["alloc_mean_persuasion_contacts"] > 0].sample(min(2000, len(mc))),
-        x="scenario_bucket",
-        y="alloc_mean_persuasion_contacts",
-        color="scenario_bucket",
-        title="Monte Carlo scenario distribution — persuasion-adjusted contacts (sample of 2 000 draws)",
-        labels={
-            "scenario_bucket": "Scenario bucket",
-            "alloc_mean_persuasion_contacts": "Persuasion-adjusted contacts",
-        },
-        template="plotly_white",
-    )
-    fig.show()
+if mc is not None and "scenario_bucket" in mc.columns and "shock_scale" in mc.columns:
+    if "scenario_adjusted_persuasion_contacts" in mc.columns:
+        mc_plot = mc.copy()
+        metric_col = "scenario_adjusted_persuasion_contacts"
+    elif "alloc_mean_persuasion_contacts" in mc.columns:
+        mc_plot = mc.assign(
+            _eff=mc["alloc_mean_persuasion_contacts"] * mc["shock_scale"]
+        )
+        metric_col = "_eff"
+    else:
+        mc_plot = None
+        metric_col = None
+
+    if mc_plot is not None and metric_col is not None:
+        plot_df = mc_plot[mc_plot[metric_col] > 0].sample(min(2000, len(mc_plot)))
+        fig = px.violin(
+            plot_df,
+            x="scenario_bucket",
+            y=metric_col,
+            color="scenario_bucket",
+            box=True,
+            title=(
+                "Monte Carlo scenario distribution — effective persuasion contacts "
+                "(baseline mean × engagement shock; sample of 2 000 draws)"
+            ),
+            labels={
+                "scenario_bucket": "Scenario bucket",
+                metric_col: "Effective persuasion contacts",
+            },
+            template="plotly_white",
+        )
+        fig.show()
+    else:
+        display(HTML("<p><em>Monte Carlo draws lack contact columns — run <code>make module-c-mc</code>.</em></p>"))
 elif mc is not None:
     # Show summary of available columns
     summary = mc.describe().round(2)

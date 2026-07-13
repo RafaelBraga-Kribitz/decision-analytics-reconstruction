@@ -13,6 +13,8 @@ Closure invariant (static source checks):
   schema_contracts/monte_carlo_draws.yaml — declares that field.
   reports/eda/generate_eda.py — a chart plots scenario_adjusted_persuasion_contacts
         (not the flat raw mean) and documents the mean-vs-total unit difference.
+  portfolio/quarto/post_mortem.qmd — the deployed MC figure plots
+        scenario_adjusted_persuasion_contacts (not alloc_mean as a distribution).
   tests — a std>0 test guards that the plotted metric varies within buckets.
 
 The runtime proof (groupby(scenario_bucket).std() > 0) is
@@ -36,13 +38,32 @@ MC = (
 )
 CONTRACT = REPO_ROOT / "schema_contracts" / "monte_carlo_draws.yaml"
 GENERATOR = REPO_ROOT / "reports" / "eda" / "generate_eda.py"
+POSTMORTEM = (
+    REPO_ROOT
+    / "module_c_forecasting_scenarios"
+    / "portfolio"
+    / "quarto"
+    / "post_mortem.qmd"
+)
 TEST = REPO_ROOT / "module_c_forecasting_scenarios" / "tests" / "test_bc_handshake.py"
 
 FIELD = "scenario_adjusted_persuasion_contacts"
+FIG_LABEL = "fig-mc-scenarios"
+
+
+def _mc_figure_block(qmd: str) -> str:
+    """Return the post_mortem.qmd source between fig-mc-scenarios and the next cell."""
+    start = qmd.find(f"#| label: {FIG_LABEL}")
+    if start < 0:
+        return ""
+    end = qmd.find("```{python}", start + 1)
+    if end < 0:
+        return qmd[start:]
+    return qmd[start:end]
 
 
 def main() -> int:
-    for path in (MC, CONTRACT, GENERATOR, TEST):
+    for path in (MC, CONTRACT, GENERATOR, POSTMORTEM, TEST):
         if not path.is_file():
             return gate("F-071", Path(__file__).name, False, f"missing {path.name}")
     gaps: list[str] = []
@@ -63,10 +84,19 @@ def main() -> int:
     if "scenario_adjusted_contacts_varies" not in TEST.read_text(encoding="utf-8"):
         gaps.append("no std>0 test that the plotted MC contacts metric varies within buckets")
 
+    qmd = POSTMORTEM.read_text(encoding="utf-8")
+    mc_fig = _mc_figure_block(qmd)
+    if not mc_fig:
+        gaps.append(f"post_mortem.qmd missing {FIG_LABEL} MC figure block")
+    elif FIELD not in mc_fig:
+        gaps.append("post_mortem.qmd MC figure does not plot scenario_adjusted_persuasion_contacts")
+    if 'y="alloc_mean_persuasion_contacts"' in mc_fig:
+        gaps.append("post_mortem.qmd MC figure still plots flat alloc_mean as a distribution")
+
     detail = (
         "; ".join(gaps)
         if gaps
-        else "MC contacts figure plots a per-draw varying metric; units documented; std>0 tested"
+        else "MC contacts figure plots a per-draw varying metric in EDA and post_mortem; std>0 tested"
     )
     return gate("F-071", Path(__file__).name, not gaps, detail)
 
