@@ -38,27 +38,21 @@ def test_battleground_table_contract(daily_fixture: pd.DataFrame, tmp_path: Path
 
 def test_battleground_heatmap_geojson_written(daily_fixture: pd.DataFrame, tmp_path: Path) -> None:
     out = tmp_path / "bg.parquet"
-    export_battleground_department_table(
-        daily_fixture, out, calibration_series="A", primary=True
-    )
+    export_battleground_department_table(daily_fixture, out, calibration_series="A", primary=True)
     heatmap_path = tmp_path / "battleground_probability_heatmap.geojson"
     assert heatmap_path.exists(), "choropleth GeoJSON not written"
 
 
 def test_battleground_heatmap_has_18_features(daily_fixture: pd.DataFrame, tmp_path: Path) -> None:
     out = tmp_path / "bg.parquet"
-    export_battleground_department_table(
-        daily_fixture, out, calibration_series="A", primary=True
-    )
+    export_battleground_department_table(daily_fixture, out, calibration_series="A", primary=True)
     geo = json.loads((tmp_path / "battleground_probability_heatmap.geojson").read_text())
     assert len(geo["features"]) == 18
 
 
 def test_battleground_heatmap_polygon_geometry(daily_fixture: pd.DataFrame, tmp_path: Path) -> None:
     out = tmp_path / "bg.parquet"
-    export_battleground_department_table(
-        daily_fixture, out, calibration_series="A", primary=True
-    )
+    export_battleground_department_table(daily_fixture, out, calibration_series="A", primary=True)
     geo = json.loads((tmp_path / "battleground_probability_heatmap.geojson").read_text())
     for feat in geo["features"]:
         assert feat["geometry"] is not None, f"{feat['properties']['department']} has null geometry"
@@ -72,7 +66,9 @@ def _feature_bbox(feat: dict) -> tuple[float, float, float, float]:
     return min(lons), min(lats), max(lons), max(lats)
 
 
-def _bbox_overlap(a: tuple[float, float, float, float], b: tuple[float, float, float, float]) -> bool:
+def _bbox_overlap(
+    a: tuple[float, float, float, float], b: tuple[float, float, float, float]
+) -> bool:
     """True when closed-axis bounding boxes share interior area (edge-sharing is OK)."""
     ax0, ay0, ax1, ay1 = a
     bx0, by0, bx1, by1 = b
@@ -84,9 +80,7 @@ def test_battleground_department_polygons_do_not_overlap(
 ) -> None:
     """Choropleth cells must not overlap — overlapping placeholder boxes hid low-P depts."""
     out = tmp_path / "bg.parquet"
-    export_battleground_department_table(
-        daily_fixture, out, calibration_series="A", primary=True
-    )
+    export_battleground_department_table(daily_fixture, out, calibration_series="A", primary=True)
     geo = json.loads((tmp_path / "battleground_probability_heatmap.geojson").read_text())
     features = geo["features"]
     bboxes = [_feature_bbox(f) for f in features]
@@ -104,9 +98,7 @@ def test_battleground_heatmap_posterior_win_prob_range(
     daily_fixture: pd.DataFrame, tmp_path: Path
 ) -> None:
     out = tmp_path / "bg.parquet"
-    export_battleground_department_table(
-        daily_fixture, out, calibration_series="A", primary=True
-    )
+    export_battleground_department_table(daily_fixture, out, calibration_series="A", primary=True)
     geo = json.loads((tmp_path / "battleground_probability_heatmap.geojson").read_text())
     for feat in geo["features"]:
         props = feat["properties"]
@@ -120,12 +112,8 @@ def test_battleground_heatmap_posterior_win_prob_range(
 def test_battleground_heatmap_deterministic(daily_fixture: pd.DataFrame, tmp_path: Path) -> None:
     out_a = tmp_path / "a" / "bg.parquet"
     out_b = tmp_path / "b" / "bg.parquet"
-    export_battleground_department_table(
-        daily_fixture, out_a, calibration_series="A", primary=True
-    )
-    export_battleground_department_table(
-        daily_fixture, out_b, calibration_series="A", primary=True
-    )
+    export_battleground_department_table(daily_fixture, out_a, calibration_series="A", primary=True)
+    export_battleground_department_table(daily_fixture, out_b, calibration_series="A", primary=True)
     geo_a = json.loads((tmp_path / "a" / "battleground_probability_heatmap.geojson").read_text())
     geo_b = json.loads((tmp_path / "b" / "battleground_probability_heatmap.geojson").read_text())
     probs_a = [f["properties"]["posterior_win_prob"] for f in geo_a["features"]]
@@ -153,9 +141,7 @@ def test_battleground_recovers_real_ganar_strongholds(tmp_path: Path) -> None:
         }
     )
     out = tmp_path / "bg.parquet"
-    df = export_battleground_department_table(
-        daily, out, calibration_series="A", anchored=True
-    )
+    df = export_battleground_department_table(daily, out, calibration_series="A", anchored=True)
     win = dict(zip(df["department"], df["win_probability_a"], strict=True))
     ganar_with_polygons = ["Concepcion", "Cordillera", "Alto Parana", "Central"]
     for dept in ganar_with_polygons:
@@ -189,9 +175,9 @@ def test_battleground_percentile_hdi_has_visible_width(
         daily_fixture, tmp_path / "bg.parquet", calibration_series="A", primary=True
     )
     widths = df["hdi_high"] - df["hdi_low"]
-    assert (widths >= 0.05).sum() >= 5, (
-        f"expected ≥5 departments with HDI width ≥0.05, got {(widths >= 0.05).sum()}"
-    )
+    assert (
+        widths >= 0.05
+    ).sum() >= 5, f"expected ≥5 departments with HDI width ≥0.05, got {(widths >= 0.05).sum()}"
 
 
 def test_battleground_manifest_records_sigma_provenance(
@@ -237,9 +223,9 @@ def test_anchor_comparison_flip_list_and_divergence_guard(
         negative, tmp_path / "r.parquet", calibration_series="A", anchored=True
     )
     cmp_df = write_anchor_comparison(poll_implied, retrodiction, tmp_path / "cmp.md")
-    assert cmp_df["classification_flip"].any(), (
-        "national margin sign change must flip at least one department classification"
-    )
+    assert cmp_df[
+        "classification_flip"
+    ].any(), "national margin sign change must flip at least one department classification"
     text = (tmp_path / "cmp.md").read_text()
     assert "flip" in text and "retrodiction" in text
 

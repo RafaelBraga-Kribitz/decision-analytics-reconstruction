@@ -13,10 +13,10 @@ The Bayesian tracking model closes at a **3.7 pp preference margin** on fixture 
 ## Top 3 Priority Departments
 
 **1. Caaguazu (Budget: $468K, Modelled Win Prob: 68.2%, Propensity: ~0.58)**
-Caaguazu is the top battleground department — poll-implied win probability sits near the 50% threshold with visible HDI uncertainty. A strong Rural Committed presence (high propensity) and lower cost-per-persuasion-contact than metro departments make it the efficiency sweet spot for marginal persuasion spend.
+Caaguazu is the top battleground department — tracking-implied win probability sits near the 50% threshold with visible HDI uncertainty. A strong Rural Committed presence (high propensity) and lower cost-per-persuasion-contact than metro departments make it the efficiency sweet spot for marginal persuasion spend.
 
 **2. San Pedro (Budget: $340K, Modelled Win Prob: 86.1%, Propensity: ~0.58)**
-San Pedro ranks among the most competitive departments after Caaguazu. Radio and canvassing channels reach Rural Committed voters efficiently here; protecting budget through the final fortnight is critical.
+San Pedro ranks among the most competitive departments after Caaguazu. Radio and canvassing channels reach Rural Committed segment efficiently here; protecting budget through the final fortnight is critical.
 
 **3. Itapua (Budget: $494K, Modelled Win Prob: 89.1%, Propensity: ~0.65)**
 Itapúa has the highest mean participation propensity of any department with significant Rural Committed presence. It is the dominant department for that segment. Radio is the primary reach channel. At near-saturation on reach utilisation, the channel is performing well — the risk is a budget cut that disrupts this performance. Protect Itapúa's radio budget unconditionally and explore whether a modest canvassing supplement in rural municipalities can push propensity-weighted turnout past 70%.

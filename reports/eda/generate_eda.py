@@ -2833,7 +2833,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 **Strategic implication:** The campaign is in a "protecting the lead" posture. The strategic priority shifts from persuasion to turnout maximisation among A-leaning segments, particularly Youth Volatile and Rural Committed.
 
 ### C3 — Battleground Department Win Probability
-**What it shows:** Horizontal bar chart of poll-implied P(Win, Candidate A) by department with 94% HDI whiskers (unanchored national posterior × TSJE swing factors, `c_battleground_v0.4`).
+**What it shows:** Horizontal bar chart of tracking-implied P(Win, Candidate A) by department with 94% HDI whiskers (unanchored national posterior × TSJE swing factors, `c_battleground_v0.4`).
 **Key finding:** Modelled win probabilities span **{_min_win_prob:.1%}–{_max_win_prob:.1%}** ({_illustrative_tracking_note}). GANAR strongholds Central ({_dept_win_prob('Central'):.1%}) and Alto Paraná ({_dept_win_prob('Alto Parana'):.1%}) sit well below 50%; Caaguazu ({_dept_win_prob('Caaguazu'):.1%}) and San Pedro ({_dept_win_prob('San Pedro'):.1%}) are the closest competitive departments.
 **Strategic implication:** Geographic risk is heterogeneous — budget in Central and Alto Paraná targets turnout/defence in GANAR territory, not persuasion swing. Caaguazu and San Pedro are the true battlegrounds where marginal contacts can shift the mandate.
 
@@ -2994,10 +2994,10 @@ The Bayesian tracking model closes at a **{forecast_final_mean:.1f} pp preferenc
 ## Top 3 Priority Departments
 
 **1. Caaguazu (Budget: ${_b1_caaguazu/1e3:,.0f}K, Modelled Win Prob: {_dept_win_prob('Caaguazu'):.1%}, Propensity: ~0.58)**
-Caaguazu is the top battleground department — poll-implied win probability sits near the 50% threshold with visible HDI uncertainty. A strong Rural Committed presence (high propensity) and lower cost-per-persuasion-contact than metro departments make it the efficiency sweet spot for marginal persuasion spend.
+Caaguazu is the top battleground department — tracking-implied win probability sits near the 50% threshold with visible HDI uncertainty. A strong Rural Committed presence (high propensity) and lower cost-per-persuasion-contact than metro departments make it the efficiency sweet spot for marginal persuasion spend.
 
 **2. San Pedro (Budget: ${_b1_san_pedro/1e3:,.0f}K, Modelled Win Prob: {_dept_win_prob('San Pedro'):.1%}, Propensity: ~0.58)**
-San Pedro ranks among the most competitive departments after Caaguazu. Radio and canvassing channels reach Rural Committed voters efficiently here; protecting budget through the final fortnight is critical.
+San Pedro ranks among the most competitive departments after Caaguazu. Radio and canvassing channels reach Rural Committed segment efficiently here; protecting budget through the final fortnight is critical.
 
 **3. Itapua (Budget: ${_b1_itapua/1e3:,.0f}K, Modelled Win Prob: {_dept_win_prob('Itapua'):.1%}, Propensity: ~0.65)**
 Itapúa has the highest mean participation propensity of any department with significant Rural Committed presence. It is the dominant department for that segment. Radio is the primary reach channel. At near-saturation on reach utilisation, the channel is performing well — the risk is a budget cut that disrupts this performance. Protect Itapúa's radio budget unconditionally and explore whether a modest canvassing supplement in rural municipalities can push propensity-weighted turnout past 70%.

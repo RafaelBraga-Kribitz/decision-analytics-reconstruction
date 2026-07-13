@@ -184,7 +184,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 **Strategic implication:** The campaign is in a "protecting the lead" posture. The strategic priority shifts from persuasion to turnout maximisation among A-leaning segments, particularly Youth Volatile and Rural Committed.
 
 ### C3 — Battleground Department Win Probability
-**What it shows:** Horizontal bar chart of poll-implied P(Win, Candidate A) by department with 94% HDI whiskers (unanchored national posterior × TSJE swing factors, `c_battleground_v0.4`).
+**What it shows:** Horizontal bar chart of tracking-implied P(Win, Candidate A) by department with 94% HDI whiskers (unanchored national posterior × TSJE swing factors, `c_battleground_v0.4`).
 **Key finding:** Modelled win probabilities span **10.3%–89.9%** (Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp). GANAR strongholds Central (10.5%) and Alto Paraná (10.5%) sit well below 50%; Caaguazu (68.2%) and San Pedro (86.1%) are the closest competitive departments.
 **Strategic implication:** Geographic risk is heterogeneous — budget in Central and Alto Paraná targets turnout/defence in GANAR territory, not persuasion swing. Caaguazu and San Pedro are the true battlegrounds where marginal contacts can shift the mandate.
 

@@ -144,6 +144,118 @@ def _win_prob_hdi(
     return win_prob, hdi_low, hdi_high
 
 
+def _build_battleground_rows(
+    swings: dict[str, float],
+    m_pp: float,
+    hdi_lo: float,
+    hdi_hi: float,
+    sigma_national: float,
+    calibration_series: str,
+    estimand: str,
+) -> pd.DataFrame:
+    rows: list[dict[str, Any]] = []
+    for dept in DEPARTMENTS:
+        swing = swings.get(dept, 0.0)
+        sigma_dept = float(np.sqrt((swing * sigma_national) ** 2 + _SIGMA_IDIO_PP**2))
+        win_prob_a, hdi_low, hdi_high = _win_prob_hdi(
+            swing, m_pp, hdi_lo, hdi_hi, sigma_national, sigma_dept
+        )
+        rows.append(
+            {
+                "department": dept,
+                "calibration_series": calibration_series,
+                "win_probability_a": win_prob_a,
+                "model_version": MODEL_VERSION,
+                "estimand": estimand,
+                "hdi_low": hdi_low,
+                "hdi_high": hdi_high,
+                "_posterior_win_prob": win_prob_a,
+                "_hdi_low": hdi_low,
+                "_hdi_high": hdi_high,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def _assert_interval_brackets_point(out: pd.DataFrame) -> None:
+    assert bool(
+        (
+            (out["hdi_low"] >= 0.0)
+            & (out["hdi_low"] <= out["win_probability_a"])
+            & (out["win_probability_a"] <= out["hdi_high"])
+            & (out["hdi_high"] <= 1.0)
+        ).all()
+    ), "battleground export violates 0 <= hdi_low <= win_probability_a <= hdi_high <= 1"
+
+
+def _write_null_geojson(out: pd.DataFrame, out_path: Path, calibration_series: str) -> None:
+    null_features: list[dict[str, Any]] = [
+        {
+            "type": "Feature",
+            "properties": {
+                "department": r["department"],
+                "win_probability_a": r["win_probability_a"],
+                "calibration_series": calibration_series,
+            },
+            "geometry": None,
+        }
+        for _, r in out.iterrows()
+    ]
+    out_path.with_suffix(".geojson").write_text(
+        json.dumps({"type": "FeatureCollection", "features": null_features})
+    )
+
+
+def _write_heatmap_geojson(
+    full: pd.DataFrame,
+    out_path: Path,
+    calibration_series: str,
+    estimand: str,
+) -> None:
+    dept_polys = _load_department_polygons()
+    heatmap_features: list[dict[str, Any]] = [
+        {
+            "type": "Feature",
+            "properties": {
+                "department": str(r["department"]),
+                "posterior_win_prob": float(r["_posterior_win_prob"]),
+                "hdi_low": float(r["_hdi_low"]),
+                "hdi_high": float(r["_hdi_high"]),
+                "calibration_series": calibration_series,
+                "estimand": estimand,
+            },
+            "geometry": dept_polys.get(str(r["department"])),
+        }
+        for _, r in full.iterrows()
+    ]
+    heatmap_path = out_path.parent / "battleground_probability_heatmap.geojson"
+    heatmap_path.write_text(
+        json.dumps({"type": "FeatureCollection", "features": heatmap_features}, indent=2)
+    )
+
+
+def _write_battleground_manifest(out_path: Path, *, estimand: str, anchored: bool) -> None:
+    manifest = {
+        "model_version": MODEL_VERSION,
+        "estimand": estimand,
+        "anchored_national_posterior": anchored,
+        "sigma_idio_pp": _SIGMA_IDIO_PP,
+        "sigma_idio_provenance": _SIGMA_IDIO_PROVENANCE,
+        "hdi_prob": _HDI_PROB,
+        "tsje_input_sha256": hashlib.sha256(_TSJE_CSV.read_bytes()).hexdigest(),
+        "outcome_data_entry_points": [
+            (
+                "national posterior outcome anchor (config/calibration.yaml use_outcome_anchor)"
+                if anchored
+                else "none at the national layer (unanchored companion run)"
+            ),
+            "swing factors derived from realized tsje_2018_department_results.csv",
+        ],
+    }
+    manifest_path = out_path.parent / f"{out_path.stem}_manifest.json"
+    manifest_path.write_text(json.dumps(manifest, indent=2))
+
+
 def export_battleground_department_table(
     daily_forecast: pd.DataFrame,
     out_path: Path,
@@ -201,31 +313,9 @@ def export_battleground_department_table(
 
     tsje = _load_tsje()
     swings = _swing_factors(tsje)
-
-    rows: list[dict[str, Any]] = []
-    for dept in DEPARTMENTS:
-        swing = swings.get(dept, 0.0)
-        # Uncertainty: national variance amplified by swing, plus idiosyncratic floor.
-        sigma_dept = float(np.sqrt((swing * sigma_national) ** 2 + _SIGMA_IDIO_PP**2))
-        win_prob_a, hdi_low, hdi_high = _win_prob_hdi(
-            swing, m_pp, hdi_lo, hdi_hi, sigma_national, sigma_dept
-        )
-        rows.append(
-            {
-                "department": dept,
-                "calibration_series": calibration_series,
-                "win_probability_a": win_prob_a,
-                "model_version": MODEL_VERSION,
-                "estimand": estimand,
-                "hdi_low": hdi_low,
-                "hdi_high": hdi_high,
-                "_posterior_win_prob": win_prob_a,
-                "_hdi_low": hdi_low,
-                "_hdi_high": hdi_high,
-            }
-        )
-
-    full = pd.DataFrame(rows)
+    full = _build_battleground_rows(
+        swings, m_pp, hdi_lo, hdi_hi, sigma_national, calibration_series, estimand
+    )
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     contract_cols = [
@@ -238,83 +328,14 @@ def export_battleground_department_table(
         "hdi_high",
     ]
     out = cast(pd.DataFrame, full[contract_cols].copy())
-    # False-precision guard (IMP-C05 NFR): every exported row carries an
-    # interval that brackets its point estimate, all in [0, 1]. Violations
-    # abort the export before anything is written.
-    assert bool(
-        (
-            (out["hdi_low"] >= 0.0)
-            & (out["hdi_low"] <= out["win_probability_a"])
-            & (out["win_probability_a"] <= out["hdi_high"])
-            & (out["hdi_high"] <= 1.0)
-        ).all()
-    ), "battleground export violates 0 <= hdi_low <= win_probability_a <= hdi_high <= 1"
+    _assert_interval_brackets_point(out)
     validate_dataframe_contract(out, "battleground_department_probability")
     out.to_parquet(out_path, index=False)
 
-    null_features: list[dict[str, Any]] = [
-        {
-            "type": "Feature",
-            "properties": {
-                "department": r["department"],
-                "win_probability_a": r["win_probability_a"],
-                "calibration_series": calibration_series,
-            },
-            "geometry": None,
-        }
-        for _, r in out.iterrows()
-    ]
-    out_path.with_suffix(".geojson").write_text(
-        json.dumps({"type": "FeatureCollection", "features": null_features})
-    )
-
+    _write_null_geojson(out, out_path, calibration_series)
     if primary:
-        # The polygon choropleth keeps its stable filename and belongs to the
-        # primary poll_implied export — the retrodiction companion must not
-        # clobber it.
-        dept_polys = _load_department_polygons()
-        heatmap_features: list[dict[str, Any]] = [
-            {
-                "type": "Feature",
-                "properties": {
-                    "department": str(r["department"]),
-                    "posterior_win_prob": float(r["_posterior_win_prob"]),
-                    "hdi_low": float(r["_hdi_low"]),
-                    "hdi_high": float(r["_hdi_high"]),
-                    "calibration_series": calibration_series,
-                    "estimand": estimand,
-                },
-                "geometry": dept_polys.get(str(r["department"])),
-            }
-            for _, r in full.iterrows()
-        ]
-        heatmap_path = out_path.parent / "battleground_probability_heatmap.geojson"
-        heatmap_path.write_text(
-            json.dumps({"type": "FeatureCollection", "features": heatmap_features}, indent=2)
-        )
-
-    # Run manifest (IMP-C05 reproducibility NFR): records the sigma value and
-    # its provenance, the HDI level, the estimand, and the hash of the swing
-    # factors' input data.
-    manifest = {
-        "model_version": MODEL_VERSION,
-        "estimand": estimand,
-        "anchored_national_posterior": anchored,
-        "sigma_idio_pp": _SIGMA_IDIO_PP,
-        "sigma_idio_provenance": _SIGMA_IDIO_PROVENANCE,
-        "hdi_prob": _HDI_PROB,
-        "tsje_input_sha256": hashlib.sha256(_TSJE_CSV.read_bytes()).hexdigest(),
-        "outcome_data_entry_points": [
-            (
-                "national posterior outcome anchor (config/calibration.yaml use_outcome_anchor)"
-                if anchored
-                else "none at the national layer (unanchored companion run)"
-            ),
-            "swing factors derived from realized tsje_2018_department_results.csv",
-        ],
-    }
-    manifest_path = out_path.parent / f"{out_path.stem}_manifest.json"
-    manifest_path.write_text(json.dumps(manifest, indent=2))
+        _write_heatmap_geojson(full, out_path, calibration_series, estimand)
+    _write_battleground_manifest(out_path, estimand=estimand, anchored=anchored)
 
     return out
 
@@ -360,9 +381,9 @@ def write_anchor_comparison(
             "win_probability_a_retrodiction": a.to_numpy(),
         }
     )
-    cmp_df["classification_flip"] = (
-        cmp_df["win_probability_a_poll_implied"] > 0.5
-    ) != (cmp_df["win_probability_a_retrodiction"] > 0.5)
+    cmp_df["classification_flip"] = (cmp_df["win_probability_a_poll_implied"] > 0.5) != (
+        cmp_df["win_probability_a_retrodiction"] > 0.5
+    )
     flips = cmp_df[cmp_df["classification_flip"]]["department"].tolist()
 
     lines = [
