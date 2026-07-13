@@ -39,11 +39,7 @@ MC = (
 CONTRACT = REPO_ROOT / "schema_contracts" / "monte_carlo_draws.yaml"
 GENERATOR = REPO_ROOT / "reports" / "eda" / "generate_eda.py"
 POSTMORTEM = (
-    REPO_ROOT
-    / "module_c_forecasting_scenarios"
-    / "portfolio"
-    / "quarto"
-    / "post_mortem.qmd"
+    REPO_ROOT / "module_c_forecasting_scenarios" / "portfolio" / "quarto" / "post_mortem.qmd"
 )
 TEST = REPO_ROOT / "module_c_forecasting_scenarios" / "tests" / "test_bc_handshake.py"
 
@@ -62,41 +58,54 @@ def _mc_figure_block(qmd: str) -> str:
     return qmd[start:end]
 
 
-def main() -> int:
-    for path in (MC, CONTRACT, GENERATOR, POSTMORTEM, TEST):
-        if not path.is_file():
-            return gate("F-071", Path(__file__).name, False, f"missing {path.name}")
+def _check_mc_sources() -> list[str]:
     gaps: list[str] = []
-
     mc = MC.read_text(encoding="utf-8")
     if "_scenario_adjusted_contacts" not in mc or FIELD not in mc:
-        gaps.append("monte_carlo.py does not emit a per-draw scenario_adjusted_persuasion_contacts")
-
+        gaps.append("monte_carlo.py does not emit scenario_adjusted_persuasion_contacts")
     if FIELD not in CONTRACT.read_text(encoding="utf-8"):
         gaps.append("monte_carlo_draws.yaml does not declare scenario_adjusted_persuasion_contacts")
+    return gaps
 
+
+def _check_generator_and_test() -> list[str]:
+    gaps: list[str] = []
     gen = GENERATOR.read_text(encoding="utf-8")
     if FIELD not in gen:
         gaps.append("generate_eda.py never plots scenario_adjusted_persuasion_contacts")
     if "expected_contacts across all cells" not in gen:
         gaps.append("generate_eda.py does not document the mean-vs-total contacts unit difference")
-
     if "scenario_adjusted_contacts_varies" not in TEST.read_text(encoding="utf-8"):
         gaps.append("no std>0 test that the plotted MC contacts metric varies within buckets")
+    return gaps
 
-    qmd = POSTMORTEM.read_text(encoding="utf-8")
-    mc_fig = _mc_figure_block(qmd)
+
+def _check_postmortem_mc_figure() -> list[str]:
+    gaps: list[str] = []
+    mc_fig = _mc_figure_block(POSTMORTEM.read_text(encoding="utf-8"))
     if not mc_fig:
         gaps.append(f"post_mortem.qmd missing {FIG_LABEL} MC figure block")
-    elif FIELD not in mc_fig:
+        return gaps
+    if FIELD not in mc_fig:
         gaps.append("post_mortem.qmd MC figure does not plot scenario_adjusted_persuasion_contacts")
     if 'y="alloc_mean_persuasion_contacts"' in mc_fig:
         gaps.append("post_mortem.qmd MC figure still plots flat alloc_mean as a distribution")
+    return gaps
+
+
+def main() -> int:
+    for path in (MC, CONTRACT, GENERATOR, POSTMORTEM, TEST):
+        if not path.is_file():
+            return gate("F-071", Path(__file__).name, False, f"missing {path.name}")
+    gaps = _check_mc_sources() + _check_generator_and_test() + _check_postmortem_mc_figure()
 
     detail = (
         "; ".join(gaps)
         if gaps
-        else "MC contacts figure plots a per-draw varying metric in EDA and post_mortem; std>0 tested"
+        else (
+            "MC contacts figure plots per-draw varying metric in EDA and post_mortem; "
+            "std>0 tested"
+        )
     )
     return gate("F-071", Path(__file__).name, not gaps, detail)
 

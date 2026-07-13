@@ -72,9 +72,7 @@ def _parquet_gaps() -> list[str]:
 def _qmd_gaps() -> list[str]:
     gaps: list[str] = []
     text = QMD.read_text(encoding="utf-8")
-    m = re.search(
-        r"## Department-Level Win Probability.*?fig-battleground-choropleth", text, re.S
-    )
+    m = re.search(r"## Department-Level Win Probability.*?fig-battleground-choropleth", text, re.S)
     block = m.group(0) if m else ""
     if not block:
         return ["post_mortem.qmd battleground section not found"]

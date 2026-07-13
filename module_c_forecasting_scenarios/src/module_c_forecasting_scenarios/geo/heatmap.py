@@ -340,6 +340,20 @@ def export_battleground_department_table(
     return out
 
 
+def _comparison_table_rows(cmp_df: pd.DataFrame) -> list[str]:
+    lines = [
+        "| Department | poll-implied P(A) | retrodiction P(A) | flip |",
+        "|---|---|---|---|",
+    ]
+    for _, r in cmp_df.sort_values("department").iterrows():
+        lines.append(
+            f"| {r['department']} | {r['win_probability_a_poll_implied']:.3f} "
+            f"| {r['win_probability_a_retrodiction']:.3f} "
+            f"| {'YES' if bool(r['classification_flip']) else ''} |"
+        )
+    return lines
+
+
 def write_anchor_comparison(
     poll_implied_table: pd.DataFrame,
     retrodiction_table: pd.DataFrame,
@@ -397,15 +411,8 @@ def write_anchor_comparison(
         "",
         f"Departments whose >0.5 classification flips: {', '.join(flips) if flips else 'none'}",
         "",
-        "| Department | poll-implied P(A) | retrodiction P(A) | flip |",
-        "|---|---|---|---|",
+        *_comparison_table_rows(cmp_df),
     ]
-    for _, r in cmp_df.sort_values("department").iterrows():
-        lines.append(
-            f"| {r['department']} | {r['win_probability_a_poll_implied']:.3f} "
-            f"| {r['win_probability_a_retrodiction']:.3f} "
-            f"| {'YES' if bool(r['classification_flip']) else ''} |"
-        )
     out_path.parent.mkdir(parents=True, exist_ok=True)
     out_path.write_text("\n".join(lines) + "\n")
     return cmp_df
