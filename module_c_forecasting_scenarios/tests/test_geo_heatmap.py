@@ -57,6 +57,39 @@ def test_battleground_heatmap_polygon_geometry(daily_fixture: pd.DataFrame, tmp_
         assert feat["geometry"]["type"] == "Polygon"
 
 
+def _feature_bbox(feat: dict) -> tuple[float, float, float, float]:
+    ring = feat["geometry"]["coordinates"][0]
+    lons = [pt[0] for pt in ring]
+    lats = [pt[1] for pt in ring]
+    return min(lons), min(lats), max(lons), max(lats)
+
+
+def _bbox_overlap(a: tuple[float, float, float, float], b: tuple[float, float, float, float]) -> bool:
+    """True when closed-axis bounding boxes share interior area (edge-sharing is OK)."""
+    ax0, ay0, ax1, ay1 = a
+    bx0, by0, bx1, by1 = b
+    return ax0 < bx1 and bx0 < ax1 and ay0 < by1 and by0 < ay1
+
+
+def test_battleground_department_polygons_do_not_overlap(
+    daily_fixture: pd.DataFrame, tmp_path: Path
+) -> None:
+    """Choropleth cells must not overlap — overlapping placeholder boxes hid low-P depts."""
+    out = tmp_path / "bg.parquet"
+    export_battleground_department_table(daily_fixture, out, calibration_series="A")
+    geo = json.loads((tmp_path / "battleground_probability_heatmap.geojson").read_text())
+    features = geo["features"]
+    bboxes = [_feature_bbox(f) for f in features]
+    for i, a in enumerate(bboxes):
+        for j, b in enumerate(bboxes):
+            if i >= j:
+                continue
+            assert not _bbox_overlap(a, b), (
+                f"{features[i]['properties']['department']} overlaps "
+                f"{features[j]['properties']['department']}"
+            )
+
+
 def test_battleground_heatmap_posterior_win_prob_range(
     daily_fixture: pd.DataFrame, tmp_path: Path
 ) -> None:
