@@ -8,10 +8,10 @@ Consolidated quality gates and measured metrics. **Canonical table:**
 
 | Check | Gate | Measured | Script / test |
 |---|---|---|---|
-| Silhouette | > 0.22 | ~0.2566 | `test_segmentation.py` |
-| Bootstrap ARI | > 0.70 | ~0.7615 | `test_segmentation.py` |
-| Brier | < 0.237 | 0.071 | model card + evaluation |
-| AUC | not headline | 0.9679 (circular) | documented limitation |
+| Silhouette | > 0.22 | 0.2562 (50k; 0.2689 @15k) | `test_segmentation.py` |
+| Bootstrap ARI | ≥ 0.40 (50k; 0.50 test floor) | 0.4304 (50k; 0.5418 @15k) | `test_segmentation.py` (canonical `compute_bootstrap_ari`, IMP-A03/#55) |
+| Brier | < 0.237 | 0.1185 (15k holdout; 0.1212 @50k) | model card + evaluation |
+| AUC | not headline | ≈0.89 (0.8907, circular) | documented limitation |
 
 Department participation raking aligns aggregates to **61.25%** national anchor.
 

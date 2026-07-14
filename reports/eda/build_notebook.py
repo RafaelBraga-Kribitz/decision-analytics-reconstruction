@@ -250,7 +250,7 @@ cells.append(
 
 Before any modelling or visualisation, we subject every dataset to a systematic quality audit. The pipeline ingests raw voter-registry exports, census overlays, and pollster microdata — each with its own provenance and failure modes. Rigorous quality gating at this stage prevents downstream conclusions from being artifacts of data artefacts.
 
-Key concerns going in: (a) entity deduplication across sources, (b) propensity scores outside the probability simplex, (c) budget allocations violating non-negativity, and (d) a known pipeline defect in the Monte Carlo module where `alloc_mean_persuasion_contacts` is hardwired to zero in the current build."""
+Key concerns going in: (a) voter-record deduplication across sources, (b) propensity scores outside the probability simplex, (c) budget allocations violating non-negativity, and (d) a known pipeline defect in the Monte Carlo module where `alloc_mean_persuasion_contacts` is hardwired to zero in the current build."""
     )
 )
 
@@ -332,7 +332,7 @@ cells.append(figure_cell('A1_segment_sizes'))
 
 cells.append(
     md(
-        """**Finding:** Youth Volatile is the dominant segment at 31.3% of the population (3,130 records), nearly double the next largest group (Urban High Volatility at 18.6%). Committed Opposition and Structurally Dependent Bloc together represent only 23.3% of records. Rural Committed, at 14.4%, punches above its numeric weight due to its high participation propensity.
+        """**Finding:** Youth Volatile is the dominant segment at 31.3% of the population (3,130 records), nearly double the next largest group (Urban High Volatility at 18.6%). Committed Opposition and Structurally Dependent Bloc together represent only 23.3% of records. Rural Committed, at 14.4%, punches above its numeric weight because it is hard to reach and radio-dependent, so each member needs disproportionate per-contact investment (its propensity is unremarkable, in the same band as every segment).
 
 **Strategic implication:** Campaign resource allocation should skew toward Youth Volatile mobilisation and Rural Committed retention — these two segments together account for 45.7% of all records and represent the highest expected return on turnout investment."""
     )
@@ -365,9 +365,9 @@ cells.append(figure_cell('A4_propensity_heatmap_dept_segment'))
 
 cells.append(
     md(
-        """**Finding:** Itapua and Alto Parana show the highest propensity values for Rural Committed (>0.70), making them the most efficient turnout investment per contact. The Committed Opposition segment consistently registers propensities near 0.10 across all departments, confirming that geography does not rescue this segment's persuadability. Asuncion's Youth Volatile propensity (~0.48) is below the national segment average, suggesting capital-city youth face structural barriers to participation.
+        """**Finding:** The heatmap is nearly flat — propensity sits in a narrow ~0.50–0.70 band across every department × segment cell, so no department "rescues" a segment and no segment stands out as a mobilisation target on propensity alone. Rural Committed does not exceed ~0.65 even in its strongest departments, and Committed Opposition is not a low outlier — it sits in the same ~0.60–0.69 band as everyone else. Apparent cell-to-cell differences are small and largely track department mix (F-052).
 
-**Strategic implication:** Concentrate Rural Committed budget in Itapua, Caaguazu, and Alto Parana — these three departments deliver the highest propensity-weighted returns per dollar spent."""
+**Strategic implication:** Do not rank turnout investment by propensity cells — the signal is too flat to differentiate. Prioritise Rural Committed departments (Itapua, Caaguazu, Alto Parana) on reachability and cost-per-contact, not on a propensity edge the heatmap does not show."""
     )
 )
 
@@ -376,9 +376,9 @@ cells.append(figure_cell('A5_propensity_violin_by_segment'))
 
 cells.append(
     md(
-        """**Finding:** Urban High Volatility (median ~0.77) and Rural Committed (~0.71) have the tightest, highest propensity distributions, indicating reliable turnout behaviour. Youth Volatile shows the widest spread (0.10–0.90), reflecting true volatility — a substantial tail of disengaged youth. Committed Opposition has a narrow low distribution (~0.10 median), with almost no mass above 0.25.
+        """**Finding:** All six violins overlap heavily in the ~0.50–0.70 band; within-department spread is small because individual propensity is a raked participation-likelihood score with a modest fixed spread (F-052), so the violins reflect department mix more than a real propensity gap between segments. No segment forms a tight high cluster above 0.80 or a low cluster near 0.10 — including Committed Opposition, whose propensity is unremarkable and in-band.
 
-**Strategic implication:** Youth Volatile's wide propensity distribution is the key uncertainty variable — targeted mobilisation that shifts even the bottom quartile of this segment upward by 0.10 would add ~780 high-value contacts nationally."""
+**Strategic implication:** Propensity is not the variable that separates segments — reachability and preference strength are. Mobilisation gains come from reaching hard-to-reach segments (Rural Committed) and activating persuadable ones (Youth Volatile), not from chasing an illusory high-propensity cohort."""
     )
 )
 
@@ -459,7 +459,7 @@ cells.append(
     )
 )
 
-# ── A13 — Preference Proxy Distribution ──────────────────────────────────────
+# ── A13 — Vote-Preference Distribution ───────────────────────────────────────
 cells.append(figure_cell('A13_preference_strength_by_segment'))
 
 cells.append(
@@ -598,7 +598,7 @@ cells.append(
 # ── Cell 28 — Section 4 header ───────────────────────────────────────────────
 cells.append(md("""## 4. Electoral Forecasting
 
-Module C implements a Bayesian hierarchical tracking model calibrated on four polling waves from pollsters ATI/Snead, CAPLI, and ICA. The model estimates a latent daily preference margin for Candidate A, correcting for house effects and transparency-weighted polling quality.
+Module C implements a Bayesian hierarchical tracking model calibrated on eight polling waves from pollsters ATI/Snead, CAPLI, and ICA. The model estimates a latent daily preference margin for Candidate A, correcting for house effects and transparency-weighted polling quality.
 
 The Monte Carlo module then propagates uncertainty through 10,000 draws across two scenario buckets: **baseline** (stable conditions) and **extreme_tracker** (crisis-shock scenario with amplified shock scale). Battleground win probabilities are computed as posterior exceedance probabilities for each department.
 
@@ -612,7 +612,7 @@ cells.append(figure_cell('C1_forecast_timeline'))
 
 cells.append(
     md(
-        """**Finding:** The posterior mean preference margin on fixture polls is data-derived from `daily_posterior_forecast.parquet` (illustrative — not verified outcome; TSJE anchor +3.70 pp). The 94% HDI is wide due to only four survey measurement waves, reflecting epistemic uncertainty on sparse fixtures.
+        """**Finding:** The posterior mean preference margin on fixture polls is data-derived from `daily_posterior_forecast.parquet` (illustrative — not verified outcome; TSJE anchor +3.70 pp). The 94% HDI is wide due to only 8 poll waves, reflecting epistemic uncertainty on sparse fixtures.
 
 **Strategic implication:** Commission at least two additional poll waves in weeks 11–13 to narrow the HDI and provide the campaign with actionable final-week intelligence. The current uncertainty band is too wide for confident resource reallocation in the final sprint."""
     )
@@ -625,7 +625,7 @@ cells.append(
     md(
         """**Finding:** The final-day posterior mean and 94% HDI are read directly from `daily_posterior_forecast.parquet` (illustrative fixture posterior — not verified outcome; TSJE Series A anchor is +3.70 pp). This chart is the same estimand as the canonical PNG emitted by `generate_eda.py`.
 
-**Strategic implication:** Narrow the HDI with additional survey measurement waves before the final sprint; the interval width drives how aggressively the campaign can reallocate in weeks 11–13."""
+**Strategic implication:** Narrow the HDI with additional poll waves before the final sprint; the interval width drives how aggressively the campaign can reallocate in weeks 11–13."""
     )
 )
 
@@ -837,11 +837,11 @@ Itapua has the highest mean participation propensity of any department with sign
 | Segment | Action | Rationale |
 |---------|--------|-----------|
 | **Youth Volatile** (31.3%) | Double down | High reachability, moderate propensity — the mobilisation opportunity |
-| **Rural Committed** (14.4%) | Protect | Highest propensity (0.71), low reachability — every contact counts |
-| **Urban High Volatility** (18.6%) | Maintain | Good reachability, strong propensity — strategy is working |
+| **Rural Committed** (14.4%) | Protect | Baseline propensity (~0.6, like every segment); low reachability is what makes each contact count |
+| **Urban High Volatility** (18.6%) | Maintain | Good reachability, in-band propensity — strategy is working |
 | **Structurally Dependent Bloc** (13.1%) | Maintain | Radio + community organiser approach is appropriate |
-| **Committed Opposition** (10.2%) | Eliminate all spend | Mean propensity 0.10, locked B-voters — zero ROI |
-| **Rural Low Propensity** (12.4%) | Passive only | Propensity 0.35 — no active spend increases warranted |
+| **Committed Opposition** (10.2%) | Eliminate all spend | Locked B-voters (high B-preference strength) — zero persuasion ROI; propensity is in-band, not a low outlier |
+| **Rural Low Propensity** (12.4%) | Passive only | Propensity in the same band as every segment — the label is a cluster profile, not a low turnout score; no active spend increases warranted |
 
 ---
 
@@ -883,7 +883,7 @@ Itapua has the highest mean participation propensity of any department with sign
 - Turnout depression in Youth Volatile: Propensity only 0.49. If youth registration or turnout infrastructure fails, the mandate shrinks materially.
 
 **Low but non-zero systemic risk:**
-- Model miscalibration: Only 4 poll waves. If all pollsters share an unmeasured systematic bias not captured by house effects, the posterior could be significantly wrong. **Diversify polling sources.**
+- Model miscalibration: Only 8 poll waves. If all three pollsters share an unmeasured systematic bias not captured by house effects, the posterior could be significantly wrong. **Diversify polling sources.**
 
 ---
 
@@ -923,7 +923,7 @@ cells.append(md("""## Appendix: Data Dictionary
 | population_master | language_census_bucket | str | guarani_only / jopara_bilingual / spanish_only / other |
 | population_master | jopara_flag | bool | True if primary language is Jopara bilingual |
 | population_master | preference_proxy | str | Revealed preference signal: A / B / other / none |
-| population_master | preference_proxy_strength | float32 | Confidence in preference proxy (0–1) |
+| population_master | preference_proxy_strength | float32 | Confidence in vote-preference (0–1) |
 | population_master | structural_dependency_proxy | bool | True if household shows social transfer dependency indicators |
 | population_master | nbi_stress_prior | float32 | Unsatisfied basic needs stress prior (0 = none, 1 = extreme) |
 | population_master | reachability_index | float64 | Composite reachability score (0–1); higher = easier to contact |

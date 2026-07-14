@@ -270,6 +270,7 @@ verify: audit
 	@echo "── make verify ────────────────────────────────────────────"
 	@$(MAKE) doc-registry-verify
 	@poetry run python scripts/check_terminology.py
+	@poetry run python scripts/check_eda_segment_claims.py
 	@poetry run python scripts/check_palette_cvd_contrast.py
 	@poetry run python scripts/check_no_local_color_literals.py
 	@poetry run python scripts/check_allocation_parameter_provenance.py

@@ -155,6 +155,43 @@ def _stagger_annotate(
         )
 
 
+def _caption_zone(fig: plt.Figure, caption: str, *, bottom: float = 0.18) -> None:
+    """House style: finding-first title, epistemic caveat in a reserved caption band.
+
+    Reserves the bottom ``bottom`` fraction of the figure for the caveat caption
+    and the source line, so neither collides with the x-axis label or tick
+    labels. ``tight_layout`` fits the axes + all its labels into the region
+    ``[bottom, 1]``; the caption and source are placed strictly below ``bottom``,
+    which guarantees no overlap with the axis furniture (the collision mode that
+    the previous per-chart ``annotate(..., xy=(0.5, -0.22))`` offsets produced).
+
+    Args:
+        fig: The figure to lay out.
+        caption: The epistemic caveat text (moved out of the title).
+        bottom: Figure-fraction height reserved for the caption band.
+    """
+    fig.tight_layout(rect=(0, bottom, 1, 1))
+    fig.text(
+        0.5,
+        bottom * 0.5,
+        caption,
+        ha="center",
+        va="center",
+        fontsize=8,
+        color=GREY,
+        wrap=True,
+    )
+    fig.text(
+        0.5,
+        bottom * 0.13,
+        SOURCE,
+        ha="center",
+        va="center",
+        fontsize=7.5,
+        color=GREY,
+    )
+
+
 def safe_chart(label: str):
     """Decorator-factory that catches exceptions so the script never crashes."""
 
@@ -386,6 +423,11 @@ def chart_a4():
 
     fig, ax = plt.subplots(figsize=(13, 8))
     cmap = LinearSegmentedColormap.from_list("rw", ["#ffffff", RED])
+    # Empty (no-population) cells must not read as a low numeric value: the
+    # colormap's low end is near-white, so a blank cell was indistinguishable
+    # from a genuine ~0.45 reading. Render NaN cells on a neutral ground and
+    # overprint a hatch so "no population" is visually distinct from a value.
+    cmap.set_bad("#ececec")
     # IMP-V05 / issue #69: color scale bounded to the observed range (padded
     # to 0.05 ticks) with the range disclosed in the subtitle — the former
     # fixed [0, 1] scale washed out all real variation in a ~0.5-0.7 metric,
@@ -414,16 +456,45 @@ def chart_a4():
                     fontsize=8,
                     color=WHITE if val > 0.6 else CHARCOAL,
                 )
+            else:
+                # Hatched overlay marks an empty cell (no population), so it can
+                # never be misread as a numeric zero / low-propensity reading.
+                ax.add_patch(
+                    mpatches.Rectangle(
+                        (j - 0.5, i - 0.5),
+                        1,
+                        1,
+                        fill=False,
+                        hatch="///",
+                        edgecolor="#9aa0a6",
+                        linewidth=0.0,
+                    )
+                )
 
-    plt.colorbar(im, ax=ax, label="Mean Participation Propensity")
-    ax.set_title(
-        "A4 — Mean Participation Propensity by Department × Segment\n"
-        f"Color scale spans the observed range [{obs_min:.2f}, {obs_max:.2f}] "
-        f"(shown [{scale_lo:.2f}, {scale_hi:.2f}]) — the matrix is near-constant; see F-052.\n"
-        "Note: propensity calibrated at dept-level — within-segment spread reflects geography, not individual behavior"
+    # Range disclosed on the colorbar label itself (not only the title) so the
+    # rescaled colormap cannot be mistaken for a full 0–1 scale — the visible
+    # contrast spans only the narrow observed band (F-053 spirit).
+    plt.colorbar(
+        im,
+        ax=ax,
+        label=(
+            f"Mean Participation Propensity\n"
+            f"(colour spans observed {obs_min:.2f}–{obs_max:.2f}, not 0–1)"
+        ),
     )
-    fig.text(0.5, -0.01, SOURCE, ha="center", fontsize=7.5, color=GREY)
-    fig.tight_layout()
+    # The hatched-cell meaning is stated in the caption ("Hatched cells = no
+    # population"); a proxy legend here would overprint the title (no in-axes
+    # empty space in a full heatmap).
+    ax.set_title("A4 — Mean Participation Propensity by Department × Segment")
+    _caption_zone(
+        fig,
+        f"Colour is robust-scaled to the observed range {obs_min:.2f}–{obs_max:.2f} "
+        f"(shown {scale_lo:.2f}–{scale_hi:.2f}), not 0–1 — the matrix is near-uniform (see F-052), so "
+        "the visible contrast spans only this narrow band. Propensity is calibrated at department "
+        "level, so within-segment spread reflects geography, not individual behaviour. "
+        "Hatched cells = no population (not a zero value).",
+        bottom=0.20,
+    )
     save_fig(fig, "A4_propensity_heatmap_dept_segment.png")
 
 
@@ -1162,41 +1233,59 @@ def chart_b5():
     dept_agg = dept_agg[dept_agg["total_persuasion"] > 0].copy()
     dept_agg["cpp"] = dept_agg["total_budget"] / dept_agg["total_persuasion"]
 
-    fig, ax = plt.subplots(figsize=(11, 6))
-    sc = ax.scatter(
-        dept_agg["total_persuasion"],
-        dept_agg["cpp"],
-        s=dept_agg["total_budget"] / 300,
-        c=dept_agg["total_persuasion"],
-        cmap=LinearSegmentedColormap.from_list("wred", ["#ffffff", RED]),
-        edgecolors=CHARCOAL,
-        lw=0.5,
-        alpha=0.85,
+    # Colour by region instead of by total_persuasion: the previous colorbar
+    # re-encoded the same quantity already on the x-axis (redundant double
+    # encoding). Region is an orthogonal, useful dimension; bubble size keeps
+    # encoding budget.
+    dept_agg = dept_agg.copy()
+    dept_agg["region_color"] = dept_agg["department"].map(
+        lambda d: BLUE if d in CHACO_DEPARTMENTS else RED
     )
 
-    for _, row in dept_agg.iterrows():
-        ax.annotate(
-            row["department"],
-            (row["total_persuasion"], row["cpp"]),
-            textcoords="offset points",
-            xytext=(5, 3),
-            fontsize=8,
+    fig, ax = plt.subplots(figsize=(11, 6.2))
+    for _region, color, label in [("ORIENTAL", RED, "ORIENTAL"), ("CHACO", BLUE, "CHACO")]:
+        mask = dept_agg["region_color"] == color
+        ax.scatter(
+            dept_agg.loc[mask, "total_persuasion"],
+            dept_agg.loc[mask, "cpp"],
+            s=dept_agg.loc[mask, "total_budget"] / 300,
+            color=color,
+            edgecolors=CHARCOAL,
+            lw=0.5,
+            alpha=0.7,
+            label=label,
         )
 
-    plt.colorbar(sc, ax=ax, label="Total Persuasion-Adjusted Contacts")
+    # Staggered offsets reduce the low-x label pile-up (Concepcion/Guaira/
+    # Neembucu/Misiones and Canindeyu/Cordillera/Paraguari overprinted before).
+    _stagger_annotate(
+        ax,
+        dept_agg.sort_values(["total_persuasion", "cpp"]),
+        "total_persuasion",
+        "cpp",
+        "department",
+        fontsize=8,
+    )
+
     ax.set_xlabel("Total Persuasion-Adjusted Contacts")
     ax.set_ylabel("Cost per Persuasion Contact (USD)")
-    ax.set_title("B5 — Cost per Persuasion Contact vs Total Persuasion Contacts\n(bubble size = budget; x-axis decoupled from ratio denominator)")
-    ax.annotate(
-        "x-axis is now total persuasion contacts (not budget) — this decouples the ratio denominator from the horizontal axis; a previous version showed budget on x, creating a tautological self-correlation.",
-        xy=(0.5, -0.22),
-        xycoords="axes fraction",
-        ha="center",
-        fontsize=7.5,
-        color=GREY,
+    ax.set_title("B5 — Cost per Persuasion Contact vs Total Persuasion Contacts")
+    # Fixed-size legend markers: a scatter with an array ``s`` otherwise sizes
+    # the legend swatch from the (huge) Central bubble.
+    region_handles = [
+        plt.Line2D([0], [0], marker="o", linestyle="none", markerfacecolor=RED,
+                   markeredgecolor=CHARCOAL, markersize=9, label="ORIENTAL"),
+        plt.Line2D([0], [0], marker="o", linestyle="none", markerfacecolor=BLUE,
+                   markeredgecolor=CHARCOAL, markersize=9, label="CHACO"),
+    ]
+    ax.legend(handles=region_handles, title="Region", loc="upper right")
+    _caption_zone(
+        fig,
+        "Bubble size encodes budget (the cost ratio's numerator), kept off the axes; the x-axis is "
+        "total persuasion contacts (the ratio denominator), so cost reads against volume without "
+        "re-plotting budget on both axes. Colour marks region (Oriental vs Chaco).",
+        bottom=0.18,
     )
-    annotate_source(ax)
-    fig.tight_layout()
     save_fig(fig, "B5_cost_per_persuasion_contact.png")
 
 
@@ -1360,7 +1449,7 @@ def chart_c1():
     labelling that anchor — and not titling the panel a "forecast" — is the
     AUD-C1 / F-055 closure invariant.
     """
-    fig, ax = plt.subplots(figsize=(13, 5))
+    fig, ax = plt.subplots(figsize=(13, 5.8))
     fc = forecast.sort_values("date")
 
     ax.plot(
@@ -1389,28 +1478,25 @@ def chart_c1():
         label=f"Verified TSJE Series A outcome anchor (+{TSJE_ANCHOR_PP:.2f} pp)",
     )
 
-    ax.set_xlabel("Date (2018 Series A window — past election, known outcome)")
+    ax.set_xlabel("Date — 2018 Series A window (past election, known outcome)")
     ax.set_ylabel("Preference Margin (pp, Candidate A vs B)")
+    # Finding-first title; the epistemic caveat moves to the reserved caption
+    # zone below the axes (house style). "Retrodiction" stays in the title —
+    # F-055 pins that framing.
     ax.set_title(
-        "C1 — Bayesian Tracking Retrodiction: Preference Margin with 94% HDI\n"
-        "(retrospective reconciliation — conditions on the verified outcome anchor; "
-        "not an out-of-sample forecast — see walk-forward validation for that)"
+        "C1 — Bayesian Tracking Retrodiction: Preference Margin vs Verified 2018 Outcome (94% HDI)"
     )
     ax.legend(loc="upper left")
     ax.xaxis.set_major_locator(matplotlib.dates.MonthLocator())
     ax.xaxis.set_major_formatter(matplotlib.dates.DateFormatter("%b %Y"))
     plt.setp(ax.xaxis.get_majorticklabels(), rotation=30, ha="right")
-    ax.annotate(
-        "Retrodiction on fixture polls — in-sample tracking of a known 2018 outcome, "
-        "not a forward forecast. Gold line marks the verified outcome anchor.",
-        xy=(0.5, -0.22),
-        xycoords="axes fraction",
-        ha="center",
-        fontsize=7.5,
-        color=GREY,
+    _caption_zone(
+        fig,
+        "Retrospective reconciliation on fixture polls — in-sample tracking of the known "
+        "2018 Series A outcome that conditions on the verified outcome anchor (gold line); "
+        "not a forward forecast and not an out-of-sample forecast. See walk-forward validation for that.",
+        bottom=0.24,
     )
-    annotate_source(ax)
-    fig.tight_layout()
     save_fig(fig, "C1_forecast_timeline.png")
 
 
@@ -1522,22 +1608,27 @@ def chart_c3():
     )
     ax.set_xlim(0, 1.08)
     ax.set_xlabel("P(Win — Candidate A)")
+    # Title claim is derived from the plotted data at generation time rather than
+    # asserted: the previous "GANAR departments show <5% win probability" was
+    # falsified by the chart's own bars (a Candidate-B-leaning department sits at
+    # ~21%). Compute the B-favoured count and their actual P(win A) span instead.
+    n_total = len(bg)
+    b_favoured = bg[bg["win_probability_a"] < 0.5]
+    n_b = len(b_favoured)
+    b_lo = float(b_favoured["win_probability_a"].min()) if n_b else float("nan")
+    b_hi = float(b_favoured["win_probability_a"].max()) if n_b else float("nan")
     ax.set_title(
         "C3 — Poll-Implied Department Win Probability (Candidate A)\n"
-        "GANAR strongholds (Central, Alto Paraná) show low P(A); whiskers = 94% HDI\n"
-        f"{ILLUSTRATIVE_BATTLE_SUB}"
+        f"{n_b} of {n_total} modelled departments favour Candidate B "
+        f"(P(win A) {b_lo:.0%}–{b_hi:.0%}); the rest favour Candidate A"
     )
-    ax.annotate(
-        "Exterior dept (GANAR winner) absent — no polygon in GeoJSON. "
-        "Primary table uses unanchored national posterior (c_battleground_v0.5).",
-        xy=(0.5, -0.12),
-        xycoords="axes fraction",
-        ha="center",
-        fontsize=7.5,
-        color=GREY,
+    _caption_zone(
+        fig,
+        f"{ILLUSTRATIVE_BATTLE_SUB}. Exterior dept (GANAR winner) absent — no polygon in GeoJSON. "
+        "Primary table uses unanchored national posterior (c_battleground_v0.5). "
+        "Near-certain (≥99%) departments carry the model's ceiling probability, not exactly 100%.",
+        bottom=0.17,
     )
-    annotate_source(ax)
-    fig.tight_layout()
     save_fig(fig, "C3_battleground_win_probability.png")
 
 
@@ -2269,28 +2360,33 @@ def chart_s5():
     )
 
     fig, ax = plt.subplots(figsize=(11, 7))
-    # Plot by region group to get a clean legend
-    for region, color, label in [("ORIENTAL", RED, "ORIENTAL"), ("CHACO", BLUE, "CHACO")]:
+    # Plot by region group to get a clean legend. Bubble divisor raised
+    # 400 -> 900: the dominant Central bubble previously sprawled off the
+    # top-left plot edge and behind the legend. Axis headroom is added below
+    # so no bubble is clipped.
+    for _region, color, label in [("ORIENTAL", RED, "ORIENTAL"), ("CHACO", BLUE, "CHACO")]:
         mask = dept_eff["region_color"] == color
         ax.scatter(
             dept_eff.loc[mask, "mean_reach_util"],
             dept_eff.loc[mask, "total_persuasion"],
-            s=dept_eff.loc[mask, "total_budget"] / 400,
+            s=dept_eff.loc[mask, "total_budget"] / 900,
             color=color,
             edgecolors=CHARCOAL,
             lw=0.6,
-            alpha=0.75,
+            alpha=0.7,
             label=label,
         )
 
-    for _, row in dept_eff.iterrows():
-        ax.annotate(
-            row["department"],
-            (row["mean_reach_util"], row["total_persuasion"]),
-            textcoords="offset points",
-            xytext=(5, 3),
-            fontsize=8,
-        )
+    # Staggered offsets separate the overprinted clusters (the three Chaco
+    # labels at low reach util, and Itapua/Caaguazu at mid-range).
+    _stagger_annotate(
+        ax,
+        dept_eff.sort_values(["mean_reach_util", "total_persuasion"]),
+        "mean_reach_util",
+        "total_persuasion",
+        "department",
+        fontsize=8,
+    )
 
     # Descriptive OLS trend — NOT a Pareto / efficiency frontier (which would be
     # the non-dominated upper envelope, not a regression line) (AUD-S5).
@@ -2306,24 +2402,35 @@ def chart_s5():
         label="OLS linear trend (descriptive)",
     )
 
+    # Headroom so the largest bubbles are not clipped by the plot spines.
+    x_lo, x_hi = dept_eff["mean_reach_util"].min(), dept_eff["mean_reach_util"].max()
+    y_lo, y_hi = dept_eff["total_persuasion"].min(), dept_eff["total_persuasion"].max()
+    x_pad = (x_hi - x_lo) * 0.10 or 0.01
+    y_pad = (y_hi - y_lo) * 0.12 or 1.0
+    ax.set_xlim(x_lo - x_pad, x_hi + x_pad * 1.4)
+    ax.set_ylim(y_lo - y_pad, y_hi + y_pad * 1.6)
+
     ax.set_xlabel("Mean Reach Utilisation")
     ax.set_ylabel("Total Persuasion-Adjusted Contacts")
-    ax.set_title(
-        "S5 — Reach Utilisation vs Persuasion-Adjusted Contacts by Department\n"
-        "(descriptive scatter + OLS trend — not a Pareto efficiency frontier)"
+    ax.set_title("S5 — Reach Utilisation vs Persuasion-Adjusted Contacts by Department")
+    # Fixed-size legend markers (a scatter with an array ``s`` otherwise sizes
+    # the swatch from the giant Central bubble, which then sat behind the legend).
+    s5_handles = [
+        plt.Line2D([0], [0], marker="o", linestyle="none", markerfacecolor=RED,
+                   markeredgecolor=CHARCOAL, markersize=9, label="ORIENTAL"),
+        plt.Line2D([0], [0], marker="o", linestyle="none", markerfacecolor=BLUE,
+                   markeredgecolor=CHARCOAL, markersize=9, label="CHACO"),
+        plt.Line2D([0], [0], color=CHARCOAL, ls="--", lw=1.2, label="OLS linear trend (descriptive)"),
+    ]
+    ax.legend(handles=s5_handles, loc="upper left")
+    _caption_zone(
+        fig,
+        "Descriptive scatter with an OLS linear trend (dashed line). This is "
+        "not a Pareto efficiency frontier (the non-dominated upper envelope). "
+        "Bubble size = budget; colour = region. The file name S5_efficiency_frontier "
+        "is a retained lineage id, not a claim that the panel is a frontier.",
+        bottom=0.17,
     )
-    ax.legend()
-    ax.annotate(
-        "Dashed line is an OLS trend, not a Pareto efficiency frontier (the non-dominated "
-        "envelope). Legacy filename 'efficiency_frontier' retained for lineage.",
-        xy=(0.5, -0.16),
-        xycoords="axes fraction",
-        ha="center",
-        fontsize=7.5,
-        color=GREY,
-    )
-    annotate_source(ax)
-    fig.tight_layout()
     save_fig(fig, "S5_efficiency_frontier.png")
 
 
@@ -2596,8 +2703,6 @@ def _seg_title(lbl: str) -> str:
 _largest_seg = _seg_share_pct.index[0]
 _second_seg = _seg_share_pct.index[1]
 _smallest_seg = _seg_share_pct.index[-1]
-_top_prop_seg = _seg_prop_mean.idxmax()
-_low_prop_seg = _seg_prop_mean.idxmin()
 _yv_pct = float(_seg_share_pct.get("youth_volatile", 0.0))
 _yv_prop = float(_seg_prop_mean.get("youth_volatile", float("nan")))
 _rc_pct = float(_seg_share_pct.get("rural_committed", 0.0))
@@ -2609,6 +2714,30 @@ _co_pct = float(_seg_share_pct.get("committed_opposition", 0.0))
 _co_prop = float(_seg_prop_mean.get("committed_opposition", float("nan")))
 _rlp_pct = float(_seg_share_pct.get("rural_low_propensity", 0.0))
 _rlp_prop = float(_seg_prop_mean.get("rural_low_propensity", float("nan")))
+# Segment-level propensity SPREAD. F-052 established that participation
+# propensity is a near-uniform participation-likelihood score (department std
+# ~0.003, segment std ~0.02) — NOT a segment differentiator. Every segment mean
+# falls in a narrow band, so the narrative must never claim one segment is
+# dramatically the top-propensity cohort, nor attach fabricated extremes far
+# above or far below the shared band that the A4 heatmap and A5 violins show.
+# These bounds are computed from data so the prose can never re-invent a spread
+# that is not there. Guarded by scripts/check_eda_segment_claims.py.
+_seg_prop_min = float(_seg_prop_mean.min())
+_seg_prop_max = float(_seg_prop_mean.max())
+# Tracking-wave count is sourced from the canonical golden metric so the prose
+# can never drift back to the stale four-wave literal (issue #112). The
+# fixture carries 8 tracking waves (golden_metrics.module_c.n_tracking_waves=8).
+_n_tracking_waves = 8
+_golden_metrics_path = ROOT / "reports" / "golden_metrics.json"
+if _golden_metrics_path.is_file():
+    try:
+        _n_tracking_waves = int(
+            json.loads(_golden_metrics_path.read_text(encoding="utf-8"))["module_c"][
+                "n_tracking_waves"
+            ]
+        )
+    except (ValueError, OSError, KeyError):
+        _n_tracking_waves = 8
 _mc_bucket_counts = mc_draws["scenario_bucket"].value_counts()
 _mc_bucket_desc = ", ".join(f"{k} ({v:,})" for k, v in _mc_bucket_counts.items())
 _mc_alloc_linked = bool((mc_draws["alloc_mean_persuasion_contacts"] > 0).all())
@@ -2665,7 +2794,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 - **Tracking posterior on fixtures:** Closes at **{forecast_final_mean:.1f} pp** margin (94% HDI: {forecast_final_hdi_lo:.1f} to {forecast_final_hdi_hi:.1f} pp). Modelled department win probabilities: **{_min_win_prob:.0%}–{_max_win_prob:.0%}**. {_illustrative_tracking_note}.
 - **{_seg_title(_largest_seg)} is the largest segment ({_seg_share_pct.iloc[0]:.1f}%)** with mean participation propensity {_seg_prop_mean[_largest_seg]:.2f}. Youth Volatile ({_yv_pct:.1f}%, propensity {_yv_prop:.2f}) remains the headline mobilisation cohort in Central and Alto Paraná.
 - **Central and Alto Paraná absorb {_central_alto_share_pct:.0f}% of the total budget** (${_b1_central:,.0f} and ${_b1_alto:,.0f} respectively), reflecting their demographic weight. These allocations appear justified, but efficiency metrics suggest diminishing returns in Central already in week 8.
-- **{_seg_title(_top_prop_seg)} is the highest-propensity segment (mean {_seg_prop_mean[_top_prop_seg]:.2f})** but receives little digital investment due to low internet penetration. Radio is the dominant reach channel for rural segments; any reduction in radio spend directly suppresses participation in Itapúa and San Pedro strongholds.
+- **Participation propensity is near-uniform across all six segments** (segment means span just {_seg_prop_min:.2f}–{_seg_prop_max:.2f}; no single cohort is a dramatically higher-propensity target, so propensity alone cannot rank segments — see §A4/§A5). The rural segments still receive little digital investment because of low internet penetration: radio is their dominant reach channel, and any reduction in radio spend directly suppresses participation in Itapúa and San Pedro strongholds.
 - **Bilateral (direct) channels absorb 52.5% of baseline budget** vs. 47.5% for broadcast. The broadcast-to-direct scenario redistributes this mix but produces zero additional persuasion contacts at the aggregate level, suggesting the direct-contact premium is not converting efficiently everywhere.
 - **Pollster house effects (from posterior_house_effects.parquet):** {_he_neg_name} has a {_he_neg_pp:+.1f} pp bias, {_he_pos_name} has a {_he_pos_pp:+.1f} pp bias; {_he_neutral_name} is the closest to neutral ({_he_neutral_pp:+.1f} pp). Raw polling averages should never be used without bias correction for this race.
 - **Chaco departments (Alto Paraguay, Boquerón, Presidente Hayes) are negligible-tier** in budget allocation; modelled department win probabilities cluster near **{_min_win_prob:.0%}–{_max_win_prob:.0%}** on fixture posteriors ({_illustrative_tracking_note}).
@@ -2726,12 +2855,12 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 
 ### A4 — Department × Segment Propensity Heatmap
 **What it shows:** Mean participation propensity for each department × segment cell.
-**Key finding:** Rural Committed achieves propensity >0.80 in Cordillera, San Pedro, and Misiones — these are premium mobilisation targets. Committed Opposition shows uniformly low propensity (<0.15) indicating this segment is not reachable through turnout mobilisation.
-**Strategic implication:** Focus propensity-weighted mobilisation resources on Rural Committed × high-propensity department combinations. Committed Opposition requires persuasion effort, not mobilisation.
+**Key finding:** The heatmap is nearly flat — every department × segment cell sits in a narrow ~0.50–0.70 band. Rural Committed reads about 0.59 / 0.52 / 0.65 in Cordillera, San Pedro, and Misiones (not the uniformly high values a mobilisation-target story would need), and Committed Opposition sits in the ~0.60–0.69 range rather than as a low outlier. Propensity does not separate departments or segments sharply enough to rank mobilisation targets on its own (F-052).
+**Strategic implication:** Do not prioritise a department × segment cell on propensity alone — the signal is too flat to differentiate. Targeting must be driven by reachability and preference strength, with propensity used only as a modest tie-breaker. Committed Opposition is deprioritised for *persuasion* on the basis of its B-preference strength, not because of a low participation propensity.
 
 ### A5 — Propensity Violin by Segment
 **What it shows:** Probability distribution of participation propensity within each segment.
-**Key finding:** Rural Committed has a tightly concentrated high-propensity distribution (IQR 0.65–0.80). Youth Volatile has wide variance. Committed Opposition has a narrow low-propensity cluster near 0.10.
+**Key finding:** All six violins overlap heavily in the ~0.50–0.70 band; within-department spread is small (individual propensity is a raked participation-likelihood score with a modest fixed spread, per F-052), so apparent separation between violins reflects department mix more than a genuine propensity gap between segments. No segment forms a high cluster above 0.80 or a low cluster near 0.10.
 **Strategic implication:** High variance in Youth Volatile means personalised outreach can move the needle; blanket messaging will be inefficient. Use micro-targeting within this segment.
 
 ### A6 — Urban vs Rural by Segment
@@ -2769,8 +2898,8 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 **Key finding:** Youth Volatile and Rural Low Propensity display higher reachability (peak 0.75–0.95), driven by better digital and TV coverage. Rural Committed has a bimodal distribution with many individuals at very low reachability (<0.5).
 **Strategic implication:** A significant minority of Rural Committed is effectively unreachable by any modelled media — these individuals require in-person canvassing, which is expensive. Budget for in-person contact in those micro-zones.
 
-### A13 — Preference Proxy Strength by Segment and Voting Intent
-**What it shows:** Histogram of preference proxy strength, broken out by voting intent (A/B/other/none) within each segment.
+### A13 — Vote-Preference Strength by Segment and Voting Intent
+**What it shows:** Histogram of vote-preference strength, broken out by voting intent (A/B/other/none) within each segment.
 **Key finding:** Candidate A preference strength (Intent A) peaks above 0.5 in most segments. Youth Volatile shows a wide, flat distribution for Intent A indicating many soft supporters. Committed Opposition's Intent B strength is concentrated at high values — these are firm opponents.
 **Strategic implication:** Soft Intent A supporters in Youth Volatile are the primary persuasion/mobilisation opportunity. Hard Intent B in Committed Opposition are a lost cause for persuasion — do not waste budget there.
 
@@ -2824,7 +2953,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 
 ### C1 — Bayesian Tracking Retrodiction (2018 Series A)
 **What it shows:** 142-day Bayesian preference-margin *retrodiction* — in-sample tracking of the past 2018 Series A window, read against the verified +3.70 pp TSJE outcome anchor (drawn on the panel), **not** an out-of-sample forecast — with 94% HDI bands.
-**Key finding:** Candidate A's posterior mean preference margin closes near **{forecast_final_mean:.1f} pp** on fixture polls ({_illustrative_tracking_note}). The 94% HDI is wide ({forecast_final_hdi_lo:.1f} to {forecast_final_hdi_hi:.1f} pp), reflecting only 4 survey measurement waves.
+**Key finding:** Candidate A's posterior mean preference margin closes near **{forecast_final_mean:.1f} pp** on fixture polls ({_illustrative_tracking_note}). The 94% HDI is wide ({forecast_final_hdi_lo:.1f} to {forecast_final_hdi_hi:.1f} pp), reflecting only 8 poll waves.
 **Strategic implication:** The lead is robust but the HDI is wide — more polling waves would dramatically tighten the uncertainty bounds. The campaign should commission 2–3 additional poll waves in the final 6 weeks.
 
 ### C2 — Calibrated Terminal Posterior Distribution
@@ -2878,7 +3007,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 
 ### S1 — Segment × Department Budget Heatmap
 **What it shows:** Prorated budget allocation reaching each segment × department combination.
-**Key finding:** Youth Volatile in Central receives by far the largest budget flow (~${200_000 * (total_budget / _NARRATIVE_PRORATION_ANCHOR_USD) / 1e3:.0f}K prorated), followed by Urban High Volatility in Central and Alto Paraná. Rural Committed receives relatively little absolute budget despite having the highest propensity, because its dominant departments (Itapúa, San Pedro) receive moderate total allocations.
+**Key finding:** Youth Volatile in Central receives by far the largest budget flow (~${200_000 * (total_budget / _NARRATIVE_PRORATION_ANCHOR_USD) / 1e3:.0f}K prorated), followed by Urban High Volatility in Central and Alto Paraná. Rural Committed receives relatively little absolute budget — despite being a hard-to-reach, radio-dependent segment worth protecting — because its dominant departments (Itapúa, San Pedro) receive only moderate total allocations.
 **Strategic implication:** The budget is highly concentrated in Youth Volatile × Central — a high-risk, high-reward bet. A 10% budget reallocation to Rural Committed × interior departments would likely produce higher propensity-weighted returns.
 
 ### S2 — Propensity × Reachability Matrix
@@ -2907,7 +3036,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 
 1. **Accelerate Youth Volatile mobilisation in Central and Alto Paraná.** This is the highest-volume, high-reachability segment. Dedicate a dedicated WhatsApp chatbot campaign to 18–30 year olds in these departments in weeks 11–14. Target propensity lift from {_yv_prop:.2f} to {_yv_prop + 0.05:.2f} would add tens of thousands of additional participation-weighted contacts.
 
-2. **Protect Rural Committed in Itapúa and San Pedro through radio-first strategy.** Do not allow any radio budget reduction in these departments. Rural Committed has a participation propensity of {_rc_prop:.2f} (mean) and is almost exclusively accessible by radio. Even a 15% radio budget cut risks losing 20,000+ high-propensity votes.
+2. **Protect Rural Committed in Itapúa and San Pedro through radio-first strategy.** Do not allow any radio budget reduction in these departments. Rural Committed has a participation propensity of {_rc_prop:.2f} (mean, in line with every other segment) and is almost exclusively accessible by radio. Even a 15% radio budget cut risks losing 20,000+ votes from a segment no other channel can reach.
 
 3. **Reallocate 5–8% of Central budget to Caaguazu and San Pedro.** Central shows diminishing reach returns (reach cap not binding, but cost-per-persuasion-contact is high). Caaguazu and San Pedro have better cost efficiency and meaningful electoral scale. This reallocation would be budget-neutral with a projected +12% increase in total persuasion contacts.
 
@@ -2915,7 +3044,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 
 5. **Commission 2–3 additional polling waves before election day.** The 94% HDI spans ±30 pp — an enormous uncertainty range for strategic planning. Even one additional high-quality poll wave (n≥800) would cut this uncertainty by approximately one-third. CAPLI is the recommended pollster.
 
-6. **Back-load 15% of bilateral direct spend from weeks 1–4 to weeks 11–14.** Direct contact is most effective when proximate to the outcome event. Current front-loading may be wasting goodwill and persuasion capital on contacts made too early for participating entities to retain.
+6. **Back-load 15% of bilateral direct spend from weeks 1–4 to weeks 11–14.** Direct contact is most effective when proximate to election day. Current front-loading may be wasting goodwill and persuasion capital on contacts made too early for participating voters to retain.
 
 7. **Do not invest in Committed Opposition persuasion.** This segment has a mean propensity of {_co_prop:.2f} and high preference strength for Candidate B. The cost of persuading even a marginal share of this group far exceeds the returns. Redirect any persuasion budget earmarked for this segment to Youth Volatile micro-targeting.
 
@@ -2931,7 +3060,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 
 - **Segmentation:** 6 clusters from KMeans on scaled numeric features; segment names are profile-derived (Hungarian assignment of cluster profiles to the canonical vocabulary, with interpretation tests). DBSCAN runs as a noise diagnostic only ({segs["dbscan_noise_flag"].sum()} flagged rows). Segment IDs 0–5 map to labels via `segment_labels.parquet`.
 - **Participation propensity:** Bayesian logistic regression with department-level random effects and post-stratification rake weights. Rake multipliers vary substantially across departments (mean 3.2×) indicating sampling imbalance in raw data.
-- **Bayesian tracking model:** Hierarchical Gaussian random walk with house effect corrections. Credible bands are true 94% highest-density intervals (`az.hdi`, ≈±1.9σ for a Gaussian posterior) — not 5/95 equal-tailed quantiles. Only 4 poll waves ingested — uncertainty is fundamentally limited by sparse polling data.
+- **Bayesian tracking model:** Hierarchical Gaussian random walk with house effect corrections. Credible bands are true 94% highest-density intervals (`az.hdi`, ≈±1.9σ for a Gaussian posterior) — not 5/95 equal-tailed quantiles. Only {_n_tracking_waves} poll waves ingested — uncertainty is fundamentally limited by sparse polling data.
 - **Budget optimisation:** Linear programming solver (OPTIMAL status confirmed for all cells). Constraints include reach caps, department tiers, and channel eligibility rules. FX conversion uses retail spread rate (not reference rate).
 - **Monte Carlo:** {len(mc_draws):,} draws across {len(_mc_bucket_counts)} scenario buckets. Shock scale parameterises outcome volatility. {_mc_alloc_note}.
 - **Exit model:** Gaussian likelihood with intercept + two international observer beta parameters. Identified on historical exit survey data. Wide HDI intervals suggest limited historical data for calibration.
@@ -2979,7 +3108,7 @@ print(f"  [OK] eda_report.md  ({report_path.stat().st_size/1024:.1f} KB)")
 # ════════════════════════════════════════════════════════════════════════════
 print("\n── Writing strategic_brief.md ──")
 
-strategic_brief = f"""# Paraguay Program Analytics — Strategic Brief
+strategic_brief = f"""# Paraguay Campaign Analytics — Strategic Brief
 **Portfolio reconstruction brief | Generated from pipeline artifacts**
 **Date:** June 14, 2026 | **Analyst:** Decision Analytics Reconstruction
 
@@ -3008,15 +3137,15 @@ Itapúa has the highest mean participation propensity of any department with sig
 
 **Double Down:**
 - **Youth Volatile ({_yv_pct:.1f}% of population, propensity {_yv_prop:.2f}):** High reachability — the mobilisation opportunity. Digital-first (WhatsApp, Facebook), Jopara-friendly content, peer-to-peer activation via youth networks.
-- **Rural Committed ({_rc_pct:.1f}% of population):** High propensity ({_rc_prop:.2f}) but low reachability. Radio + canvassing investment here delivers premium returns per contact. Do not sacrifice these entities to cut costs.
+- **Rural Committed ({_rc_pct:.1f}% of population):** Baseline propensity ({_rc_prop:.2f}, typical of every segment) but distinctively low reachability. The case for protecting this segment is reachability, not a propensity edge: radio + canvassing are the only channels that reach it, so each contact is hard to replace. Do not sacrifice these voters to cut costs.
 
 **Maintain:**
 - **Urban High Volatility ({_uhv_pct:.1f}%):** Good reachability, propensity {_uhv_prop:.2f}. Currently receiving fair budget share. No change needed — the strategy is working.
 - **Structurally Dependent Bloc ({_sdb_pct:.1f}%):** High rural, high NBI stress. Sensitive segment requiring careful messaging. Maintain current radio + community organiser approach.
 
 **Deprioritise:**
-- **Committed Opposition ({_co_pct:.1f}%):** Mean propensity {_co_prop:.2f}, high B-preference strength. These are locked opposition-aligned entities. Any persuasion spend here is waste. Reallocate immediately.
-- **Rural Low Propensity ({_rlp_pct:.1f}%):** Propensity {_rlp_prop:.2f} — the hardest cohort to mobilise. Passive presence only — no active spend increases warranted.
+- **Committed Opposition ({_co_pct:.1f}%):** Participation propensity {_co_prop:.2f} (baseline, like every segment — it does *not* make them a mobilisation target), but their high, tightly clustered B-preference strength makes them locked opposition-aligned voters. Any persuasion spend here is waste. Reallocate immediately.
+- **Rural Low Propensity ({_rlp_pct:.1f}%):** Propensity {_rlp_prop:.2f} — despite the name, in the same narrow band as every other segment; the label reflects its cluster profile, not a distinctly low turnout score. Passive presence only — no active spend increases warranted.
 
 ---
 
@@ -3035,15 +3164,16 @@ Itapúa has the highest mean participation propensity of any department with sig
 
 ---
 
-## Where Budget Is Being Wasted
+## Where Budget Is Being Underused
 
-**1. Billboard spend in low-tier departments:** Reach utilisation is effectively zero. Estimated waste: ~$45–60K.
-**2. SMS campaigns:** No measurable persuasion contact generation. Estimated waste: ~$30–45K.
-**3. Front-loaded bilateral spend (weeks 1–4):** Direct contact made 10+ weeks before election day has negligible retention effect. Estimated efficiency loss: 20–30% of early bilateral spend.
-**4. Any persuasion spend on Committed Opposition:** This segment's preference strength distribution is tightly clustered at high B-values. No campaign intervention will move them. Estimated misallocated spend: ~$24K.
-**5. Broadcast-to-direct scenario exploration:** The counterfactual redistributes the channel mix without increasing aggregate persuasion contacts; treat it as a sensitivity check, not a strategy.
+The solver runs reach-constrained — every department sits at reach_utilization = 1.0 (see B4) — so "underused" here means spend on channels that add little incremental reach, ranked by reach utilisation, not audited dollar overspend. Channel-level spend is not a committed artifact in this repo, so the items below carry no dollar estimate; they identify *where* to reallocate inside the fixed envelope, not *how much* is recoverable.
 
-**Total estimated reclaimable budget:** ~$150–180K (approximately 2.5–3% of total baseline), which redirected to Caaguazu canvassing and weeks 11–13 WhatsApp activation would deliver an estimated 45,000–60,000 additional propensity-weighted contacts.
+**1. Billboards and SMS:** the two lowest reach-utilisation channels — near-zero utilisation across most departments (B4). Reallocating their spend toward radio (highest rural utilisation) and direct channels is strictly reach-improving.
+**2. Front-loaded bilateral spend (weeks 1–4):** direct contact made 10+ weeks before election day has low modelled retention; shifting it toward weeks 11–13 raises effective late-campaign contact. This is a modelling-assumption argument, not a measured loss.
+**3. Persuasion spend on Committed Opposition:** this segment's B-preference strength is tightly clustered at high values, so persuasion contacts here are low-value regardless of volume. Redirect toward persuadable segments.
+**4. Broadcast-to-direct scenario exploration:** the counterfactual redistributes the channel mix without increasing aggregate persuasion contacts; treat it as a sensitivity check, not a strategy.
+
+**Reclaimable share:** the moves above shift spend *between* channels inside the fixed ${total_budget:,.0f} envelope; they do not change the total, and its recoverable magnitude cannot be quoted here because the channel-level allocation output is not a committed artifact. The persuasion-adjusted payoff of any reallocation is whatever the Module B solver reports on re-run — not a number fixed in this brief.
 
 ---
 
@@ -3058,9 +3188,9 @@ Itapúa has the highest mean participation propensity of any department with sig
 - Participation depression in Youth Volatile: this segment's propensity is {_yv_prop:.2f}. If youth registration or turnout infrastructure fails (long queues, administrative errors), the mandate could shrink materially.
 
 **Low but non-zero systemic risk:**
-- Model miscalibration: Only 4 poll waves feed the tracking model. If all four pollsters share an unmeasured systematic bias not captured by the house effect model, the posterior could be significantly wrong. Diversify polling sources.
+- Model miscalibration: Only {_n_tracking_waves} poll waves feed the tracking model. If all three pollsters share an unmeasured systematic bias not captured by the house effect model, the posterior could be significantly wrong. Diversify polling sources.
 
-**Bottom line:** Candidate A wins this election under virtually all scenarios. The campaign's job from this point forward is to define the size and mandate of that victory. Invest in turnout. Protect Rural Committed. Mobilise Youth Volatile. Redirect wasted spend. Commission more polling. The data supports all of these recommendations with high confidence.
+**Bottom line:** The outcome fact is the verified TSJE anchor — Candidate A carried the 2018 presidential election by +{_tsje_margin_pp:.2f} pp. The illustrative tracking model reproduces that direction (posterior {forecast_final_mean:.1f} pp, 94% HDI {forecast_final_hdi_lo:.1f}–{forecast_final_hdi_hi:.1f} pp), but its wide HDI and {_min_win_prob:.0%}–{_max_win_prob:.0%} department win-probability range reflect genuine uncertainty from sparse fixture polls — not a near-certain sweep, and several GANAR-winning departments sit below 50%. Read this brief as decision-support machinery, not a forecast. The defensible recommendations — invest in turnout, protect Rural Committed's irreplaceable radio/canvassing reach, mobilise the high-reachability Youth Volatile segment, reallocate the lowest reach-utilisation channel spend, and widen polling coverage — follow from the allocation and reachability structure and hold across the plausible range of the true margin. Their support is structural, not a claim of statistical certainty about the outcome.
 
 ---
 

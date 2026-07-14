@@ -1,4 +1,4 @@
-# Paraguay Program Analytics — Strategic Brief
+# Paraguay Campaign Analytics — Strategic Brief
 **Portfolio reconstruction brief | Generated from pipeline artifacts**
 **Date:** June 14, 2026 | **Analyst:** Decision Analytics Reconstruction
 
@@ -26,16 +26,16 @@ Itapúa has the highest mean participation propensity of any department with sig
 ## Segment Strategy: Double Down vs Deprioritise
 
 **Double Down:**
-- **Youth Volatile (11.8% of population, propensity 0.56):** High reachability — the mobilisation opportunity. Digital-first (WhatsApp, Facebook), Jopara-friendly content, peer-to-peer activation via youth networks.
-- **Rural Committed (17.0% of population):** High propensity (0.60) but low reachability. Radio + canvassing investment here delivers premium returns per contact. Do not sacrifice these entities to cut costs.
+- **Youth Volatile (21.6% of population, propensity 0.63):** High reachability — the mobilisation opportunity. Digital-first (WhatsApp, Facebook), Jopara-friendly content, peer-to-peer activation via youth networks.
+- **Rural Committed (14.9% of population):** Baseline propensity (0.64, typical of every segment) but distinctively low reachability. The case for protecting this segment is reachability, not a propensity edge: radio + canvassing are the only channels that reach it, so each contact is hard to replace. Do not sacrifice these voters to cut costs.
 
 **Maintain:**
 - **Urban High Volatility (14.5%):** Good reachability, propensity 0.59. Currently receiving fair budget share. No change needed — the strategy is working.
 - **Structurally Dependent Bloc (17.3%):** High rural, high NBI stress. Sensitive segment requiring careful messaging. Maintain current radio + community organiser approach.
 
 **Deprioritise:**
-- **Committed Opposition (15.2%):** Mean propensity 0.65, high B-preference strength. These are locked opposition-aligned entities. Any persuasion spend here is waste. Reallocate immediately.
-- **Rural Low Propensity (24.1%):** Propensity 0.63 — the hardest cohort to mobilise. Passive presence only — no active spend increases warranted.
+- **Committed Opposition (16.5%):** Participation propensity 0.65 (baseline, like every segment — it does *not* make them a mobilisation target), but their high, tightly clustered B-preference strength makes them locked opposition-aligned voters. Any persuasion spend here is waste. Reallocate immediately.
+- **Rural Low Propensity (14.7%):** Propensity 0.57 — despite the name, in the same narrow band as every other segment; the label reflects its cluster profile, not a distinctly low turnout score. Passive presence only — no active spend increases warranted.
 
 ---
 
@@ -54,15 +54,16 @@ Itapúa has the highest mean participation propensity of any department with sig
 
 ---
 
-## Where Budget Is Being Wasted
+## Where Budget Is Being Underused
 
-**1. Billboard spend in low-tier departments:** Reach utilisation is effectively zero. Estimated waste: ~$45–60K.
-**2. SMS campaigns:** No measurable persuasion contact generation. Estimated waste: ~$30–45K.
-**3. Front-loaded bilateral spend (weeks 1–4):** Direct contact made 10+ weeks before election day has negligible retention effect. Estimated efficiency loss: 20–30% of early bilateral spend.
-**4. Any persuasion spend on Committed Opposition:** This segment's preference strength distribution is tightly clustered at high B-values. No campaign intervention will move them. Estimated misallocated spend: ~$24K.
-**5. Broadcast-to-direct scenario exploration:** The counterfactual redistributes the channel mix without increasing aggregate persuasion contacts; treat it as a sensitivity check, not a strategy.
+The solver runs reach-constrained — every department sits at reach_utilization = 1.0 (see B4) — so "underused" here means spend on channels that add little incremental reach, ranked by reach utilisation, not audited dollar overspend. Channel-level spend is not a committed artifact in this repo, so the items below carry no dollar estimate; they identify *where* to reallocate inside the fixed envelope, not *how much* is recoverable.
 
-**Total estimated reclaimable budget:** ~$150–180K (approximately 2.5–3% of total baseline), which redirected to Caaguazu canvassing and weeks 11–13 WhatsApp activation would deliver an estimated 45,000–60,000 additional propensity-weighted contacts.
+**1. Billboards and SMS:** the two lowest reach-utilisation channels — near-zero utilisation across most departments (B4). Reallocating their spend toward radio (highest rural utilisation) and direct channels is strictly reach-improving.
+**2. Front-loaded bilateral spend (weeks 1–4):** direct contact made 10+ weeks before election day has low modelled retention; shifting it toward weeks 11–13 raises effective late-campaign contact. This is a modelling-assumption argument, not a measured loss.
+**3. Persuasion spend on Committed Opposition:** this segment's B-preference strength is tightly clustered at high values, so persuasion contacts here are low-value regardless of volume. Redirect toward persuadable segments.
+**4. Broadcast-to-direct scenario exploration:** the counterfactual redistributes the channel mix without increasing aggregate persuasion contacts; treat it as a sensitivity check, not a strategy.
+
+**Reclaimable share:** the moves above shift spend *between* channels inside the fixed $6,029,991 envelope; they do not change the total, and its recoverable magnitude cannot be quoted here because the channel-level allocation output is not a committed artifact. The persuasion-adjusted payoff of any reallocation is whatever the Module B solver reports on re-run — not a number fixed in this brief.
 
 ---
 
@@ -77,9 +78,9 @@ Itapúa has the highest mean participation propensity of any department with sig
 - Participation depression in Youth Volatile: this segment's propensity is 0.56. If youth registration or turnout infrastructure fails (long queues, administrative errors), the mandate could shrink materially.
 
 **Low but non-zero systemic risk:**
-- Model miscalibration: Only 4 poll waves feed the tracking model. If all four pollsters share an unmeasured systematic bias not captured by the house effect model, the posterior could be significantly wrong. Diversify polling sources.
+- Model miscalibration: Only 8 poll waves feed the tracking model. If all three pollsters share an unmeasured systematic bias not captured by the house effect model, the posterior could be significantly wrong. Diversify polling sources.
 
-**Bottom line:** Candidate A wins this election under virtually all scenarios. The campaign's job from this point forward is to define the size and mandate of that victory. Invest in turnout. Protect Rural Committed. Mobilise Youth Volatile. Redirect wasted spend. Commission more polling. The data supports all of these recommendations with high confidence.
+**Bottom line:** The outcome fact is the verified TSJE anchor — Candidate A carried the 2018 presidential election by +3.70 pp. The illustrative tracking model reproduces that direction (posterior 3.7 pp, 94% HDI 2.9–4.7 pp), but its wide HDI and 0%–100% department win-probability range reflect genuine uncertainty from sparse fixture polls — not a near-certain sweep, and several GANAR-winning departments sit below 50%. Read this brief as decision-support machinery, not a forecast. The defensible recommendations — invest in turnout, protect Rural Committed's irreplaceable radio/canvassing reach, mobilise the high-reachability Youth Volatile segment, reallocate the lowest reach-utilisation channel spend, and widen polling coverage — follow from the allocation and reachability structure and hold across the plausible range of the true margin. Their support is structural, not a claim of statistical certainty about the outcome.
 
 ---
 

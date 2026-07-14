@@ -10,12 +10,50 @@ from pathlib import Path
 from _governance_check import REPO_ROOT, gate
 
 SSOT = REPO_ROOT / "reports" / "NUMERIC_SSOT.md"
+CASE_STUDY = REPO_ROOT / "reports" / "CASE_STUDY.md"
+VALIDATION = REPO_ROOT / "reports" / "VALIDATION.md"
+MODEL_CARD_PROPENSITY = (
+    REPO_ROOT / "module_a_population_segmentation" / "reports" / "model_card_propensity.md"
+)
+MODEL_CARD_SEGMENTATION = (
+    REPO_ROOT / "module_a_population_segmentation" / "reports" / "model_card_segmentation.md"
+)
+MODULE_A_README = REPO_ROOT / "module_a_population_segmentation" / "README.md"
+MODULE_B_README = REPO_ROOT / "module_b_resource_allocation" / "README.md"
+MODULE_C_README = REPO_ROOT / "module_c_forecasting_scenarios" / "README.md"
 
 # Files that must exist and cite canonical numbers (grep anchors).
 ANCHOR_FILES: tuple[Path, ...] = (
     REPO_ROOT / "reports" / "NUMERIC_SSOT.md",
-    REPO_ROOT / "reports" / "CASE_STUDY.md",
+    CASE_STUDY,
     REPO_ROOT / "README.md",
+    # Model cards + module READMEs added for issue #91: they carry Module A/C
+    # headline metrics and must not drift away from the SSOT table.
+    MODEL_CARD_PROPENSITY,
+    MODEL_CARD_SEGMENTATION,
+    MODULE_A_README,
+    MODULE_B_README,
+    MODULE_C_README,
+)
+
+# Canonical metric anchors that MUST be present in a specific file. This is the
+# positive half of the drift guard (issue #91): the model cards and the SSOT must
+# keep citing the artifact-backed Module A/C figures with their run config, so a
+# silent value change fails CI. Values are corroborated by the model cards,
+# `config/model_params.yaml`, `reports/module_a/k_sweep_2026-07-09.md`, and a
+# seed-42 50k pipeline run (`data/processed/model_run_manifest.json`).
+REQUIRED_IN_FILE: tuple[tuple[str, Path, re.Pattern[str]], ...] = (
+    # Propensity model card: Brier + circular AUC at the 15k holdout run.
+    ("card_brier_15k", MODEL_CARD_PROPENSITY, re.compile(r"0\.1185")),
+    ("card_auc_circular", MODEL_CARD_PROPENSITY, re.compile(r"0\.89")),
+    ("card_run_config_15k", MODEL_CARD_PROPENSITY, re.compile(r"n=15k", re.I)),
+    # Segmentation model card: silhouette + canonical bootstrap ARI at the 50k run.
+    ("card_silhouette_50k", MODEL_CARD_SEGMENTATION, re.compile(r"0\.2562")),
+    ("card_ari_50k", MODEL_CARD_SEGMENTATION, re.compile(r"0\.4304")),
+    # SSOT must carry the same canonical Module A figures + tracking-wave count.
+    ("ssot_brier_canonical", SSOT, re.compile(r"0\.1185")),
+    ("ssot_ari_gate", SSOT, re.compile(r"0\.40")),
+    ("ssot_tracking_waves", SSOT, re.compile(r"n_tracking_waves=8")),
 )
 
 REQUIRED_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
@@ -81,6 +119,59 @@ FORBIDDEN_IN_PUBLIC: tuple[tuple[str, re.Pattern[str], tuple[Path, ...]], ...] =
             REPO_ROOT / "reports" / "eda" / "eda_report.md",
         ),
     ),
+    # --- issue #98: forbidden confidence register in the EDA brief -------------
+    # The outputs are ILLUSTRATIVE (see epistemic_boundaries.md); certainty
+    # language ("with high confidence", "under virtually all scenarios") over an
+    # illustrative fixture posterior is exactly the register violation #98 fixed.
+    # Scan both the committed brief/report AND the generator that emits them, so a
+    # regeneration cannot re-introduce the phrasing.
+    (
+        "brief_high_confidence",
+        re.compile(r"with high confidence", re.I),
+        (
+            REPO_ROOT / "reports" / "eda" / "strategic_brief.md",
+            REPO_ROOT / "reports" / "eda" / "eda_report.md",
+            REPO_ROOT / "reports" / "eda" / "generate_eda.py",
+        ),
+    ),
+    (
+        "brief_virtually_all_scenarios",
+        re.compile(r"under virtually all scenarios", re.I),
+        (
+            REPO_ROOT / "reports" / "eda" / "strategic_brief.md",
+            REPO_ROOT / "reports" / "eda" / "eda_report.md",
+            REPO_ROOT / "reports" / "eda" / "generate_eda.py",
+        ),
+    ),
+    # --- issue #91: stale Module A / Module C metric values ---------------------
+    # These figures were superseded by the model cards + a seed-42 pipeline run.
+    # Reappearance in any SSOT-family doc, model card, or module README signals the
+    # exact drift class #91 fixed (SSOT contradicting the model card).
+    (
+        "stale_brier_071",
+        re.compile(r"\b0\.071(?!\d)"),
+        (SSOT, VALIDATION, CASE_STUDY, MODEL_CARD_PROPENSITY, MODULE_A_README),
+    ),
+    (
+        "stale_auc_9679",
+        re.compile(r"0\.9679"),
+        (SSOT, VALIDATION, CASE_STUDY, MODEL_CARD_PROPENSITY, MODULE_A_README),
+    ),
+    (
+        "stale_bootstrap_ari_7615",
+        re.compile(r"0\.7615"),
+        (SSOT, VALIDATION, CASE_STUDY, MODEL_CARD_SEGMENTATION, MODULE_A_README),
+    ),
+    (
+        "stale_ari_gate_over_070",
+        re.compile(r"ARI\s*[>≥]\s*0\.7[0-9]"),
+        (SSOT, VALIDATION, CASE_STUDY, MODEL_CARD_SEGMENTATION, MODULE_A_README),
+    ),
+    (
+        "stale_divergences_14",
+        re.compile(r"14\s+(?:measured\b|divergenc)", re.I),
+        (SSOT, VALIDATION, CASE_STUDY, MODULE_C_README),
+    ),
 )
 
 
@@ -113,6 +204,16 @@ def _forbidden_claim_gaps() -> list[str]:
     return gaps
 
 
+def _required_in_file_gaps() -> list[str]:
+    gaps: list[str] = []
+    for label, path, pat in REQUIRED_IN_FILE:
+        if not path.is_file():
+            gaps.append(f"missing {path.relative_to(REPO_ROOT)} for anchor {label}")
+        elif not pat.search(_read(path)):
+            gaps.append(f"{path.relative_to(REPO_ROOT)} missing anchor {label}")
+    return gaps
+
+
 def _ssot_disclaimer_gaps(ssot_text: str) -> list[str]:
     gaps: list[str] = []
     if "Circular" not in ssot_text and "circular" not in ssot_text:
@@ -134,6 +235,7 @@ def main() -> int:
 
     gaps.extend(_missing_anchor_files())
     gaps.extend(_forbidden_claim_gaps())
+    gaps.extend(_required_in_file_gaps())
 
     ok = not gaps
     return gate(

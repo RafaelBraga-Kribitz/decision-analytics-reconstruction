@@ -144,7 +144,9 @@ def build(zip_path: Path) -> tuple[dict[str, Any], str]:
 
 
 def write_source_md(zip_path: Path, zip_sha: str) -> str:
-    rel = zip_path.resolve().relative_to(REPO_ROOT.resolve()) if zip_path.resolve().is_relative_to(REPO_ROOT.resolve()) else zip_path
+    resolved = zip_path.resolve()
+    root = REPO_ROOT.resolve()
+    rel = resolved.relative_to(root) if resolved.is_relative_to(root) else zip_path
     text = f"""# paraguay_departments.geojson — provenance
 
 | Field | Value |
@@ -173,7 +175,9 @@ poetry run python scripts/build_paraguay_adm1_geojson.py \\
 
 
 def main(argv: list[str] | None = None) -> int:
-    p = argparse.ArgumentParser(description="Build paraguay_departments.geojson from geoBoundaries ADM1")
+    p = argparse.ArgumentParser(
+        description="Build paraguay_departments.geojson from geoBoundaries ADM1"
+    )
     p.add_argument("--zip-path", type=Path, default=DEFAULT_ZIP)
     p.add_argument("--out-geojson", type=Path, default=GEO_OUT)
     p.add_argument("--out-source", type=Path, default=SOURCE_OUT)

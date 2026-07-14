@@ -1,5 +1,5 @@
 override_guard:
-  max_paths: 53
+  max_paths: 54
 paths:
   schema_contracts/CONFORMANCE_MATRIX.md:
     doc_id: DOC-SCH-MATRIX-001
@@ -782,6 +782,25 @@ paths:
     supersedes: []
     numeric_authority: []
     frontmatter_required: false
+  module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/geo/paraguay_departments.SOURCE.md:
+    doc_id: DOC-REF-GEO-ADM1-001
+    doc_type: evidence
+    doc_role: evidence
+    visibility: internal
+    audience:
+    - agent
+    - maintainer
+    authority: evidence
+    status: active
+    sensitivity: internal
+    owner: module_c
+    tier_shorthand: T1
+    canonical_source: []
+    derived_from: []
+    supersedes: []
+    numeric_authority: []
+    frontmatter_required: false
+    last_reviewed: '2026-07-14'
   module_c_forecasting_scenarios/README.md:
     doc_id: DOC-MODC-README-001
     doc_type: narrative
