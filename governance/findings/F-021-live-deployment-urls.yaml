@@ -56,3 +56,15 @@ notes: |
   move Module A off the sleeping free tier, add a keep-alive/health cron,
   or extend the probe's retry window past a worst-case cold start —
   verified against the live URL before re-closing.
+
+  Hardening 2026-07-13 (finding stays OPEN): per maintainer decision, the
+  probe retry window was extended to ~245s (5/10/20/40/80/90s, 30s request
+  timeout, 502/503/504 retried) and .github/workflows/keepalive.yml now
+  pings Module A every 10 minutes so the Render instance never sleeps.
+  Live probe on 2026-07-13 measured module_a_streamlit=200 and
+  module_c_quarto=200, but module_b_fastapi_docs=404 — Railway responds
+  "Application not found" on /, /docs, and /openapi.json, i.e. the Module B
+  deployment itself no longer exists (not a cold start; retries cannot
+  help). Closure now requires the maintainer to redeploy Module B on
+  Railway (or re-point the URL), then run the verification script and
+  confirm 200/200/200 before setting status: closed.

@@ -1,19 +1,19 @@
 schema_name: battleground_department_probability
-schema_version: "1.1.0"
+schema_version: "1.3.0"
 description: >
   Department-level posterior win probability for Candidate A preference proxy
   (synthetic reconstruction). Keys align with allocation_output department names.
-  ESTIMAND DISCLOSURE (IMP-C05 / F-078): this table is a RETRODICTION, not an
-  out-of-sample forecast — outcome data enters at two points: (1) the national
+  ESTIMAND DISCLOSURE (IMP-C05 / F-078 / F-080): the primary published table
+  uses estimand=poll_implied — unanchored national posterior × TSJE-derived
+  swing factors (swing factors remain outcome-derived from
+  tsje_2018_department_results.csv). The retrodiction companion
+  (estimand=retrodiction) adds a second outcome-data entry point: the national
   posterior is softly anchored to the verified outcome
-  (config/calibration.yaml use_outcome_anchor), and (2) the per-department
-  swing factors are derived from the realized tsje_2018_department_results.csv.
-  The unanchored companion table (estimand=unanchored_retrodiction) removes
-  entry point (1) only; swing factors remain outcome-derived in both. The
-  idiosyncratic dispersion floor (sigma_idio) is an ILLUSTRATIVE assumption,
-  not estimated from data — no department-level historical polling exists in
-  this reconstruction to estimate it (see the run manifest's
-  sigma_idio_provenance and geo/heatmap.py).
+  (config/calibration.yaml use_outcome_anchor). Neither estimand is an
+  out-of-sample forecast. Model c_battleground_v0.5 (F-081): μ_dept = swing × m,
+  σ_dept = √(σ_national² + σ_idio,j²). Per-dept σ_idio estimated from reference
+  poll-vs-result residuals and 2013↔2018 election cross-section when
+  data/reference/battleground/ is present (see manifest sigma_idio_provenance).
 
 unique_key:
   - department
@@ -39,7 +39,7 @@ fields:
   estimand:
     type: string
     nullable: false
-    allowed_values: [retrodiction, unanchored_retrodiction]
+    allowed_values: [poll_implied, retrodiction]
   hdi_low:
     type: float64
     nullable: false

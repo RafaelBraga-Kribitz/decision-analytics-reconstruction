@@ -5,7 +5,8 @@ severity: high
 kind: recurrence_invariant
 category: misleading_visualization
 opened_at: 2026-06-14
-closed_at: 2026-06-14
+closed_at: 2026-07-13
+recurrence_count: 1
 owner: remediator
 finding: >
   scenarios/monte_carlo.py stored alloc_mean_persuasion_contacts — a single scalar
@@ -18,22 +19,20 @@ finding: >
   were never reconciled: the ~6e4 here is a MEAN per allocation cell while the
   ~1e7 expected_contacts elsewhere is a TOTAL across cells.
 remediation: >
-  monte_carlo.py now emits a per-draw scenario_adjusted_persuasion_contacts =
-  alloc_mean_persuasion_contacts × shock_scale (helper _scenario_adjusted_contacts),
-  actualising the propagation the contract always described; the raw scalar is kept
-  and documented as scenario-INVARIANT. The monte_carlo_draws contract declares the
-  new field. generate_eda.py adds chart C5B, a violin of the effective contacts by
-  bucket (varies, unlike the flat raw mean) with an on-panel note reconciling the
-  mean-per-cell vs total-contacts unit difference. A fast test,
-  test_scenario_adjusted_contacts_varies_within_buckets, asserts
-  draws.groupby("scenario_bucket")[metric].std() > 0 (and that the raw mean is a
-  single constant). The flat published screenshot is retired in favour of C5B.
+  monte_carlo.py emits a per-draw scenario_adjusted_persuasion_contacts =
+  alloc_mean_persuasion_contacts × shock_scale (helper _scenario_adjusted_contacts).
+  Recurrence (2026-07-13): the engine and EDA C5B were fixed but portfolio/quarto/
+  post_mortem.qmd — the GitHub Pages surface — still plotted alloc_mean_persuasion_
+  contacts, reproducing the flat line on the live report. Fix: post_mortem.qmd now
+  plots scenario_adjusted_persuasion_contacts (violin, with alloc_mean×shock_scale
+  fallback). check_module_c_mc_contacts_vary.py extended to guard the Quarto surface.
 verification_script: scripts/check_module_c_mc_contacts_vary.py
 artifacts:
   - module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/scenarios/monte_carlo.py
   - schema_contracts/monte_carlo_draws.yaml
   - module_c_forecasting_scenarios/tests/test_bc_handshake.py
   - reports/eda/generate_eda.py
+  - module_c_forecasting_scenarios/portfolio/quarto/post_mortem.qmd
   - scripts/check_module_c_mc_contacts_vary.py
 notes: >
   Item 5 of the figure-layer adversarial audit; confirms F-040's B→C handshake

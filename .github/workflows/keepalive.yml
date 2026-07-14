@@ -1,0 +1,43 @@
+name: Deployment Keep-Alive
+
+# Keeps the Render free-tier Module A demo warm: it sleeps after ~15 min
+# idle, and its cold start has caused F-021 to regress three times. Pinging
+# every 10 minutes means neither the F-021 Adversary probe nor a visitor
+# should ever hit a cold instance.
+#
+# Module B (Railway) and Module C (GitHub Pages) are probed as well but only
+# logged: enforcement of "all demos live" belongs to F-021's verification
+# script (scripts/check_live_deployment_urls.py), which the Adversary runs
+# whenever the finding is closed. This job fails only when Module A — the
+# instance it exists to keep awake — is unreachable.
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Module A (fail if unreachable through a full cold start)
+        run: |
+          # --retry-all-errors covers timeouts and 5xx during instance boot;
+          # total window ~4 min exceeds the worst observed Render cold start.
+          curl --silent --show-error --output /dev/null --fail \
+               --max-time 60 --retry 4 --retry-delay 30 --retry-all-errors \
+               "https://decision-analytics-module-a.onrender.com"
+          echo "OK module_a (Render instance warm)"
+
+      - name: Probe Module B and C (log-only)
+        if: always()
+        run: |
+          for url in \
+            "https://decision-analytics-module-b-production.up.railway.app/docs" \
+            "https://RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction/"; do
+            code=$(curl --silent --output /dev/null --write-out '%{http_code}' \
+                        --max-time 60 "$url" || echo "unreachable")
+            echo "status=$code $url"
+          done

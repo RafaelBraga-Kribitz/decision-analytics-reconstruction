@@ -77,6 +77,20 @@ battle_geo_df = (
     pd.DataFrame([f["properties"] for f in battle_geo["features"]])
     if battle_geo is not None else None
 )
+
+# TSJE 2018 actual department winners (for overlay on poll-implied chart).
+_tsje_path = (
+    _find_repo_root()
+    / "module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/geo/tsje_2018_department_results.csv"
+)
+if _tsje_path.exists():
+    _tsje = pd.read_csv(_tsje_path)
+    _tsje["tsje_winner"] = np.where(
+        _tsje["abdo_anr_votes"] > _tsje["alegre_ganar_votes"], "Abdo (ANR)", "GANAR"
+    )
+    TSJE_WINNER = dict(zip(_tsje["department_ascii"], _tsje["tsje_winner"]))
+else:
+    TSJE_WINNER = {}
 ```
 
 ## Context
@@ -248,26 +262,46 @@ if houses is not None:
 
 ## Monte Carlo Scenario Engine
 
-The scenario engine draws 10 000 paths from the posterior and applies engagement-shock multipliers to generate a distribution over possible outcomes.
+The scenario engine draws 10 000 paths from the posterior and applies engagement-shock multipliers to generate a distribution over possible outcomes. The figure below plots **effective** persuasion contacts per draw (`scenario_adjusted_persuasion_contacts` = baseline handshake mean × per-draw engagement shock). The raw `alloc_mean_persuasion_contacts` scalar is scenario-invariant and is intentionally excluded — plotting it produces a flat line.
 
 ```{python}
 #| label: fig-mc-scenarios
-#| fig-cap: "Monte Carlo draw distribution: persuasion-adjusted engagement contacts per scenario bucket."
+#| fig-cap: "Monte Carlo draw distribution: effective persuasion contacts (baseline mean × engagement shock) per scenario bucket."
 
-if mc is not None and "scenario_bucket" in mc.columns and "alloc_mean_persuasion_contacts" in mc.columns:
-    fig = px.box(
-        mc[mc["alloc_mean_persuasion_contacts"] > 0].sample(min(2000, len(mc))),
-        x="scenario_bucket",
-        y="alloc_mean_persuasion_contacts",
-        color="scenario_bucket",
-        title="Monte Carlo scenario distribution — persuasion-adjusted contacts (sample of 2 000 draws)",
-        labels={
-            "scenario_bucket": "Scenario bucket",
-            "alloc_mean_persuasion_contacts": "Persuasion-adjusted contacts",
-        },
-        template="plotly_white",
-    )
-    fig.show()
+if mc is not None and "scenario_bucket" in mc.columns and "shock_scale" in mc.columns:
+    if "scenario_adjusted_persuasion_contacts" in mc.columns:
+        mc_plot = mc.copy()
+        metric_col = "scenario_adjusted_persuasion_contacts"
+    elif "alloc_mean_persuasion_contacts" in mc.columns:
+        mc_plot = mc.assign(
+            _eff=mc["alloc_mean_persuasion_contacts"] * mc["shock_scale"]
+        )
+        metric_col = "_eff"
+    else:
+        mc_plot = None
+        metric_col = None
+
+    if mc_plot is not None and metric_col is not None:
+        plot_df = mc_plot[mc_plot[metric_col] > 0].sample(min(2000, len(mc_plot)))
+        fig = px.violin(
+            plot_df,
+            x="scenario_bucket",
+            y=metric_col,
+            color="scenario_bucket",
+            box=True,
+            title=(
+                "Monte Carlo scenario distribution — effective persuasion contacts "
+                "(baseline mean × engagement shock; sample of 2 000 draws)"
+            ),
+            labels={
+                "scenario_bucket": "Scenario bucket",
+                metric_col: "Effective persuasion contacts",
+            },
+            template="plotly_white",
+        )
+        fig.show()
+    else:
+        display(HTML("<p><em>Monte Carlo draws lack contact columns — run <code>make module-c-mc</code>.</em></p>"))
 elif mc is not None:
     # Show summary of available columns
     summary = mc.describe().round(2)
@@ -317,13 +351,13 @@ if mc is not None:
 
 ---
 
-## Department-Level Outcome Probability
+## Department-Level Win Probability
 
-Win-probability per geographic unit (model `c_battleground_v0.3`): each department's margin tracks the national posterior linearly via its TSJE-derived swing factor, with an illustrative idiosyncratic dispersion floor added in quadrature. **Estimand disclosure (retrodiction):** outcome data enters twice — the national posterior is outcome-anchored and the swing factors are derived from the realized 2018 TSJE department results — so these probabilities are a retrodiction, not an out-of-sample forecast. The unanchored companion table below removes the anchor (swing factors remain outcome-derived).
+Poll-implied win probability per geographic unit (model `c_battleground_v0.5`): each department's margin tracks the **unanchored** national posterior linearly via its TSJE-derived swing factor; department dispersion uses per-dept σ_idio estimated from reference poll residuals (2013 GRAU/2018 ATI) and a 2013↔2018 election cross-section floor (`data/reference/battleground/`). National uncertainty enters without swing scaling (v0.5 decoupled mapping). HDI whiskers propagate national margin uncertainty through percentile sampling on win probability. **Estimand disclosure:** swing factors are derived from the realized 2018 TSJE department results — this is not an out-of-sample forecast. The retrodiction companion table below uses an outcome-anchored national posterior (outcome data enters twice).
 
 ```{python}
 #| label: fig-battleground
-#| fig-cap: "Posterior win probability by department with HDI interval — Series A calibration. Retrodiction: outcome-anchored national posterior × outcome-derived swing factors; idiosyncratic dispersion floor is an illustrative assumption (see schema contract)."
+#| fig-cap: "Poll-implied department win probability with HDI interval — Series A. Unanchored national posterior × outcome-derived swing factors; c_battleground_v0.5 decoupled σ with reference-estimated per-dept σ_idio (see manifest). Diamonds mark TSJE 2018 actual winner."
 
 if battle is not None:
     b = battle.sort_values("win_probability_a")
@@ -352,16 +386,38 @@ if battle is not None:
         ) if _has_hdi else None,
         text=[f"{v:.1%}" for v in b["win_probability_a"]],
         textposition="outside",
+        name="Poll-implied P(A)",
     ))
+    if TSJE_WINNER:
+        _tsje_labels = [TSJE_WINNER.get(d, "?") for d in b["department"]]
+        fig.add_trace(go.Scatter(
+            x=[1.02] * len(b),
+            y=b["department"],
+            mode="markers+text",
+            marker=dict(
+                symbol="diamond",
+                size=9,
+                color=["#D55E00" if "Abdo" in w else "#0072B2" for w in _tsje_labels],
+                line=dict(width=1, color="#25282b"),
+            ),
+            text=[w.split()[0] for w in _tsje_labels],
+            textposition="middle right",
+            textfont=dict(size=8),
+            hovertext=[f"TSJE 2018: {w}" for w in _tsje_labels],
+            hoverinfo="text",
+            name="TSJE 2018 winner",
+        ))
     fig.add_vline(x=0.5, line_dash="dash", line_color="#888", annotation_text="50%")
     fig.update_layout(
-        title="Department-level outcome probability with HDI (Series A, retrodiction)",
+        title="Poll-implied department win probability with HDI (Series A)",
         xaxis_title="Win probability — preference proxy A (whiskers: HDI)",
-        xaxis=dict(range=[0, 1.05], tickformat=".0%"),
+        xaxis=dict(range=[0, 1.12], tickformat=".0%"),
         yaxis_title="Department",
         template="plotly_white",
         height=520,
-        margin=dict(l=120),
+        margin=dict(l=120, r=60),
+        showlegend=True,
+        legend=dict(x=0.01, y=0.01, bgcolor="rgba(255,255,255,0.8)"),
     )
     fig.show()
 else:
@@ -370,38 +426,79 @@ else:
 
 ```{python}
 #| label: tbl-battleground-anchor-comparison
-#| fig-cap: "Anchored vs unanchored companion — departments whose classification flips."
+#| fig-cap: "Poll-implied vs retrodiction companion — departments whose classification flips."
 
 _cmp_path = _resolve_data_path("MODULE_C_BATTLEGROUND_DIR", "data/processed/module_c/run_all/battleground") / "battleground_anchor_comparison.md"
 if _cmp_path.exists():
     from IPython.display import Markdown as _Markdown
     display(_Markdown(_cmp_path.read_text()))
 else:
-    display(HTML("<p><em>Anchored-vs-unanchored companion not found — run <code>make module-c-all</code> (IMP-C05 companion run).</em></p>"))
+    display(HTML("<p><em>Poll-implied vs retrodiction companion not found — run <code>make module-c-all</code>.</em></p>"))
 ```
 
 ```{python}
 #| label: fig-battleground-choropleth
-#| fig-cap: "Posterior win probability choropleth — department-level geographic distribution (Series A). Approximate department boundaries for visualization."
+#| fig-cap: "Poll-implied win probability choropleth — geoBoundaries PRY ADM1 simplified boundaries (Series A). Blue = low P(Abdo); red = high. Exterior omitted (no ADM1 polygon). Bar chart above for exact values."
 
 if battle_geo is not None and battle_geo_df is not None:
-    fig = px.choropleth(
-        battle_geo_df,
-        geojson=battle_geo,
+    _MAP_BG = "#4B5348"
+    _BATTLE_CSCALE = [
+        [0.0, "#313695"],
+        [0.25, "#4575b4"],
+        [0.5, "#ffffbf"],
+        [0.75, "#f39c4c"],
+        [1.0, "#a50026"],
+    ]
+    # px.choropleth + fitbounds fills the geo viewport as a solid block with ADM1
+    # MultiPolygons; choropleth_map renders department fills correctly.
+    _choro_geo = {"type": "FeatureCollection", "features": battle_geo["features"]}
+    choropleth_df = battle_geo_df.sort_values("department").reset_index(drop=True)
+    fig = px.choropleth_map(
+        choropleth_df,
+        geojson=_choro_geo,
         locations="department",
         featureidkey="properties.department",
         color="posterior_win_prob",
-        color_continuous_scale="RdYlGn",
+        color_continuous_scale=_BATTLE_CSCALE,
         range_color=[0.0, 1.0],
-        labels={"posterior_win_prob": "Win probability"},
+        labels={"posterior_win_prob": "Win probability", "department": "Department"},
         title="Battleground win probability heatmap — Paraguay departments (Series A)",
-        hover_data={"hdi_low": ":.3f", "hdi_high": ":.3f", "posterior_win_prob": ":.3f"},
+        hover_data={
+            "department": True,
+            "hdi_low": ":.1%",
+            "hdi_high": ":.1%",
+            "posterior_win_prob": ":.1%",
+        },
+        center={"lat": -23.44, "lon": -58.14},
+        zoom=4.55,
+        height=560,
     )
-    fig.update_geos(fitbounds="locations", visible=False)
+    fig.update_traces(marker_line_width=0.6, marker_line_color="#e8e8e8")
     fig.update_layout(
-        margin={"r": 0, "t": 40, "l": 0, "b": 0},
-        height=520,
-        coloraxis_colorbar=dict(title="Win prob.", tickformat=".0%"),
+        map_style="carto-darkmatter-nolabels",
+        paper_bgcolor=_MAP_BG,
+        margin={"r": 10, "t": 50, "l": 10, "b": 40},
+        coloraxis_colorbar=dict(
+            title="Win prob.",
+            tickformat=".0%",
+            tickvals=[0.0, 0.25, 0.5, 0.75, 1.0],
+            bgcolor="rgba(255,255,255,0.92)",
+            bordercolor="#333333",
+            borderwidth=1,
+            len=0.55,
+            y=0.88,
+        ),
+        annotations=[
+            dict(text="BOLIVIA", x=0.08, y=0.92, xref="paper", yref="paper",
+                 showarrow=False, font=dict(color="white", size=14)),
+            dict(text="ARGENTINA", x=0.06, y=0.08, xref="paper", yref="paper",
+                 showarrow=False, font=dict(color="white", size=14)),
+            dict(text="BRAZIL", x=0.92, y=0.45, xref="paper", yref="paper",
+                 showarrow=False, font=dict(color="white", size=14)),
+            dict(text="Boundaries: geoBoundaries PRY ADM1 (simplified)",
+                 x=0.01, y=-0.02, xref="paper", yref="paper",
+                 showarrow=False, font=dict(color="#cccccc", size=9)),
+        ],
     )
     fig.show()
 else:
@@ -521,7 +618,7 @@ else:
 | Sampler | NUTS, 4 chains × 1 000 draws, `target_accept=0.95` | Configured |
 | Exit measurement bias | Bayesian regression: intercept + OEA timing + release window flags | Implemented |
 | Monte Carlo engine | 10 000 draws × shock scale × scenario bucket | Implemented |
-| Battleground mapping | Logistic transformation of posterior margin + synthetic geographic jitter | Implemented |
+| Battleground mapping | TSJE 2018 swing factors × unanchored national posterior (`c_battleground_v0.5`, poll-implied; σ_idio from reference polls) | Implemented |
 
 **Reproducibility:** `MC_FAST=0 make module-c-all --raw-csv <polls.csv> --out-dir data/processed/module_c/`
 re-runs the full pipeline deterministically (NUTS stochastic; posterior means stable across runs given sufficient draws).

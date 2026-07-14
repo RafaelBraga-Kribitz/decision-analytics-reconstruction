@@ -1,0 +1,22 @@
+id: F-080
+title: "Battleground headline chart used outcome-anchored retrodiction, saturating at 100% win probability"
+category: misleading_visualization
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-07-14
+closed_at: 2026-07-14
+recurrence_count: 0
+evidence: |
+  module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/geo/heatmap.py
+  v0.3 mapped win_probability_a = Φ(swing × m / σ) where swing factors come from
+  tsje_2018_department_results.csv and m is the outcome-anchored national posterior
+  (~+3.70 pp). Algebraically dept_m ≈ realized 2018 department margin, so 11/17
+  departments saturated at 100% with invisible HDI whiskers on the GitHub Pages
+  fig-battleground chart (post_mortem.qmd). Endpoint HDI on national margin
+  endpoints also collapsed when both mapped to z >> 3.
+verification_script: scripts/check_battleground_primary_estimand.py
+notes: |
+  Fixed by c_battleground_v0.4: primary parquet is poll_implied (unanchored
+  national posterior), percentile HDI on win_prob, retrodiction moved to
+  companion table. Quarto + EDA C3 updated with HDI whiskers and corrected
+  narrative (Central/Alto Paraná are GANAR strongholds, not highest P(A)).

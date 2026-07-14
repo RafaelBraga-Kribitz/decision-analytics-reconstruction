@@ -764,6 +764,24 @@ paths:
     supersedes: []
     numeric_authority: []
     frontmatter_required: false
+  data/reference/battleground/README.md:
+    doc_id: DOC-REF-BATTLEGROUND-001
+    doc_type: narrative
+    doc_role: reference
+    visibility: internal
+    audience:
+    - agent
+    - maintainer
+    authority: reference_only
+    status: active
+    sensitivity: internal
+    owner: module_c
+    tier_shorthand: T1
+    canonical_source: []
+    derived_from: []
+    supersedes: []
+    numeric_authority: []
+    frontmatter_required: false
   module_c_forecasting_scenarios/README.md:
     doc_id: DOC-MODC-README-001
     doc_type: narrative

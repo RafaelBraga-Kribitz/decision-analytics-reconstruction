@@ -49,6 +49,8 @@ OPERATOR_FILES = {
     # not reviewer-facing narrative.
     "module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md",
     "module_c_forecasting_scenarios/reports/phi_sensitivity.md",
+    # Reference-data schema for battleground σ estimator — data contract, not narrative.
+    "data/reference/battleground/README.md",
 }
 
 

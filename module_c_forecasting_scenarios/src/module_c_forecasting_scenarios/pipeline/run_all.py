@@ -14,6 +14,7 @@ from module_c_forecasting_scenarios.geo.heatmap import (
     export_battleground_department_table,
     write_anchor_comparison,
 )
+from module_c_forecasting_scenarios.geo.sigma_estimator import run_sigma_estimation_and_write
 from module_c_forecasting_scenarios.paths import module_config_dir, repo_root
 from module_c_forecasting_scenarios.pipeline.run_exit import main as run_exit_main
 from module_c_forecasting_scenarios.pipeline.run_monte_carlo import main as run_monte_carlo_main
@@ -43,17 +44,19 @@ def main(argv: list[str] | None = None) -> None:
     run_monte_carlo_main(mc_argv)
     with open(module_config_dir() / "calibration.yaml") as f:
         series = str(yaml.safe_load(f)["series"]).strip().upper()
-    daily = pd.read_parquet(args.out_dir / "tracking" / "daily_posterior_forecast.parquet")
-    anchored_table = export_battleground_department_table(
-        daily,
-        args.out_dir / "battleground" / "battleground_department_probability.parquet",
-        calibration_series=series,
-        anchored=True,
-    )
-    # IMP-C05 unanchored companion: re-fit the tracking model without the
-    # outcome anchor and publish the companion battleground table plus the
-    # anchored-vs-unanchored flip list, so the anchored (retrodiction) table
-    # is never the only published view.
+
+    bg_dir = args.out_dir / "battleground"
+    ref_dir = repo_root() / "data" / "reference" / "battleground"
+    sigma_yaml = ref_dir / "battleground_sigma_idio.yaml"
+    if ref_dir.is_dir() and (ref_dir / "dept_poll_margins.csv").is_file():
+        run_sigma_estimation_and_write(reference_dir=ref_dir, out_yaml=sigma_yaml)
+        logger.info("sigma_idio estimated -> %s", sigma_yaml)
+    elif not sigma_yaml.is_file():
+        logger.warning(
+            "battleground reference data missing; heatmap will use illustrative sigma fallback"
+        )
+
+    # Primary published view: poll-implied (unanchored national posterior).
     run_tracking_main(
         [
             "--raw-csv",
@@ -66,16 +69,30 @@ def main(argv: list[str] | None = None) -> None:
     daily_unanchored = pd.read_parquet(
         args.out_dir / "tracking_unanchored" / "daily_posterior_forecast.parquet"
     )
-    unanchored_table = export_battleground_department_table(
+    poll_implied_table = export_battleground_department_table(
         daily_unanchored,
-        args.out_dir / "battleground" / "battleground_department_probability_unanchored.parquet",
+        bg_dir / "battleground_department_probability.parquet",
         calibration_series=series,
         anchored=False,
+        primary=True,
+        sigma_yaml_path=sigma_yaml if sigma_yaml.is_file() else None,
     )
+
+    # Retrodiction diagnostic: outcome-anchored national posterior.
+    daily = pd.read_parquet(args.out_dir / "tracking" / "daily_posterior_forecast.parquet")
+    retrodiction_table = export_battleground_department_table(
+        daily,
+        bg_dir / "battleground_department_probability_retrodiction.parquet",
+        calibration_series=series,
+        anchored=True,
+        primary=False,
+        sigma_yaml_path=sigma_yaml if sigma_yaml.is_file() else None,
+    )
+
     write_anchor_comparison(
-        anchored_table,
-        unanchored_table,
-        args.out_dir / "battleground" / "battleground_anchor_comparison.md",
+        poll_implied_table,
+        retrodiction_table,
+        bg_dir / "battleground_anchor_comparison.md",
     )
     qsrc = repo_root() / "module_c_forecasting_scenarios/portfolio/quarto/post_mortem.qmd"
     qdst = args.out_dir / "post_mortem.qmd"

@@ -1,0 +1,81 @@
+estimator_version: sigma_estimator_v1
+reference_data_sha256: a810469540690cb984dece88a777f847a28411788422910ecba75efe88d6b9bc
+sigma_floor_pp: 5.69494673024284
+pooled_weighted_mad_pp: 10.905539325984375
+proxy_weight_scheme:
+  direct: 1.0
+  regional_breakdown_only: 0.5
+  regional_proxy: 0.25
+departments:
+  Asuncion:
+    sigma_idio_pp: 5.69494673024284
+    provenance: estimated_from_reference
+    n_poll_obs: 4
+  Concepcion:
+    sigma_idio_pp: 10.905539325984375
+    provenance: estimated_from_reference
+    n_poll_obs: 1
+  San Pedro:
+    sigma_idio_pp: 10.905539325984375
+    provenance: estimated_from_reference
+    n_poll_obs: 1
+  Cordillera:
+    sigma_idio_pp: 15.360889861948799
+    provenance: estimated_from_reference
+    n_poll_obs: 2
+  Guaira:
+    sigma_idio_pp: 6.944836879432623
+    provenance: estimated_from_reference
+    n_poll_obs: 2
+  Caaguazu:
+    sigma_idio_pp: 5.69494673024284
+    provenance: estimated_from_election_cross_section_fallback
+    n_poll_obs: 0
+  Caazapa:
+    sigma_idio_pp: 8.101886837561427
+    provenance: estimated_from_reference
+    n_poll_obs: 2
+  Itapua:
+    sigma_idio_pp: 10.905539325984375
+    provenance: estimated_from_reference
+    n_poll_obs: 1
+  Misiones:
+    sigma_idio_pp: 10.905539325984375
+    provenance: estimated_from_reference
+    n_poll_obs: 1
+  Paraguari:
+    sigma_idio_pp: 11.591341510190375
+    provenance: estimated_from_reference
+    n_poll_obs: 3
+  Alto Parana:
+    sigma_idio_pp: 10.905539325984375
+    provenance: estimated_from_reference
+    n_poll_obs: 1
+  Central:
+    sigma_idio_pp: 10.905539325984375
+    provenance: estimated_from_reference
+    n_poll_obs: 4
+  Neembucu:
+    sigma_idio_pp: 10.905539325984375
+    provenance: estimated_from_reference
+    n_poll_obs: 1
+  Amambay:
+    sigma_idio_pp: 10.905539325984375
+    provenance: estimated_from_reference
+    n_poll_obs: 1
+  Canindeyu:
+    sigma_idio_pp: 10.905539325984375
+    provenance: estimated_from_reference
+    n_poll_obs: 1
+  Presidente Hayes:
+    sigma_idio_pp: 5.69494673024284
+    provenance: estimated_from_election_cross_section_fallback
+    n_poll_obs: 0
+  Boqueron:
+    sigma_idio_pp: 5.69494673024284
+    provenance: estimated_from_election_cross_section_fallback
+    n_poll_obs: 0
+  Alto Paraguay:
+    sigma_idio_pp: 5.69494673024284
+    provenance: estimated_from_election_cross_section_fallback
+    n_poll_obs: 0

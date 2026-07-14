@@ -6,19 +6,19 @@
 
 ## Situation Assessment
 
-The Bayesian tracking model closes at a **3.7 pp preference margin** on fixture polls (94% HDI: 2.9 to 4.7 pp). Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp. Modelled department win probabilities range **0%–100%**. Portfolio framing: use verified TSJE anchor (+3.70 pp) for outcome facts; treat tracking outputs as illustrative decision-support machinery.
+The Bayesian tracking model closes at a **3.7 pp preference margin** on fixture polls (94% HDI: 3.0 to 4.7 pp). Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp. Modelled department win probabilities range **12%–100%**. Portfolio framing: use verified TSJE anchor (+3.70 pp) for outcome facts; treat tracking outputs as illustrative decision-support machinery.
 
 ---
 
 ## Top 3 Priority Departments
 
-**1. Central (Budget: $1.92M, Modelled Win Prob: 2.4%, Propensity: ~0.55)**
-Central is non-negotiable. With the largest entity count by department and the highest Youth Volatile concentration in the country, Central determines whether Candidate A wins with a thin mandate or a historic one. The challenge: reach utilisation is below cap in weeks 10–14, meaning the program is leaving contacts on the table during the crucial final push. Recommended action: increase WhatsApp chatbot activation in Central's urban districts by 20% in weeks 11–14 and deploy a targeted youth ground operation in Asunción metro.
+**1. Caaguazu (Budget: $468K, Modelled Win Prob: 52.5%, Propensity: ~0.58)**
+Caaguazu is the top battleground department — tracking-implied win probability sits near the 50% threshold with visible HDI uncertainty. A strong Rural Committed presence (high propensity) and lower cost-per-persuasion-contact than metro departments make it the efficiency sweet spot for marginal persuasion spend.
 
-**2. Caaguazu (Budget: $468K, Modelled Win Prob: 55.6%, Propensity: ~0.58)**
-Caaguazu is the efficiency sweet spot. It has the highest win probability of all Oriental departments, a strong Rural Committed presence (high propensity), and a lower cost-per-persuasion-contact than Central or Alto Paraná. It is currently underfunded relative to its composite priority score. A $75K budget increase from Central savings would deliver approximately 24,000 additional persuasion-adjusted contacts here.
+**2. San Pedro (Budget: $340K, Modelled Win Prob: 58.0%, Propensity: ~0.58)**
+San Pedro ranks among the most competitive departments after Caaguazu. Radio and canvassing channels reach Rural Committed segment efficiently here; protecting budget through the final fortnight is critical.
 
-**3. Itapua (Budget: $494K, Modelled Win Prob: 90.7%, Propensity: ~0.65)**
+**3. Itapua (Budget: $494K, Modelled Win Prob: 68.6%, Propensity: ~0.65)**
 Itapúa has the highest mean participation propensity of any department with significant Rural Committed presence. It is the dominant department for that segment. Radio is the primary reach channel. At near-saturation on reach utilisation, the channel is performing well — the risk is a budget cut that disrupts this performance. Protect Itapúa's radio budget unconditionally and explore whether a modest canvassing supplement in rural municipalities can push propensity-weighted turnout past 70%.
 
 ---
@@ -26,16 +26,16 @@ Itapúa has the highest mean participation propensity of any department with sig
 ## Segment Strategy: Double Down vs Deprioritise
 
 **Double Down:**
-- **Youth Volatile (21.6% of population, propensity 0.63):** High reachability — the mobilisation opportunity. Digital-first (WhatsApp, Facebook), Jopara-friendly content, peer-to-peer activation via youth networks.
-- **Rural Committed (14.9% of population):** High propensity (0.64) but low reachability. Radio + canvassing investment here delivers premium returns per contact. Do not sacrifice these entities to cut costs.
+- **Youth Volatile (11.8% of population, propensity 0.56):** High reachability — the mobilisation opportunity. Digital-first (WhatsApp, Facebook), Jopara-friendly content, peer-to-peer activation via youth networks.
+- **Rural Committed (17.0% of population):** High propensity (0.60) but low reachability. Radio + canvassing investment here delivers premium returns per contact. Do not sacrifice these entities to cut costs.
 
 **Maintain:**
-- **Urban High Volatility (15.7%):** Good reachability, propensity 0.58. Currently receiving fair budget share. No change needed — the strategy is working.
-- **Structurally Dependent Bloc (16.6%):** High rural, high NBI stress. Sensitive segment requiring careful messaging. Maintain current radio + community organiser approach.
+- **Urban High Volatility (14.5%):** Good reachability, propensity 0.59. Currently receiving fair budget share. No change needed — the strategy is working.
+- **Structurally Dependent Bloc (17.3%):** High rural, high NBI stress. Sensitive segment requiring careful messaging. Maintain current radio + community organiser approach.
 
 **Deprioritise:**
-- **Committed Opposition (16.5%):** Mean propensity 0.65, high B-preference strength. These are locked opposition-aligned entities. Any persuasion spend here is waste. Reallocate immediately.
-- **Rural Low Propensity (14.7%):** Propensity 0.57 — the hardest cohort to mobilise. Passive presence only — no active spend increases warranted.
+- **Committed Opposition (15.2%):** Mean propensity 0.65, high B-preference strength. These are locked opposition-aligned entities. Any persuasion spend here is waste. Reallocate immediately.
+- **Rural Low Propensity (24.1%):** Propensity 0.63 — the hardest cohort to mobilise. Passive presence only — no active spend increases warranted.
 
 ---
 
@@ -74,7 +74,7 @@ Itapúa has the highest mean participation propensity of any department with sig
 
 **Medium risk (requires contingency planning):**
 - Late-breaking adverse events: The extreme-tracker bucket (200 of 600 draws) assumes 1.83–2.43× shock scale. A major scandal or crisis event in weeks 12–14 could compress the margin by 5–8 pp. Pre-position a rapid-response team.
-- Participation depression in Youth Volatile: this segment's propensity is 0.63. If youth registration or turnout infrastructure fails (long queues, administrative errors), the mandate could shrink materially.
+- Participation depression in Youth Volatile: this segment's propensity is 0.56. If youth registration or turnout infrastructure fails (long queues, administrative errors), the mandate could shrink materially.
 
 **Low but non-zero systemic risk:**
 - Model miscalibration: Only 4 poll waves feed the tracking model. If all four pollsters share an unmeasured systematic bias not captured by the house effect model, the posterior could be significantly wrong. Diversify polling sources.

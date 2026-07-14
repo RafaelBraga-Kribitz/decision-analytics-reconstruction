@@ -1,14 +1,14 @@
 {
-  "generated_at_utc": "2026-07-09T15:11:49.119207+00:00",
+  "generated_at_utc": "2026-07-13T22:32:36.296319+00:00",
   "note": "Canonical pipeline numbers. Regenerate via scripts/generate_golden_metrics.py after an intentional model change; tests/test_golden_metrics.py gates reproduction.",
   "module_b": {
     "solver_status": "OPTIMAL",
-    "total_budget_usd": 6029991.29,
-    "total_persuasion_contacts": 170265540.13,
-    "objective_value": 170265645.09162593,
+    "total_budget_usd": 6029991.35,
+    "total_persuasion_contacts": 170264883.92,
+    "objective_value": 170264982.10608992,
     "row_count": 2772,
     "provenance": "MODULE_A+PRIOR",
-    "linearized_lift_pct_milp_vs_naive": 54.764346
+    "linearized_lift_pct_milp_vs_naive": 54.764631
   },
   "module_c": {
     "calibration_series": "A",
@@ -16,7 +16,7 @@
     "outcome_event_date": "2018-04-22",
     "n_tracking_waves": 8,
     "mc_n_draws": 600,
-    "mc_alloc_mean_persuasion_contacts": 61423.35502694804,
-    "mc_allocation_input": "data/processed/module_b/allocation_baseline.parquet"
+    "mc_alloc_mean_persuasion_contacts": 0.0,
+    "mc_allocation_input": null
   }
 }
