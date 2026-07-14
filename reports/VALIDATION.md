@@ -32,6 +32,7 @@ Department participation raking aligns aggregates to **61.25%** national anchor.
 | MC B→C handshake | alloc contacts > 0 | F-040 |
 | MCMC divergences | 0 on full run (v0.4 non-centered) | enforced: slow-lane tests fail on any divergence |
 | Walk-forward coverage on fixture | sparse | not claimed as external validation |
+| Leave-one-wave-out walk-forward | committed report | [`walk_forward_loo_report.md`](module_c/walk_forward_loo_report.md) · Brier 0.31 · 95% coverage 50% (n=6 holdouts, MC_FAST) |
 
 ## Pipeline integration
 

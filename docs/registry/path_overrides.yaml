@@ -1,5 +1,5 @@
 override_guard:
-  max_paths: 54
+  max_paths: 55
 paths:
   schema_contracts/CONFORMANCE_MATRIX.md:
     doc_id: DOC-SCH-MATRIX-001
@@ -359,6 +359,27 @@ paths:
     - summarization
     forbidden_content:
     - novel_metrics
+  reports/module_c/walk_forward_loo_report.md:
+    doc_id: DOC-MODC-005
+    doc_type: evidence
+    doc_role: evidence
+    visibility: internal
+    audience:
+    - technical
+    - maintainer
+    authority: evidence
+    status: active
+    sensitivity: internal
+    owner: module_c
+    tier_shorthand: T1
+    canonical_source:
+    - DOC-MODC-001
+    derived_from:
+    - DOC-MODC-001
+    supersedes: []
+    numeric_authority: []
+    frontmatter_required: false
+    last_reviewed: '2026-07-14'
   reports/competitive_positioning.md:
     doc_id: DOC-BIZ-004
     doc_type: narrative
