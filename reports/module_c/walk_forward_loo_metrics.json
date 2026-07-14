@@ -1,0 +1,13 @@
+{
+  "fixture": "module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv",
+  "calibration_series": "A",
+  "outcome_event_date": "2018-04-22",
+  "min_train_size": 2,
+  "n_total_polls": 8,
+  "mc_fast": true,
+  "brier_score": 0.31001666666666666,
+  "log_loss": 1.0236631753066616,
+  "coverage_80pct": 0.3333333333333333,
+  "coverage_95pct": 0.5,
+  "n_holdouts": 6.0
+}
