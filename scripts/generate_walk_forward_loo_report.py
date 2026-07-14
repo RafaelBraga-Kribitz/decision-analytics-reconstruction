@@ -20,7 +20,6 @@ from datetime import date
 from pathlib import Path
 
 import yaml
-
 from module_c_forecasting_scenarios.data.cleaning_pipeline import clean_raw_polls
 from module_c_forecasting_scenarios.data.raw_loader import load_raw_polls_csv
 from module_c_forecasting_scenarios.paths import module_config_dir
@@ -30,11 +29,7 @@ from module_c_forecasting_scenarios.validation.walk_forward import (
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 FIXTURE = (
-    REPO_ROOT
-    / "module_c_forecasting_scenarios"
-    / "tests"
-    / "fixtures"
-    / "polls_raw_fixture.csv"
+    REPO_ROOT / "module_c_forecasting_scenarios" / "tests" / "fixtures" / "polls_raw_fixture.csv"
 )
 METRICS_OUT = REPO_ROOT / "reports" / "module_c" / "walk_forward_loo_metrics.json"
 REPORT_OUT = REPO_ROOT / "reports" / "module_c" / "walk_forward_loo_report.md"
@@ -42,6 +37,13 @@ REPORT_OUT = REPO_ROOT / "reports" / "module_c" / "walk_forward_loo_report.md"
 
 def _render_report(payload: dict[str, object], per_holdout_rows: list[dict[str, object]]) -> str:
     m = payload
+    n_waves = int(m["n_total_polls"])
+    n_holdouts = int(m["n_holdouts"])
+    min_train = int(m["min_train_size"])
+    mc_fast = "1" if os.environ.get("MC_FAST", "1") == "1" else "0"
+    cov80 = 100 * float(m["coverage_80pct"])
+    cov95 = 100 * float(m["coverage_95pct"])
+    fixture_rel = FIXTURE.relative_to(REPO_ROOT).as_posix()
     lines = [
         "# Module C — Leave-One-Wave-Out Walk-Forward Report",
         "",
@@ -52,11 +54,18 @@ def _render_report(payload: dict[str, object], per_holdout_rows: list[dict[str, 
         "",
         "## Caveats (read before quoting these numbers)",
         "",
-        f"- **Small n:** only **{int(m['n_total_polls'])}** tracking waves → **{int(m['n_holdouts'])}** holdouts at ``min_train_size={int(m['min_train_size'])}``.",
-        "- **Wide intervals expected:** sparse polls + house effects → interval coverage is a structural diagnostic, not proof of calibration.",
-        "- **Regeneration mode:** this committed artifact was produced with "
-        f"``MC_FAST={'1' if os.environ.get('MC_FAST', '1') == '1' else '0'}``; "
-        "re-run without ``MC_FAST`` for publication-grade MCMC.",
+        (
+            f"- **Small n:** only **{n_waves}** tracking waves → **{n_holdouts}** "
+            f"holdouts at ``min_train_size={min_train}``."
+        ),
+        (
+            "- **Wide intervals expected:** sparse polls + house effects → interval "
+            "coverage is a structural diagnostic, not proof of calibration."
+        ),
+        (
+            "- **Regeneration mode:** this committed artifact was produced with "
+            f"``MC_FAST={mc_fast}``; re-run without ``MC_FAST`` for publication-grade MCMC."
+        ),
         "",
         "## Aggregate metrics",
         "",
@@ -64,12 +73,15 @@ def _render_report(payload: dict[str, object], per_holdout_rows: list[dict[str, 
         "|---|---:|---|",
         f"| Brier score (sign task) | {m['brier_score']:.4f} | P(margin>0) vs observed sign |",
         f"| Log loss | {m['log_loss']:.4f} | Same task, log score |",
-        f"| 80% interval coverage | {100 * float(m['coverage_80pct']):.1f}% | Share of holdouts inside 80% HDI |",
-        f"| 95% interval coverage | {100 * float(m['coverage_95pct']):.1f}% | Share of holdouts inside 95% HDI |",
+        (f"| 80% interval coverage | {cov80:.1f}% | " "Share of holdouts inside 80% HDI |"),
+        (f"| 95% interval coverage | {cov95:.1f}% | " "Share of holdouts inside 95% HDI |"),
         "",
         "## Per-holdout detail",
         "",
-        "| Holdout wave | Date | Observed margin (pp) | Predictive mean (pp) | 95% HDI (pp) | In 95% HDI |",
+        (
+            "| Holdout wave | Date | Observed margin (pp) | Predictive mean (pp) | "
+            "95% HDI (pp) | In 95% HDI |"
+        ),
         "|---|---|---:|---:|---|---|",
     ]
     for row in per_holdout_rows:
@@ -88,7 +100,7 @@ def _render_report(payload: dict[str, object], per_holdout_rows: list[dict[str, 
             "MC_FAST=1 poetry run python scripts/generate_walk_forward_loo_report.py",
             "```",
             "",
-            f"*Generated on {date.today().isoformat()} from ``{FIXTURE.relative_to(REPO_ROOT).as_posix()}``.*",
+            f"*Generated on {date.today().isoformat()} from ``{fixture_rel}``.*",
         ]
     )
     return "\n".join(lines) + "\n"
