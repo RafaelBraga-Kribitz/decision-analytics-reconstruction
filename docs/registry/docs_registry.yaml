@@ -1110,12 +1110,12 @@ documents:
   path: module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md
   last_reviewed: '2026-05-20'
 - doc_type: evidence
-  doc_role: reference
+  doc_role: evidence
   visibility: internal
   audience:
   - agent
   - maintainer
-  authority: reference_only
+  authority: evidence
   status: active
   sensitivity: internal
   owner: module_c

@@ -785,12 +785,12 @@ paths:
   module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/geo/paraguay_departments.SOURCE.md:
     doc_id: DOC-REF-GEO-ADM1-001
     doc_type: evidence
-    doc_role: reference
+    doc_role: evidence
     visibility: internal
     audience:
     - agent
     - maintainer
-    authority: reference_only
+    authority: evidence
     status: active
     sensitivity: internal
     owner: module_c
