@@ -20,6 +20,7 @@ _PKG_GEO = (
     / "paraguay_departments.geojson"
 )
 
+
 @pytest.fixture()
 def daily_fixture() -> pd.DataFrame:
     return pd.DataFrame(
