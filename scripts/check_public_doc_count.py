@@ -53,6 +53,8 @@ OPERATOR_FILES = {
     "data/reference/battleground/README.md",
     # GeoJSON provenance note for ADM1 boundaries (F-081) — data contract, not narrative.
     "module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/geo/paraguay_departments.SOURCE.md",
+    # Committed LOO walk-forward evidence (issue #97) — summarized in VALIDATION.md.
+    "reports/module_c/walk_forward_loo_report.md",
 }
 
 
