@@ -58,8 +58,8 @@ def _parquet_gaps() -> list[str]:
         gaps.append("primary parquet estimand is not poll_implied")
     if "model_version" in df.columns:
         versions = df["model_version"].astype(str).unique()
-        if not any("v0.4" in v for v in versions):
-            gaps.append(f"primary parquet model_version not v0.4: {versions.tolist()}")
+        if not any("v0.5" in v for v in versions):
+            gaps.append(f"primary parquet model_version not v0.5: {versions.tolist()}")
     if {"hdi_low", "hdi_high"} <= set(df.columns):
         widths = df["hdi_high"] - df["hdi_low"]
         if int((widths >= 0.05).sum()) < 5:
@@ -90,8 +90,8 @@ def _qmd_gaps() -> list[str]:
 def _heatmap_gaps() -> list[str]:
     gaps: list[str] = []
     src = HEATMAP.read_text(encoding="utf-8")
-    if 'MODEL_VERSION = "c_battleground_v0.4"' not in src:
-        gaps.append("heatmap.py not bumped to c_battleground_v0.4")
+    if 'MODEL_VERSION = "c_battleground_v0.5"' not in src:
+        gaps.append("heatmap.py not bumped to c_battleground_v0.5")
     if "_ESTIMAND_POLL_IMPLIED" not in src:
         gaps.append("heatmap.py lost poll_implied estimand constant")
     if "_win_prob_hdi" not in src:

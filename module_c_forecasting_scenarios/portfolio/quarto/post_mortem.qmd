@@ -353,11 +353,11 @@ if mc is not None:
 
 ## Department-Level Win Probability
 
-Poll-implied win probability per geographic unit (model `c_battleground_v0.4`): each department's margin tracks the **unanchored** national posterior linearly via its TSJE-derived swing factor, with an illustrative idiosyncratic dispersion floor added in quadrature. HDI whiskers propagate national margin uncertainty through percentile sampling on win probability. **Estimand disclosure:** swing factors are derived from the realized 2018 TSJE department results — this is not an out-of-sample forecast. The retrodiction companion table below uses an outcome-anchored national posterior (outcome data enters twice).
+Poll-implied win probability per geographic unit (model `c_battleground_v0.5`): each department's margin tracks the **unanchored** national posterior linearly via its TSJE-derived swing factor; department dispersion uses per-dept σ_idio estimated from reference poll residuals (2013 GRAU/2018 ATI) and a 2013↔2018 election cross-section floor (`data/reference/battleground/`). National uncertainty enters without swing scaling (v0.5 decoupled mapping). HDI whiskers propagate national margin uncertainty through percentile sampling on win probability. **Estimand disclosure:** swing factors are derived from the realized 2018 TSJE department results — this is not an out-of-sample forecast. The retrodiction companion table below uses an outcome-anchored national posterior (outcome data enters twice).
 
 ```{python}
 #| label: fig-battleground
-#| fig-cap: "Poll-implied department win probability with HDI interval — Series A. Unanchored national posterior × outcome-derived swing factors; idiosyncratic dispersion floor is an illustrative assumption (see schema contract). Diamonds mark TSJE 2018 actual winner."
+#| fig-cap: "Poll-implied department win probability with HDI interval — Series A. Unanchored national posterior × outcome-derived swing factors; c_battleground_v0.5 decoupled σ with reference-estimated per-dept σ_idio (see manifest). Diamonds mark TSJE 2018 actual winner."
 
 if battle is not None:
     b = battle.sort_values("win_probability_a")
@@ -591,7 +591,7 @@ else:
 | Sampler | NUTS, 4 chains × 1 000 draws, `target_accept=0.95` | Configured |
 | Exit measurement bias | Bayesian regression: intercept + OEA timing + release window flags | Implemented |
 | Monte Carlo engine | 10 000 draws × shock scale × scenario bucket | Implemented |
-| Battleground mapping | TSJE 2018 swing factors × unanchored national posterior (`c_battleground_v0.4`, poll-implied) | Implemented |
+| Battleground mapping | TSJE 2018 swing factors × unanchored national posterior (`c_battleground_v0.5`, poll-implied; σ_idio from reference polls) | Implemented |
 
 **Reproducibility:** `MC_FAST=0 make module-c-all --raw-csv <polls.csv> --out-dir data/processed/module_c/`
 re-runs the full pipeline deterministically (NUTS stochastic; posterior means stable across runs given sufficient draws).

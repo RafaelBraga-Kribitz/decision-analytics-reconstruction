@@ -151,6 +151,25 @@ documents:
   doc_id: DOC-ROOT-001
   path: README.md
 - doc_type: narrative
+  doc_role: reference
+  visibility: internal
+  audience:
+  - agent
+  - maintainer
+  authority: reference_only
+  status: active
+  sensitivity: internal
+  owner: module_c
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-REF-BATTLEGROUND-001
+  path: data/reference/battleground/README.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
   doc_role: canonical
   visibility: public
   audience:

@@ -31,25 +31,19 @@ from scipy.stats import norm
 
 from module_c_forecasting_scenarios.config import load_sampler_config
 from module_c_forecasting_scenarios.data.contract_validate import validate_dataframe_contract
+from module_c_forecasting_scenarios.geo.sigma_estimator import (
+    load_sigma_manifest_extras,
+    load_sigma_yaml,
+)
 
-MODEL_VERSION = "c_battleground_v0.4"
+MODEL_VERSION = "c_battleground_v0.5"
 
-# Idiosyncratic per-department uncertainty (pp): a floor on each department's
-# margin dispersion representing unmodelled local factors (candidate strength,
-# local issues, ground game).
-#
-# PROVENANCE — illustrative assumption (IMP-C05 / issue #63): this value is
-# NOT estimated from data. Estimating it would require department-level
-# poll-vs-result residuals across elections; this reconstruction carries only
-# national tracking polls plus the single realized 2018 department table the
-# swing factors are derived from (their in-sample residual is zero by
-# construction, so it cannot identify this parameter). Per the IMP-C05 spec's
-# fallback, the parameter and every artifact it touches are therefore labeled
-# ``illustrative`` in the schema contract and report captions. Do not justify
-# a new value by a target visual property ("gives ~X pp width") — either
-# derive it from a documented reference or keep the illustrative label.
-_SIGMA_IDIO_PP: float = 1.5
-_SIGMA_IDIO_PROVENANCE = "illustrative_assumption_not_estimated"
+# Fallback when sigma yaml is unavailable (tests / minimal installs).
+_SIGMA_IDIO_PP_FALLBACK: float = 1.5
+_SIGMA_IDIO_PROVENANCE_FALLBACK = "illustrative_assumption_not_estimated"
+
+_sigma_idio_by_dept: dict[str, float] | None = None
+_sigma_manifest_extras: dict[str, Any] | None = None
 
 # Primary published estimand: poll-implied win probabilities from an unanchored
 # national posterior × TSJE-derived swing factors (swing still outcome-derived).
@@ -115,26 +109,56 @@ def _swing_factors(df: pd.DataFrame) -> dict[str, float]:
     return dict(zip(df["department_ascii"], df["swing"], strict=True))
 
 
+def _resolve_sigma_idio(sigma_yaml_path: Path | None = None) -> dict[str, float]:
+    global _sigma_idio_by_dept, _sigma_manifest_extras
+    try:
+        if sigma_yaml_path is not None:
+            by_dept = load_sigma_yaml(sigma_yaml_path)
+            extras = load_sigma_manifest_extras(sigma_yaml_path)
+        else:
+            by_dept = load_sigma_yaml()
+            extras = load_sigma_manifest_extras()
+    except (FileNotFoundError, OSError):
+        by_dept = {d: _SIGMA_IDIO_PP_FALLBACK for d in DEPARTMENTS}
+        extras = {
+            "sigma_idio_provenance": _SIGMA_IDIO_PROVENANCE_FALLBACK,
+            "sigma_estimator_version": None,
+            "reference_data_sha256": "",
+            "sigma_floor_pp": _SIGMA_IDIO_PP_FALLBACK,
+            "proxy_weight_scheme": {},
+            "n_obs_per_department": {d: 0 for d in DEPARTMENTS},
+            "sigma_idio_by_department": by_dept,
+        }
+    _sigma_idio_by_dept = by_dept
+    _sigma_manifest_extras = extras
+    return by_dept
+
+
+def _sigma_dept_v05(sigma_national: float, sigma_idio_j: float) -> float:
+    """v0.5: national uncertainty enters without swing scaling."""
+    return float(np.sqrt(sigma_national**2 + sigma_idio_j**2))
+
+
 def _win_prob_hdi(
     swing: float,
     m_pp: float,
     hdi_lo: float,
     hdi_hi: float,
     sigma_national: float,
-    sigma_dept: float,
+    sigma_idio_j: float,
 ) -> tuple[float, float, float]:
     """Point estimate and percentile HDI on win_prob under national margin uncertainty.
 
-    Propagates uncertainty by evaluating Φ(swing × m_k / σ_dept) over a grid of
-    national margins from hdi_lo to hdi_hi (uniform) plus the posterior mean,
-    then taking symmetric percentiles at ``_HDI_PROB``.
+    v0.5: μ_dept = swing × m; σ_dept = √(σ_national² + σ_idio,j²).
     """
+    sigma_dept = _sigma_dept_v05(sigma_national, sigma_idio_j)
     lo = min(hdi_lo, hdi_hi)
     hi = max(hdi_lo, hdi_hi)
     m_grid = np.linspace(lo, hi, _HDI_GRID_N)
     if not np.any(np.isclose(m_grid, m_pp)):
         m_grid = np.sort(np.append(m_grid, m_pp))
-    wp_samples = norm.cdf(swing * m_grid / sigma_dept)
+    mu_grid = swing * m_grid
+    wp_samples = norm.cdf(mu_grid / sigma_dept)
     alpha = (1.0 - _HDI_PROB) / 2.0
     hdi_low = float(np.quantile(wp_samples, alpha))
     hdi_high = float(np.quantile(wp_samples, 1.0 - alpha))
@@ -152,13 +176,14 @@ def _build_battleground_rows(
     sigma_national: float,
     calibration_series: str,
     estimand: str,
+    sigma_idio_by_dept: dict[str, float],
 ) -> pd.DataFrame:
     rows: list[dict[str, Any]] = []
     for dept in DEPARTMENTS:
         swing = swings.get(dept, 0.0)
-        sigma_dept = float(np.sqrt((swing * sigma_national) ** 2 + _SIGMA_IDIO_PP**2))
+        sigma_idio_j = float(sigma_idio_by_dept.get(dept, _SIGMA_IDIO_PP_FALLBACK))
         win_prob_a, hdi_low, hdi_high = _win_prob_hdi(
-            swing, m_pp, hdi_lo, hdi_hi, sigma_national, sigma_dept
+            swing, m_pp, hdi_lo, hdi_hi, sigma_national, sigma_idio_j
         )
         rows.append(
             {
@@ -234,13 +259,27 @@ def _write_heatmap_geojson(
     )
 
 
-def _write_battleground_manifest(out_path: Path, *, estimand: str, anchored: bool) -> None:
+def _write_battleground_manifest(
+    out_path: Path,
+    *,
+    estimand: str,
+    anchored: bool,
+    sigma_extras: dict[str, Any],
+) -> None:
     manifest = {
         "model_version": MODEL_VERSION,
         "estimand": estimand,
         "anchored_national_posterior": anchored,
-        "sigma_idio_pp": _SIGMA_IDIO_PP,
-        "sigma_idio_provenance": _SIGMA_IDIO_PROVENANCE,
+        "sigma_idio_provenance": sigma_extras.get(
+            "sigma_idio_provenance", _SIGMA_IDIO_PROVENANCE_FALLBACK
+        ),
+        "sigma_estimator_version": sigma_extras.get("sigma_estimator_version"),
+        "reference_data_sha256": sigma_extras.get("reference_data_sha256", ""),
+        "sigma_floor_pp": sigma_extras.get("sigma_floor_pp"),
+        "proxy_weight_scheme": sigma_extras.get("proxy_weight_scheme"),
+        "n_obs_per_department": sigma_extras.get("n_obs_per_department"),
+        "sigma_idio_by_department": sigma_extras.get("sigma_idio_by_department"),
+        "mapping": "v0.5_decoupled_sigma",
         "hdi_prob": _HDI_PROB,
         "tsje_input_sha256": hashlib.sha256(_TSJE_CSV.read_bytes()).hexdigest(),
         "outcome_data_entry_points": [
@@ -263,16 +302,16 @@ def export_battleground_department_table(
     calibration_series: str,
     anchored: bool = False,
     primary: bool = False,
+    sigma_yaml_path: Path | None = None,
 ) -> pd.DataFrame:
     """Map last-day tracking posterior to per-department win probability.
 
-    Uses a calibrated hierarchical model (v0.4):
-      • Each department's margin tracks the national margin linearly via its
-        TSJE-derived swing factor (partial pooling toward the national result).
-      • National posterior uncertainty propagates through the swing factor;
-        idiosyncratic noise (``_SIGMA_IDIO_PP``, an illustrative assumption —
-        see its provenance comment) is added in quadrature.
-      • win_probability_a = P(Abdo/Candidate A wins dept j) = Φ(m_dept / σ_dept).
+    Uses a calibrated hierarchical model (v0.5):
+      • μ_dept,j = swing_j × m_national (TSJE-derived swing factors).
+      • σ_dept,j = √(σ_national² + σ_idio,j²) — swing does not amplify σ (F-081).
+      • σ_idio,j estimated from reference poll residuals + election cross-section
+        floor (``geo/sigma_estimator.py``), or illustrative fallback in tests.
+      • win_probability_a = Φ(μ_dept / σ_dept).
       • HDI on win_prob uses percentile propagation over the national margin grid.
 
     Args:
@@ -286,6 +325,8 @@ def export_battleground_department_table(
             either way.
         primary: When ``True``, write the polygon choropleth GeoJSON (only the
             primary poll_implied export should set this).
+        sigma_yaml_path: Optional path to ``battleground_sigma_idio.yaml``.
+            When omitted, loads from ``data/reference/battleground/``.
 
     Returns:
         The contract-validated table that was written.
@@ -311,10 +352,20 @@ def export_battleground_department_table(
     # National posterior standard deviation estimated from 94% HDI width.
     sigma_national = (hdi_hi - hdi_lo) / (2.0 * _HDI_Z)
 
+    sigma_idio_by_dept = _resolve_sigma_idio(sigma_yaml_path)
+    sigma_extras = _sigma_manifest_extras or {}
+
     tsje = _load_tsje()
     swings = _swing_factors(tsje)
     full = _build_battleground_rows(
-        swings, m_pp, hdi_lo, hdi_hi, sigma_national, calibration_series, estimand
+        swings,
+        m_pp,
+        hdi_lo,
+        hdi_hi,
+        sigma_national,
+        calibration_series,
+        estimand,
+        sigma_idio_by_dept,
     )
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -335,7 +386,9 @@ def export_battleground_department_table(
     _write_null_geojson(out, out_path, calibration_series)
     if primary:
         _write_heatmap_geojson(full, out_path, calibration_series, estimand)
-    _write_battleground_manifest(out_path, estimand=estimand, anchored=anchored)
+    _write_battleground_manifest(
+        out_path, estimand=estimand, anchored=anchored, sigma_extras=sigma_extras
+    )
 
     return out
 
