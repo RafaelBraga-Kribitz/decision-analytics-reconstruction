@@ -1,5 +1,10 @@
 name: Sync GitHub Issues to Agent Queue
 
+# Smoke-checks that the agent queue can be generated from live issue state.
+# The queue file itself is generated state and is NOT committed (issue #94:
+# the committed copy went stale and listed closed issues as ready work).
+# Agents regenerate it locally: poetry run python scripts/generate_agent_queue.py
+
 on:
   issues:
     types: [opened, edited, labeled, unlabeled]
@@ -13,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       issues: read
-      contents: write
+      contents: read
     steps:
       - uses: actions/checkout@v4
 
@@ -22,140 +27,11 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Ensure .claude directory exists
-        run: mkdir -p .claude
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-
       - name: Generate agent_queue.json from GitHub Issues
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GH_REPO: ${{ github.repository }}
-        run: |
-          python3 << 'EOF'
-          import subprocess
-          import json
-          import sys
-          import os
-          from datetime import datetime
-
-          # Ensure gh CLI is available
-          try:
-              result = subprocess.run(["which", "gh"], capture_output=True, check=True)
-              print(f"gh found at: {result.stdout.decode().strip()}")
-          except subprocess.CalledProcessError:
-              print("ERROR: gh CLI not found in PATH", file=sys.stderr)
-              sys.exit(1)
-
-          # Fetch all open issues with status:claude-ready label
-          cmd = [
-              "gh", "issue", "list",
-              "--repo", os.environ.get("GH_REPO", "${{ github.repository }}"),
-              "--search", "is:open label:status:claude-ready",
-              "--json", "number,title,labels,body"
-          ]
-
-          print(f"Running: {' '.join(cmd)}")
-          proc = subprocess.run(cmd, capture_output=True, text=True, check=False)
-
-          print(f"Return code: {proc.returncode}")
-          if proc.stderr:
-              print(f"Stderr: {proc.stderr}")
-
-          if proc.returncode != 0:
-              print(f"gh issue list failed with return code {proc.returncode}", file=sys.stderr)
-              if proc.stdout:
-                  print(f"Stdout: {proc.stdout}", file=sys.stderr)
-              sys.exit(1)
-
-          try:
-              issues = json.loads(proc.stdout) if proc.stdout.strip() else []
-          except json.JSONDecodeError as e:
-              print(f"ERROR: Failed to parse gh output as JSON: {e}", file=sys.stderr)
-              print(f"Raw output: {proc.stdout}", file=sys.stderr)
-              sys.exit(1)
-
-          print(f"Found {len(issues)} ready issues")
-
-          # Extract priority, effort, skills from labels
-          ready_tasks = []
-          for issue in issues:
-              labels = {label["name"] for label in issue.get("labels", [])}
-
-              # Extract priority
-              priority = "p2"  # default
-              for label in labels:
-                  if label.startswith("priority:"):
-                      priority = label.split(":")[1]
-                      break
-
-              # Extract effort
-              effort = "unknown"
-              for label in labels:
-                  if label.startswith("effort:"):
-                      effort = label.split(":")[1]
-                      break
-
-              # Extract skills
-              skills = [label.split(":")[1] for label in labels if label.startswith("skill:")]
-
-              # Parse acceptance criteria from issue body (look for bullet list after "Acceptance criteria" heading)
-              acceptance_criteria = []
-              body = issue.get("body", "")
-              if body:
-                  lines = body.split("\n")
-                  in_acceptance = False
-                  for line in lines:
-                      if "acceptance criteria" in line.lower():
-                          in_acceptance = True
-                          continue
-                      if in_acceptance:
-                          if line.startswith("- [ ]") or line.startswith("- [x]"):
-                              # Extract the text after the checkbox
-                              text = line.split("]", 1)[1].strip() if "]" in line else ""
-                              if text:
-                                  acceptance_criteria.append(text)
-                          elif line.startswith("##"):
-                              break
-
-              task = {
-                  "number": issue["number"],
-                  "title": issue["title"],
-                  "priority": priority,
-                  "effort": effort,
-                  "skills": skills,
-                  "status": "ready",
-                  "acceptance_criteria": acceptance_criteria,
-                  "url": f"https://github.com/{os.environ.get('GH_REPO', 'RafaelBraga-Kribitz/decision-analytics-reconstruction')}/issues/{issue['number']}"
-              }
-              ready_tasks.append(task)
-
-          # Sort by priority (p0 > p1 > p2), then by effort (high > medium > low)
-          priority_order = {"p0": 0, "p1": 1, "p2": 2}
-          effort_order = {"high": 0, "medium": 1, "low": 2}
-
-          ready_tasks.sort(
-              key=lambda t: (
-                  priority_order.get(t["priority"], 3),
-                  effort_order.get(t["effort"], 3)
-              )
-          )
-
-          queue = {
-              "generated_at": datetime.utcnow().isoformat() + "Z",
-              "ready_tasks": ready_tasks
-          }
-
-          with open(".claude/agent_queue.json", "w") as f:
-              json.dump(queue, f, indent=2)
-
-          print(f"Generated queue with {len(ready_tasks)} ready tasks")
-          for task in ready_tasks[:5]:
-              print(f"  #{task['number']}: {task['title']} ({task['priority']})")
-
-          EOF
+        run: python scripts/generate_agent_queue.py
 
       - name: Verify queue file generated
         run: |

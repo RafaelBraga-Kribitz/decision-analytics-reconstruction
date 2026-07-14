@@ -68,7 +68,7 @@ Apply this label when an issue has: a clear acceptance criterion, no unresolved 
 
 After `make session-start`, if the handout shows `open_findings: 0`:
 
-1. **Read `.claude/agent_queue.json`** — auto-generated queue of all issues labeled `status:claude-ready`, sorted by priority
+1. **Generate and read the queue** — run `poetry run python scripts/generate_agent_queue.py`, then read `.claude/agent_queue.json`: all issues labeled `status:claude-ready`, sorted by priority. The file is generated state and never committed (a stale committed copy caused issue #94).
 2. **Pick `ready_tasks[0]`** (highest priority task)
 3. **Read the issue body** — it contains the full spec, acceptance criteria, and linked context
 4. **Work from the issue description alone** — no chat context needed; the issue is self-contained
@@ -76,7 +76,7 @@ After `make session-start`, if the handout shows `open_findings: 0`:
 6. **Merge PR** — CI automatically closes the issue, adds `status:completed` label
 
 **Agent queue auto-update:**
-- `.github/workflows/queue-sync.yml` regenerates `.claude/agent_queue.json` whenever issues change (opened, labeled, unlabeled)
+- `.github/workflows/queue-sync.yml` smoke-checks that `scripts/generate_agent_queue.py` can build the queue from live issue state whenever issues change; the queue file itself stays local/untracked
 - `.github/workflows/auto-close-issues.yml` closes issues when referenced PRs merge, removes `status:claude-ready`, adds `status:completed`
 - Next agent session reads the updated queue and picks the next task
 
