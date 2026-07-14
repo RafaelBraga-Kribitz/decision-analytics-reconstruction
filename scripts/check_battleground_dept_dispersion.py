@@ -22,8 +22,12 @@ import json
 import sys
 from collections import Counter
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from _governance_check import REPO_ROOT, gate
+
+if TYPE_CHECKING:
+    import pandas as pd
 
 PRIMARY = (
     REPO_ROOT
@@ -54,41 +58,63 @@ HEATMAP = (
 REF_SIGMA = REPO_ROOT / "data" / "reference" / "battleground" / "battleground_sigma_idio.yaml"
 
 
-def _parquet_gaps() -> list[str]:
+def _model_version_gaps(df: pd.DataFrame) -> list[str]:
     gaps: list[str] = []
+    if "model_version" not in df.columns:
+        gaps.append("primary parquet missing model_version")
+    elif not any("v0.5" in str(v) for v in df["model_version"].astype(str).unique()):
+        gaps.append("primary parquet model_version not v0.5")
+    return gaps
+
+
+def _estimand_gaps(df: pd.DataFrame) -> list[str]:
+    if "estimand" in df.columns and not (df["estimand"] == "poll_implied").all():
+        return ["primary parquet estimand is not poll_implied"]
+    return []
+
+
+def _hdi_width_gaps(df: pd.DataFrame) -> list[str]:
+    widths = df["hdi_high"] - df["hdi_low"]
+    n_wide = int((widths >= 0.05).sum())
+    if n_wide < 5:
+        return [f"expected ≥5 departments with HDI width ≥0.05, got {n_wide}"]
+    return []
+
+
+def _anti_clustering_gaps(df: pd.DataFrame) -> list[str]:
+    high = df[(df["win_probability_a"] >= 0.8) & (df["win_probability_a"] < 0.985)]
+    if high.empty:
+        return []
+    rounded = [round(float(v) * 1000) / 10 for v in high["win_probability_a"]]
+    max_same = max(Counter(rounded).values())
+    if max_same > 4:
+        return [
+            f"anti-clustering failed: {max_same} depts share same 0.1% rounded "
+            f"win prob in [80%, 98.5%)"
+        ]
+    return []
+
+
+def _spread_gaps(df: pd.DataFrame) -> list[str]:
+    std = float(df["win_probability_a"].std())
+    if std < 0.12:
+        return [f"expected std(win_probability_a) ≥ 0.12, got {std:.3f}"]
+    return []
+
+
+def _parquet_gaps() -> list[str]:
     if not PRIMARY.exists():
-        return gaps
+        return []
     try:
         import pandas as pd
     except ImportError:
         return ["pandas required to validate battleground parquet"]
     df = pd.read_parquet(PRIMARY)
-    if "model_version" not in df.columns:
-        gaps.append("primary parquet missing model_version")
-    elif not any("v0.5" in str(v) for v in df["model_version"].astype(str).unique()):
-        gaps.append("primary parquet model_version not v0.5")
-    if "estimand" in df.columns and not (df["estimand"] == "poll_implied").all():
-        gaps.append("primary parquet estimand is not poll_implied")
+    gaps = _model_version_gaps(df) + _estimand_gaps(df)
     if {"hdi_low", "hdi_high", "win_probability_a"} <= set(df.columns):
-        widths = df["hdi_high"] - df["hdi_low"]
-        if int((widths >= 0.05).sum()) < 5:
-            gaps.append(
-                f"expected ≥5 departments with HDI width ≥0.05, got {(widths >= 0.05).sum()}"
-            )
-        high = df[(df["win_probability_a"] >= 0.8) & (df["win_probability_a"] < 0.985)]
-        if not high.empty:
-            rounded = [round(float(v) * 1000) / 10 for v in high["win_probability_a"]]
-            counts = Counter(rounded)
-            max_same = max(counts.values()) if counts else 0
-            if max_same > 4:
-                gaps.append(
-                    f"anti-clustering failed: {max_same} depts share same 0.1% rounded "
-                    f"win prob in [80%, 98.5%)"
-                )
-        if float(df["win_probability_a"].std()) < 0.12:
-            gaps.append(
-                f"expected std(win_probability_a) ≥ 0.12, got {df['win_probability_a'].std():.3f}"
-            )
+        gaps.extend(_hdi_width_gaps(df))
+        gaps.extend(_anti_clustering_gaps(df))
+        gaps.extend(_spread_gaps(df))
     return gaps
 
 

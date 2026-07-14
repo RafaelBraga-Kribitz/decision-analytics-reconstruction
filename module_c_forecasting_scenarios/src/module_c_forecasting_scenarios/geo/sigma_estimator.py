@@ -144,6 +144,55 @@ def _realized_margins_by_year(
     return out
 
 
+def _poll_residuals(polls: pd.DataFrame, realized: dict[tuple[str, int], float]) -> pd.DataFrame:
+    out = polls.copy()
+    out["election_year"] = out["election_year"].astype(int)
+    out["residual_pp"] = out.apply(
+        lambda r: float(r["margin_pp_poll"])
+        - realized.get((str(r["department_ascii"]), int(r["election_year"])), float("nan")),
+        axis=1,
+    )
+    out["weight"] = out["notes"].fillna("").map(_poll_row_weight)
+    return out.dropna(subset=["residual_pp"])
+
+
+def _dept_sigma_from_polls(
+    polls: pd.DataFrame,
+    sigma_floor: float,
+    pooled_mad: float,
+) -> tuple[dict[str, float], dict[str, str], dict[str, int]]:
+    sigma_by_department: dict[str, float] = {}
+    provenance_by_department: dict[str, str] = {}
+    n_obs_by_department: dict[str, int] = {}
+    for dept in DEPARTMENTS:
+        sub = polls[polls["department_ascii"] == dept]
+        n_obs = len(sub)
+        n_obs_by_department[dept] = n_obs
+        if n_obs >= 1:
+            w = np.asarray(sub["weight"], dtype=float)
+            eff = float(w.sum())
+            if eff >= 1.0:
+                residuals = np.asarray(sub["residual_pp"], dtype=float)
+                sigma_poll = MAD_SCALE * _weighted_mad(residuals, w)
+            else:
+                sigma_poll = pooled_mad
+            sigma = max(sigma_poll, sigma_floor)
+            provenance_by_department[dept] = PROVENANCE_ESTIMATED
+        else:
+            sigma = sigma_floor
+            provenance_by_department[dept] = PROVENANCE_FALLBACK
+        sigma_by_department[dept] = float(sigma)
+    return sigma_by_department, provenance_by_department, n_obs_by_department
+
+
+def _overall_sigma_provenance(provs: dict[str, str]) -> str:
+    if all(p == PROVENANCE_ESTIMATED for p in provs.values()):
+        return PROVENANCE_ESTIMATED
+    if any(p == PROVENANCE_ESTIMATED for p in provs.values()):
+        return "estimated_from_reference_mixed"
+    return PROVENANCE_FALLBACK
+
+
 def estimate_sigma_idio(
     reference_dir: Path | None = None,
 ) -> SigmaEstimateResult:
@@ -163,44 +212,14 @@ def estimate_sigma_idio(
     realized = _realized_margins_by_year(tsje_paths)
     sigma_floor = _election_sigma_floor(tsje_by_year)
 
-    polls = pd.read_csv(poll_path)
-    polls["election_year"] = polls["election_year"].astype(int)
-    polls["residual_pp"] = polls.apply(
-        lambda r: float(r["margin_pp_poll"])
-        - realized.get((str(r["department_ascii"]), int(r["election_year"])), float("nan")),
-        axis=1,
+    polls = _poll_residuals(pd.read_csv(poll_path), realized)
+    residuals = np.asarray(polls["residual_pp"], dtype=float)
+    weights = np.asarray(polls["weight"], dtype=float)
+    pooled_mad = MAD_SCALE * _weighted_mad(residuals, weights)
+
+    sigma_by_department, provenance_by_department, n_obs_by_department = _dept_sigma_from_polls(
+        polls, sigma_floor, pooled_mad
     )
-    polls["weight"] = polls["notes"].fillna("").map(_poll_row_weight)
-    polls = polls.dropna(subset=["residual_pp"])
-
-    pooled_mad = MAD_SCALE * _weighted_mad(
-        polls["residual_pp"].to_numpy(),
-        polls["weight"].to_numpy(),
-    )
-
-    sigma_by_department: dict[str, float] = {}
-    provenance_by_department: dict[str, str] = {}
-    n_obs_by_department: dict[str, int] = {}
-
-    for dept in DEPARTMENTS:
-        sub = polls[polls["department_ascii"] == dept]
-        n_obs = len(sub)
-        n_obs_by_department[dept] = n_obs
-        if n_obs >= 1:
-            w = sub["weight"].to_numpy()
-            eff = float(w.sum())
-            if eff >= 1.0:
-                mad = _weighted_mad(sub["residual_pp"].to_numpy(), w)
-                sigma_poll = MAD_SCALE * mad
-            else:
-                sigma_poll = pooled_mad
-            sigma = max(sigma_poll, sigma_floor)
-            provenance_by_department[dept] = PROVENANCE_ESTIMATED
-        else:
-            sigma = sigma_floor
-            provenance_by_department[dept] = PROVENANCE_FALLBACK
-        sigma_by_department[dept] = float(sigma)
-
     ref_hash = _sha256_paths(poll_path, tsje_2013_path, _TSJE_2018_PKG)
 
     return SigmaEstimateResult(
@@ -246,7 +265,9 @@ def load_sigma_yaml(path: Path | None = None) -> dict[str, float]:
     return {str(k): float(v["sigma_idio_pp"]) for k, v in depts.items()}
 
 
-def load_sigma_manifest_extras(path: Path | None = None) -> dict[str, Any]:
+def load_sigma_manifest_extras(
+    path: Path | None = None,
+) -> dict[str, Any]:  # Any: yaml manifest blob
     """Return manifest fields derived from the sigma yaml."""
     yaml_path = path or (battleground_reference_dir() / "battleground_sigma_idio.yaml")
     if not yaml_path.is_file():
@@ -254,12 +275,7 @@ def load_sigma_manifest_extras(path: Path | None = None) -> dict[str, Any]:
         write_sigma_yaml(result, yaml_path)
     data = yaml.safe_load(yaml_path.read_text(encoding="utf-8"))
     provs = {d: info["provenance"] for d, info in data.get("departments", {}).items()}
-    if all(p == PROVENANCE_ESTIMATED for p in provs.values()):
-        overall = PROVENANCE_ESTIMATED
-    elif any(p == PROVENANCE_ESTIMATED for p in provs.values()):
-        overall = "estimated_from_reference_mixed"
-    else:
-        overall = PROVENANCE_FALLBACK
+    overall = _overall_sigma_provenance(provs)
     return {
         "sigma_idio_provenance": overall,
         "sigma_estimator_version": data.get("estimator_version", ESTIMATOR_VERSION),
