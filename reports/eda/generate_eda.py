@@ -1492,9 +1492,9 @@ def chart_c1():
     plt.setp(ax.xaxis.get_majorticklabels(), rotation=30, ha="right")
     _caption_zone(
         fig,
-        "In-sample retrodiction on fixture polls — it tracks the known 2018 Series A outcome and "
-        "conditions on the verified TSJE anchor (gold line); it is not a forward forecast. "
-        "See walk-forward validation for out-of-sample performance.",
+        "Retrospective reconciliation on fixture polls — in-sample tracking of the known "
+        "2018 Series A outcome that conditions on the verified outcome anchor (gold line); "
+        "it is not an out-of-sample forecast. See walk-forward validation for that.",
         bottom=0.24,
     )
     save_fig(fig, "C1_forecast_timeline.png")

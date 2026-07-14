@@ -51,6 +51,8 @@ OPERATOR_FILES = {
     "module_c_forecasting_scenarios/reports/phi_sensitivity.md",
     # Reference-data schema for battleground σ estimator — data contract, not narrative.
     "data/reference/battleground/README.md",
+    # GeoJSON provenance note for ADM1 boundaries (F-081) — data contract, not narrative.
+    "module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/geo/paraguay_departments.SOURCE.md",
 }
 
 

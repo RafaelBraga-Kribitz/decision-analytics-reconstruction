@@ -66,7 +66,7 @@ def _iter_files() -> list[Path]:
     return out
 
 
-def main() -> int:
+def _euphemism_violations() -> list[str]:
     bad: list[str] = []
     for path in _iter_files():
         rel = path.relative_to(REPO_ROOT).as_posix()
@@ -77,17 +77,24 @@ def main() -> int:
             for name, pattern in PATTERNS:
                 if pattern.search(line):
                     bad.append(f"{rel}:{line_no} [{name}] {line.strip()[:120]}")
+    return bad
 
+
+def _domain_anchor_violations() -> list[str]:
     anchor_path, anchor_pat = DOMAIN_ANCHOR
     anchor_rel = anchor_path.relative_to(REPO_ROOT).as_posix()
     if not anchor_path.is_file():
-        bad.append(f"{anchor_rel} [domain_anchor_missing_file]")
-    elif not anchor_pat.search(anchor_path.read_text(encoding="utf-8", errors="replace")):
-        bad.append(
-            f"{anchor_rel} [domain_not_named_plainly] "
-            "expected 'Paraguay 2018 presidential election'"
-        )
+        return [f"{anchor_rel} [domain_anchor_missing_file]"]
+    if anchor_pat.search(anchor_path.read_text(encoding="utf-8", errors="replace")):
+        return []
+    return [
+        f"{anchor_rel} [domain_not_named_plainly] "
+        "expected 'Paraguay 2018 presidential election'"
+    ]
 
+
+def main() -> int:
+    bad = _euphemism_violations() + _domain_anchor_violations()
     ok = not bad
     detail = (
         "; ".join(bad[:8]) if bad else "plain vocabulary enforced; euphemisms absent; domain named"

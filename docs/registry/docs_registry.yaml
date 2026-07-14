@@ -170,6 +170,25 @@ documents:
   path: data/reference/battleground/README.md
   last_reviewed: '2026-05-20'
 - doc_type: narrative
+  doc_role: reference
+  visibility: internal
+  audience:
+  - agent
+  - maintainer
+  authority: reference_only
+  status: active
+  sensitivity: internal
+  owner: module_c
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-REF-GEO-ADM1-001
+  path: module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/geo/paraguay_departments.SOURCE.md
+  last_reviewed: '2026-07-14'
+- doc_type: narrative
   doc_role: canonical
   visibility: public
   audience:
