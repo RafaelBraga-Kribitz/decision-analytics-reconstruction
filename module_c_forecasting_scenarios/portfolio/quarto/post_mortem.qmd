@@ -449,16 +449,18 @@ if battle_geo is not None and battle_geo_df is not None:
         [0.75, "#f39c4c"],
         [1.0, "#a50026"],
     ]
-    choropleth_df = battle_geo_df.sort_values("posterior_win_prob").reset_index(drop=True)
-    fig = px.choropleth(
+    # px.choropleth + fitbounds fills the geo viewport as a solid block with ADM1
+    # MultiPolygons; choropleth_map renders department fills correctly.
+    _choro_geo = {"type": "FeatureCollection", "features": battle_geo["features"]}
+    choropleth_df = battle_geo_df.sort_values("department").reset_index(drop=True)
+    fig = px.choropleth_map(
         choropleth_df,
-        geojson=battle_geo,
+        geojson=_choro_geo,
         locations="department",
         featureidkey="properties.department",
         color="posterior_win_prob",
         color_continuous_scale=_BATTLE_CSCALE,
         range_color=[0.0, 1.0],
-        color_continuous_midpoint=0.5,
         labels={"posterior_win_prob": "Win probability", "department": "Department"},
         title="Battleground win probability heatmap — Paraguay departments (Series A)",
         hover_data={
@@ -467,14 +469,15 @@ if battle_geo is not None and battle_geo_df is not None:
             "hdi_high": ":.1%",
             "posterior_win_prob": ":.1%",
         },
+        center={"lat": -23.44, "lon": -58.14},
+        zoom=4.55,
+        height=560,
     )
     fig.update_traces(marker_line_width=0.6, marker_line_color="#e8e8e8")
-    fig.update_geos(fitbounds="locations", visible=False, bgcolor=_MAP_BG)
     fig.update_layout(
+        map_style="carto-darkmatter-nolabels",
         paper_bgcolor=_MAP_BG,
-        plot_bgcolor=_MAP_BG,
         margin={"r": 10, "t": 50, "l": 10, "b": 40},
-        height=560,
         coloraxis_colorbar=dict(
             title="Win prob.",
             tickformat=".0%",
