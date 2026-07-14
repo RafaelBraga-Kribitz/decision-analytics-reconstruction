@@ -187,10 +187,29 @@ def test_battleground_manifest_records_sigma_provenance(
         daily_fixture, tmp_path / "bg.parquet", calibration_series="A", primary=True
     )
     manifest = json.loads((tmp_path / "bg_manifest.json").read_text())
-    assert manifest["sigma_idio_provenance"] == "illustrative_assumption_not_estimated"
+    assert manifest["model_version"] == "c_battleground_v0.5"
+    assert manifest["mapping"] == "v0.5_decoupled_sigma"
+    assert "sigma_idio_provenance" in manifest
     assert manifest["estimand"] == "poll_implied"
     assert len(manifest["tsje_input_sha256"]) == 64
     assert len(manifest["outcome_data_entry_points"]) == 2
+
+
+def test_v05_decoupled_sigma_differentiates_large_swings() -> None:
+    """F-081: equal sigma_idio + different swings must yield different win probs."""
+    from module_c_forecasting_scenarios.geo.heatmap import _win_prob_hdi
+
+    m, sig_n, sig_i = 5.0, 2.0, 5.7
+    p12, _, _ = _win_prob_hdi(1.2, m, m - 1, m + 1, sig_n, sig_i)
+    p15, _, _ = _win_prob_hdi(1.5, m, m - 1, m + 1, sig_n, sig_i)
+    assert p12 != pytest.approx(p15, abs=0.01)
+
+
+def test_v05_model_version_on_export(daily_fixture: pd.DataFrame, tmp_path: Path) -> None:
+    df = export_battleground_department_table(
+        daily_fixture, tmp_path / "bg.parquet", calibration_series="A", primary=True
+    )
+    assert (df["model_version"] == "c_battleground_v0.5").all()
 
 
 def test_retrodiction_companion_labeled_and_no_choropleth_clobber(

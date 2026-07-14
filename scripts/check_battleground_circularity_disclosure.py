@@ -46,7 +46,7 @@ def _contract_gaps() -> list[str]:
         ("retrodiction", "retrodiction companion estimand declaration"),
         ("use_outcome_anchor", "outcome-anchored national posterior entry point"),
         ("tsje_2018_department_results", "outcome-derived swing factors entry point"),
-        ("ILLUSTRATIVE", "illustrative sigma_idio declaration"),
+        ("data/reference/battleground", "reference sigma_idio data path"),
     ):
         if needle not in desc:
             gaps.append(f"contract description lost the {what}")
@@ -76,8 +76,8 @@ def _qmd_gaps() -> list[str]:
         gaps.append("qmd battleground section lost the outcome-derived swing factors disclosure")
     if "error_x" not in block:
         gaps.append("fig-battleground no longer draws the HDI interval (error_x)")
-    if "illustrative" not in block.lower():
-        gaps.append("qmd battleground section lost the illustrative-sigma disclosure")
+    if "reference" not in block.lower() and "illustrative" not in block.lower():
+        gaps.append("qmd battleground section lost sigma provenance disclosure")
     if "poll-implied" not in block.lower() and "poll_implied" not in block.lower():
         gaps.append("qmd battleground section lost poll-implied primary labeling")
     return gaps
@@ -88,10 +88,10 @@ def _heatmap_gaps() -> list[str]:
     src = HEATMAP.read_text(encoding="utf-8")
     if re.search(r"calibrated to give\s*~?\d+", src, re.I):
         gaps.append("heatmap.py justifies sigma by a target visual width again")
-    if "_SIGMA_IDIO_PROVENANCE" not in src:
+    if "_SIGMA_IDIO_PROVENANCE_FALLBACK" not in src and "_SIGMA_IDIO_PROVENANCE" not in src:
         gaps.append("heatmap.py lost the sigma provenance record")
-    if "illustrative" not in src.lower():
-        gaps.append("heatmap.py lost the illustrative-assumption labeling")
+    if "load_sigma_yaml" not in src:
+        gaps.append("heatmap.py lost reference sigma loader")
     return gaps
 
 

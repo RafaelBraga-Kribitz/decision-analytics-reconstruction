@@ -1,0 +1,19 @@
+id: F-081
+title: "Battleground v0.5 decoupled sigma fixes department win-probability clustering"
+category: misleading_visualization
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-07-14
+closed_at: 2026-07-14
+recurrence_count: 0
+evidence: |
+  c_battleground_v0.4 applied swing to both mean and dispersion, collapsing
+  large-swing departments to the same z ≈ m/σ_national (~90.4–90.5% on GitHub
+  Pages). σ_idio=1.5 pp was illustrative. v0.5 decouples σ_dept from swing,
+  estimates per-dept σ from reference poll residuals + 2013↔2018 election floor,
+  and gates anti-clustering in CI.
+verification_script: scripts/check_battleground_dept_dispersion.py
+notes: |
+  Reference data in data/reference/battleground/ (GRAU/ATI dept polls, TSJE 2013).
+  sigma_estimator.py writes battleground_sigma_idio.yaml. F-080 poll_implied
+  primary estimand unchanged.

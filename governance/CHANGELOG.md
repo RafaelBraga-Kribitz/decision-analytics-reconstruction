@@ -6,6 +6,21 @@ All notable changes to this project are documented here. This file follows [Keep
 
 ## [Unreleased]
 
+### Battleground v0.5 — evidence-based σ_idio + anti-clustering mapping (F-081, 2026-07-14)
+
+- **`c_battleground_v0.5`**: decoupled department dispersion — `μ_dept = swing × m`,
+  `σ_dept = √(σ_national² + σ_idio,j²)` — fixes v0.4 partial-pooling plateaus (~90.4–90.5%
+  on large-swing departments).
+- **Reference data** (`data/reference/battleground/`): GRAU/ATI department survey margins
+  (2013/2018), TSJE 2013 departmental results, generated `battleground_sigma_idio.yaml`.
+- **`sigma_estimator.py`**: weighted MAD of survey-vs-TSJE residuals (direct / regional /
+  proxy weights) with 2013↔2018 election cross-section floor; manifest records provenance
+  and per-dept obs counts.
+- **F-081 closed**: `scripts/check_battleground_dept_dispersion.py` gates v0.5 mapping,
+  geographic spread, and anti-clustering in the informative probability band.
+- **Reports**: EDA C3, `post_mortem.qmd`, and `epistemic_boundaries.md` updated for v0.5
+  narrative and reference-estimated σ.
+
 ### Orchestrated completion sprint — governance repair + issues #59/#60/#64/#71 (2026-07-09)
 
 - **F-076 (new, closed)**: `make verify` was red on a clean checkout — the registry

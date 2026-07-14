@@ -14,6 +14,7 @@ from module_c_forecasting_scenarios.geo.heatmap import (
     export_battleground_department_table,
     write_anchor_comparison,
 )
+from module_c_forecasting_scenarios.geo.sigma_estimator import run_sigma_estimation_and_write
 from module_c_forecasting_scenarios.paths import module_config_dir, repo_root
 from module_c_forecasting_scenarios.pipeline.run_exit import main as run_exit_main
 from module_c_forecasting_scenarios.pipeline.run_monte_carlo import main as run_monte_carlo_main
@@ -45,6 +46,15 @@ def main(argv: list[str] | None = None) -> None:
         series = str(yaml.safe_load(f)["series"]).strip().upper()
 
     bg_dir = args.out_dir / "battleground"
+    ref_dir = repo_root() / "data" / "reference" / "battleground"
+    sigma_yaml = ref_dir / "battleground_sigma_idio.yaml"
+    if ref_dir.is_dir() and (ref_dir / "dept_poll_margins.csv").is_file():
+        run_sigma_estimation_and_write(reference_dir=ref_dir, out_yaml=sigma_yaml)
+        logger.info("sigma_idio estimated -> %s", sigma_yaml)
+    elif not sigma_yaml.is_file():
+        logger.warning(
+            "battleground reference data missing; heatmap will use illustrative sigma fallback"
+        )
 
     # Primary published view: poll-implied (unanchored national posterior).
     run_tracking_main(
@@ -65,6 +75,7 @@ def main(argv: list[str] | None = None) -> None:
         calibration_series=series,
         anchored=False,
         primary=True,
+        sigma_yaml_path=sigma_yaml if sigma_yaml.is_file() else None,
     )
 
     # Retrodiction diagnostic: outcome-anchored national posterior.
@@ -75,6 +86,7 @@ def main(argv: list[str] | None = None) -> None:
         calibration_series=series,
         anchored=True,
         primary=False,
+        sigma_yaml_path=sigma_yaml if sigma_yaml.is_file() else None,
     )
 
     write_anchor_comparison(

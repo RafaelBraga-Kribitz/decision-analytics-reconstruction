@@ -1529,7 +1529,7 @@ def chart_c3():
     )
     ax.annotate(
         "Exterior dept (GANAR winner) absent — no polygon in GeoJSON. "
-        "Primary table uses unanchored national posterior (c_battleground_v0.4).",
+        "Primary table uses unanchored national posterior (c_battleground_v0.5).",
         xy=(0.5, -0.12),
         xycoords="axes fraction",
         ha="center",
@@ -2833,9 +2833,9 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 **Strategic implication:** The campaign is in a "protecting the lead" posture. The strategic priority shifts from persuasion to turnout maximisation among A-leaning segments, particularly Youth Volatile and Rural Committed.
 
 ### C3 — Battleground Department Win Probability
-**What it shows:** Horizontal bar chart of tracking-implied P(Win, Candidate A) by department with 94% HDI whiskers (unanchored national posterior × TSJE swing factors, `c_battleground_v0.4`).
-**Key finding:** Modelled win probabilities span **{_min_win_prob:.1%}–{_max_win_prob:.1%}** ({_illustrative_tracking_note}). GANAR strongholds Central ({_dept_win_prob('Central'):.1%}) and Alto Paraná ({_dept_win_prob('Alto Parana'):.1%}) sit well below 50%; Caaguazu ({_dept_win_prob('Caaguazu'):.1%}) and San Pedro ({_dept_win_prob('San Pedro'):.1%}) are the closest competitive departments.
-**Strategic implication:** Geographic risk is heterogeneous — budget in Central and Alto Paraná targets turnout/defence in GANAR territory, not persuasion swing. Caaguazu and San Pedro are the true battlegrounds where marginal contacts can shift the mandate.
+**What it shows:** Horizontal bar chart of tracking-implied P(Win, Candidate A) by department with 94% HDI whiskers (unanchored national posterior × TSJE swing factors, `c_battleground_v0.5` decoupled σ).
+**Key finding:** Modelled win probabilities span **{_min_win_prob:.1%}–{_max_win_prob:.1%}** ({_illustrative_tracking_note}; per-dept σ_idio from reference poll residuals where available). GANAR strongholds Central ({_dept_win_prob('Central'):.1%}) and Alto Paraná ({_dept_win_prob('Alto Parana'):.1%}) sit well below 50%; v0.5 reduces probability plateaus among Abdo-leaning departments (F-081).
+**Strategic implication:** Geographic risk is heterogeneous — budget in Central and Alto Paraná targets turnout/defence in GANAR territory, not persuasion swing. Caaguazu ({_dept_win_prob('Caaguazu'):.1%}) and San Pedro ({_dept_win_prob('San Pedro'):.1%}) remain among the most competitive departments.
 
 ### C4 — House Effects Forest Plot
 **What it shows:** Posterior mean ± 94% HDI for each pollster's house effect (bias toward Candidate A).
@@ -2859,7 +2859,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 
 ### C8 — Win Probability vs Participation Propensity
 **What it shows:** Scatter plot of department-level win probability vs. mean participation propensity, bubble = budget.
-**Key finding:** Win probability is nearly uniform across departments ({_min_win_prob:.1%}–{_max_win_prob:.1%}), while propensity varies more. High-propensity departments (Rural Committed-heavy) cluster separately from win-probability bands — both are model outputs on reconstruction fixtures.
+**Key finding:** Win probability varies across departments ({_min_win_prob:.1%}–{_max_win_prob:.1%}) with wider spread under v0.5 decoupled σ; propensity varies more. High-propensity departments (Rural Committed-heavy) cluster separately from win-probability bands — both are model outputs on reconstruction fixtures.
 **Strategic implication:** The combination of high propensity + high win probability identifies "safe yield" departments (San Pedro, Cordillera, Misiones). These departments can deliver high turnout at low persuasion cost — mobilisation spend here has the best ROI.
 
 ### C9 — Polling Transparency Audit
