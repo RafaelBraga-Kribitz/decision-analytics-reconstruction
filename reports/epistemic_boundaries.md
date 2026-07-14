@@ -59,7 +59,7 @@ This document classifies **what is verified**, **what is calibrated**, **what is
 
 Raw fixture: `module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv`
 
-Each row is a real public poll published by a named Paraguayan outlet ahead of the April 2018 presidential election. Figures are verbatim from the cited publication. `eu_release_window_flag` marks polls published after EU MOE deployment (Mar 13 2018); `oea_timing_compliant` marks polls compliant with OEA pre-election silence rules.
+Each row transcribes a real public poll published ahead of the April 2018 Paraguayan presidential election. The externally checkable elements of each row are the **outlet/carrier, publication date, and published figures — these are verbatim from the cited publication**. Pollster names are **not** uniformly verbatim: several are pseudonymized or generic (e.g. "Ati Snead", "Taka Chase ICA", and the "Exit Survey …"/"Consortium Exit" labels), while others match the published attribution (e.g. "Grau & Asociados"). Names were abstracted because the tracking model consumes them only as house-effect identifiers and because press attributions for some polls were inconsistent across editions — do not treat the Pollster column as a set of searchable firm names. `eu_release_window_flag` marks polls published after EU MOE deployment (Mar 13 2018); `oea_timing_compliant` marks polls compliant with OEA pre-election silence rules.
 
 | poll_raw_id | Publication Date | Pollster | Outlet / Carrier | Source publication | eu_release_window_flag | Notes |
 |---|---|---|---|---|---|---|
