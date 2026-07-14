@@ -7,10 +7,18 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
+from module_b_resource_allocation.constants import DEPARTMENTS
 
 from module_c_forecasting_scenarios.data.contract_validate import validate_dataframe_contract
 from module_c_forecasting_scenarios.geo.heatmap import export_battleground_department_table
 
+_PKG_GEO = (
+    Path(__file__).resolve().parents[1]
+    / "src"
+    / "module_c_forecasting_scenarios"
+    / "geo"
+    / "paraguay_departments.geojson"
+)
 
 @pytest.fixture()
 def daily_fixture() -> pd.DataFrame:
@@ -56,42 +64,28 @@ def test_battleground_heatmap_polygon_geometry(daily_fixture: pd.DataFrame, tmp_
     geo = json.loads((tmp_path / "battleground_probability_heatmap.geojson").read_text())
     for feat in geo["features"]:
         assert feat["geometry"] is not None, f"{feat['properties']['department']} has null geometry"
-        assert feat["geometry"]["type"] == "Polygon"
+        assert feat["geometry"]["type"] in {"Polygon", "MultiPolygon"}
 
 
-def _feature_bbox(feat: dict) -> tuple[float, float, float, float]:
-    ring = feat["geometry"]["coordinates"][0]
-    lons = [pt[0] for pt in ring]
-    lats = [pt[1] for pt in ring]
-    return min(lons), min(lats), max(lons), max(lats)
+def test_committed_paraguay_departments_geojson_covers_all_departments() -> None:
+    """Package geometry must map 1:1 to DEPARTMENTS (geoBoundaries ADM1, Exterior excluded)."""
+    geo = json.loads(_PKG_GEO.read_text(encoding="utf-8"))
+    assert len(geo["features"]) == len(DEPARTMENTS)
+    depts = {f["properties"]["department"] for f in geo["features"]}
+    assert depts == set(DEPARTMENTS)
+    note = geo.get("_note", "")
+    assert "geoBoundaries" in note
+    for feat in geo["features"]:
+        assert feat["geometry"]["type"] in {"Polygon", "MultiPolygon"}
+        assert feat["properties"].get("geoboundaries_shape_name")
 
 
-def _bbox_overlap(
-    a: tuple[float, float, float, float], b: tuple[float, float, float, float]
-) -> bool:
-    """True when closed-axis bounding boxes share interior area (edge-sharing is OK)."""
-    ax0, ay0, ax1, ay1 = a
-    bx0, by0, bx1, by1 = b
-    return ax0 < bx1 and bx0 < ax1 and ay0 < by1 and by0 < ay1
-
-
-def test_battleground_department_polygons_do_not_overlap(
-    daily_fixture: pd.DataFrame, tmp_path: Path
-) -> None:
-    """Choropleth cells must not overlap — overlapping placeholder boxes hid low-P depts."""
-    out = tmp_path / "bg.parquet"
-    export_battleground_department_table(daily_fixture, out, calibration_series="A", primary=True)
-    geo = json.loads((tmp_path / "battleground_probability_heatmap.geojson").read_text())
-    features = geo["features"]
-    bboxes = [_feature_bbox(f) for f in features]
-    for i, a in enumerate(bboxes):
-        for j, b in enumerate(bboxes):
-            if i >= j:
-                continue
-            assert not _bbox_overlap(a, b), (
-                f"{features[i]['properties']['department']} overlaps "
-                f"{features[j]['properties']['department']}"
-            )
+def test_committed_paraguay_departments_source_sidecar_exists() -> None:
+    source = _PKG_GEO.with_suffix(".SOURCE.md")
+    assert source.is_file()
+    text = source.read_text(encoding="utf-8")
+    assert "geoBoundaries" in text
+    assert "geoBoundaries-PRY-ADM1_simplified.geojson" in text
 
 
 def test_battleground_heatmap_posterior_win_prob_range(
