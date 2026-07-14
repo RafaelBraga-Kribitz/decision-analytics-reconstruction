@@ -88,8 +88,7 @@ def _domain_anchor_violations() -> list[str]:
     if anchor_pat.search(anchor_path.read_text(encoding="utf-8", errors="replace")):
         return []
     return [
-        f"{anchor_rel} [domain_not_named_plainly] "
-        "expected 'Paraguay 2018 presidential election'"
+        f"{anchor_rel} [domain_not_named_plainly] " "expected 'Paraguay 2018 presidential election'"
     ]
 
 

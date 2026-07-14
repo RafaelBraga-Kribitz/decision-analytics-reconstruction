@@ -1494,7 +1494,7 @@ def chart_c1():
         fig,
         "Retrospective reconciliation on fixture polls — in-sample tracking of the known "
         "2018 Series A outcome that conditions on the verified outcome anchor (gold line); "
-        "it is not an out-of-sample forecast. See walk-forward validation for that.",
+        "not a forward forecast and not an out-of-sample forecast. See walk-forward validation for that.",
         bottom=0.24,
     )
     save_fig(fig, "C1_forecast_timeline.png")
