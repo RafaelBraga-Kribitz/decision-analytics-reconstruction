@@ -146,11 +146,7 @@ def build(zip_path: Path) -> tuple[dict[str, Any], str]:
 def write_source_md(zip_path: Path, zip_sha: str) -> str:
     resolved = zip_path.resolve()
     root = REPO_ROOT.resolve()
-    rel = (
-        resolved.relative_to(root)
-        if resolved.is_relative_to(root)
-        else zip_path
-    )
+    rel = resolved.relative_to(root) if resolved.is_relative_to(root) else zip_path
     text = f"""# paraguay_departments.geojson — provenance
 
 | Field | Value |
