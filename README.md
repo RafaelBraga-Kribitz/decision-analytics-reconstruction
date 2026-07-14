@@ -100,6 +100,12 @@ Authority: `PROJECT_CHARTER.md`, `governance/AUDIT_PROCEDURE.md`, `governance/fi
 See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). Live URL verification: finding **F-021**
 (human platform auth required).
 
+## License
+
+Code is released under the [MIT License](LICENSE). Calibration anchors derive
+from public sources (TSJE, DGEEC, INE, BCP) and are not separately licensed by
+this project; all microdata is synthetic.
+
 ## Author
 
 <table>
