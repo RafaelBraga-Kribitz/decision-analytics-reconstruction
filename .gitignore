@@ -34,6 +34,9 @@ data/processed/*
 !**/tests/fixtures/*.csv
 # Verified real-world anchor data shipped as geo package data (model reads it at runtime).
 !**/geo/*.csv
+# F-082 investigation gate artifacts (check_battleground_ceiling_investigation.py).
+!reports/module_c/battleground_investigation/h0_verification_table.csv
+!reports/module_c/battleground_investigation/summary_tables.csv
 
 # ─── MLflow ──────────────────────────────────────────────────────────────────
 mlruns/
