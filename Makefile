@@ -106,6 +106,18 @@ module-c-walk-forward:
 		--raw-csv module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv \
 		--out-dir data/processed/module_c/walk_forward
 
+# Sampler config matches the committed reports/module_c_lowo_metrics.json artifact:
+# reduced-draw base (MC_FAST) widened to 4 chains x 300 draws / 300 tune (seed 42).
+# Disclosed in reports/VALIDATION.md § Module C — full-NUTS v0.4 gates are the
+# preferred config where a C compiler is available (drop MC_FAST and the flags).
+module-c-lowo:
+	MC_FAST=1 MLFLOW_TRACKING_URI=$(or $(MLFLOW_TRACKING_URI),file:./mlruns) \
+	poetry run python -m module_c_forecasting_scenarios.pipeline.run_lowo \
+		--raw-csv module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv \
+		--out-dir data/processed/module_c/lowo \
+		--summary-json reports/module_c_lowo_metrics.json \
+		--chains 4 --draws 300 --tune 300
+
 module-c-ppc:
 	MLFLOW_TRACKING_URI=$(or $(MLFLOW_TRACKING_URI),file:./mlruns) \
 	poetry run python -m module_c_forecasting_scenarios.pipeline.run_ppc \
