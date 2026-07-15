@@ -65,6 +65,15 @@ FORBIDDEN: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("stale_4_poll_waves", re.compile(r"\b4 poll waves\b")),
     ("stale_four_poll_waves", re.compile(r"four poll(?:ing)? waves", re.I)),
     ("stale_all_four_pollsters", re.compile(r"all four pollsters", re.I)),
+    # --- #154: residual narrative contradictions --------------------------------
+    ("stale_rake_mean_32x", re.compile(r"mean 3\.2×")),
+    ("highest_volume_segment", re.compile(r"highest-volume", re.I)),
+    ("yv_high_variance_propensity", re.compile(r"High variance in Youth Volatile", re.I)),
+    (
+        "exit_intercept_tracks_tracking_mean",
+        re.compile(r"anchors the exit model near the tracking final mean", re.I),
+    ),
+    ("safe_yield_high_propensity", re.compile(r"safe yield.*high propensity", re.I)),
 )
 
 # Positive anchors: the corrected framing must be present so the gate also fails
