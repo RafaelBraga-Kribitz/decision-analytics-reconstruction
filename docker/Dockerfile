@@ -10,7 +10,7 @@ ARG MODULE_A_SAMPLE_SIZE=15000
 
 WORKDIR /app
 
-RUN apt-get update && apt-get install -y --no-install-recommends make gcc g++ \
+RUN apt-get update && apt-get install -y --no-install-recommends make gcc g++ git \
     && rm -rf /var/lib/apt/lists/*
 
 RUN pip install --no-cache-dir poetry==2.4.0
@@ -26,6 +26,7 @@ COPY schema_contracts /app/schema_contracts
 COPY reports /app/reports
 COPY scripts /app/scripts
 COPY tests /app/tests
+COPY .git /app/.git
 
 RUN poetry config virtualenvs.create false && \
     if [ "$INSTALL_DEV" = "1" ]; then \
@@ -34,7 +35,8 @@ RUN poetry config virtualenvs.create false && \
         poetry install --only main --extras dashboard --extras explainability && \
         poetry run python -m population_segmentation.pipeline \
             --out-dir data/processed \
-            --sample-size ${MODULE_A_SAMPLE_SIZE}; \
+            --sample-size ${MODULE_A_SAMPLE_SIZE} && \
+        rm -rf .git; \
     fi
 
 EXPOSE 8501
