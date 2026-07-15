@@ -69,7 +69,8 @@ FORBIDDEN: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("stale_yv_share_313", re.compile(r"31\.3%")),
     ("stale_yv_records_3130", re.compile(r"3,130 records")),
     # --- #154: residual narrative contradictions --------------------------------
-    ("stale_rake_mean_32x", re.compile(r"mean 3\.2×")),    ("highest_volume_segment", re.compile(r"highest-volume", re.I)),
+    ("stale_rake_mean_32x", re.compile(r"mean 3\.2×")),
+    ("highest_volume_segment", re.compile(r"highest-volume", re.I)),
     ("yv_high_variance_propensity", re.compile(r"High variance in Youth Volatile", re.I)),
     (
         "exit_intercept_tracks_tracking_mean",
