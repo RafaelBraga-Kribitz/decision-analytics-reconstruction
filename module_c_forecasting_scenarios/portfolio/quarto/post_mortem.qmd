@@ -441,7 +441,7 @@ else:
 #| fig-cap: "Poll-implied win probability choropleth — geoBoundaries PRY ADM1 simplified boundaries (Series A). Blue = low P(Abdo); red = high. Exterior omitted (no ADM1 polygon). Bar chart above for exact values."
 
 if battle_geo is not None and battle_geo_df is not None:
-    _MAP_BG = "#4B5348"
+    _MAP_BG = "rgba(0,0,0,0)"
     _BATTLE_CSCALE = [
         [0.0, "#313695"],
         [0.25, "#4575b4"],
@@ -473,10 +473,11 @@ if battle_geo is not None and battle_geo_df is not None:
         zoom=4.55,
         height=560,
     )
-    fig.update_traces(marker_line_width=0.6, marker_line_color="#e8e8e8")
+    fig.update_traces(marker_line_width=0.6, marker_line_color="#555555")
     fig.update_layout(
-        map_style="carto-darkmatter-nolabels",
+        map_style="carto-positron-nolabels",
         paper_bgcolor=_MAP_BG,
+        plot_bgcolor=_MAP_BG,
         margin={"r": 10, "t": 50, "l": 10, "b": 40},
         coloraxis_colorbar=dict(
             title="Win prob.",
@@ -490,14 +491,14 @@ if battle_geo is not None and battle_geo_df is not None:
         ),
         annotations=[
             dict(text="BOLIVIA", x=0.08, y=0.92, xref="paper", yref="paper",
-                 showarrow=False, font=dict(color="white", size=14)),
+                 showarrow=False, font=dict(color="#333333", size=14)),
             dict(text="ARGENTINA", x=0.06, y=0.08, xref="paper", yref="paper",
-                 showarrow=False, font=dict(color="white", size=14)),
+                 showarrow=False, font=dict(color="#333333", size=14)),
             dict(text="BRAZIL", x=0.92, y=0.45, xref="paper", yref="paper",
-                 showarrow=False, font=dict(color="white", size=14)),
+                 showarrow=False, font=dict(color="#333333", size=14)),
             dict(text="Boundaries: geoBoundaries PRY ADM1 (simplified)",
                  x=0.01, y=-0.02, xref="paper", yref="paper",
-                 showarrow=False, font=dict(color="#cccccc", size=9)),
+                 showarrow=False, font=dict(color="#666666", size=9)),
         ],
     )
     fig.show()
