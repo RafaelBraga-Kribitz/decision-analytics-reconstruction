@@ -1,0 +1,77 @@
+{
+  "fixture": {
+    "m_pp": 13.52132559595325,
+    "hdi_lo_pp": -11.730862560740796,
+    "hdi_hi_pp": 28.21786473652881,
+    "source": "C:\\Users\\Benutzer1\\Dev\\decision-analytics-reconstruction\\data\\processed\\module_c\\run_all\\tracking_unanchored\\daily_posterior_forecast.parquet"
+  },
+  "protocol_outcome": "A",
+  "conclusion_label": "insufficient_evidence_for_revision",
+  "h0_implementation": "verified \u2014 software matches mathematical specification",
+  "h5_internal_coherence": "supported at fixture inputs",
+  "h5_adequacy": "insufficient evidence to reject H5 on holdout predictive performance and PPC; insufficient statistical power for moderate departures",
+  "h5_verdict_summary": "Internal coherence supported (forward algebra). Adequacy: insufficient evidence to reject H5; insufficient power for moderate specification departures.",
+  "h1_h4_verdict": "not rejected with confidence (low power)",
+  "hypothesis_status": {
+    "H0_implementation": "verified",
+    "H1_mean_spec": "not rejected \u2014 holdout predictive performance does not favour alternative",
+    "H2_variance_spec": "exploratory signal only (BP p=0.0031) \u2014 underpowered; not basis for rejection",
+    "H3_sigma_quantification": "not evaluated with holdout power \u2014 inconclusive",
+    "H4_likelihood_spec": "not evaluated with holdout power \u2014 inconclusive",
+    "H5_internal_coherence": "supported \u2014 recomputed z/P match export; ceiling follows from fixture inputs under stated assumptions",
+    "H5_adequacy": "insufficient evidence to reject H5 on holdout predictive performance and PPC; insufficient statistical power for moderate departures"
+  },
+  "breusch_pagan": {
+    "lm_f": 7.613312957206206,
+    "p_value": 0.003070853247884253
+  },
+  "bootstrap_quadratic": {
+    "mean_diff": -0.3140105883789463,
+    "ci_low": -22.883997358349326,
+    "ci_high": 22.883997358349333
+  },
+  "bootstrap_intercept": {
+    "mean_diff": -2.3195847323043153,
+    "ci_low": -20.12416785856825,
+    "ci_high": 20.12416785856825
+  },
+  "power_analysis": {
+    "n_eff_weighted_poll_rows": 14.0,
+    "n_holdout_rows_2018": 5,
+    "n_holdout_eff_weight_2018": 5.0,
+    "bootstrap_ci_half_width_pp": 20.12416785856825,
+    "minimum_detectable_mad_improvement_approx_pp": 20.12416785856825,
+    "power_by_true_effect": [
+      {
+        "true_mad_improvement_pp": 5.0,
+        "power": 0.0,
+        "type_ii_error": 1.0
+      },
+      {
+        "true_mad_improvement_pp": 10.0,
+        "power": 0.0,
+        "type_ii_error": 1.0
+      },
+      {
+        "true_mad_improvement_pp": 15.0,
+        "power": 0.0,
+        "type_ii_error": 1.0
+      },
+      {
+        "true_mad_improvement_pp": 20.0,
+        "power": 0.0,
+        "type_ii_error": 1.0
+      },
+      {
+        "true_mad_improvement_pp": 25.0,
+        "power": 1.0,
+        "type_ii_error": 0.0
+      }
+    ],
+    "underpowered_for_5pp_mad_improvement": true,
+    "underpowered_for_10pp_mad_improvement": true,
+    "power_conclusion": "The investigation is unlikely to detect practically meaningful departures (5\u201310 pp weighted MAD improvement on holdout) with adequate power."
+  },
+  "primary_parquet": "reports\\module_c\\battleground_investigation\\scratch\\battleground\\battleground_department_probability.parquet",
+  "retrodiction_parquet": "reports\\module_c\\battleground_investigation\\scratch\\battleground\\battleground_department_probability_retrodiction.parquet"
+}
