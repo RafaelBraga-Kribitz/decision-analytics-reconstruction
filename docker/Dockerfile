@@ -29,7 +29,7 @@ RUN poetry config virtualenvs.create false && \
     if [ "$INSTALL_DEV" = "1" ]; then \
         poetry install --extras all; \
     else \
-        poetry install --only main --extras dashboard; \
+        poetry install --only main --extras dashboard --extras explainability; \
     fi
 
 EXPOSE 8501
