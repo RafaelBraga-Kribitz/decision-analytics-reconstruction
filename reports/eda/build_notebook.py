@@ -4,7 +4,6 @@ Constructs all cells programmatically and optionally executes via nbconvert.
 """
 
 import json
-import subprocess
 import sys
 from pathlib import Path
 
@@ -18,7 +17,7 @@ from nbformat.v4 import new_code_cell, new_markdown_cell, new_notebook
 # deeper notebook single-sourcing (chart bodies) is tracked separately by
 # IMP-V02 / issue #67.
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "shared" / "src"))
-from visual_system.palette import SEGMENT_LABELS, get_segment_color  # noqa: E402
+from visual_system.palette import SEGMENT_LABELS, get_segment_color
 
 # Positional segment palette in canonical segment order, sourced from the
 # shared module so it can never drift from generate_eda.py's colors again.
@@ -228,14 +227,14 @@ _PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _DATA = _PROJECT_ROOT / "data" / "processed"
 _MODC = _DATA / "module_c" / "run_all"
 
-pop       = pd.read_parquet(_DATA / "population_master_clean.parquet")
-seg       = pd.read_parquet(_DATA / "segment_labels.parquet")
-prop      = pd.read_parquet(_DATA / "participation_propensity.parquet")
-alloc     = pd.read_csv(_DATA / "module_b" / "allocation_baseline.csv")
-forecast  = pd.read_parquet(_MODC / "tracking" / "daily_posterior_forecast.parquet")
+pop = pd.read_parquet(_DATA / "population_master_clean.parquet")
+seg = pd.read_parquet(_DATA / "segment_labels.parquet")
+prop = pd.read_parquet(_DATA / "participation_propensity.parquet")
+alloc = pd.read_csv(_DATA / "module_b" / "allocation_baseline.csv")
+forecast = pd.read_parquet(_MODC / "tracking" / "daily_posterior_forecast.parquet")
 house_eff = pd.read_parquet(_MODC / "tracking" / "posterior_house_effects.parquet")
-battle    = pd.read_parquet(_MODC / "battleground" / "battleground_department_probability.parquet")
-mc        = pd.read_parquet(_MODC / "mc" / "monte_carlo_draws.parquet")
+battle = pd.read_parquet(_MODC / "battleground" / "battleground_department_probability.parquet")
+mc = pd.read_parquet(_MODC / "mc" / "monte_carlo_draws.parquet")
 
 # Data-derived segment shares (must match generate_eda.py / eda_report.md — issue #117)
 _seg_counts = pop["segment_label"].value_counts()
@@ -265,8 +264,14 @@ _yv_table_role = (
 )
 
 COLOR = dict(
-    RED="#e60000", CHARCOAL="#25282b", GREY="#8a8e94", BLUE="#3b82f6",
-    GREEN="#10b981", AMBER="#f59e0b", PURPLE="#8b5cf6", LIGHT="#f7f7f8",
+    RED="#e60000",
+    CHARCOAL="#25282b",
+    GREY="#8a8e94",
+    BLUE="#3b82f6",
+    GREEN="#10b981",
+    AMBER="#f59e0b",
+    PURPLE="#8b5cf6",
+    LIGHT="#f7f7f8",
 )
 SEG_COLORS = list(_SHARED_SEG_COLORS)
 
@@ -355,7 +360,7 @@ The **Johnny Decimal** chart convention used throughout this section labels each
 )
 
 # ── A1 — Segment Size Distribution ──────────────────────────────────────────
-cells.append(figure_cell('A1_segment_sizes'))
+cells.append(figure_cell("A1_segment_sizes"))
 
 cells.append(
     md(
@@ -366,7 +371,7 @@ cells.append(
 )
 
 # ── A2 — Age Distribution per Segment ───────────────────────────────────────
-cells.append(figure_cell('A2_age_distribution_by_segment'))
+cells.append(figure_cell("A2_age_distribution_by_segment"))
 
 cells.append(
     md(
@@ -377,7 +382,7 @@ cells.append(
 )
 
 # ── A3 — Gender per Segment ──────────────────────────────────────────────────
-cells.append(figure_cell('A3_gender_by_segment'))
+cells.append(figure_cell("A3_gender_by_segment"))
 
 cells.append(
     md(
@@ -388,7 +393,7 @@ cells.append(
 )
 
 # ── A4 — Heatmap: Department × Segment Propensity ────────────────────────────
-cells.append(figure_cell('A4_propensity_heatmap_dept_segment'))
+cells.append(figure_cell("A4_propensity_heatmap_dept_segment"))
 
 cells.append(
     md(
@@ -399,7 +404,7 @@ cells.append(
 )
 
 # ── A5 — Violin: Propensity per Segment ─────────────────────────────────────
-cells.append(figure_cell('A5_propensity_violin_by_segment'))
+cells.append(figure_cell("A5_propensity_violin_by_segment"))
 
 cells.append(
     md(
@@ -410,7 +415,7 @@ cells.append(
 )
 
 # ── A6 — Urban vs Rural per Segment ─────────────────────────────────────────
-cells.append(figure_cell('A6_urban_rural_by_segment'))
+cells.append(figure_cell("A6_urban_rural_by_segment"))
 
 cells.append(
     md(
@@ -421,7 +426,7 @@ cells.append(
 )
 
 # ── A7 — Language Composition per Segment ────────────────────────────────────
-cells.append(figure_cell('A7_language_by_segment'))
+cells.append(figure_cell("A7_language_by_segment"))
 
 cells.append(
     md(
@@ -432,7 +437,7 @@ cells.append(
 )
 
 # ── A8 — Structural Dependency Rate per Segment ──────────────────────────────
-cells.append(figure_cell('A8_structural_dependency_by_segment'))
+cells.append(figure_cell("A8_structural_dependency_by_segment"))
 
 cells.append(
     md(
@@ -443,7 +448,7 @@ cells.append(
 )
 
 # ── A9 — Correlation Heatmap ─────────────────────────────────────────────────
-cells.append(figure_cell('A9_correlation_heatmap'))
+cells.append(figure_cell("A9_correlation_heatmap"))
 
 cells.append(
     md(
@@ -454,7 +459,7 @@ cells.append(
 )
 
 # ── A10 — PCA Biplot ─────────────────────────────────────────────────────────
-cells.append(figure_cell('A10_pca_biplot'))
+cells.append(figure_cell("A10_pca_biplot"))
 
 cells.append(
     md(
@@ -465,7 +470,7 @@ cells.append(
 )
 
 # ── A11 — NBI Stress Prior by Department ─────────────────────────────────────
-cells.append(figure_cell('A11_nbi_stress_by_department'))
+cells.append(figure_cell("A11_nbi_stress_by_department"))
 
 cells.append(
     md(
@@ -476,7 +481,7 @@ cells.append(
 )
 
 # ── A12 — Reachability KDE per Segment ───────────────────────────────────────
-cells.append(figure_cell('A12_reachability_distribution'))
+cells.append(figure_cell("A12_reachability_distribution"))
 
 cells.append(
     md(
@@ -487,7 +492,7 @@ cells.append(
 )
 
 # ── A13 — Vote-Preference Distribution ───────────────────────────────────────
-cells.append(figure_cell('A13_preference_strength_by_segment'))
+cells.append(figure_cell("A13_preference_strength_by_segment"))
 
 cells.append(
     md(
@@ -535,7 +540,7 @@ print(f"Avg spend per dept:     ${total_usd/n_depts:>12,.0f} USD")
 """))
 
 # ── B1 — Budget by Department ────────────────────────────────────────────────
-cells.append(figure_cell('B1_budget_by_department'))
+cells.append(figure_cell("B1_budget_by_department"))
 
 cells.append(
     md(
@@ -546,7 +551,7 @@ cells.append(
 )
 
 # ── B2 — Weekly Budget by Channel ────────────────────────────────────────────
-cells.append(figure_cell('B2_weekly_budget_by_channel_type'))
+cells.append(figure_cell("B2_weekly_budget_by_channel_type"))
 
 cells.append(
     md(
@@ -557,7 +562,7 @@ cells.append(
 )
 
 # ── B3 — Broadcast vs Direct Budget Share ────────────────────────────────────
-cells.append(figure_cell('B3_broadcast_vs_direct_budget'))
+cells.append(figure_cell("B3_broadcast_vs_direct_budget"))
 
 cells.append(
     md(
@@ -568,7 +573,7 @@ cells.append(
 )
 
 # ── B4 — Reach Utilisation Heatmap ───────────────────────────────────────────
-cells.append(figure_cell('B4_reach_utilisation_heatmap'))
+cells.append(figure_cell("B4_reach_utilisation_heatmap"))
 
 cells.append(
     md(
@@ -579,7 +584,7 @@ cells.append(
 )
 
 # ── B5 — Cost per Persuasion Contact ─────────────────────────────────────────
-cells.append(figure_cell('B5_cost_per_persuasion_contact'))
+cells.append(figure_cell("B5_cost_per_persuasion_contact"))
 
 cells.append(
     md(
@@ -590,7 +595,7 @@ cells.append(
 )
 
 # ── B6 — FX Rate Series ──────────────────────────────────────────────────────
-cells.append(figure_cell('B6_fx_rate_series'))
+cells.append(figure_cell("B6_fx_rate_series"))
 
 cells.append(
     md(
@@ -601,7 +606,7 @@ cells.append(
 )
 
 # ── B7 — Routing Cost Matrix ──────────────────────────────────────────────────
-cells.append(figure_cell('B7_routing_cost_matrix'))
+cells.append(figure_cell("B7_routing_cost_matrix"))
 
 cells.append(
     md(
@@ -612,7 +617,7 @@ cells.append(
 )
 
 # ── B8 — Reach Caps vs Expected Contacts ─────────────────────────────────────
-cells.append(figure_cell('B8_reach_caps_vs_contacts'))
+cells.append(figure_cell("B8_reach_caps_vs_contacts"))
 
 cells.append(
     md(
@@ -623,7 +628,9 @@ cells.append(
 )
 
 # ── Cell 28 — Section 4 header ───────────────────────────────────────────────
-cells.append(md("""## 4. Electoral Forecasting
+cells.append(
+    md(
+        """## 4. Electoral Forecasting
 
 Module C implements a Bayesian hierarchical tracking model calibrated on eight polling waves from pollsters ATI/Snead, CAPLI, and ICA. The model estimates a latent daily preference margin for Candidate A, correcting for house effects and transparency-weighted polling quality.
 
@@ -632,10 +639,12 @@ The Monte Carlo module then propagates uncertainty through 10,000 draws across t
 **Key findings at a glance (fixture polls — illustrative; TSJE verified anchor +3.70 pp):**
 - Posterior mean margin at election eve is data-derived from `daily_posterior_forecast.parquet`
 - Department win probabilities are TSJE-calibrated swing model outputs (GANAR strongholds < 50%, ANR strongholds > 50%)
-- Committed Opposition segment's high B-preference strength is the primary persuasion-efficiency tail risk"""))
+- Committed Opposition segment's high B-preference strength is the primary persuasion-efficiency tail risk"""
+    )
+)
 
 # ── C1 — Tracking Retrodiction ───────────────────────────────────────────────
-cells.append(figure_cell('C1_forecast_timeline'))
+cells.append(figure_cell("C1_forecast_timeline"))
 
 cells.append(
     md(
@@ -646,7 +655,7 @@ cells.append(
 )
 
 # ── C2 — Final-Day Posterior Margin ───────────────────────────────────────────
-cells.append(figure_cell('C2_posterior_margin_final'))
+cells.append(figure_cell("C2_posterior_margin_final"))
 
 cells.append(
     md(
@@ -657,7 +666,7 @@ cells.append(
 )
 
 # ── C3 — Battleground Win Probabilities ──────────────────────────────────────
-cells.append(figure_cell('C3_battleground_win_probability'))
+cells.append(figure_cell("C3_battleground_win_probability"))
 
 cells.append(
     md(
@@ -668,7 +677,7 @@ cells.append(
 )
 
 # ── C4 — House Effects Forest Plot ───────────────────────────────────────────
-cells.append(figure_cell('C4_house_effects_forest'))
+cells.append(figure_cell("C4_house_effects_forest"))
 
 # House-effect prose is DERIVED from the same posterior_house_effects.parquet the
 # C4 chart plots, so the notebook can never contradict the figure or the EDA report
@@ -692,7 +701,7 @@ cells.append(
 )
 
 # ── C5 — MC Fan Chart ────────────────────────────────────────────────────────
-cells.append(figure_cell('C5_mc_scenario_fan_chart'))
+cells.append(figure_cell("C5_mc_scenario_fan_chart"))
 
 cells.append(
     md(
@@ -703,7 +712,7 @@ cells.append(
 )
 
 # ── C6 — Shock Scale KDE ─────────────────────────────────────────────────────
-cells.append(figure_cell('C6_shock_scale_distribution'))
+cells.append(figure_cell("C6_shock_scale_distribution"))
 
 cells.append(
     md(
@@ -714,7 +723,7 @@ cells.append(
 )
 
 # ── C7 — Exit Model Forest Plot ──────────────────────────────────────────────
-cells.append(figure_cell('C7_exit_model_posteriors'))
+cells.append(figure_cell("C7_exit_model_posteriors"))
 
 cells.append(
     md(
@@ -725,7 +734,7 @@ cells.append(
 )
 
 # ── C8_v2 — Win Prob vs Propensity ───────────────────────────────────────────
-cells.append(figure_cell('C8_v2'))
+cells.append(figure_cell("C8_v2"))
 
 cells.append(
     md(
@@ -736,7 +745,7 @@ cells.append(
 )
 
 # ── C9 — Polling Transparency Audit ──────────────────────────────────────────
-cells.append(figure_cell('C9_polling_transparency_audit'))
+cells.append(figure_cell("C9_polling_transparency_audit"))
 
 cells.append(
     md(
@@ -747,7 +756,7 @@ cells.append(
 )
 
 # ── C10 — MC Win Probability Histogram ───────────────────────────────────────
-cells.append(figure_cell('C10_mc_win_probability_histogram'))
+cells.append(figure_cell("C10_mc_win_probability_histogram"))
 
 cells.append(
     md(
@@ -775,7 +784,7 @@ The synthesis charts (S1–S5) draw simultaneously on population, allocation, an
 )
 
 # ── S1 — Segment × Channel Budget Heatmap ────────────────────────────────────
-cells.append(figure_cell('S1_segment_budget_heatmap'))
+cells.append(figure_cell("S1_segment_budget_heatmap"))
 
 cells.append(
     md(
@@ -786,7 +795,7 @@ cells.append(
 )
 
 # ── S2 — Propensity vs Reachability 4-Quadrant ───────────────────────────────
-cells.append(figure_cell('S2_propensity_reachability_matrix'))
+cells.append(figure_cell("S2_propensity_reachability_matrix"))
 
 cells.append(
     md(
@@ -797,7 +806,7 @@ cells.append(
 )
 
 # ── S3 — Persuasion Contacts per USD by Channel/Region ───────────────────────
-cells.append(figure_cell('S3_channel_roi_by_region'))
+cells.append(figure_cell("S3_channel_roi_by_region"))
 
 cells.append(
     md(
@@ -808,7 +817,7 @@ cells.append(
 )
 
 # ── S4 — Department Priority Matrix ──────────────────────────────────────────
-cells.append(figure_cell('S4_department_priority_matrix'))
+cells.append(figure_cell("S4_department_priority_matrix"))
 
 cells.append(
     md(
@@ -819,7 +828,7 @@ cells.append(
 )
 
 # ── S5 — Efficiency Frontier ─────────────────────────────────────────────────
-cells.append(figure_cell('S5_reach_vs_contacts'))
+cells.append(figure_cell("S5_reach_vs_contacts"))
 
 cells.append(
     md(
@@ -1018,7 +1027,6 @@ print(f"Notebook written: {OUT_PATH}")
 print(f"Total cells: {len(nb.cells)}")
 
 # Quick JSON validation
-import json
 
 with open(OUT_PATH) as f:
     nb_check = json.load(f)

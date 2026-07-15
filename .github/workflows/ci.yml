@@ -254,3 +254,19 @@ jobs:
           poetry run pytest tests/test_dvc_pipeline_config.py -q --no-header
       - name: Terminology sample check
         run: poetry run python scripts/check_terminology.py
+
+  reports-eda-lint:
+    name: Reports EDA — black + ruff (#130)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install poetry
+      - run: poetry install
+      - name: Black format check
+        run: poetry run black --check reports/eda/generate_eda.py reports/eda/build_notebook.py
+      - name: Ruff lint
+        run: poetry run ruff check reports/eda/generate_eda.py reports/eda/build_notebook.py

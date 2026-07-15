@@ -5,20 +5,20 @@ Generates all charts, the EDA report, and the strategic brief.
 Run from project root:  python3 reports/eda/generate_eda.py
 """
 
+import json
 import os
 import sys
-import json
-import warnings
 import traceback
+import warnings
 from pathlib import Path
 
+import matplotlib
 import numpy as np
 import pandas as pd
-import matplotlib
 
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
 from matplotlib.colors import LinearSegmentedColormap
 
@@ -35,15 +35,19 @@ OUT.mkdir(parents=True, exist_ok=True)
 # every chart surface in the repo. This is the *only* place segment colors may
 # come from (scripts/check_no_local_color_literals.py enforces it).
 sys.path.insert(0, str(ROOT / "shared" / "src"))
-from visual_system.palette import (  # noqa: E402
+from visual_system.figure_template import (
+    SOURCE_TEXT as SOURCE,
+)
+from visual_system.figure_template import (
+    annotate_source,
+)
+from visual_system.palette import (
     SEGMENT_COLORS as SEG_COLORS,
+)
+from visual_system.palette import (
     SEGMENT_DISPLAY_ORDER,
     SEGMENT_LINESTYLES,
     SEGMENT_MARKERS,
-)
-from visual_system.figure_template import (  # noqa: E402
-    SOURCE_TEXT as SOURCE,
-    annotate_source,
 )
 
 # ── Brand palette ────────────────────────────────────────────────────────────
@@ -90,7 +94,9 @@ plt.rcParams.update(
 )
 
 # SOURCE is imported from the shared figure template (visual_system) above.
-ILLUSTRATIVE_BATTLE_SUB = "Series A · swing model calibrated to TSJE 2018 returns (illustrative — posterior-dependent)"
+ILLUSTRATIVE_BATTLE_SUB = (
+    "Series A · swing model calibrated to TSJE 2018 returns (illustrative — posterior-dependent)"
+)
 CHACO_DEPARTMENTS = frozenset({"Presidente Hayes", "Boqueron", "Alto Paraguay"})
 DPI = 160
 
@@ -123,13 +129,48 @@ def save_fig(fig: plt.Figure, fname: str) -> None:
     fig.savefig(path, dpi=DPI, bbox_inches="tight", facecolor=WHITE)
     plt.close(fig)
     size = path.stat().st_size
-    manifest.append({"file": str(path.relative_to(ROOT)), "size_kb": round(size / 1024, 1)})
+    try:
+        rel = path.relative_to(ROOT)
+    except ValueError:
+        rel = Path(os.path.relpath(path, ROOT))
+    manifest.append({"file": rel.as_posix(), "size_kb": round(size / 1024, 1)})
     _succeeded += 1
     print(f"  [OK] {fname}  ({size/1024:.1f} KB)")
 
 
+def _region_point_color(department: str) -> str:
+    """ORIENTAL departments → RED; CHACO → BLUE (B5/S5 shared encoding)."""
+    return BLUE if department in CHACO_DEPARTMENTS else RED
+
+
 def _region_for_department(department: str) -> str:
     return "CHACO" if department in CHACO_DEPARTMENTS else "ORIENTAL"
+
+
+def _region_legend_handles() -> list[plt.Line2D]:
+    """Fixed-size legend markers for region-coloured bubble scatters (#124)."""
+    return [
+        plt.Line2D(
+            [0],
+            [0],
+            marker="o",
+            linestyle="none",
+            markerfacecolor=RED,
+            markeredgecolor=CHARCOAL,
+            markersize=9,
+            label="ORIENTAL",
+        ),
+        plt.Line2D(
+            [0],
+            [0],
+            marker="o",
+            linestyle="none",
+            markerfacecolor=BLUE,
+            markeredgecolor=CHARCOAL,
+            markersize=9,
+            label="CHACO",
+        ),
+    ]
 
 
 def _stagger_annotate(
@@ -141,13 +182,52 @@ def _stagger_annotate(
     *,
     fontsize: float = 7.5,
 ) -> None:
-    """Place department labels with alternating offsets to reduce overlap."""
-    offsets = [(6, 4), (6, -10), (-48, 4), (6, 12), (-48, -10), (14, 0)]
-    for i, row in enumerate(df.itertuples(index=False)):
-        ox, oy = offsets[i % len(offsets)]
+    """Place department labels with greedy collision avoidance (#149)."""
+    if df.empty:
+        return
+    x_vals = df[x_col].to_numpy(dtype=float)
+    y_vals = df[y_col].to_numpy(dtype=float)
+    x_span = max(float(x_vals.max() - x_vals.min()), 1e-9)
+    y_span = max(float(y_vals.max() - y_vals.min()), 1e-9)
+    pt_to_x = 0.012 * x_span
+    pt_to_y = 0.012 * y_span
+    offsets = [
+        (6, 4),
+        (6, -10),
+        (-48, 4),
+        (6, 12),
+        (-48, -10),
+        (14, 0),
+        (-48, 12),
+        (6, -18),
+        (24, 8),
+        (-60, -4),
+        (30, -12),
+        (-72, 8),
+        (-36, -16),
+        (40, 4),
+    ]
+    min_sep = 0.04 * max(x_span, y_span)
+    placed: list[tuple[float, float]] = []
+    for row in df.sort_values([x_col, y_col]).itertuples(index=False):
+        x = float(getattr(row, x_col))
+        y = float(getattr(row, y_col))
+        label = getattr(row, label_col)
+        chosen = offsets[0]
+        for ox, oy in offsets:
+            tx = x + ox * pt_to_x
+            ty = y + oy * pt_to_y
+            if all((tx - px) ** 2 + (ty - py) ** 2 >= min_sep**2 for px, py in placed):
+                chosen = (ox, oy)
+                placed.append((tx, ty))
+                break
+        else:
+            ox, oy = chosen
+            placed.append((x + ox * pt_to_x, y + oy * pt_to_y))
+        ox, oy = chosen
         ax.annotate(
-            getattr(row, label_col),
-            (getattr(row, x_col), getattr(row, y_col)),
+            label,
+            (x, y),
             textcoords="offset points",
             xytext=(ox, oy),
             fontsize=fontsize,
@@ -681,9 +761,7 @@ def chart_a8():
         )
 
     ax.set_xlabel("% Individuals with Structural Dependency")
-    ax.set_title(
-        "A8 — Structural Dependency Flag Rate by Segment"
-    )
+    ax.set_title("A8 — Structural Dependency Flag Rate by Segment")
     ax.invert_yaxis()
     ax.set_xlim(0, rate.max() * 1.2)
     ax.grid(axis="y", visible=False)
@@ -768,8 +846,8 @@ chart_a9()
 @safe_chart("A10")
 def chart_a10():
     """A10: PCA biplot (first 2 PCs) coloured by segment_label."""
-    from sklearn.preprocessing import StandardScaler
     from sklearn.decomposition import PCA
+    from sklearn.preprocessing import StandardScaler
 
     num_cols = [
         "age_on_event_date",
@@ -831,7 +909,9 @@ def chart_a10():
     ev = pca.explained_variance_ratio_
     ax.set_xlabel(f"PC1 ({ev[0]*100:.1f}% var explained)")
     ax.set_ylabel(f"PC2 ({ev[1]*100:.1f}% var explained)")
-    ax.set_title("A10 — Department Feature-Space Map (PCA)\n(⚠ features are dept-level constants — lattice = 17 dept clusters, not individual voter variance)")
+    ax.set_title(
+        "A10 — Department Feature-Space Map (PCA)\n(⚠ features are dept-level constants — lattice = 17 dept clusters, not individual voter variance)"
+    )
     ax.legend(title="Segment", bbox_to_anchor=(1.01, 1), loc="upper left", fontsize=9)
     ax.axhline(0, color=GREY, lw=0.7, ls="--")
     ax.axvline(0, color=GREY, lw=0.7, ls="--")
@@ -862,11 +942,7 @@ def chart_a11():
     NBI is a dept-level constant (IQR=0 for within-dept distribution) so a boxplot is
     misleading — replaced with a sorted bar chart with region colour coding.
     """
-    dept_nbi = (
-        pop.groupby("department")["nbi_stress_prior"]
-        .mean()
-        .sort_values(ascending=False)
-    )
+    dept_nbi = pop.groupby("department")["nbi_stress_prior"].mean().sort_values(ascending=False)
     dept_order = dept_nbi.index.tolist()
     values = dept_nbi.values
 
@@ -1063,7 +1139,9 @@ def chart_b2():
 
     ax.set_xlabel("Campaign Week")
     ax.set_ylabel("Budget Allocated (USD)")
-    ax.set_title("B2 — Weekly Budget Schedule by Channel (14-week reconstruction envelope)\nSpending concentrates in peak campaign phase; direct outreach is flat throughout")
+    ax.set_title(
+        "B2 — Weekly Budget Schedule by Channel (14-week reconstruction envelope)\nSpending concentrates in peak campaign phase; direct outreach is flat throughout"
+    )
     ax.legend(title="Channel Type")
     ax.xaxis.set_major_locator(mticker.MaxNLocator(integer=True))
     annotate_source(ax)
@@ -1238,9 +1316,7 @@ def chart_b5():
     # encoding). Region is an orthogonal, useful dimension; bubble size keeps
     # encoding budget.
     dept_agg = dept_agg.copy()
-    dept_agg["region_color"] = dept_agg["department"].map(
-        lambda d: BLUE if d in CHACO_DEPARTMENTS else RED
-    )
+    dept_agg["region_color"] = dept_agg["department"].map(_region_point_color)
 
     fig, ax = plt.subplots(figsize=(11, 6.2))
     for _region, color, label in [("ORIENTAL", RED, "ORIENTAL"), ("CHACO", BLUE, "CHACO")]:
@@ -1253,7 +1329,6 @@ def chart_b5():
             edgecolors=CHARCOAL,
             lw=0.5,
             alpha=0.7,
-            label=label,
         )
 
     # Staggered offsets reduce the low-x label pile-up (Concepcion/Guaira/
@@ -1272,13 +1347,7 @@ def chart_b5():
     ax.set_title("B5 — Cost per Persuasion Contact vs Total Persuasion Contacts")
     # Fixed-size legend markers: a scatter with an array ``s`` otherwise sizes
     # the legend swatch from the (huge) Central bubble.
-    region_handles = [
-        plt.Line2D([0], [0], marker="o", linestyle="none", markerfacecolor=RED,
-                   markeredgecolor=CHARCOAL, markersize=9, label="ORIENTAL"),
-        plt.Line2D([0], [0], marker="o", linestyle="none", markerfacecolor=BLUE,
-                   markeredgecolor=CHARCOAL, markersize=9, label="CHACO"),
-    ]
-    ax.legend(handles=region_handles, title="Region", loc="upper right")
+    ax.legend(handles=_region_legend_handles(), title="Region", loc="upper right")
     _caption_zone(
         fig,
         "Bubble size encodes budget (the cost ratio's numerator), kept off the axes; the x-axis is "
@@ -1678,6 +1747,7 @@ def chart_c5():
     buckets = list(mc_draws["scenario_bucket"].unique())
     # compounded_herd is a synthetic LogNormal prior (not from tracking sample) — mark distinctly
     SYNTHETIC_BUCKET = "compounded_herd"
+
     def _bucket_color(b: str) -> str:
         if b == SYNTHETIC_BUCKET:
             return GOLD
@@ -1709,8 +1779,14 @@ def chart_c5():
     ax.set_ylabel("Shock Scale")
 
     # Legend distinguishing synthetic vs empirical
-    empirical_patch = mpatches.Patch(color=CHARCOAL, alpha=0.5, label="Empirical tracking scenarios (baseline, extreme_tracker)")
-    synthetic_patch = mpatches.Patch(color=GOLD, alpha=0.8, label="compounded_herd: synthetic LogNormal prior (NOT tracking-sample)")
+    empirical_patch = mpatches.Patch(
+        color=CHARCOAL, alpha=0.5, label="Empirical tracking scenarios (baseline, extreme_tracker)"
+    )
+    synthetic_patch = mpatches.Patch(
+        color=GOLD,
+        alpha=0.8,
+        label="compounded_herd: synthetic LogNormal prior (NOT tracking-sample)",
+    )
     ax.legend(handles=[empirical_patch, synthetic_patch], fontsize=8, loc="upper right")
 
     ax.set_title(
@@ -2129,10 +2205,7 @@ def chart_s2():
 
     ax.set_xlabel("Mean Reachability Index")
     ax.set_ylabel("Mean Participation Propensity")
-    ax.set_title(
-        "S2 — Segment Propensity × Reachability Matrix\n"
-        "(bubble size = segment size)"
-    )
+    ax.set_title("S2 — Segment Propensity × Reachability Matrix\n" "(bubble size = segment size)")
     ax.annotate(
         "Quadrant split at the median of the six segment means (dashed lines) — relative rank, "
         "not absolute high/low.\n"
@@ -2227,10 +2300,7 @@ def chart_s4():
     )
 
     # Composite priority score
-    merged_s4["priority_score"] = (
-        merged_s4["win_probability_a"]
-        * merged_s4["mean_propensity"]
-    )
+    merged_s4["priority_score"] = merged_s4["win_probability_a"] * merged_s4["mean_propensity"]
 
     merged_s4 = merged_s4.sort_values("priority_score", ascending=True)
 
@@ -2256,7 +2326,11 @@ def chart_s4():
             fontsize=8,
         )
 
-    plt.colorbar(sc, ax=ax, label="Priority Score (win_prob × propensity — budget removed to avoid circularity)")
+    plt.colorbar(
+        sc,
+        ax=ax,
+        label="Priority Score (win_prob × propensity — budget removed to avoid circularity)",
+    )
     ax.axvline(0.5, color=GREY, lw=1.2, ls="--", label="50% win threshold")
     ax.axhline(
         merged_s4["mean_propensity"].median(), color=GREY, lw=1, ls="--", label="Median propensity"
@@ -2300,9 +2374,7 @@ def chart_s5():
     dept_eff = dept_eff[dept_eff["total_budget"] > 0]
     # Assign region color (ORIENTAL=RED, CHACO=BLUE) — size already encodes budget
     dept_eff = dept_eff.copy()
-    dept_eff["region_color"] = dept_eff["department"].map(
-        lambda d: RED if d not in CHACO_DEPARTMENTS else BLUE
-    )
+    dept_eff["region_color"] = dept_eff["department"].map(_region_point_color)
 
     fig, ax = plt.subplots(figsize=(11, 7))
     # Plot by region group to get a clean legend. Bubble divisor raised
@@ -2319,7 +2391,6 @@ def chart_s5():
             edgecolors=CHARCOAL,
             lw=0.6,
             alpha=0.7,
-            label=label,
         )
 
     # Staggered offsets separate the overprinted clusters (the three Chaco
@@ -2360,12 +2431,10 @@ def chart_s5():
     ax.set_title("S5 — Reach Utilisation vs Persuasion-Adjusted Contacts by Department")
     # Fixed-size legend markers (a scatter with an array ``s`` otherwise sizes
     # the swatch from the giant Central bubble, which then sat behind the legend).
-    s5_handles = [
-        plt.Line2D([0], [0], marker="o", linestyle="none", markerfacecolor=RED,
-                   markeredgecolor=CHARCOAL, markersize=9, label="ORIENTAL"),
-        plt.Line2D([0], [0], marker="o", linestyle="none", markerfacecolor=BLUE,
-                   markeredgecolor=CHARCOAL, markersize=9, label="CHACO"),
-        plt.Line2D([0], [0], color=CHARCOAL, ls="--", lw=1.2, label="OLS linear trend (descriptive)"),
+    s5_handles = _region_legend_handles() + [
+        plt.Line2D(
+            [0], [0], color=CHARCOAL, ls="--", lw=1.2, label="OLS linear trend (descriptive)"
+        ),
     ]
     ax.legend(handles=s5_handles, loc="upper left")
     _caption_zone(
@@ -2538,7 +2607,9 @@ def chart_eda_overview():
             label=col.replace("media_penetration_", "").upper(),
         )
     ax4.set_xticks(x)
-    ax4.set_xticklabels([s.replace("_", "\n") for s in SEG_ORDER], rotation=0, ha="center", fontsize=6)
+    ax4.set_xticklabels(
+        [s.replace("_", "\n") for s in SEG_ORDER], rotation=0, ha="center", fontsize=6
+    )
     ax4.set_title("Media Penetration by Segment", fontsize=10)
     ax4.set_ylabel("Mean rate")
     ax4.legend(fontsize=7)
@@ -2693,7 +2764,9 @@ _mc_alloc_note = (
 )
 _exit_intercept_row = exit_model.loc[exit_model["parameter"] == "intercept"]
 _exit_intercept_pp = (
-    float(_exit_intercept_row["posterior_mean"].iloc[0]) if len(_exit_intercept_row) else float("nan")
+    float(_exit_intercept_row["posterior_mean"].iloc[0])
+    if len(_exit_intercept_row)
+    else float("nan")
 )
 _rake_mean = float(prop["department_rake_multiplier"].mean())
 _min_win_prob = float(battleground["win_probability_a"].min())
