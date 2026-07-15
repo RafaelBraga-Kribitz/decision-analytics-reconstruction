@@ -33,6 +33,8 @@ Run `poetry run python scripts/generate_doc_index.py --write` after registry cha
 - **DOC-GOV-CONTRIB-001** — `CONTRIBUTING.md` — *policy* / *canonical*
 - **DOC-CHARTER-001** — `PROJECT_CHARTER.md` — *policy* / *canonical*
 - **DOC-DOCS-001** — `docs/DEPLOYMENT.md` — *narrative* / *canonical*
+- **DOC-DOCS-003** — `docs/agents/AGENTS.md` — *narrative* / *canonical*
+- **DOC-DOCS-004** — `docs/agents/GEMINI.md` — *narrative* / *canonical*
 - **DOC-GOV-AUDIT-001** — `governance/AUDIT_PROCEDURE.md` — *policy* / *canonical*
 - **DOC-ROOT-002** — `governance/CHANGELOG.md` — *narrative* / *canonical*
 - **DOC-DOC-001** — `governance/Truth_and_rebuild_sprint.md` — *narrative* / *canonical*
@@ -78,9 +80,7 @@ Run `poetry run python scripts/generate_doc_index.py --write` after registry cha
 
 ## Derived portfolio views
 
-- **DOC-GOV-AGENTS-001** — `AGENTS.md` — canonical: DOC-GOV-AUDIT-001
 - **DOC-ARCH-001** — `ARCHITECTURE.md` — canonical: DOC-CHARTER-001
-- **DOC-GOV-GEMINI-001** — `GEMINI.md` — canonical: DOC-GOV-AUDIT-001
 - **DOC-ROOT-001** — `README.md` — canonical: DOC-CHARTER-001
 - **DOC-MODB-README-001** — `module_b_resource_allocation/README.md` — canonical: DOC-MODB-001
 - **DOC-MODC-README-001** — `module_c_forecasting_scenarios/README.md` — canonical: DOC-MODC-001
@@ -92,6 +92,8 @@ Run `poetry run python scripts/generate_doc_index.py --write` after registry cha
 - **DOC-MODC-002** — `module_c_forecasting_scenarios/reports/C_research_proof_table.md` — *active*
 - **DOC-MODC-004** — `module_c_forecasting_scenarios/reports/phi_sensitivity.md` — *active*
 - **DOC-MODC-003** — `module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md` — *active*
+- **DOC-REF-GEO-ADM1-001** — `module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/geo/paraguay_departments.SOURCE.md` — *active*
+- **DOC-MODC-005** — `reports/module_c/walk_forward_loo_report.md` — *active*
 
 ## Research inputs (reference only)
 

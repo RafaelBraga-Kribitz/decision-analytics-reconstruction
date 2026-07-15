@@ -87,6 +87,11 @@ Architecture: [`ARCHITECTURE.md`](ARCHITECTURE.md). Contracts: `schema_contracts
 
 ## Governance
 
+This project is deliberately built with an **agent-governed workflow**: AI-assisted
+changes pass the same finding-verification gates as human ones, and every closed
+audit finding is re-verified by CI on each PR. Agent-facing instructions live in
+[`docs/agents/`](docs/agents/) (root `AGENTS.md`/`GEMINI.md` are pointer stubs).
+
 AI-assisted work starts with:
 
 ```bash

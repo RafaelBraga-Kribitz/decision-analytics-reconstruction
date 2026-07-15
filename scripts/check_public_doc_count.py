@@ -28,6 +28,9 @@ OPERATOR_FILES = {
     "AGENTS.md",
     "CLAUDE.md",
     "GEMINI.md",
+    # Relocated agent instructions (issue #104); root files are pointer stubs.
+    "docs/agents/AGENTS.md",
+    "docs/agents/GEMINI.md",
     "docs/INDEX.md",
     "governance/SESSION_END.md",
     "governance/SESSION_HANDOUT.md",

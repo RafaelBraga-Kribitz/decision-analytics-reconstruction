@@ -1,9 +1,6 @@
 # Gemini Instructions
 
-Use the repository governance protocol in `CLAUDE.md`.
+Full instructions: [`docs/agents/GEMINI.md`](docs/agents/GEMINI.md).
 
-First run `make session-start`, then read `governance/SESSION_HANDOUT.md` and
-follow `governance/AUDIT_PROCEDURE.md`.
-
-`make graphify` remains an optional local navigation aid only. It is not a
-governance gate and is not required for session completion.
+Short version: use the repository governance protocol in `CLAUDE.md` — run
+`make session-start` first, then follow `governance/AUDIT_PROCEDURE.md`.

@@ -7,27 +7,6 @@ numeric_namespaces:
     allow_in_docs:
     - DOC-REP-SSOT-001
 documents:
-- doc_type: policy
-  doc_role: derived
-  visibility: internal
-  audience:
-  - agent
-  - maintainer
-  authority: derived
-  status: active
-  sensitivity: internal
-  owner: governance
-  tier_shorthand: T0
-  canonical_source:
-  - DOC-GOV-AUDIT-001
-  derived_from:
-  - DOC-GOV-AUDIT-001
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-GOV-AGENTS-001
-  path: AGENTS.md
-  last_reviewed: '2026-05-20'
 - doc_type: specification
   doc_role: derived
   visibility: public
@@ -86,27 +65,6 @@ documents:
   frontmatter_required: false
   doc_id: DOC-GOV-CONTRIB-001
   path: CONTRIBUTING.md
-  last_reviewed: '2026-05-20'
-- doc_type: policy
-  doc_role: derived
-  visibility: internal
-  audience:
-  - agent
-  - maintainer
-  authority: derived
-  status: active
-  sensitivity: internal
-  owner: governance
-  tier_shorthand: T0
-  canonical_source:
-  - DOC-GOV-AUDIT-001
-  derived_from:
-  - DOC-GOV-AUDIT-001
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-GOV-GEMINI-001
-  path: GEMINI.md
   last_reviewed: '2026-05-20'
 - doc_type: policy
   doc_role: canonical
@@ -207,6 +165,44 @@ documents:
   frontmatter_required: false
   doc_id: DOC-DOCS-002
   path: docs/INDEX.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-DOCS-003
+  path: docs/agents/AGENTS.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-DOCS-004
+  path: docs/agents/GEMINI.md
   last_reviewed: '2026-05-20'
 - doc_type: registry
   doc_role: registry
