@@ -28,7 +28,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 ### population_master_clean.parquet
 - **Shape:** 50,000 rows × 69 columns
 - **Duplicates:** 0 duplicate entity_ids confirmed
-- **Nulls:** 12,541 total missing values across 1 columns
+- **Nulls:** 12,541 total missing values across 1 column
 - **Top null columns:**
   - `qualitative_district`: 25.1% missing
 - **Anomalies:** `qualitative_district` shows NaN for ~9% of records; `qualitative_sentiment` missing for ~10%; these appear intentionally unlinked (no linked qualitative interview). `participation_propensity` is well-bounded [0.014, 1.0] with no out-of-range values.
@@ -156,7 +156,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 ### B6 — FX Rate Series
 **What it shows:** Reference and retail USD/PYG rate over 14 campaign weeks.
-**Key finding:** PYG depreciated ~1.8% against USD over the campaign window (5,615 → ~5,525 reference rate), with retail spread widening from 1.7% to ~2.0%. Total retail spread cost increases campaign cost in PYG terms.
+**Key finding:** PYG depreciated ~1.8% against USD over the campaign window (5,615 → ~5,525 reference rate), with retail spread widening from 1.7% to ~2.0%.
 **Strategic implication:** Budget commitments should be made in USD or hedged in PYG at the start of the campaign; waiting incurs currency risk. The FX impact is modest (~$109K at current scale) but non-trivial.
 
 ### B7 — Routing Cost Matrix

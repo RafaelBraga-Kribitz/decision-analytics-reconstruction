@@ -65,7 +65,7 @@ validates aggregate alignment, not predictive skill on withheld microdata.
 
 ---
 
-## System 3 — Probistic forecasting (Module C)
+## System 3 — Probabilistic forecasting (Module C)
 
 Bayesian hierarchical tracking (Gaussian random walk + pollster house effects) and
 stratified Monte Carlo shock scenarios (**10,000** draws default). Posterior
