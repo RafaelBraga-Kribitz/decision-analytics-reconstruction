@@ -80,7 +80,9 @@ Run `poetry run python scripts/generate_doc_index.py --write` after registry cha
 
 ## Derived portfolio views
 
+- **DOC-GOV-AGENTS-001** — `AGENTS.md` — canonical: DOC-GOV-AUDIT-001
 - **DOC-ARCH-001** — `ARCHITECTURE.md` — canonical: DOC-CHARTER-001
+- **DOC-GOV-GEMINI-001** — `GEMINI.md` — canonical: DOC-GOV-AUDIT-001
 - **DOC-ROOT-001** — `README.md` — canonical: DOC-CHARTER-001
 - **DOC-MODB-README-001** — `module_b_resource_allocation/README.md` — canonical: DOC-MODB-001
 - **DOC-MODC-README-001** — `module_c_forecasting_scenarios/README.md` — canonical: DOC-MODC-001
