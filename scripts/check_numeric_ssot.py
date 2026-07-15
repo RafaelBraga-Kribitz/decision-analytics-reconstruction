@@ -143,6 +143,31 @@ FORBIDDEN_IN_PUBLIC: tuple[tuple[str, re.Pattern[str], tuple[Path, ...]], ...] =
             REPO_ROOT / "reports" / "eda" / "generate_eda.py",
         ),
     ),
+    # --- issue #133: unsourced vote/dollar figures in EDA recommendations -----
+    (
+        "report_unsourced_vote_loss",
+        re.compile(r"20,000\+ votes", re.I),
+        (
+            REPO_ROOT / "reports" / "eda" / "eda_report.md",
+            REPO_ROOT / "reports" / "eda" / "generate_eda.py",
+        ),
+    ),
+    (
+        "report_unsourced_realloc_dollars",
+        re.compile(r"Reallocating ~\$50K", re.I),
+        (
+            REPO_ROOT / "reports" / "eda" / "eda_report.md",
+            REPO_ROOT / "reports" / "eda" / "generate_eda.py",
+        ),
+    ),
+    (
+        "report_unsourced_persuasion_pct_lift",
+        re.compile(r"projected \+12% increase in total persuasion contacts", re.I),
+        (
+            REPO_ROOT / "reports" / "eda" / "eda_report.md",
+            REPO_ROOT / "reports" / "eda" / "generate_eda.py",
+        ),
+    ),
     # --- issue #91: stale Module A / Module C metric values ---------------------
     # These figures were superseded by the model cards + a seed-42 pipeline run.
     # Reappearance in any SSOT-family doc, model card, or module README signals the
