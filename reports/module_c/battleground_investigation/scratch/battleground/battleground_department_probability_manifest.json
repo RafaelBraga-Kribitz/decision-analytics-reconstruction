@@ -1,0 +1,61 @@
+{
+  "model_version": "c_battleground_v0.5",
+  "estimand": "poll_implied",
+  "anchored_national_posterior": false,
+  "sigma_idio_provenance": "estimated_from_reference_mixed",
+  "sigma_estimator_version": "sigma_estimator_v1",
+  "reference_data_sha256": "a810469540690cb984dece88a777f847a28411788422910ecba75efe88d6b9bc",
+  "sigma_floor_pp": 5.69494673024284,
+  "proxy_weight_scheme": {
+    "direct": 1.0,
+    "regional_breakdown_only": 0.5,
+    "regional_proxy": 0.25
+  },
+  "n_obs_per_department": {
+    "Asuncion": 4,
+    "Concepcion": 1,
+    "San Pedro": 1,
+    "Cordillera": 2,
+    "Guaira": 2,
+    "Caaguazu": 0,
+    "Caazapa": 2,
+    "Itapua": 1,
+    "Misiones": 1,
+    "Paraguari": 3,
+    "Alto Parana": 1,
+    "Central": 4,
+    "Neembucu": 1,
+    "Amambay": 1,
+    "Canindeyu": 1,
+    "Presidente Hayes": 0,
+    "Boqueron": 0,
+    "Alto Paraguay": 0
+  },
+  "sigma_idio_by_department": {
+    "Asuncion": 5.69494673024284,
+    "Concepcion": 10.905539325984375,
+    "San Pedro": 10.905539325984375,
+    "Cordillera": 15.360889861948799,
+    "Guaira": 6.944836879432623,
+    "Caaguazu": 5.69494673024284,
+    "Caazapa": 8.101886837561427,
+    "Itapua": 10.905539325984375,
+    "Misiones": 10.905539325984375,
+    "Paraguari": 11.591341510190375,
+    "Alto Parana": 10.905539325984375,
+    "Central": 10.905539325984375,
+    "Neembucu": 10.905539325984375,
+    "Amambay": 10.905539325984375,
+    "Canindeyu": 10.905539325984375,
+    "Presidente Hayes": 5.69494673024284,
+    "Boqueron": 5.69494673024284,
+    "Alto Paraguay": 5.69494673024284
+  },
+  "mapping": "v0.5_decoupled_sigma",
+  "hdi_prob": 0.94,
+  "tsje_input_sha256": "7b76ee195e32a85b869586a9c198a7e3ddcbefe62e1a4f89280d7dc089a0f484",
+  "outcome_data_entry_points": [
+    "none at the national layer (unanchored companion run)",
+    "swing factors derived from realized tsje_2018_department_results.csv"
+  ]
+}
