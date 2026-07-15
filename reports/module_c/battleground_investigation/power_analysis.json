@@ -1,0 +1,37 @@
+{
+  "n_eff_weighted_poll_rows": 14.0,
+  "n_holdout_rows_2018": 5,
+  "n_holdout_eff_weight_2018": 5.0,
+  "bootstrap_ci_half_width_pp": 20.12416785856825,
+  "minimum_detectable_mad_improvement_approx_pp": 20.12416785856825,
+  "power_by_true_effect": [
+    {
+      "true_mad_improvement_pp": 5.0,
+      "power": 0.0,
+      "type_ii_error": 1.0
+    },
+    {
+      "true_mad_improvement_pp": 10.0,
+      "power": 0.0,
+      "type_ii_error": 1.0
+    },
+    {
+      "true_mad_improvement_pp": 15.0,
+      "power": 0.0,
+      "type_ii_error": 1.0
+    },
+    {
+      "true_mad_improvement_pp": 20.0,
+      "power": 0.0,
+      "type_ii_error": 1.0
+    },
+    {
+      "true_mad_improvement_pp": 25.0,
+      "power": 1.0,
+      "type_ii_error": 0.0
+    }
+  ],
+  "underpowered_for_5pp_mad_improvement": true,
+  "underpowered_for_10pp_mad_improvement": true,
+  "power_conclusion": "The investigation is unlikely to detect practically meaningful departures (5\u201310 pp weighted MAD improvement on holdout) with adequate power."
+}

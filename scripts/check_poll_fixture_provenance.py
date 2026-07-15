@@ -73,9 +73,7 @@ def main() -> int:
         text = _read(EPISTEMIC)
         for label, pat in REQUIRED_IN_EPISTEMIC:
             if not pat.search(text):
-                gaps.append(
-                    f"{EPISTEMIC.relative_to(REPO_ROOT)}: missing anchor {label}"
-                )
+                gaps.append(f"{EPISTEMIC.relative_to(REPO_ROOT)}: missing anchor {label}")
 
     for label, pat, paths in FORBIDDEN:
         for path in paths:

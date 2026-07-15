@@ -58,6 +58,9 @@ OPERATOR_FILES = {
     "module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/geo/paraguay_departments.SOURCE.md",
     # Committed LOO walk-forward evidence (issue #97) — summarized in VALIDATION.md.
     "reports/module_c/walk_forward_loo_report.md",
+    # F-082 battleground ceiling investigation — gate-evidence, not reviewer narrative.
+    "reports/module_c/battleground_investigation/INVESTIGATION_REPORT.md",
+    "reports/module_c/battleground_investigation/scratch/battleground/anchor_comparison.md",
 }
 
 
