@@ -99,6 +99,13 @@ jobs:
           --cov-fail-under=80
           -v
 
+      - name: Execute Module A walkthrough notebook (#110)
+        run: >
+          poetry run jupyter nbconvert --to notebook --execute
+          module_a_population_segmentation/notebooks/01_end_to_end_walkthrough.ipynb
+          --output /tmp/walkthrough_executed.ipynb
+          --ExecutePreprocessor.timeout=900
+
       - name: Upload coverage
         uses: codecov/codecov-action@v4
         env:
