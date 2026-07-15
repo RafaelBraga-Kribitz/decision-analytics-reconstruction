@@ -18,9 +18,9 @@
 # renaming an existing key, changing an existing key's type/meaning, or
 # removing/repointing a chart_id.
 schema_version: 1
-run_id: ce53106d15f6
-git_commit: ce53106d15f6518b53e4141fe750cc4b92a8598c
-generated_at: '2026-07-14'
+run_id: d8593fbac468
+git_commit: d8593fbac4687c0bb1eeb3b62c574b6ada1927f4
+generated_at: '2026-07-15'
 data_manifest: data/processed/model_run_manifest.json
 canonical_sample_size: 50000
 segmentation_label_hash: dc4cd3b516cadf3b
@@ -149,10 +149,6 @@ figures:
   path: reports\eda\C8_v2.png
   generator: reports/eda/generate_eda.py
   save_name: C8_v2.png
-- chart_id: C8_win_prob_vs_propensity
-  path: reports\eda\C8_win_prob_vs_propensity.png
-  generator: reports/eda/generate_eda.py
-  save_name: C8_win_prob_vs_propensity.png
 - chart_id: C9_polling_transparency_audit
   path: reports\eda\C9_polling_transparency_audit.png
   generator: reports/eda/generate_eda.py
@@ -177,10 +173,10 @@ figures:
   path: reports\eda\S4_department_priority_matrix.png
   generator: reports/eda/generate_eda.py
   save_name: S4_department_priority_matrix.png
-- chart_id: S5_efficiency_frontier
-  path: reports\eda\S5_efficiency_frontier.png
+- chart_id: S5_reach_vs_contacts
+  path: reports\eda\S5_reach_vs_contacts.png
   generator: reports/eda/generate_eda.py
-  save_name: S5_efficiency_frontier.png
+  save_name: S5_reach_vs_contacts.png
 - chart_id: reliability_diagram
   path: reports\module_a\reliability_diagram.png
   generator: module_a_population_segmentation/pipeline/export.py

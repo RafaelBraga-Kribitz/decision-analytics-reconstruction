@@ -1869,61 +1869,6 @@ def chart_c7():
 chart_c7()
 
 
-@safe_chart("C8")
-def chart_c8():
-    """C8: Win probability vs participation propensity by department."""
-    dept_prop = pop.groupby("department")["participation_propensity"].mean().reset_index()
-    dept_prop.columns = ["department", "mean_propensity"]
-    merged_c8 = battleground.merge(dept_prop, on="department", how="left")
-
-    # Budget overlay
-    dept_budget_c8 = alloc_base.groupby("department")["budget_allocation_usd"].sum().reset_index()
-    merged_c8 = merged_c8.merge(dept_budget_c8, on="department", how="left")
-
-    fig, ax = plt.subplots(figsize=(10, 7))
-    # Use only size encoding for budget — removing color encoding avoids redundant double-encoding
-    # and the misleading implication that color = quality/priority
-    sc = ax.scatter(
-        merged_c8["mean_propensity"],
-        merged_c8["win_probability_a"],
-        s=merged_c8["budget_allocation_usd"].fillna(1000) / 500,
-        color=BLUE,
-        edgecolors=CHARCOAL,
-        lw=0.6,
-        alpha=0.75,
-    )
-
-    _stagger_annotate(ax, merged_c8, "mean_propensity", "win_probability_a", "department")
-
-    ax.axhline(0.5, color=CHARCOAL, lw=1.2, ls="--", label="50% win threshold")
-    # Full [0,1] axis: TSJE-calibrated swing model produces a wide range across
-    # departments — GANAR strongholds are well below 50%, ANR strongholds well above.
-    ax.set_ylim(0, 1)
-    ax.set_xlabel("Mean Participation Propensity (Department)")
-    ax.set_ylabel("P(Win — Candidate A)")
-    ax.set_title(
-        "C8 — Win Probability vs Participation Propensity\n"
-        f"(bubble size = budget · {ILLUSTRATIVE_BATTLE_SUB})"
-    )
-    ax.annotate(
-        "Budget in GANAR depts (low win_prob) targets turnout/defense, not swing. "
-        "High-budget departments (Central, Alto Paraná) are GANAR strongholds — "
-        "budget concentrated there for turnout, not persuasion.",
-        xy=(0.5, -0.16),
-        xycoords="axes fraction",
-        ha="center",
-        fontsize=7.5,
-        color=GREY,
-    )
-    ax.legend()
-    annotate_source(ax)
-    fig.tight_layout()
-    save_fig(fig, "C8_win_prob_vs_propensity.png")
-
-
-chart_c8()
-
-
 @safe_chart("C9")
 def chart_c9():
     """C9: Polling transparency audit — house effect magnitude distribution."""
@@ -1991,7 +1936,7 @@ def chart_c10():
 
     The committed filename (``C10_mc_win_probability_histogram.png``) is a legacy
     misnomer: this panel histograms shock_scale per scenario — it does not derive
-    P(win). Candidate-A win probability lives in C3 / C8 (AUD-C10).
+    P(win). Candidate-A win probability lives in C3 / C8_v2 (AUD-C10).
     """
     baseline_median = mc_draws.loc[
         mc_draws["scenario_bucket"] == "baseline", "shock_scale"
@@ -2025,12 +1970,12 @@ def chart_c10():
     ax.set_ylabel("Density")
     ax.set_title(
         f"C10 — Monte Carlo Shock-Scale Distribution by Scenario\n"
-        f"(shock scale across {len(mc_draws):,} draws — not win probability; P(win) → C3/C8)"
+        f"(shock scale across {len(mc_draws):,} draws — not win probability; P(win) → C3/C8_v2)"
     )
     ax.legend(title="Scenario Bucket")
     ax.annotate(
         "Legacy filename says 'win_probability', but this panel shows the shock-scale "
-        "distribution. Candidate-A win probability is C3 / C8, not derived here.",
+        "distribution. Candidate-A win probability is C3 / C8_v2, not derived here.",
         xy=(0.5, -0.22),
         xycoords="axes fraction",
         ha="center",
@@ -2427,11 +2372,10 @@ def chart_s5():
         fig,
         "Descriptive scatter with an OLS linear trend (dashed line). This is "
         "not a Pareto efficiency frontier (the non-dominated upper envelope). "
-        "Bubble size = budget; colour = region. The file name S5_efficiency_frontier "
-        "is a retained lineage id, not a claim that the panel is a frontier.",
+        "Bubble size = budget; colour = region.",
         bottom=0.17,
     )
-    save_fig(fig, "S5_efficiency_frontier.png")
+    save_fig(fig, "S5_reach_vs_contacts.png")
 
 
 chart_s5()
@@ -2986,8 +2930,8 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 **Key finding:** The intercept (~29.5 pp) anchors the exit model near the tracking final mean. beta_oea and beta_eu both straddle zero (HDI spans positive and negative territory), meaning international observer assessments (OEA, EU) have uncertain systematic influence.
 **Strategic implication:** The exit model calibration is weakly identified for international observer effects. Do not use exit model estimates as the primary real-time result metric — rely on the tracking model until polling closes.
 
-### C8 — Win Probability vs Participation Propensity
-**What it shows:** Scatter plot of department-level win probability vs. mean participation propensity, bubble = budget.
+### C8_v2 — Win Probability vs Participation Propensity by Department
+**What it shows:** Scatter plot of department-level win probability vs. mean participation propensity, coloured by region, with a ranked table of departments by propensity.
 **Key finding:** Win probability varies across departments ({_min_win_prob:.1%}–{_max_win_prob:.1%}) with wider spread under v0.5 decoupled σ; propensity varies more. High-propensity departments (Rural Committed-heavy) cluster separately from win-probability bands — both are model outputs on reconstruction fixtures.
 **Strategic implication:** The combination of high propensity + high win probability identifies "safe yield" departments (San Pedro, Cordillera, Misiones). These departments can deliver high turnout at low persuasion cost — mobilisation spend here has the best ROI.
 
@@ -2997,7 +2941,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 **Strategic implication:** Apply bias corrections per pollster regardless of transparency rating; do not infer a transparency→bias rule from three points.
 
 ### C10 — MC Shock-Scale Distribution (legacy filename)
-**What it shows:** Distribution of shock_scale across all MC draws by scenario bucket. The committed filename references "win probability", but this panel does **not** derive P(win) — Candidate-A win probability is C3 / C8.
+**What it shows:** Distribution of shock_scale across all MC draws by scenario bucket. The committed filename references "win probability", but this panel does **not** derive P(win) — Candidate-A win probability is C3 / C8_v2.
 **Key finding:** Draws are split across {len(_mc_bucket_counts)} canonical buckets ({_mc_bucket_desc}); shock-scale distributions are multimodal by design of the discrete scenario catalog.
 **Strategic implication:** Resource buffers and contingency plans should be stress-tested against the extreme-tracker bucket (1.8–2.4× baseline shock sensitivity) — not just the ±10% band around baseline.
 
