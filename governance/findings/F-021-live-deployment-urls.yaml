@@ -2,9 +2,9 @@ id: F-021
 title: "Public deployment badges point to non-live URLs"
 category: fake_completion
 kind: recurrence_invariant
-status: open
+status: closed
 opened_at: 2026-06-08
-closed_at: null
+closed_at: 2026-07-15
 recurrence_count: 3
 evidence: |
   README badges advertise Module A Streamlit, Module B FastAPI docs, and Module C
@@ -68,3 +68,12 @@ notes: |
   help). Closure now requires the maintainer to redeploy Module B on
   Railway (or re-point the URL), then run the verification script and
   confirm 200/200/200 before setting status: closed.
+
+  Closed 2026-07-15: Maintainer redeployed Module B on Railway (payment
+  info added, trial limitation lifted). scripts/check_live_deployment_urls.py
+  run twice in succession against the live URLs: [PASS] F-021 clean both
+  times — module_a_streamlit=200, module_b_fastapi_docs=200,
+  module_c_quarto=200. The 2026-07-13 hardening (extended retry window,
+  keepalive.yml pinging Module A every 10 minutes) remains in place to
+  keep this durable; per stated policy, any future Adversary timeout
+  reopens this finding rather than leaving it falsely closed.
