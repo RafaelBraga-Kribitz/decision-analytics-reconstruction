@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import sys
+from pathlib import Path
 
 from _governance_check import REPO_ROOT, gate
 
@@ -55,62 +56,84 @@ REPORT_MARKERS = (
 )
 
 
+def _missing_required_files() -> list[str]:
+    return [
+        f"missing {path.relative_to(REPO_ROOT)}" for path in REQUIRED_FILES if not path.is_file()
+    ]
+
+
+def _missing_figures() -> list[str]:
+    fig_dir = INV / "figures"
+    return [f"missing figure {name}" for name in REQUIRED_FIGURES if not (fig_dir / name).is_file()]
+
+
+def _h0_table_gaps(h0_path: Path) -> list[str]:
+    if not h0_path.is_file():
+        return []
+    import pandas as pd
+
+    h0 = pd.read_csv(h0_path)
+    if "pass" not in h0.columns:
+        return ["h0_verification_table.csv missing pass column"]
+    if not bool(h0["pass"].all()):
+        failed = h0.loc[~h0["pass"].astype(bool), "check"].tolist()
+        return [f"H0 checks failed: {failed}"]
+    return []
+
+
+def _report_gaps(report_path: Path) -> list[str]:
+    if not report_path.is_file():
+        return []
+    text = report_path.read_text(encoding="utf-8")
+    gaps = [
+        f"INVESTIGATION_REPORT missing marker: {section!r}"
+        for section in REPORT_MARKERS
+        if section not in text
+    ]
+    if "**Primary outcome:** A" in text or "no model revision required" in text.lower():
+        gaps.append("report uses over-strong Outcome A / no-revision language")
+    return gaps
+
+
+def _meta_gaps(meta_path: Path, prior_gaps: list[str]) -> list[str]:
+    if not meta_path.is_file():
+        return []
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    gaps: list[str] = []
+    label = meta.get("conclusion_label")
+    if label not in VALID_CONCLUSION_LABELS:
+        gaps.append(f"invalid or missing conclusion_label: {label!r}")
+    if meta.get("h0_implementation") is None:
+        gaps.append("investigation_meta.json missing h0_implementation")
+    if meta.get("h5_internal_coherence") is None:
+        gaps.append("investigation_meta.json missing h5_internal_coherence (H0/adequacy split)")
+    h0_verified = meta.get("hypothesis_status", {}).get("H0_implementation") == "verified"
+    h0_impl_ok = meta.get("h0_implementation", "").startswith("verified")
+    if not h0_verified and not prior_gaps and not h0_impl_ok:
+        gaps.append("H0 implementation not verified in meta")
+    return gaps
+
+
+def _power_gaps(power_path: Path) -> list[str]:
+    if not power_path.is_file():
+        return []
+    power = json.loads(power_path.read_text(encoding="utf-8"))
+    gaps: list[str] = []
+    if "power_by_true_effect" not in power:
+        gaps.append("power_analysis.json missing power_by_true_effect")
+    if "minimum_detectable_mad_improvement_approx_pp" not in power:
+        gaps.append("power_analysis.json missing MDE estimate")
+    return gaps
+
+
 def main() -> int:
     gaps: list[str] = []
-
-    for path in REQUIRED_FILES:
-        if not path.is_file():
-            gaps.append(f"missing {path.relative_to(REPO_ROOT)}")
-
-    fig_dir = INV / "figures"
-    for name in REQUIRED_FIGURES:
-        if not (fig_dir / name).is_file():
-            gaps.append(f"missing figure {name}")
-
-    h0_path = INV / "h0_verification_table.csv"
-    if h0_path.is_file():
-        import pandas as pd
-
-        h0 = pd.read_csv(h0_path)
-        if "pass" not in h0.columns:
-            gaps.append("h0_verification_table.csv missing pass column")
-        elif not bool(h0["pass"].all()):
-            failed = h0.loc[~h0["pass"].astype(bool), "check"].tolist()
-            gaps.append(f"H0 checks failed: {failed}")
-
-    report_path = INV / "INVESTIGATION_REPORT.md"
-    if report_path.is_file():
-        text = report_path.read_text(encoding="utf-8")
-        for section in REPORT_MARKERS:
-            if section not in text:
-                gaps.append(f"INVESTIGATION_REPORT missing marker: {section!r}")
-        if "**Primary outcome:** A" in text or "no model revision required" in text.lower():
-            gaps.append("report uses over-strong Outcome A / no-revision language")
-
-    meta_path = INV / "investigation_meta.json"
-    if meta_path.is_file():
-        meta = json.loads(meta_path.read_text(encoding="utf-8"))
-        label = meta.get("conclusion_label")
-        if label not in VALID_CONCLUSION_LABELS:
-            gaps.append(f"invalid or missing conclusion_label: {label!r}")
-        if meta.get("h0_implementation") is None:
-            gaps.append("investigation_meta.json missing h0_implementation")
-        if meta.get("h5_internal_coherence") is None:
-            gaps.append("investigation_meta.json missing h5_internal_coherence (H0/adequacy split)")
-        if (
-            meta.get("hypothesis_status", {}).get("H0_implementation") != "verified"
-            and not gaps
-            and not meta.get("h0_implementation", "").startswith("verified")
-        ):
-            gaps.append("H0 implementation not verified in meta")
-
-    power_path = INV / "power_analysis.json"
-    if power_path.is_file():
-        power = json.loads(power_path.read_text(encoding="utf-8"))
-        if "power_by_true_effect" not in power:
-            gaps.append("power_analysis.json missing power_by_true_effect")
-        if "minimum_detectable_mad_improvement_approx_pp" not in power:
-            gaps.append("power_analysis.json missing MDE estimate")
+    gaps.extend(_missing_required_files())
+    gaps.extend(_missing_figures())
+    gaps.extend(_h0_table_gaps(INV / "h0_verification_table.csv"))
+    gaps.extend(_report_gaps(INV / "INVESTIGATION_REPORT.md"))
+    gaps.extend(_meta_gaps(INV / "investigation_meta.json", gaps))
+    gaps.extend(_power_gaps(INV / "power_analysis.json"))
 
     ok = not gaps
     gap_msg = "; ".join(gaps) if gaps else ""

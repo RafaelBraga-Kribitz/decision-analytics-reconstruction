@@ -488,6 +488,27 @@ def _bootstrap_score_diff(
     }
 
 
+def _power_for_single_effect(quad_diffs: np.ndarray, effect_pp: float) -> float:
+    if quad_diffs.size == 0:
+        return float("nan")
+    rejections = 0
+    for _ in range(500):
+        idx = RNG.integers(0, len(quad_diffs), len(quad_diffs))
+        shifted = quad_diffs[idx] + effect_pp
+        if float(np.quantile(shifted, 0.025)) > 0:
+            rejections += 1
+    return rejections / 500.0
+
+
+def _power_conclusion_message(underpowered_5pp: bool, underpowered_10pp: bool) -> str:
+    if underpowered_5pp and underpowered_10pp:
+        return (
+            "The investigation is unlikely to detect practically meaningful departures "
+            "(5–10 pp weighted MAD improvement on holdout) with adequate power."
+        )
+    return "Power may be sufficient only for large departures (≥15–20 pp MAD improvement)."
+
+
 def _compute_power_analysis(
     polls: pd.DataFrame,
     boot_intercept: dict[str, float],
@@ -507,17 +528,7 @@ def _compute_power_analysis(
     effect_grid = [5.0, 10.0, 15.0, 20.0, 25.0]
     power_rows: list[dict[str, float]] = []
     for effect_pp in effect_grid:
-        if quad_diffs.size == 0:
-            power = float("nan")
-        else:
-            # Shift bootstrap diffs by hypothesised true MAD improvement; reject if 95% CI excludes 0.
-            rejections = 0
-            for _ in range(500):
-                idx = RNG.integers(0, len(quad_diffs), len(quad_diffs))
-                shifted = quad_diffs[idx] + effect_pp
-                if float(np.quantile(shifted, 0.025)) > 0:
-                    rejections += 1
-            power = rejections / 500.0
+        power = _power_for_single_effect(quad_diffs, effect_pp)
         power_rows.append(
             {
                 "true_mad_improvement_pp": effect_pp,
@@ -538,12 +549,7 @@ def _compute_power_analysis(
         "power_by_true_effect": power_rows,
         "underpowered_for_5pp_mad_improvement": underpowered_5pp,
         "underpowered_for_10pp_mad_improvement": underpowered_10pp,
-        "power_conclusion": (
-            "The investigation is unlikely to detect practically meaningful departures "
-            "(5–10 pp weighted MAD improvement on holdout) with adequate power."
-            if underpowered_5pp and underpowered_10pp
-            else "Power may be sufficient only for large departures (≥15–20 pp MAD improvement)."
-        ),
+        "power_conclusion": _power_conclusion_message(underpowered_5pp, underpowered_10pp),
     }
 
 
@@ -645,6 +651,59 @@ def _mapping_benchmark(
     return pd.DataFrame(rows)
 
 
+def _ppc_dept_draw(
+    dept: str,
+    m_draw: float,
+    swings: dict[str, float],
+    sigma_by_dept: dict[str, float],
+    sigma_n: float,
+) -> tuple[float, float, float, float, int]:
+    swing = float(swings.get(dept, 0.0))
+    sig_i = float(sigma_by_dept.get(dept, 1.5))
+    sig_d = _sigma_dept_v05(sigma_n, sig_i)
+    mu = swing * m_draw
+    margin = float(RNG.normal(mu, sig_d))
+    z_val = mu / sig_d if sig_d else 0.0
+    p_val = float(stats.norm.cdf(z_val))
+    ceiling_hit = 1 if p_val >= 0.985 else 0
+    return margin, z_val, p_val, ceiling_hit
+
+
+def _ppc_random_m_replicate(
+    m_draw: float,
+    swings: dict[str, float],
+    sigma_by_dept: dict[str, float],
+    sigma_n: float,
+) -> tuple[list[float], list[float], list[float], int]:
+    dept_draws: list[float] = []
+    z_rep: list[float] = []
+    p_rep: list[float] = []
+    ceiling = 0
+    for dept in DEPARTMENTS:
+        margin, z_val, p_val, hit = _ppc_dept_draw(dept, m_draw, swings, sigma_by_dept, sigma_n)
+        dept_draws.append(margin)
+        z_rep.append(z_val)
+        p_rep.append(p_val)
+        ceiling += hit
+    return dept_draws, z_rep, p_rep, ceiling
+
+
+def _ppc_fixture_m_draws(
+    m_fixture: float,
+    swings: dict[str, float],
+    sigma_by_dept: dict[str, float],
+    sigma_n: float,
+    fixture_margins: dict[str, list[float]],
+    fixture_probs: dict[str, list[float]],
+    fixture_z_vals: list[float],
+) -> None:
+    for dept in DEPARTMENTS:
+        margin, z_val, p_val, _ = _ppc_dept_draw(dept, m_fixture, swings, sigma_by_dept, sigma_n)
+        fixture_margins[dept].append(margin)
+        fixture_probs[dept].append(p_val)
+        fixture_z_vals.append(z_val)
+
+
 def run_ppc(
     fixture: FixtureInputs,
     forward_df: pd.DataFrame,
@@ -676,40 +735,23 @@ def run_ppc(
 
     for _rep in range(n_sim):
         m_draw = float(RNG.uniform(fixture.hdi_lo_pp, fixture.hdi_hi_pp))
-        dept_draws: list[float] = []
-        ceiling = 0
-        z_rep: list[float] = []
-        p_rep: list[float] = []
-        for dept in DEPARTMENTS:
-            swing = float(swings.get(dept, 0.0))
-            sig_i = float(sigma_by_dept.get(dept, 1.5))
-            sig_d = _sigma_dept_v05(sigma_n, sig_i)
-            mu = swing * m_draw
-            margin = float(RNG.normal(mu, sig_d))
-            z_val = mu / sig_d if sig_d else 0.0
-            p_val = float(stats.norm.cdf(z_val))
-            dept_draws.append(margin)
-            z_rep.append(z_val)
-            p_rep.append(p_val)
-            if p_val >= 0.985:
-                ceiling += 1
+        dept_draws, z_rep, p_rep, ceiling = _ppc_random_m_replicate(
+            m_draw, swings, sigma_by_dept, sigma_n
+        )
         sim_max.append(max(dept_draws))
         sim_min.append(min(dept_draws))
         sim_ceiling.append(ceiling)
         sim_mean_abs_z.append(float(np.mean(np.abs(z_rep))))
         sim_max_p.append(max(p_rep))
-
-        # Fixed m = fixture point
-        for dept in DEPARTMENTS:
-            swing = float(swings.get(dept, 0.0))
-            sig_i = float(sigma_by_dept.get(dept, 1.5))
-            sig_d = _sigma_dept_v05(sigma_n, sig_i)
-            mu = swing * m_fixture
-            margin = float(RNG.normal(mu, sig_d))
-            z_val = mu / sig_d if sig_d else 0.0
-            fixture_margins[dept].append(margin)
-            fixture_probs[dept].append(float(stats.norm.cdf(z_val)))
-            fixture_z_vals.append(z_val)
+        _ppc_fixture_m_draws(
+            m_fixture,
+            swings,
+            sigma_by_dept,
+            sigma_n,
+            fixture_margins,
+            fixture_probs,
+            fixture_z_vals,
+        )
 
     stats_out: dict[str, float] = {}
     for year, obs in observed_margins.items():
@@ -849,6 +891,98 @@ def _make_ppc_figures(forward_df: pd.DataFrame, ppc_ctx: dict[str, Any]) -> None
     plt.close(fig)
 
 
+def _h0_failure_conclusion(
+    hypothesis_status: dict[str, str],
+) -> InvestigationConclusion:
+    return InvestigationConclusion(
+        protocol_outcome="implementation_defect",
+        conclusion_label="implementation_defect",
+        h0_implementation="defect identified",
+        h5_internal_coherence="not evaluated",
+        h5_adequacy="not evaluated",
+        h5_verdict_summary="H0 failed; model adequacy not assessed.",
+        h1_h4_verdict="not evaluated",
+        hypothesis_status=hypothesis_status,
+    )
+
+
+def _evaluate_h1_alternatives(
+    holdout: pd.DataFrame,
+    boot_quadratic: dict[str, float],
+    boot_intercept: dict[str, float],
+    hypothesis_status: dict[str, str],
+) -> list[str]:
+    null_mad = float(holdout.loc[holdout["model"] == "linear", "weighted_mad"].iloc[0])
+    alt_specs = {
+        "H1": ("linear_intercept", boot_intercept),
+        "H1_quadratic": ("quadratic_swing", boot_quadratic),
+    }
+    falsifying_alts: list[str] = []
+    for label, (spec, boot) in alt_specs.items():
+        alt_mad = float(holdout.loc[holdout["model"] == spec, "weighted_mad"].iloc[0])
+        ci_excludes_zero = boot["ci_low"] > 0 or boot["ci_high"] < 0
+        if alt_mad < null_mad and ci_excludes_zero:
+            falsifying_alts.append(label)
+            hypothesis_status["H1_mean_spec"] = "would falsify H5 if power were adequate"
+        elif alt_mad < null_mad:
+            hypothesis_status["H1_mean_spec"] = (
+                "not rejected with confidence — bootstrap CI includes zero (insufficient power)"
+            )
+        else:
+            hypothesis_status["H1_mean_spec"] = (
+                "not rejected — holdout predictive performance does not favour alternative"
+            )
+    return falsifying_alts
+
+
+def _assign_h2_status(bp: dict[str, float], hypothesis_status: dict[str, str]) -> None:
+    if bp["p_value"] < 0.05:
+        hypothesis_status["H2_variance_spec"] = (
+            f"exploratory signal only (BP p={bp['p_value']:.4f}) — underpowered; not basis for rejection"
+        )
+    else:
+        hypothesis_status["H2_variance_spec"] = (
+            "not rejected — no reliable heteroskedasticity evidence"
+        )
+
+
+def _assign_h5_adequacy(
+    ppc_stress: bool,
+    falsifying_alts: list[str],
+    underpowered: bool,
+    hypothesis_status: dict[str, str],
+) -> None:
+    if ppc_stress:
+        hypothesis_status["H5_adequacy"] = (
+            "PPC ceiling-count statistic extreme — warrants caution but not sole basis for revision"
+        )
+    elif falsifying_alts:
+        hypothesis_status["H5_adequacy"] = (
+            "insufficient evidence to reject — alternatives not confirmed on holdout"
+        )
+    else:
+        hypothesis_status["H5_adequacy"] = (
+            "insufficient evidence to reject H5 on holdout predictive performance and PPC"
+        )
+    if underpowered:
+        hypothesis_status[
+            "H5_adequacy"
+        ] += "; insufficient statistical power for moderate departures"
+
+
+def _resolve_protocol_labels(
+    falsifying_alts: list[str],
+    ppc_stress: bool,
+    underpowered: bool,
+) -> tuple[str, str]:
+    if falsifying_alts and not underpowered:
+        protocol_outcome = "B" if len(falsifying_alts) == 1 else "E"
+        return protocol_outcome, "evidence_suggests_revision"
+    if ppc_stress and not falsifying_alts:
+        return "inconclusive", "inconclusive_ppc_stress"
+    return "A", "insufficient_evidence_for_revision"
+
+
 def _classify_outcome(
     h0_df: pd.DataFrame,
     score_df: pd.DataFrame,
@@ -870,51 +1004,17 @@ def _classify_outcome(
     }
 
     if not h0_pass:
-        return InvestigationConclusion(
-            protocol_outcome="implementation_defect",
-            conclusion_label="implementation_defect",
-            h0_implementation="defect identified",
-            h5_internal_coherence="not evaluated",
-            h5_adequacy="not evaluated",
-            h5_verdict_summary="H0 failed; model adequacy not assessed.",
-            h1_h4_verdict="not evaluated",
-            hypothesis_status=hypothesis_status,
-        )
+        return _h0_failure_conclusion(hypothesis_status)
 
     hypothesis_status["H5_internal_coherence"] = (
         "supported — recomputed z/P match export; ceiling follows from fixture inputs under stated assumptions"
     )
 
     holdout = score_df[score_df["fold"] == "holdout_2018"]
-    null_mad = float(holdout.loc[holdout["model"] == "linear", "weighted_mad"].iloc[0])
-    alt_specs = {
-        "H1": ("linear_intercept", boot_intercept),
-        "H1_quadratic": ("quadratic_swing", boot_quadratic),
-    }
-    falsifying_alts: list[str] = []
-    for label, (spec, boot) in alt_specs.items():
-        alt_mad = float(holdout.loc[holdout["model"] == spec, "weighted_mad"].iloc[0])
-        ci_excludes_zero = boot["ci_low"] > 0 or boot["ci_high"] < 0
-        if alt_mad < null_mad and ci_excludes_zero:
-            falsifying_alts.append(label)
-            hypothesis_status["H1_mean_spec"] = "would falsify H5 if power were adequate"
-        elif alt_mad < null_mad:
-            hypothesis_status["H1_mean_spec"] = (
-                "not rejected with confidence — bootstrap CI includes zero (insufficient power)"
-            )
-        else:
-            hypothesis_status["H1_mean_spec"] = (
-                "not rejected — holdout predictive performance does not favour alternative"
-            )
-
-    if bp["p_value"] < 0.05:
-        hypothesis_status["H2_variance_spec"] = (
-            f"exploratory signal only (BP p={bp['p_value']:.4f}) — underpowered; not basis for rejection"
-        )
-    else:
-        hypothesis_status["H2_variance_spec"] = (
-            "not rejected — no reliable heteroskedasticity evidence"
-        )
+    falsifying_alts = _evaluate_h1_alternatives(
+        holdout, boot_quadratic, boot_intercept, hypothesis_status
+    )
+    _assign_h2_status(bp, hypothesis_status)
 
     hypothesis_status["H3_sigma_quantification"] = "not evaluated with holdout power — inconclusive"
     hypothesis_status["H4_likelihood_spec"] = "not evaluated with holdout power — inconclusive"
@@ -923,36 +1023,10 @@ def _classify_outcome(
     ppc_stress = ppc_ceiling_p < 0.05
     underpowered = power.get("underpowered_for_10pp_mad_improvement", True)
 
-    if ppc_stress:
-        hypothesis_status["H5_adequacy"] = (
-            "PPC ceiling-count statistic extreme — warrants caution but not sole basis for revision"
-        )
-    elif falsifying_alts:
-        hypothesis_status["H5_adequacy"] = (
-            "insufficient evidence to reject — alternatives not confirmed on holdout"
-        )
-    else:
-        hypothesis_status["H5_adequacy"] = (
-            "insufficient evidence to reject H5 on holdout predictive performance and PPC"
-        )
-
-    if underpowered:
-        hypothesis_status[
-            "H5_adequacy"
-        ] += "; insufficient statistical power for moderate departures"
-
-    if falsifying_alts and not underpowered:
-        protocol_outcome = "B" if len(falsifying_alts) == 1 else "E"
-        conclusion_label = "evidence_suggests_revision"
-    elif ppc_stress and not falsifying_alts:
-        protocol_outcome = "inconclusive"
-        conclusion_label = "inconclusive_ppc_stress"
-    elif falsifying_alts or underpowered:
-        protocol_outcome = "A"
-        conclusion_label = "insufficient_evidence_for_revision"
-    else:
-        protocol_outcome = "A"
-        conclusion_label = "insufficient_evidence_for_revision"
+    _assign_h5_adequacy(ppc_stress, falsifying_alts, underpowered, hypothesis_status)
+    protocol_outcome, conclusion_label = _resolve_protocol_labels(
+        falsifying_alts, ppc_stress, underpowered
+    )
 
     h5_summary = (
         "Internal coherence supported (forward algebra). "
