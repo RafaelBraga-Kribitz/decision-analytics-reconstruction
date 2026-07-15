@@ -5,6 +5,8 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 # Set INSTALL_DEV=1 at build time to include dev/test deps (for CI smoke)
 ARG INSTALL_DEV=0
+# Production images bake Module A export artifacts (data/processed/ is gitignored).
+ARG MODULE_A_SAMPLE_SIZE=15000
 
 WORKDIR /app
 
@@ -29,7 +31,10 @@ RUN poetry config virtualenvs.create false && \
     if [ "$INSTALL_DEV" = "1" ]; then \
         poetry install --extras all; \
     else \
-        poetry install --only main --extras dashboard --extras explainability; \
+        poetry install --only main --extras dashboard --extras explainability && \
+        poetry run python -m population_segmentation.pipeline \
+            --out-dir data/processed \
+            --sample-size ${MODULE_A_SAMPLE_SIZE}; \
     fi
 
 EXPOSE 8501
