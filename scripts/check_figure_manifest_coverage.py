@@ -90,15 +90,20 @@ def _generator_exists(gen: str) -> bool:
     return False
 
 
+def _norm_path(path: str | None) -> str:
+    """Normalize manifest/git paths to forward slashes (#148)."""
+    return (path or "").replace("\\", "/")
+
+
 def _coverage_gaps(manifest: dict) -> list[str]:
     figures = manifest.get("figures", [])
-    manifest_paths = [f.get("path") for f in figures]
+    manifest_paths = [_norm_path(f.get("path")) for f in figures]
     path_set = set(manifest_paths)
     gaps: list[str] = []
 
     # (1) every tracked figure is registered
     for fig in _tracked_figures():
-        if fig not in path_set:
+        if _norm_path(fig) not in path_set:
             gaps.append(f"figure {fig} has no FIGURE_MANIFEST.yaml entry")
 
     # (2) every generator exists
@@ -110,7 +115,7 @@ def _coverage_gaps(manifest: dict) -> list[str]:
     # (3) no path claimed by two different generators
     by_path: dict[str, set[str]] = {}
     for f in figures:
-        by_path.setdefault(f.get("path"), set()).add(f.get("generator"))
+        by_path.setdefault(_norm_path(f.get("path")), set()).add(f.get("generator"))
     for path, gens in by_path.items():
         if len(gens) > 1:
             gaps.append(f"figure {path} claimed by multiple generators: {sorted(gens)}")

@@ -102,7 +102,7 @@ def main() -> int:
             figures.append(
                 {
                     "chart_id": png.stem,
-                    "path": str(png.relative_to(REPO_ROOT)),
+                    "path": png.relative_to(REPO_ROOT).as_posix(),
                     "generator": generator,
                     "save_name": png.name,
                 }
