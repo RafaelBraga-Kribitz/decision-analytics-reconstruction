@@ -60,6 +60,28 @@ Full table: [`reports/NUMERIC_SSOT.md`](reports/NUMERIC_SSOT.md).
 Case narrative: [`reports/CASE_STUDY.md`](reports/CASE_STUDY.md). Validation gates:
 [`reports/VALIDATION.md`](reports/VALIDATION.md).
 
+## See it running
+
+<p align="center">
+  <img src="docs/assets/screenshot_module_a_dashboard.png"
+       alt="Module A Streamlit dashboard — Segment Explorer tab showing the six voter segments of the canonical 50,000-record run with silhouette and bootstrap-ARI diagnostics"
+       width="90%" />
+</p>
+
+*Module A dashboard (Streamlit) — Segment Explorer on the canonical 50,000-voter run; run ID and diagnostics shown in-app.*
+
+<p align="center">
+  <img src="docs/assets/screenshot_module_b_api_docs.png"
+       alt="Module B FastAPI OpenAPI documentation listing allocation, counterfactual, FX, reach-cap, and routing endpoints"
+       width="90%" />
+</p>
+
+*Module B allocation API (FastAPI) — live OpenAPI docs; every endpoint serves solver outputs from the canonical run.*
+
+The Module C report is published at
+[RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction](https://RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction/).
+Both apps run locally with `make dashboard` and `make module-b-api` (screenshots above are from local runs of this repo).
+
 ## Quick start
 
 ```bash
