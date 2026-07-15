@@ -9,7 +9,9 @@ Defaults assume the current working directory is the repository root:
 from __future__ import annotations
 
 import argparse
+import os
 import sys
+from contextlib import nullcontext
 from pathlib import Path
 from typing import Any
 
@@ -101,8 +103,20 @@ def main(argv: list[str] | None = None) -> int:
     with open(anch_p, encoding="utf-8") as f:
         anchors: dict[str, Any] = yaml.safe_load(f)
 
+    # Pin BLAS to one thread for deterministic KMeans / bootstrap ARI (#114).
+    os.environ.setdefault("OPENBLAS_NUM_THREADS", "1")
+    os.environ.setdefault("OMP_NUM_THREADS", "1")
+    os.environ.setdefault("MKL_NUM_THREADS", "1")
     try:
-        artifacts = run_export(config, anchors, out_p, sample_size=ns.sample_size)
+        from threadpoolctl import threadpool_limits
+
+        blas_ctx = threadpool_limits(limits=1)
+    except ImportError:
+        blas_ctx = nullcontext()
+
+    try:
+        with blas_ctx:
+            artifacts = run_export(config, anchors, out_p, sample_size=ns.sample_size)
     except Exception as exc:
         print(f"error: pipeline failed: {exc}", file=sys.stderr)
         return 1
