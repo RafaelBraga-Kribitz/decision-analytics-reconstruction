@@ -2691,6 +2691,11 @@ _mc_alloc_note = (
     if _mc_alloc_linked
     else "WARNING: alloc_mean_persuasion_contacts is zero - B-to-C handshake broken"
 )
+_exit_intercept_row = exit_model.loc[exit_model["parameter"] == "intercept"]
+_exit_intercept_pp = (
+    float(_exit_intercept_row["posterior_mean"].iloc[0]) if len(_exit_intercept_row) else float("nan")
+)
+_rake_mean = float(prop["department_rake_multiplier"].mean())
 _min_win_prob = float(battleground["win_probability_a"].min())
 _max_win_prob = float(battleground["win_probability_a"].max())
 _tsje_margin_pp = TSJE_ANCHOR_PP
@@ -2805,7 +2810,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 ### A5 — Propensity Violin by Segment
 **What it shows:** Probability distribution of participation propensity within each segment.
 **Key finding:** All six violins overlap heavily in the ~0.50–0.70 band; within-department spread is small (individual propensity is a raked participation-likelihood score with a modest fixed spread, per F-052), so apparent separation between violins reflects department mix more than a genuine propensity gap between segments. No segment forms a high cluster above 0.80 or a low cluster near 0.10.
-**Strategic implication:** High variance in Youth Volatile means personalised outreach can move the needle; blanket messaging will be inefficient. Use micro-targeting within this segment.
+**Strategic implication:** Youth Volatile combines high reachability (A12) with a wide, soft Intent A tail (A13) — micro-target on persuadable supporters there, not on propensity variance (the violins overlap every other segment in the flat ~0.50–0.70 band).
 
 ### A6 — Urban vs Rural by Segment
 **What it shows:** 100% stacked bar of urban/rural split per segment.
@@ -2927,13 +2932,13 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 
 ### C7 — Exit Model Parameter Posteriors
 **What it shows:** Forest plot of exit model parameters: intercept, beta_oea, beta_eu, sigma.
-**Key finding:** The intercept (~29.5 pp) anchors the exit model near the tracking final mean. beta_oea and beta_eu both straddle zero (HDI spans positive and negative territory), meaning international observer assessments (OEA, EU) have uncertain systematic influence.
+**Key finding:** The intercept (~{_exit_intercept_pp:.1f} pp) is the baseline exit-poll A−B margin when OEA/EU timing flags are off — exit fixtures run hotter (~26–33 pp) than the tracking posterior mean (~{forecast_final_mean:.1f} pp) because quick-count subsamples are a different estimand from the TSJE-anchored tracking series (+{_tsje_margin_pp:.2f} pp). beta_oea and beta_eu both straddle zero (HDI spans positive and negative territory), meaning international observer assessments (OEA, EU) have uncertain systematic influence.
 **Strategic implication:** The exit model calibration is weakly identified for international observer effects. Do not use exit model estimates as the primary real-time result metric — rely on the tracking model until polling closes.
 
 ### C8_v2 — Win Probability vs Participation Propensity by Department
 **What it shows:** Scatter plot of department-level win probability vs. mean participation propensity, coloured by region, with a ranked table of departments by propensity.
 **Key finding:** Win probability varies across departments ({_min_win_prob:.1%}–{_max_win_prob:.1%}) with wider spread under v0.5 decoupled σ; propensity varies more. High-propensity departments (Rural Committed-heavy) cluster separately from win-probability bands — both are model outputs on reconstruction fixtures.
-**Strategic implication:** The combination of high propensity + high win probability identifies "safe yield" departments (San Pedro, Cordillera, Misiones). These departments can deliver high turnout at low persuasion cost — mobilisation spend here has the best ROI.
+**Strategic implication:** Competitive win probability combined with high reachability — not high propensity (Rural Committed cells in San Pedro, Cordillera, and Misiones sit in the flat ~0.52–0.65 band per A4) — identifies departments where turnout-defence spend may outperform persuasion swing bets.
 
 ### C9 — Polling Transparency Audit
 **What it shows:** Transparency score vs. house-effect magnitude, one point per pollster (n=3 pollsters — a per-pollster audit, not a fitted trend).
@@ -2956,7 +2961,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 
 ### S2 — Propensity × Reachability Matrix
 **What it shows:** 4-quadrant scatter of segment mean propensity vs. mean reachability, bubble = segment size.
-**Key finding:** Rural Committed occupies the high-propensity / low-reachability quadrant — the "hard-to-reach but worth it" zone. Youth Volatile is high-reachability / moderate-propensity — easy to reach but harder to mobilise. Committed Opposition is low-propensity / low-reachability — the least efficient target.
+**Key finding:** Rural Committed sits above the segment-median propensity / below-median reachability quadrant — hard to reach, not sharply higher-propensity (all six segment means span just {_seg_prop_min:.2f}–{_seg_prop_max:.2f}). Youth Volatile is high-reachability with typical propensity. Committed Opposition is deprioritised for persuasion on B-preference strength, not on a low propensity outlier.
 **Strategic implication:** Campaign resource allocation should weight the propensity × reachability product, not either metric alone. Rural Committed needs investment in delivery mechanisms (radio, canvassing) to unlock its propensity value.
 
 ### S3 — Channel ROI by Region
@@ -2966,7 +2971,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 
 ### S4 — Department Priority Matrix
 **What it shows:** Win probability × participation propensity × log(budget) priority score by department.
-**Key finding:** Central, Caaguazu, and Itapúa score highest on the composite priority index. Misiones, Neembucú, and Caazapá score lowest despite reasonable win probabilities, primarily due to lower propensity and smaller budget allocations.
+**Key finding:** Central, Caaguazu, and Itapúa score highest on the composite priority index. Misiones, Neembucú, and Caazapá score lowest despite reasonable win probabilities — driven by win-probability weighting and budget size, not sharply lower propensity (department means remain in the narrow ~0.50–0.70 band per A4).
 **Strategic implication:** Caaguazu is underweighted relative to its priority score — it ranks 3rd in composite priority but only 5th in total budget. A budget rebalancing toward Caaguazu would improve overall campaign efficiency.
 
 ### S5 — Reach Utilisation vs Persuasion Contacts (descriptive)
@@ -2978,13 +2983,13 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 
 ## Strategic Recommendations
 
-1. **Accelerate Youth Volatile mobilisation in Central and Alto Paraná.** This is the highest-volume, high-reachability segment. Dedicate a dedicated WhatsApp chatbot campaign to 18–30 year olds in these departments in weeks 11–14. Target propensity lift from {_yv_prop:.2f} to {_yv_prop + 0.05:.2f} would add tens of thousands of additional participation-weighted contacts.
+1. **Accelerate Youth Volatile mobilisation in Central and Alto Paraná.** This is the highest-reachability mobilisation cohort (smallest segment at {_yv_pct:.1f}%, but peak digital/TV reachability per A12). Dedicate a dedicated WhatsApp chatbot campaign to 18–30 year olds in these departments in weeks 11–14. Target propensity lift from {_yv_prop:.2f} to {_yv_prop + 0.05:.2f} would add participation-weighted contacts proportional to segment size — not a separate high-propensity lever.
 
-2. **Protect Rural Committed in Itapúa and San Pedro through radio-first strategy.** Do not allow any radio budget reduction in these departments. Rural Committed has a participation propensity of {_rc_prop:.2f} (mean, in line with every other segment) and is almost exclusively accessible by radio. Even a 15% radio budget cut risks losing 20,000+ votes from a segment no other channel can reach.
+2. **Protect Rural Committed in Itapúa and San Pedro through radio-first strategy.** Do not allow any radio budget reduction in these departments. Rural Committed has a participation propensity of {_rc_prop:.2f} (mean, in line with every other segment) and is almost exclusively accessible by radio. Any radio cut in these departments removes contacts that no digital channel can replace for this segment.
 
-3. **Reallocate 5–8% of Central budget to Caaguazu and San Pedro.** Central shows diminishing reach returns (reach cap not binding, but cost-per-persuasion-contact is high). Caaguazu and San Pedro have better cost efficiency and meaningful electoral scale. This reallocation would be budget-neutral with a projected +12% increase in total persuasion contacts.
+3. **Reallocate 5–8% of Central budget to Caaguazu and San Pedro.** Central shows diminishing reach returns (reach cap not binding, but cost-per-persuasion-contact is high). Caaguazu and San Pedro have better cost efficiency and meaningful electoral scale. This reallocation is budget-neutral; the persuasion-contact payoff is whatever the Module B solver reports on re-run — not a fixed percentage claim here.
 
-4. **Eliminate billboard and SMS spend in negligible-tier departments.** Reach utilisation for billboards and SMS is near zero across most departments. Reallocating ~$50K from these channels to radio spots in interior Oriental would be strictly efficiency-improving.
+4. **Eliminate billboard and SMS spend in negligible-tier departments.** Reach utilisation for billboards and SMS is near zero across most departments (B4). Shifting that spend toward radio (highest rural utilisation) and direct channels is strictly reach-improving inside the fixed envelope — no dollar figure is quoted because channel-level allocation is not a committed artifact in this repo.
 
 5. **Commission 2–3 additional polling waves before election day.** The 94% HDI spans ±30 pp — an enormous uncertainty range for strategic planning. Even one additional high-quality poll wave (n≥800) would cut this uncertainty by approximately one-third. CAPLI is the recommended pollster.
 
@@ -3003,7 +3008,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 ## Methodology Notes
 
 - **Segmentation:** 6 clusters from KMeans on scaled numeric features; segment names are profile-derived (Hungarian assignment of cluster profiles to the canonical vocabulary, with interpretation tests). DBSCAN runs as a noise diagnostic only ({segs["dbscan_noise_flag"].sum()} flagged rows). Segment IDs 0–5 map to labels via `segment_labels.parquet`.
-- **Participation propensity:** Bayesian logistic regression with department-level random effects and post-stratification rake weights. Rake multipliers vary substantially across departments (mean 3.2×) indicating sampling imbalance in raw data.
+- **Participation propensity:** Bayesian logistic regression with department-level random effects and post-stratification rake weights. Rake multipliers vary substantially across departments (mean {_rake_mean:.2f}×, range [{prop['department_rake_multiplier'].min():.2f}, {prop['department_rake_multiplier'].max():.2f}]) indicating sampling imbalance in raw data.
 - **Bayesian tracking model:** Hierarchical Gaussian random walk with house effect corrections. Credible bands are true 94% highest-density intervals (`az.hdi`, ≈±1.9σ for a Gaussian posterior) — not 5/95 equal-tailed quantiles. Only {_n_tracking_waves} poll waves ingested — uncertainty is fundamentally limited by sparse polling data.
 - **Budget optimisation:** Linear programming solver (OPTIMAL status confirmed for all cells). Constraints include reach caps, department tiers, and channel eligibility rules. FX conversion uses retail spread rate (not reference rate).
 - **Monte Carlo:** {len(mc_draws):,} draws across {len(_mc_bucket_counts)} scenario buckets. Shock scale parameterises outcome volatility. {_mc_alloc_note}.
