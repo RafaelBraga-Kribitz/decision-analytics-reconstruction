@@ -156,7 +156,7 @@ COLOR = dict(
 SEG_COLORS = list(_SHARED_SEG_COLORS)
 
 # ── Project root (notebook lives in reports/eda/) ────────────────────────────
-PROJECT_ROOT = Path("../..").resolve()
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
 def load(path: str | Path) -> pd.DataFrame:
     p = Path(path)
@@ -224,7 +224,7 @@ print(summary_df.to_string(index=False))
 # ── Script-level loads (for dynamic prose; mirrors the notebook setup cell) ──
 # The block above is a notebook code cell string, not executed by this script.
 # Variables below are loaded here so module-level prose-generation code can use them.
-_PROJECT_ROOT = Path("../..").resolve()
+_PROJECT_ROOT = Path(__file__).resolve().parents[2]
 _DATA = _PROJECT_ROOT / "data" / "processed"
 _MODC = _DATA / "module_c" / "run_all"
 
@@ -236,6 +236,33 @@ forecast  = pd.read_parquet(_MODC / "tracking" / "daily_posterior_forecast.parqu
 house_eff = pd.read_parquet(_MODC / "tracking" / "posterior_house_effects.parquet")
 battle    = pd.read_parquet(_MODC / "battleground" / "battleground_department_probability.parquet")
 mc        = pd.read_parquet(_MODC / "mc" / "monte_carlo_draws.parquet")
+
+# Data-derived segment shares (must match generate_eda.py / eda_report.md — issue #117)
+_seg_counts = pop["segment_label"].value_counts()
+_seg_share_pct = (_seg_counts / len(pop) * 100).sort_values(ascending=False)
+_seg_prop_mean = pop.groupby("segment_label")["participation_propensity"].mean()
+
+
+def _seg_title(lbl: str) -> str:
+    return lbl.replace("_", " ").title()
+
+
+_largest_seg = _seg_share_pct.index[0]
+_second_seg = _seg_share_pct.index[1]
+_smallest_seg = _seg_share_pct.index[-1]
+_yv_pct = float(_seg_share_pct.get("youth_volatile", 0.0))
+_yv_n = int(_seg_counts.get("youth_volatile", 0))
+_rc_pct = float(_seg_share_pct.get("rural_committed", 0.0))
+_uhv_pct = float(_seg_share_pct.get("urban_high_volatility", 0.0))
+_sdb_pct = float(_seg_share_pct.get("structurally_dependent_bloc", 0.0))
+_co_pct = float(_seg_share_pct.get("committed_opposition", 0.0))
+_rlp_pct = float(_seg_share_pct.get("rural_low_propensity", 0.0))
+_yv_rc_combined_pct = _yv_pct + _rc_pct
+_yv_table_role = (
+    "Largest segment, digital-native, mobilisation priority"
+    if _largest_seg == "youth_volatile"
+    else "High-reachability mobilisation cohort (smallest by share)"
+)
 
 COLOR = dict(
     RED="#e60000", CHARCOAL="#25282b", GREY="#8a8e94", BLUE="#3b82f6",
@@ -308,20 +335,20 @@ if all_zero:
 # ── Cell 5 — Section 2 header ───────────────────────────────────────────────
 cells.append(
     md(
-        """## 2. Population & Segmentation
+        f"""## 2. Population & Segmentation
 
-The **population master** contains 10,000 de-identified voter records drawn from the 2018 Paraguay presidential election cycle. Each record integrates three source streams: the national voter registry (cedula, dob, municipality), the 2012 census overlay (NBI stress priors, language buckets, rural flags), and proprietary qualitative sentiment surveys.
+The **population master** contains {len(pop):,} de-identified voter records drawn from the 2018 Paraguay presidential election cycle. Each record integrates three source streams: the national voter registry (cedula, dob, municipality), the 2012 census overlay (NBI stress priors, language buckets, rural flags), and proprietary qualitative sentiment surveys.
 
 **Segmentation** was performed using DBSCAN on a standardised feature matrix covering participation propensity, language profile, urbanicity, digital reachability, and socio-economic stress. Six segments emerged:
 
 | Code | Label | Strategic Role |
 |------|-------|---------------|
-| S0 | Rural Committed | Loyal, hard to reach, high propensity |
-| S1 | Urban High Volatility | Reachable, persuadable, medium propensity |
+| S0 | Rural Committed | Loyal, hard to reach; protect via radio/canvassing |
+| S1 | Urban High Volatility | Reachable, persuadable; typical propensity band |
 | S2 | Structurally Dependent Bloc | Welfare-sensitive, radio-first |
 | S3 | Committed Opposition | Locked B-voters — do not target |
-| S4 | Rural Low Propensity | Passive rural voters |
-| S5 | Youth Volatile | Largest segment, digital-native, mobilisation priority |
+| S4 | Rural Low Propensity | Passive rural voters; propensity in-band |
+| S5 | Youth Volatile | {_yv_table_role} |
 
 The **Johnny Decimal** chart convention used throughout this section labels each chart A1–A13 for traceability to the source EDA pipeline run."""
     )
@@ -332,9 +359,9 @@ cells.append(figure_cell('A1_segment_sizes'))
 
 cells.append(
     md(
-        """**Finding:** Youth Volatile is the dominant segment at 31.3% of the population (3,130 records), nearly double the next largest group (Urban High Volatility at 18.6%). Committed Opposition and Structurally Dependent Bloc together represent only 23.3% of records. Rural Committed, at 14.4%, punches above its numeric weight because it is hard to reach and radio-dependent, so each member needs disproportionate per-contact investment (its propensity is unremarkable, in the same band as every segment).
+        f"""**Finding:** {_seg_title(_largest_seg)} is the largest segment at {_seg_share_pct.iloc[0]:.1f}% of the population ({int(_seg_counts[_largest_seg]):,} records), ahead of {_seg_title(_second_seg)} at {_seg_share_pct.iloc[1]:.1f}%. {_seg_title(_smallest_seg)} is the smallest at {_seg_share_pct.iloc[-1]:.1f}%. Youth Volatile ({_yv_pct:.1f}%) is the headline high-reachability mobilisation cohort (A12) even though it is {'the largest' if _largest_seg == 'youth_volatile' else 'the smallest'} segment by population share. Rural Committed ({_rc_pct:.1f}%) punches above its numeric weight because it is hard to reach and radio-dependent, so each member needs disproportionate per-contact investment (propensity is unremarkable, in the same band as every segment).
 
-**Strategic implication:** Campaign resource allocation should skew toward Youth Volatile mobilisation and Rural Committed retention — these two segments together account for 45.7% of all records and represent the highest expected return on turnout investment."""
+**Strategic implication:** Mobilisation should weight reachability and preference strength — Youth Volatile ({_yv_pct:.1f}%) and Rural Committed ({_rc_pct:.1f}%) together account for {_yv_rc_combined_pct:.1f}% of records and anchor the turnout-investment case."""
     )
 )
 
@@ -836,12 +863,12 @@ Itapua has the highest mean participation propensity of any department with sign
 
 | Segment | Action | Rationale |
 |---------|--------|-----------|
-| **Youth Volatile** (31.3%) | Double down | High reachability, moderate propensity — the mobilisation opportunity |
-| **Rural Committed** (14.4%) | Protect | Baseline propensity (~0.6, like every segment); low reachability is what makes each contact count |
-| **Urban High Volatility** (18.6%) | Maintain | Good reachability, in-band propensity — strategy is working |
-| **Structurally Dependent Bloc** (13.1%) | Maintain | Radio + community organiser approach is appropriate |
-| **Committed Opposition** (10.2%) | Eliminate all spend | Locked B-voters (high B-preference strength) — zero persuasion ROI; propensity is in-band, not a low outlier |
-| **Rural Low Propensity** (12.4%) | Passive only | Propensity in the same band as every segment — the label is a cluster profile, not a low turnout score; no active spend increases warranted |
+| **Youth Volatile** ({_yv_pct:.1f}%) | Double down | High reachability, in-band propensity — the mobilisation opportunity |
+| **Rural Committed** ({_rc_pct:.1f}%) | Protect | Baseline propensity (~0.6, like every segment); low reachability is what makes each contact count |
+| **Urban High Volatility** ({_uhv_pct:.1f}%) | Maintain | Good reachability, in-band propensity — strategy is working |
+| **Structurally Dependent Bloc** ({_sdb_pct:.1f}%) | Maintain | Radio + community organiser approach is appropriate |
+| **Committed Opposition** ({_co_pct:.1f}%) | Eliminate all spend | Locked B-voters (high B-preference strength) — zero persuasion ROI; propensity is in-band, not a low outlier |
+| **Rural Low Propensity** ({_rlp_pct:.1f}%) | Passive only | Propensity in the same band as every segment — the label is a cluster profile, not a low turnout score; no active spend increases warranted |
 
 ---
 
