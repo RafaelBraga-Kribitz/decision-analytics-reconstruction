@@ -9,6 +9,7 @@ import pytest
 from population_segmentation.pipeline.model_run_manifest import (
     build_model_run_manifest,
     get_distribution_version,
+    get_git_commit,
     write_model_run_manifest,
 )
 
@@ -53,6 +54,11 @@ def test_get_distribution_version_returns_string() -> None:
     v = get_distribution_version()
     assert isinstance(v, str)
     assert len(v) > 0
+
+
+def test_get_git_commit_prefers_env(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("GIT_COMMIT", "deadbeefcafebabe")
+    assert get_git_commit() == "deadbeefcafebabe"
 
 
 def test_maybe_log_mlflow_local_store_logs_metrics(
