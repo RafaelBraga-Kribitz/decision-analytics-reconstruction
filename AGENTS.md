@@ -1,29 +1,6 @@
 # Agent Instructions
 
-This repository uses the governance-bootstrap workflow as its single
-AI-assisted work protocol.
+Full instructions: [`docs/agents/AGENTS.md`](docs/agents/AGENTS.md).
 
-Start every session with:
-
-```bash
-make session-start
-```
-
-Then read `governance/SESSION_HANDOUT.md` and follow
-`governance/AUDIT_PROCEDURE.md`.
-
-The active work queue is `governance/findings/F-*.yaml`. Work one open finding
-at a time, and close a finding only when its `verification_script` exits 0.
-For portfolio-completion triage, use `.cursor/rules/11-project-completion-decoder.mdc`
-only as a read-only decoder; findings remain the executable queue.
-
-Machine and terminology constraints still apply through:
-
-- `.cursor/rules/05-terminology-compliance-gate.mdc`
-- `.cursor/rules/06-developer-machine-macpro-6-1.mdc`
-
-## Graphify (tiered — see `.cursor/rules/graphify.mdc`)
-
-- **Tier 1 (narrow):** grep + read known paths; do not load the graph first.
-- **Tier 2 (cross-module / architecture):** `graphify query` or `GRAPH_REPORT.md` summary sections.
-- **Tier 3 (session end):** `make graphify` after any session that changed code or configs.
+Short version: run `make session-start`, read `governance/SESSION_HANDOUT.md`,
+follow `governance/AUDIT_PROCEDURE.md`. Claude-specific protocol: `CLAUDE.md`.

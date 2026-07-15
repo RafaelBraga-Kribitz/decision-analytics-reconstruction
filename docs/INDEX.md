@@ -33,6 +33,8 @@ Run `poetry run python scripts/generate_doc_index.py --write` after registry cha
 - **DOC-GOV-CONTRIB-001** — `CONTRIBUTING.md` — *policy* / *canonical*
 - **DOC-CHARTER-001** — `PROJECT_CHARTER.md` — *policy* / *canonical*
 - **DOC-DOCS-001** — `docs/DEPLOYMENT.md` — *narrative* / *canonical*
+- **DOC-DOCS-003** — `docs/agents/AGENTS.md` — *narrative* / *canonical*
+- **DOC-DOCS-004** — `docs/agents/GEMINI.md` — *narrative* / *canonical*
 - **DOC-GOV-AUDIT-001** — `governance/AUDIT_PROCEDURE.md` — *policy* / *canonical*
 - **DOC-ROOT-002** — `governance/CHANGELOG.md` — *narrative* / *canonical*
 - **DOC-DOC-001** — `governance/Truth_and_rebuild_sprint.md` — *narrative* / *canonical*

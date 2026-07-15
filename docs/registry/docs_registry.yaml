@@ -208,6 +208,44 @@ documents:
   doc_id: DOC-DOCS-002
   path: docs/INDEX.md
   last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-DOCS-003
+  path: docs/agents/AGENTS.md
+  last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: project
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-DOCS-004
+  path: docs/agents/GEMINI.md
+  last_reviewed: '2026-05-20'
 - doc_type: registry
   doc_role: registry
   visibility: public
