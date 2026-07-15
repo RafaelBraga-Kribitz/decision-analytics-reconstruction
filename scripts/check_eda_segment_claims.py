@@ -65,6 +65,9 @@ FORBIDDEN: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("stale_4_poll_waves", re.compile(r"\b4 poll waves\b")),
     ("stale_four_poll_waves", re.compile(r"four poll(?:ing)? waves", re.I)),
     ("stale_all_four_pollsters", re.compile(r"all four pollsters", re.I)),
+    # --- #117: stale hardcoded segment shares -----------------------------------
+    ("stale_yv_share_313", re.compile(r"31\.3%")),
+    ("stale_yv_records_3130", re.compile(r"3,130 records")),
     # --- #154: residual narrative contradictions --------------------------------
     ("stale_rake_mean_32x", re.compile(r"mean 3\.2×")),
     ("highest_volume_segment", re.compile(r"highest-volume", re.I)),
