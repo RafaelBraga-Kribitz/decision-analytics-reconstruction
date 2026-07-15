@@ -94,6 +94,24 @@ Tests marked `@pytest.mark.slow` (full MCMC) are excluded from `make test`. Run 
 
 `tests/test_reproducibility.py` and `tests/test_eda.py` validate pipeline artifacts and EDA outputs; they **skip** on a fresh clone until `make pipeline-full` has run.
 
+## Module C — full NUTS / PyTensor setup (#142)
+
+Full MCMC gates (Module C tracking NUTS) require a **C++ compiler** so PyTensor can build C extensions. Without one, PyTensor falls back to pure Python and a single full-NUTS fit can exceed 10 minutes.
+
+| Platform | Setup |
+|----------|--------|
+| **Windows** | [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) with “Desktop development with C++” |
+| **Linux / WSL** | `conda install -c conda-forge gxx` or system `g++` |
+| **macOS** | Xcode command-line tools (`xcode-select --install`) |
+
+For local development and CI-speed checks, use the sanctioned fast sampler:
+
+```bash
+MC_FAST=1 poetry run pytest module_c_forecasting_scenarios/tests -m slow
+```
+
+`MC_FAST=1` selects reduced `draws`/`tune` from `module_c_forecasting_scenarios/config/pymc_sampler.yaml`. Out-of-sample walk-forward evidence lives in [`reports/module_c/walk_forward_loo_report.md`](reports/module_c/walk_forward_loo_report.md) (6 holdouts, 8 waves, honestly caveated).
+
 ## Coding standards
 
 <!-- Fill in once the project picks a language/framework. Examples:

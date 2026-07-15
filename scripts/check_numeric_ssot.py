@@ -190,7 +190,19 @@ FORBIDDEN_IN_PUBLIC: tuple[tuple[str, re.Pattern[str], tuple[Path, ...]], ...] =
     (
         "stale_ari_gate_over_070",
         re.compile(r"ARI\s*[>≥]\s*0\.7[0-9]"),
-        (SSOT, VALIDATION, CASE_STUDY, MODEL_CARD_SEGMENTATION, MODULE_A_README),
+        (
+            SSOT,
+            VALIDATION,
+            CASE_STUDY,
+            MODEL_CARD_SEGMENTATION,
+            MODULE_A_README,
+            REPO_ROOT / "reports" / "epistemic_boundaries.md",
+        ),
+    ),
+    (
+        "stale_2_holdout_fixture",
+        re.compile(r"2-holdout fixture", re.I),
+        (REPO_ROOT / "reports" / "epistemic_boundaries.md",),
     ),
     (
         "stale_divergences_14",
