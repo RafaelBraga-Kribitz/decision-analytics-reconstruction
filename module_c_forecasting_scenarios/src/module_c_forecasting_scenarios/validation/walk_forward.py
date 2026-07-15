@@ -73,29 +73,68 @@ def _hdi_bounds(samples: np.ndarray, hdi_prob: float) -> tuple[float, float]:
     return float(arr[0]), float(arr[1])
 
 
-def _predict_holdout(
+def holdout_predictive_samples(
     train: pd.DataFrame,
     holdout_row: pd.Series,
     *,
     outcome_event_date: date,
     calibration_series: str,
-) -> dict[str, float]:
-    """Fit on ``train`` and score the holdout against its posterior predictive.
+    sampler_overrides: dict[str, Any] | None = None,
+    diagnostics: dict[str, float] | None = None,
+) -> np.ndarray:
+    """Fit on ``train`` and draw the held-out poll's posterior-predictive samples.
 
     The predictive distribution for a held-out poll observation is
     ``mu_margin[day] + house_offset[pollster] + Normal(0, sigma_obs(phi))`` —
     matching the model's likelihood for poll data. Unseen pollsters draw their
     house offset from ``Normal(0, sigma_house)`` posterior draws.
+
+    The fit is **unanchored** (``m_star_pp=None``): the verified election margin
+    must NEVER enter a fit whose held-out wave is being scored, or the number is
+    a retrodiction rather than an out-of-sample prediction (F-069). This single
+    call site is the honesty guarantee shared by walk-forward and leave-one-wave-out,
+    and it is asserted by ``test_walk_forward_never_anchors_on_outcome``.
+
+    Args:
+        train: Training fold (cleaned tracking polls, holdout excluded).
+        holdout_row: The held-out wave's cleaned row.
+        outcome_event_date: Election day; anchors the latent day grid only.
+        calibration_series: ``"A"`` or ``"B"`` provenance tag.
+        sampler_overrides: Optional explicit ``pm.sample`` kwarg overrides,
+            forwarded to :func:`fit_tracking_hierarchical`. Any caller using
+            this must disclose the exact config in its artifact.
+        diagnostics: Optional dict the caller supplies to receive per-fit
+            sampler diagnostics: ``rhat_max``, ``ess_bulk_min``,
+            ``n_divergences`` (computed over the model's free parameters).
+
+    Returns:
+        1-D array of posterior-predictive draws for the held-out wave's margin.
     """
     idata = fit_tracking_hierarchical(
         train,
         outcome_event_date=outcome_event_date,
         calibration_series=calibration_series,
-        m_star_pp=None,  # out-of-sample: walk-forward must NEVER anchor on the
-        # outcome it is trying to predict (the anchored series is a retrodiction,
-        # not a forecast — see F-069). Keep this explicit so the guarantee is
-        # visible to readers and enforced by test_walk_forward_never_anchors.
+        m_star_pp=None,  # out-of-sample: never anchor on the outcome being predicted.
+        sampler_overrides=sampler_overrides,
     )
+    if diagnostics is not None:
+        var_names = [
+            "sigma_rw",
+            "mu_margin_init",
+            "mu_margin_innov",
+            "sigma_house",
+            "house_offset_z",
+        ]
+        rhat_ds = cast(Any, az.rhat(idata, var_names=var_names))
+        ess_ds = cast(Any, az.ess(idata, var_names=var_names, method="bulk"))
+        diagnostics["rhat_max"] = float(
+            max(float(np.nanmax(np.asarray(rhat_ds[v].values))) for v in var_names)
+        )
+        diagnostics["ess_bulk_min"] = float(
+            min(float(np.nanmin(np.asarray(ess_ds[v].values))) for v in var_names)
+        )
+        diverging = cast(Any, idata.sample_stats)["diverging"]  # type: ignore[union-attr]
+        diagnostics["n_divergences"] = float(np.asarray(diverging.values).sum())
 
     days, _ = _build_day_index(train, outcome_event_date)
     fs = pd.to_datetime(holdout_row["field_window_start"])
@@ -134,7 +173,27 @@ def _predict_holdout(
     sigma_obs = float(np.asarray(observation_sigma(phi)))
     noise = rng.normal(0.0, sigma_obs, size=mu_samples.shape[0])
 
-    samples = mu_samples + house_samples + noise
+    return mu_samples + house_samples + noise
+
+
+def _predict_holdout(
+    train: pd.DataFrame,
+    holdout_row: pd.Series,
+    *,
+    outcome_event_date: date,
+    calibration_series: str,
+) -> dict[str, float]:
+    """Fit on ``train`` and score the holdout against its posterior predictive.
+
+    Thin wrapper over :func:`holdout_predictive_samples` that reduces the draws
+    to walk-forward's 80% / 95% HDI bounds and ``P(margin > 0)``.
+    """
+    samples = holdout_predictive_samples(
+        train,
+        holdout_row,
+        outcome_event_date=outcome_event_date,
+        calibration_series=calibration_series,
+    )
 
     hdi80_low, hdi80_high = _hdi_bounds(samples, hdi_prob=0.80)
     hdi95_low, hdi95_high = _hdi_bounds(samples, hdi_prob=0.95)

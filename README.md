@@ -52,7 +52,7 @@ Full table: [`reports/NUMERIC_SSOT.md`](reports/NUMERIC_SSOT.md).
 |---|---|
 | Segmentation + propensity | Module A pipeline, silhouette/ARI/Brier CI gates |
 | MILP under real constraints | Module B OPTIMAL baseline, 80% coverage floor |
-| Bayesian tracking + MC scenarios | Module C PyMC models, walk-forward estimand fix (F-034) |
+| Bayesian tracking + MC scenarios | Module C PyMC models, walk-forward estimand fix (F-034), leave-one-wave-out out-of-sample scoring on the 8 real tracking waves (`reports/module_c_lowo_metrics.json`; n=8 caveat, see `reports/VALIDATION.md` §Module C) |
 | Pipeline integration | `dvc.yaml`, `make pipeline-full`, `tests/test_golden_metrics.py` |
 | Statistical honesty | AUC circularity documented; no causal counterfactual fiction |
 | Reproducibility | `make test`, `scripts/generate_golden_metrics.py`, fresh-clone path in CONTRIBUTING |

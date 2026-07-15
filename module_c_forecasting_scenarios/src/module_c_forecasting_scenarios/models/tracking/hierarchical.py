@@ -103,6 +103,7 @@ def fit_tracking_hierarchical(
     sample_ppc: bool = False,
     m_star_pp: float | None = None,
     anchor_sigma_pp: float = 0.5,
+    sampler_overrides: dict[str, Any] | None = None,
 ) -> az.InferenceData:
     """Fit the latent-margin random walk with pollster house effects.
 
@@ -122,6 +123,13 @@ def fit_tracking_hierarchical(
             pin the terminal margin to m★; large values let poll evidence
             dominate. Sensitivity is exercised in
             ``tests/test_outcome_anchor.py``.
+        sampler_overrides: Optional explicit ``pm.sample`` kwarg overrides
+            (e.g. ``{"chains": 4, "draws": 300, "tune": 300}``) applied on top
+            of the env-selected config. Callers that use this MUST disclose the
+            override in any artifact the fit produces (issue #97: environments
+            without a C compiler cannot afford the full-NUTS budget, and the
+            MC_FAST floor of 50 draws is too thin for interval coverage).
+            ``None`` values inside the dict are ignored.
     """
     if tracking.empty:
         raise ValueError("tracking dataframe is empty")
@@ -176,6 +184,8 @@ def fit_tracking_hierarchical(
                 observed=float(m_star_pp),
             )
         sk = _sampler_kwargs()
+        if sampler_overrides:
+            sk.update({k: v for k, v in sampler_overrides.items() if v is not None})
         idata = pm.sample(**sk, progressbar=False)
         if sample_ppc:
             pm.sample_posterior_predictive(
