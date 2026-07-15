@@ -53,6 +53,10 @@ def get_git_commit(*, cwd: Path | None = None) -> str:
     Example:
         Bundled into export manifests next to package version and random seeds.
     """
+    for key in ("GIT_COMMIT", "RENDER_GIT_COMMIT", "SOURCE_VERSION"):
+        env_val = os.environ.get(key, "").strip()
+        if env_val and env_val.lower() != "unknown":
+            return env_val[:40]
     try:
         root = cwd if cwd is not None else Path.cwd()
         r = subprocess.run(

@@ -1,0 +1,23 @@
+id: F-082
+title: "Battleground ceiling statistical investigation completed before any v0.6 revision"
+category: misleading_visualization
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-07-15
+closed_at: 2026-07-15
+recurrence_count: 0
+evidence: |
+  After F-081 (c_battleground_v0.5), the poll-implied battleground chart shows
+  99–100% win probabilities in multiple departments (Boqueron, Asuncion, Alto
+  Paraguay, etc.). Before any mapping revision, the investigation protocol
+  (H0 implementation verification → H1–H5 validation → PPC → model criticism)
+  must complete with archived artifacts under
+  reports/module_c/battleground_investigation/.
+verification_script: scripts/check_battleground_ceiling_investigation.py
+notes: |
+  Runner: scripts/run_battleground_ceiling_investigation.py (read-only analysis).
+  Investigation artifacts exist; conclusion revised to distinguish:
+  (a) no robust evidence for revision vs (b) proof of optimality.
+  H0 pass establishes implementation correctness only — not model adequacy.
+  Close only after methodological review confirms conclusion strength matches
+  evidence. Pending methodological review (status in_progress).

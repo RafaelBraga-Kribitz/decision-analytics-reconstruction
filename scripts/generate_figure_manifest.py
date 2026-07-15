@@ -38,10 +38,16 @@ SEGMENT_LABELS = REPO_ROOT / "data" / "processed" / "segment_labels.parquet"
 GENERATORS = {
     "eda": "reports/eda/generate_eda.py",
     "module_a": "module_a_population_segmentation/pipeline/export.py",
+    "battleground_investigation": "scripts/run_battleground_ceiling_investigation.py",
 }
-REPORT_DIRS = (
-    REPO_ROOT / "reports" / "eda",
-    REPO_ROOT / "reports" / "module_a",
+REPORT_DIRS: tuple[tuple[Path, str, str], ...] = (
+    (REPO_ROOT / "reports" / "eda", "eda", ""),
+    (REPO_ROOT / "reports" / "module_a", "module_a", ""),
+    (
+        REPO_ROOT / "reports" / "module_c" / "battleground_investigation" / "figures",
+        "battleground_investigation",
+        "bg_",
+    ),
 )
 CANONICAL_SAMPLE_SIZE = 50_000
 
@@ -96,12 +102,12 @@ def main() -> int:
     git_commit = str(model_doc["git_commit"])
 
     figures = []
-    for report_dir in REPORT_DIRS:
-        generator = GENERATORS[report_dir.name]
+    for report_dir, generator_key, chart_id_prefix in REPORT_DIRS:
+        generator = GENERATORS[generator_key]
         for png in sorted(report_dir.glob("*.png")):
             figures.append(
                 {
-                    "chart_id": png.stem,
+                    "chart_id": f"{chart_id_prefix}{png.stem}",
                     "path": png.relative_to(REPO_ROOT).as_posix(),
                     "generator": generator,
                     "save_name": png.name,

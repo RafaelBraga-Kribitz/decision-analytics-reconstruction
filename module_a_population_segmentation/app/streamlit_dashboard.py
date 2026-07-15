@@ -37,6 +37,16 @@ def _processed_dir() -> Path:
     return _repo_root() / "data" / "processed"
 
 
+def _qa_report_paths() -> list[Path]:
+    """Return dated QA markdown reports from export and live-rebuild locations."""
+    module_reports = Path(__file__).resolve().parents[1] / "reports"
+    candidates = [
+        *module_reports.glob("qa_report_*.md"),
+        *_processed_dir().glob("qa_report_*.md"),
+    ]
+    return sorted({p.resolve() for p in candidates}, key=lambda p: p.name)
+
+
 def _load_cfg() -> tuple[dict, dict, tuple[str, ...]]:
     mod = _repo_root() / "module_a_population_segmentation" / "config"
     with open(mod / "generation.yaml") as f:
@@ -73,7 +83,11 @@ def _load_canonical_bundle() -> tuple[pd.DataFrame, dict[str, float], dict[str, 
     if manifest_path.is_file():
         manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
         commit = str(manifest.get("git_commit", "unknown"))
-        run_id = commit[:12]
+        if commit != "unknown":
+            run_id = commit[:12]
+        else:
+            train_date = str(manifest.get("train_date", "unknown"))
+            run_id = train_date[:19] if train_date != "unknown" else "unknown"
         raw_seg = manifest.get("segmentation_metrics") or {}
         if isinstance(raw_seg, dict):
             seg_metrics = {k: float(v) for k, v in raw_seg.items()}
@@ -206,10 +220,8 @@ def main() -> None:
     with tab3:
         st.subheader("Data Quality Report")
         # The cleaning pipeline emits qa_report_<YYYYMMDD>.md (a fresh date each
-        # run). Glob for the most recent one instead of a hard-coded date so the
-        # tab populates regardless of when the pipeline last ran (AUD-PUB-001).
-        reports_dir = Path(__file__).resolve().parents[1] / "reports"
-        qa_reports = sorted(reports_dir.glob("qa_report_*.md"))
+        # run). Export writes under data/processed/; live rebuild uses reports/.
+        qa_reports = _qa_report_paths()
         if qa_reports:
             qa_path = qa_reports[-1]
             st.caption(f"Showing latest QA report: {qa_path.name}")
