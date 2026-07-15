@@ -1,5 +1,5 @@
 {
-  "generated_at_utc": "2026-07-13T22:32:36.296319+00:00",
+  "generated_at_utc": "2026-07-15T14:49:19.738327+00:00",
   "note": "Canonical pipeline numbers. Regenerate via scripts/generate_golden_metrics.py after an intentional model change; tests/test_golden_metrics.py gates reproduction.",
   "module_b": {
     "solver_status": "OPTIMAL",
@@ -15,8 +15,8 @@
     "m_star_pp": 3.7,
     "outcome_event_date": "2018-04-22",
     "n_tracking_waves": 8,
-    "mc_n_draws": 600,
-    "mc_alloc_mean_persuasion_contacts": 0.0,
-    "mc_allocation_input": null
+    "mc_n_draws": 10000,
+    "mc_alloc_mean_persuasion_contacts": 61423.11829686146,
+    "mc_allocation_input": "data\\processed\\module_b\\allocation_baseline.parquet"
   }
 }

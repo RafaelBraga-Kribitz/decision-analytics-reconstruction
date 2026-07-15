@@ -697,8 +697,8 @@ cells.append(
     )
 )
 
-# ── C8 — Win Prob vs Propensity ──────────────────────────────────────────────
-cells.append(figure_cell('C8_win_prob_vs_propensity'))
+# ── C8_v2 — Win Prob vs Propensity ───────────────────────────────────────────
+cells.append(figure_cell('C8_v2'))
 
 cells.append(
     md(
@@ -792,7 +792,7 @@ cells.append(
 )
 
 # ── S5 — Efficiency Frontier ─────────────────────────────────────────────────
-cells.append(figure_cell('S5_efficiency_frontier'))
+cells.append(figure_cell('S5_reach_vs_contacts'))
 
 cells.append(
     md(

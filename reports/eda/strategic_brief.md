@@ -6,19 +6,19 @@
 
 ## Situation Assessment
 
-The Bayesian tracking model closes at a **3.7 pp preference margin** on fixture polls (94% HDI: 3.0 to 4.7 pp). Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp. Modelled department win probabilities range **12%–100%**. Portfolio framing: use verified TSJE anchor (+3.70 pp) for outcome facts; treat tracking outputs as illustrative decision-support machinery.
+The Bayesian tracking model closes at a **3.7 pp preference margin** on fixture polls (94% HDI: 2.8 to 4.7 pp). Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp. Modelled department win probabilities range **7%–100%**. Portfolio framing: use verified TSJE anchor (+3.70 pp) for outcome facts; treat tracking outputs as illustrative decision-support machinery.
 
 ---
 
 ## Top 3 Priority Departments
 
-**1. Caaguazu (Budget: $468K, Modelled Win Prob: 52.5%, Propensity: ~0.58)**
+**1. Caaguazu (Budget: $468K, Modelled Win Prob: 53.5%, Propensity: ~0.58)**
 Caaguazu is the top battleground department — tracking-implied win probability sits near the 50% threshold with visible HDI uncertainty. A strong Rural Committed presence (high propensity) and lower cost-per-persuasion-contact than metro departments make it the efficiency sweet spot for marginal persuasion spend.
 
-**2. San Pedro (Budget: $340K, Modelled Win Prob: 58.0%, Propensity: ~0.58)**
+**2. San Pedro (Budget: $340K, Modelled Win Prob: 60.0%, Propensity: ~0.58)**
 San Pedro ranks among the most competitive departments after Caaguazu. Radio and canvassing channels reach Rural Committed segment efficiently here; protecting budget through the final fortnight is critical.
 
-**3. Itapua (Budget: $494K, Modelled Win Prob: 68.6%, Propensity: ~0.65)**
+**3. Itapua (Budget: $494K, Modelled Win Prob: 72.8%, Propensity: ~0.65)**
 Itapúa has the highest mean participation propensity of any department with significant Rural Committed presence. It is the dominant department for that segment. Radio is the primary reach channel. At near-saturation on reach utilisation, the channel is performing well — the risk is a budget cut that disrupts this performance. Protect Itapúa's radio budget unconditionally and explore whether a modest canvassing supplement in rural municipalities can push propensity-weighted turnout past 70%.
 
 ---
@@ -26,16 +26,16 @@ Itapúa has the highest mean participation propensity of any department with sig
 ## Segment Strategy: Double Down vs Deprioritise
 
 **Double Down:**
-- **Youth Volatile (21.6% of population, propensity 0.63):** High reachability — the mobilisation opportunity. Digital-first (WhatsApp, Facebook), Jopara-friendly content, peer-to-peer activation via youth networks.
-- **Rural Committed (14.9% of population):** Baseline propensity (0.64, typical of every segment) but distinctively low reachability. The case for protecting this segment is reachability, not a propensity edge: radio + canvassing are the only channels that reach it, so each contact is hard to replace. Do not sacrifice these voters to cut costs.
+- **Youth Volatile (11.8% of population, propensity 0.56):** High reachability — the mobilisation opportunity. Digital-first (WhatsApp, Facebook), Jopara-friendly content, peer-to-peer activation via youth networks.
+- **Rural Committed (17.0% of population):** Baseline propensity (0.60, typical of every segment) but distinctively low reachability. The case for protecting this segment is reachability, not a propensity edge: radio + canvassing are the only channels that reach it, so each contact is hard to replace. Do not sacrifice these voters to cut costs.
 
 **Maintain:**
 - **Urban High Volatility (14.5%):** Good reachability, propensity 0.59. Currently receiving fair budget share. No change needed — the strategy is working.
 - **Structurally Dependent Bloc (17.3%):** High rural, high NBI stress. Sensitive segment requiring careful messaging. Maintain current radio + community organiser approach.
 
 **Deprioritise:**
-- **Committed Opposition (16.5%):** Participation propensity 0.65 (baseline, like every segment — it does *not* make them a mobilisation target), but their high, tightly clustered B-preference strength makes them locked opposition-aligned voters. Any persuasion spend here is waste. Reallocate immediately.
-- **Rural Low Propensity (14.7%):** Propensity 0.57 — despite the name, in the same narrow band as every other segment; the label reflects its cluster profile, not a distinctly low turnout score. Passive presence only — no active spend increases warranted.
+- **Committed Opposition (15.2%):** Participation propensity 0.65 (baseline, like every segment — it does *not* make them a mobilisation target), but their high, tightly clustered B-preference strength makes them locked opposition-aligned voters. Any persuasion spend here is waste. Reallocate immediately.
+- **Rural Low Propensity (24.1%):** Propensity 0.63 — despite the name, in the same narrow band as every other segment; the label reflects its cluster profile, not a distinctly low turnout score. Passive presence only — no active spend increases warranted.
 
 ---
 
@@ -74,13 +74,13 @@ The solver runs reach-constrained — every department sits at reach_utilization
 - Polling uncertainty: Wide HDI is a data availability problem, not a trend problem. Commission 2 additional poll waves to confirm.
 
 **Medium risk (requires contingency planning):**
-- Late-breaking adverse events: The extreme-tracker bucket (200 of 600 draws) assumes 1.83–2.43× shock scale. A major scandal or crisis event in weeks 12–14 could compress the margin by 5–8 pp. Pre-position a rapid-response team.
+- Late-breaking adverse events: The extreme-tracker bucket (3,333 of 10,000 draws) assumes 1.83–2.43× shock scale. A major scandal or crisis event in weeks 12–14 could compress the margin by 5–8 pp. Pre-position a rapid-response team.
 - Participation depression in Youth Volatile: this segment's propensity is 0.56. If youth registration or turnout infrastructure fails (long queues, administrative errors), the mandate could shrink materially.
 
 **Low but non-zero systemic risk:**
 - Model miscalibration: Only 8 poll waves feed the tracking model. If all three pollsters share an unmeasured systematic bias not captured by the house effect model, the posterior could be significantly wrong. Diversify polling sources.
 
-**Bottom line:** The outcome fact is the verified TSJE anchor — Candidate A carried the 2018 presidential election by +3.70 pp. The illustrative tracking model reproduces that direction (posterior 3.7 pp, 94% HDI 2.9–4.7 pp), but its wide HDI and 0%–100% department win-probability range reflect genuine uncertainty from sparse fixture polls — not a near-certain sweep, and several GANAR-winning departments sit below 50%. Read this brief as decision-support machinery, not a forecast. The defensible recommendations — invest in turnout, protect Rural Committed's irreplaceable radio/canvassing reach, mobilise the high-reachability Youth Volatile segment, reallocate the lowest reach-utilisation channel spend, and widen polling coverage — follow from the allocation and reachability structure and hold across the plausible range of the true margin. Their support is structural, not a claim of statistical certainty about the outcome.
+**Bottom line:** The outcome fact is the verified TSJE anchor — Candidate A carried the 2018 presidential election by +3.70 pp. The illustrative tracking model reproduces that direction (posterior 3.7 pp, 94% HDI 2.8–4.7 pp), but its wide HDI and 7%–100% department win-probability range reflect genuine uncertainty from sparse fixture polls — not a near-certain sweep, and several GANAR-winning departments sit below 50%. Read this brief as decision-support machinery, not a forecast. The defensible recommendations — invest in turnout, protect Rural Committed's irreplaceable radio/canvassing reach, mobilise the high-reachability Youth Volatile segment, reallocate the lowest reach-utilisation channel spend, and widen polling coverage — follow from the allocation and reachability structure and hold across the plausible range of the true margin. Their support is structural, not a claim of statistical certainty about the outcome.
 
 ---
 

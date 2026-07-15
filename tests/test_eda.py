@@ -69,7 +69,7 @@ MODULE_C_CHARTS = [
     "C5_mc_scenario_fan_chart.png",
     "C6_shock_scale_distribution.png",
     "C7_exit_model_posteriors.png",
-    "C8_win_prob_vs_propensity.png",
+    "C8_v2.png",
     "C9_polling_transparency_audit.png",
     "C10_mc_win_probability_histogram.png",
 ]
@@ -79,7 +79,7 @@ SYNTHESIS_CHARTS = [
     "S2_propensity_reachability_matrix.png",
     "S3_channel_roi_by_region.png",
     "S4_department_priority_matrix.png",
-    "S5_efficiency_frontier.png",
+    "S5_reach_vs_contacts.png",
 ]
 
 ALL_CHARTS = MODULE_A_CHARTS + MODULE_B_CHARTS + MODULE_C_CHARTS + SYNTHESIS_CHARTS
