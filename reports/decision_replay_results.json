@@ -1,0 +1,232 @@
+{
+  "departments": [
+    {
+      "baseline_usd": 783849.02,
+      "delta_expected_contacts": -3837521,
+      "delta_usd": -255022.8,
+      "department": "Alto Parana",
+      "replay_hdi_high_usd": 527723.42,
+      "replay_hdi_low_usd": 1151436.54,
+      "replayed_usd": 528826.22,
+      "tier": "swing"
+    },
+    {
+      "baseline_usd": 494321.76,
+      "delta_expected_contacts": -2324163,
+      "delta_usd": -149577.83,
+      "department": "Itapua",
+      "replay_hdi_high_usd": 278408.53,
+      "replay_hdi_low_usd": 644141.74,
+      "replayed_usd": 344743.93,
+      "tier": "swing"
+    },
+    {
+      "baseline_usd": 468439.92,
+      "delta_expected_contacts": -2232790,
+      "delta_usd": -144024.87,
+      "department": "Caaguazu",
+      "replay_hdi_high_usd": 293558.35,
+      "replay_hdi_low_usd": 705091.25,
+      "replayed_usd": 324415.05,
+      "tier": "swing"
+    },
+    {
+      "baseline_usd": 339601.98,
+      "delta_expected_contacts": -1648117,
+      "delta_usd": -106068.98,
+      "department": "San Pedro",
+      "replay_hdi_high_usd": 186493.1,
+      "replay_hdi_low_usd": 491607.01,
+      "replayed_usd": 233533.0,
+      "tier": "swing"
+    },
+    {
+      "baseline_usd": 183302.01,
+      "delta_expected_contacts": -896348,
+      "delta_usd": -57818.31,
+      "department": "Canindeyu",
+      "replay_hdi_high_usd": 110924.97,
+      "replay_hdi_low_usd": 278304.83,
+      "replayed_usd": 125483.7,
+      "tier": "swing"
+    },
+    {
+      "baseline_usd": 170359.52,
+      "delta_expected_contacts": -703697,
+      "delta_usd": -53772.02,
+      "department": "Amambay",
+      "replay_hdi_high_usd": 102850.66,
+      "replay_hdi_low_usd": 224960.88,
+      "replayed_usd": 116587.5,
+      "tier": "swing"
+    },
+    {
+      "baseline_usd": 30235.3,
+      "delta_expected_contacts": 0,
+      "delta_usd": 0.0,
+      "department": "Boqueron",
+      "replay_hdi_high_usd": 30235.3,
+      "replay_hdi_low_usd": 13677.99,
+      "replayed_usd": 30235.3,
+      "tier": "negligible"
+    },
+    {
+      "baseline_usd": 57548.83,
+      "delta_expected_contacts": 0,
+      "delta_usd": 0.0,
+      "department": "Presidente Hayes",
+      "replay_hdi_high_usd": 57686.25,
+      "replay_hdi_low_usd": 26588.93,
+      "replayed_usd": 57548.83,
+      "tier": "negligible"
+    },
+    {
+      "baseline_usd": 7635.55,
+      "delta_expected_contacts": 27742,
+      "delta_usd": 1578.61,
+      "department": "Alto Paraguay",
+      "replay_hdi_high_usd": 9233.0,
+      "replay_hdi_low_usd": 3646.33,
+      "replayed_usd": 9214.16,
+      "tier": "negligible"
+    },
+    {
+      "baseline_usd": 69907.41,
+      "delta_expected_contacts": 219926,
+      "delta_usd": 18508.53,
+      "department": "Neembucu",
+      "replay_hdi_high_usd": 88415.94,
+      "replay_hdi_low_usd": 52438.14,
+      "replayed_usd": 88415.94,
+      "tier": "opposition"
+    },
+    {
+      "baseline_usd": 98990.67,
+      "delta_expected_contacts": 289998,
+      "delta_usd": 24260.62,
+      "department": "Misiones",
+      "replay_hdi_high_usd": 124777.86,
+      "replay_hdi_low_usd": 74651.46,
+      "replayed_usd": 123251.29,
+      "tier": "opposition"
+    },
+    {
+      "baseline_usd": 120626.34,
+      "delta_expected_contacts": 451387,
+      "delta_usd": 31266.46,
+      "department": "Caazapa",
+      "replay_hdi_high_usd": 159770.83,
+      "replay_hdi_low_usd": 81545.22,
+      "replayed_usd": 151892.8,
+      "tier": "opposition"
+    },
+    {
+      "baseline_usd": 156133.8,
+      "delta_expected_contacts": 628023,
+      "delta_usd": 45387.54,
+      "department": "Guaira",
+      "replay_hdi_high_usd": 202487.96,
+      "replay_hdi_low_usd": 115156.23,
+      "replayed_usd": 201521.34,
+      "tier": "opposition"
+    },
+    {
+      "baseline_usd": 254633.66,
+      "delta_expected_contacts": 544094,
+      "delta_usd": 48307.27,
+      "department": "Cordillera",
+      "replay_hdi_high_usd": 338255.43,
+      "replay_hdi_low_usd": 176369.2,
+      "replayed_usd": 302940.93,
+      "tier": "stronghold"
+    },
+    {
+      "baseline_usd": 170403.59,
+      "delta_expected_contacts": 686378,
+      "delta_usd": 49604.89,
+      "department": "Concepcion",
+      "replay_hdi_high_usd": 221064.92,
+      "replay_hdi_low_usd": 119614.15,
+      "replayed_usd": 220008.48,
+      "tier": "opposition"
+    },
+    {
+      "baseline_usd": 193349.0,
+      "delta_expected_contacts": 596262,
+      "delta_usd": 50309.88,
+      "department": "Paraguari",
+      "replay_hdi_high_usd": 248159.96,
+      "replay_hdi_low_usd": 143810.44,
+      "replayed_usd": 243658.88,
+      "tier": "stronghold"
+    },
+    {
+      "baseline_usd": 510104.39,
+      "delta_expected_contacts": 1711581,
+      "delta_usd": 174514.59,
+      "department": "Asuncion",
+      "replay_hdi_high_usd": 715438.87,
+      "replay_hdi_low_usd": 346919.03,
+      "replayed_usd": 684618.98,
+      "tier": "stronghold"
+    },
+    {
+      "baseline_usd": 1920548.6,
+      "delta_expected_contacts": 3688755,
+      "delta_usd": 322546.37,
+      "department": "Central",
+      "replay_hdi_high_usd": 2334506.04,
+      "replay_hdi_low_usd": 1380032.2,
+      "replayed_usd": 2243094.97,
+      "tier": "stronghold"
+    }
+  ],
+  "description": "Week-8 decision replay for issue #100. Scenario replay: the week-8 poll posterior is mapped, via one disclosed lever, to the Module B swing-tier objective weight; the MILP is re-solved. Illustrative fixture posterior; no causal claim.",
+  "mapping": {
+    "base_swing_weight": 1.1,
+    "clip_high": 3.0,
+    "clip_low": 0.333333,
+    "formula": "swing_weight(m) = base_swing_weight * clip(m_plan / m, 1/3, 3)",
+    "lever": "models/allocation.py::_TIER_PENALTY['swing']",
+    "m_plan_pp": 8.5588,
+    "swing_weights": {
+      "baseline": 1.1,
+      "week8_hdi_high": 0.366667,
+      "week8_hdi_low": 2.670149,
+      "week8_mean": 0.533364
+    }
+  },
+  "posterior": {
+    "plan": {
+      "date": "2018-01-07",
+      "iso_week": "2018-W01",
+      "margin_mean_pp": 8.5588
+    },
+    "replay": {
+      "date": "2018-02-25",
+      "iso_week": "2018-W08",
+      "margin_hdi_high_pp": 30.8038,
+      "margin_hdi_low_pp": 3.5259,
+      "margin_mean_pp": 17.6515
+    }
+  },
+  "scenario_id": "baseline",
+  "solver_seed": 20180422,
+  "solver_status": {
+    "baseline": "OPTIMAL",
+    "week8_hdi_high": "OPTIMAL",
+    "week8_hdi_low": "OPTIMAL",
+    "week8_mean": "OPTIMAL"
+  },
+  "totals": {
+    "belief_weighted_baseline_plan": 134391166.31,
+    "belief_weighted_value_of_update": 1609973.74,
+    "belief_weighted_value_of_update_pct": 1.198,
+    "belief_weighted_week8_plan": 136001140.06,
+    "budget_envelope_usd": 6029991.35,
+    "raw_expected_contacts_baseline": 272426848,
+    "raw_expected_contacts_delta": -2798487,
+    "raw_expected_contacts_week8_mean": 269628360,
+    "usd_shifted_off_swing": 766284.76
+  }
+}

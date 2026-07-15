@@ -2750,7 +2750,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 ### population_master_clean.parquet
 - **Shape:** {len(pop):,} rows × {pop.shape[1]} columns
 - **Duplicates:** 0 duplicate entity_ids confirmed
-- **Nulls:** {null_counts.sum():,} total missing values across {(null_counts > 0).sum()} columns
+- **Nulls:** {null_counts.sum():,} total missing values across {(null_counts > 0).sum()} column{'s' if (null_counts > 0).sum() != 1 else ''}
 - **Top null columns:**
 {chr(10).join([f"  - `{col}`: {pct:.1f}% missing" for col, pct in top_null_cols.items()])}
 - **Anomalies:** `qualitative_district` shows NaN for ~9% of records; `qualitative_sentiment` missing for ~10%; these appear intentionally unlinked (no linked qualitative interview). `participation_propensity` is well-bounded [0.014, 1.0] with no out-of-range values.
@@ -2878,7 +2878,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +{
 
 ### B6 — FX Rate Series
 **What it shows:** Reference and retail USD/PYG rate over 14 campaign weeks.
-**Key finding:** PYG depreciated ~1.8% against USD over the campaign window (5,615 → ~5,525 reference rate), with retail spread widening from 1.7% to ~2.0%. Total retail spread cost increases campaign cost in PYG terms.
+**Key finding:** PYG depreciated ~1.8% against USD over the campaign window (5,615 → ~5,525 reference rate), with retail spread widening from 1.7% to ~2.0%.
 **Strategic implication:** Budget commitments should be made in USD or hedged in PYG at the start of the campaign; waiting incurs currency risk. The FX impact is modest (~${_fx_spread_cost_usd/1e3:.0f}K at current scale) but non-trivial.
 
 ### B7 — Routing Cost Matrix
