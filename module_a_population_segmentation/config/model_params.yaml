@@ -88,9 +88,10 @@ kmeans:
   # measured ≈0.28 at n=15k).  The original gate of 0.35 was only satisfied
   # by clipping the raw metric — removed.
   silhouette_threshold: 0.22
-  # Gate A6: enforced threshold is 0.77 in test_segmentation.py (matches model
-  # card; allows for ≥25-bootstrap variance and avoids masking).  Measured
-  # ≈0.79–0.81 at n=15k with 25 reps, no masking applied.
+  # Gate A6: bootstrap ARI uses evaluation/clustering_metrics.compute_bootstrap_ari
+  # (primary labels vs bootstrap KMeans refits, 25 reps, seed 42). The retired
+  # two-subsample metric and the old ≥0.70 gate are superseded (IMP-A03 / #55).
+  # Observed: 0.5418 at the 15k fixture; 0.4304 at the canonical 50k run.
   # bootstrap_ari definition changed 2026-07-09 (IMP-A03 / issue #55): the
   # two-subsample-overlap implementation was removed; the single canonical
   # metric is evaluation/clustering_metrics.compute_bootstrap_ari (mean ARI,
