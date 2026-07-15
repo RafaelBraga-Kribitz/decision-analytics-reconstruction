@@ -1,0 +1,8 @@
+check,expected,observed,pass,tolerance
+swing_computation,swing_j = dept_margin_pp / national_margin_pp,max_abs_diff=0.000e+00,True,1e-09
+percentage_points_vs_proportions,"margins and sigma in pp scale (not [0,1] proportions)","margins_ok=True, sigma_ok=True",True,N/A
+hdi_to_sigma_national,(hdi_hi - hdi_lo) / (2 * z_0.97),"recomputed=10.620178, fixture=10.620178",True,1e-06
+sigma_propagation,sigma_dept = sqrt(sigma_n^2 + sigma_idio^2),max_abs_diff=0.000e+00,True,1e-09
+phi_z_implementation,win_probability_a = Phi(swing * m / sigma_dept),max_abs_diff=0.000e+00,True,1e-12
+clipping_audit,no probability/z clipping in heatmap.py,patterns_found=none,True,N/A
+parquet_fidelity,exported columns match recomputed specification,max_abs_diff=0.000e+00,True,1e-10
