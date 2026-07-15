@@ -76,6 +76,17 @@ Each row transcribes a real public poll published ahead of the April 2018 Paragu
 | raw_exit_20180422b | 2018-04-22 | Exit Survey B | TV | TV, Apr 22 2018 | — | Exit survey; n=900 |
 | raw_exit_20180420 | 2018-04-20 | Exit Survey D | Web | Web, Apr 20 2018 | — | Exit survey; n=500 |
 
+**Fixture pollster label → published attribution (where known).** Use the outlet/date/figures columns to verify each row; the Pollster column is a house-effect identifier, not always a searchable firm name.
+
+| Fixture `pollster_display_name` | Published attribution (verify via cited outlet + date) | Status |
+|---|---|---|
+| Ati Snead | ATI / Snead (La Nación Mar 15 2018; Radio Ñandutí Apr 18 2018) | pseudonymized house-effect ID |
+| Taka Chase ICA | ICA (Última Hora / Vierci, Mar 18 2018) | pseudonymized house-effect ID |
+| Capli / Capli First Análisis / First Análisis y Estudios | CAPLI (ABC Color, Feb–Apr 2018 waves) | spelling variants of same firm |
+| EcoDat | EcoDat (La Nación, Mar 26 2018) | matches published attribution |
+| Grau & Asociados | Grau & Asociados (Última Hora, Apr 10 2018) | matches published attribution |
+| Exit Poll B/C/D, Consortium Exit | carrier-only (TV/Radio/Web); no single published pollster name on the ficha | generic exit labels |
+
 ---
 
 ## How to Use This Document
@@ -90,4 +101,4 @@ Each row transcribes a real public poll published ahead of the April 2018 Paragu
 
 ---
 
-*Last updated: 2026-06-14. Linked from README.md §Epistemic calibration.*
+*Last updated: 2026-07-15. Linked from README.md §Epistemic calibration.*
