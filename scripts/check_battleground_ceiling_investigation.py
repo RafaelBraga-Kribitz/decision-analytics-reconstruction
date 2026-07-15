@@ -10,7 +10,6 @@ from __future__ import annotations
 
 import json
 import sys
-from pathlib import Path
 
 from _governance_check import REPO_ROOT, gate
 
@@ -98,9 +97,12 @@ def main() -> int:
             gaps.append("investigation_meta.json missing h0_implementation")
         if meta.get("h5_internal_coherence") is None:
             gaps.append("investigation_meta.json missing h5_internal_coherence (H0/adequacy split)")
-        if meta.get("hypothesis_status", {}).get("H0_implementation") != "verified" and not gaps:
-            if meta.get("h0_implementation", "").startswith("verified") is False:
-                gaps.append("H0 implementation not verified in meta")
+        if (
+            meta.get("hypothesis_status", {}).get("H0_implementation") != "verified"
+            and not gaps
+            and not meta.get("h0_implementation", "").startswith("verified")
+        ):
+            gaps.append("H0 implementation not verified in meta")
 
     power_path = INV / "power_analysis.json"
     if power_path.is_file():

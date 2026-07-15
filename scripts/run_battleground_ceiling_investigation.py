@@ -17,7 +17,7 @@ from typing import Any
 import matplotlib
 
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from module_b_resource_allocation.constants import DEPARTMENTS
@@ -227,7 +227,9 @@ def run_h0_verification(
     pipeline_swings = _swing_factors(tsje)
     df = tsje.copy()
     df["cand_total"] = df["abdo_anr_votes"] + df["alegre_ganar_votes"]
-    df["dept_margin_pp"] = (df["abdo_anr_votes"] - df["alegre_ganar_votes"]) / df["cand_total"] * 100.0
+    df["dept_margin_pp"] = (
+        (df["abdo_anr_votes"] - df["alegre_ganar_votes"]) / df["cand_total"] * 100.0
+    )
     nat_margin = _national_margin_pp(tsje)
     manual_swings = dict(
         zip(
@@ -392,7 +394,8 @@ def _mean_spec_predict(
         Xp = np.column_stack(
             [
                 np.ones(len(polls)),
-                polls["swing_2018"].to_numpy(dtype=float) * polls["m_national_tsje_pp"].to_numpy(dtype=float),
+                polls["swing_2018"].to_numpy(dtype=float)
+                * polls["m_national_tsje_pp"].to_numpy(dtype=float),
             ]
         )
         return Xp @ beta
@@ -407,7 +410,8 @@ def _mean_spec_predict(
         beta = np.linalg.lstsq(W @ X, W @ y, rcond=None)[0]
         Xp = np.column_stack(
             [
-                polls["swing_2018"].to_numpy(dtype=float) * polls["m_national_tsje_pp"].to_numpy(dtype=float),
+                polls["swing_2018"].to_numpy(dtype=float)
+                * polls["m_national_tsje_pp"].to_numpy(dtype=float),
                 (polls["swing_2018"].to_numpy(dtype=float) ** 2)
                 * polls["m_national_tsje_pp"].to_numpy(dtype=float),
             ]
@@ -453,9 +457,7 @@ def _score_table(polls: pd.DataFrame) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
-def _bootstrap_mad_diffs(
-    polls: pd.DataFrame, spec_alt: str, n_boot: int = 2000
-) -> np.ndarray:
+def _bootstrap_mad_diffs(polls: pd.DataFrame, spec_alt: str, n_boot: int = 2000) -> np.ndarray:
     """Return bootstrap replicates of (null MAD - alt MAD) on 2018 holdout."""
     test = polls[polls["election_year"] == 2018].copy()
     train = polls[polls["election_year"] == 2013].copy()
@@ -499,9 +501,7 @@ def _compute_power_analysis(
     n_holdout_eff = float(test["weight"].sum()) if not test.empty else 0.0
 
     quad_diffs = _bootstrap_mad_diffs(polls, "quadratic_swing", n_boot=n_boot)
-    ci_half_width = float(
-        max(abs(boot_intercept["ci_low"]), abs(boot_intercept["ci_high"]))
-    )
+    ci_half_width = float(max(abs(boot_intercept["ci_low"]), abs(boot_intercept["ci_high"])))
     mde_approx_pp = ci_half_width
 
     effect_grid = [5.0, 10.0, 15.0, 20.0, 25.0]
@@ -547,7 +547,9 @@ def _compute_power_analysis(
     }
 
 
-def _breusch_pagan_lm(residuals: np.ndarray, swing: np.ndarray, weights: np.ndarray) -> dict[str, float]:
+def _breusch_pagan_lm(
+    residuals: np.ndarray, swing: np.ndarray, weights: np.ndarray
+) -> dict[str, float]:
     r2 = residuals**2
     X = np.column_stack([np.ones(len(swing)), swing, swing**2])
     w = weights / weights.sum()
@@ -597,7 +599,9 @@ def _forward_decomposition(fixture: FixtureInputs, primary_path: Path) -> pd.Dat
     return pd.DataFrame(rows)
 
 
-def _m_sweep(fixture: FixtureInputs, swings: dict[str, float], sigma_by_dept: dict[str, float]) -> pd.DataFrame:
+def _m_sweep(
+    fixture: FixtureInputs, swings: dict[str, float], sigma_by_dept: dict[str, float]
+) -> pd.DataFrame:
     sigma_n = fixture.sigma_national_pp
     m_grid = np.linspace(-5, 20, 52)
     rows: list[dict[str, Any]] = []
@@ -670,7 +674,7 @@ def run_ppc(
     fixture_probs: dict[str, list[float]] = {d: [] for d in DEPARTMENTS}
     fixture_z_vals: list[float] = []
 
-    for rep in range(n_sim):
+    for _rep in range(n_sim):
         m_draw = float(RNG.uniform(fixture.hdi_lo_pp, fixture.hdi_hi_pp))
         dept_draws: list[float] = []
         ceiling = 0
@@ -812,7 +816,9 @@ def _make_ppc_figures(forward_df: pd.DataFrame, ppc_ctx: dict[str, Any]) -> None
     # Ceiling count
     fig, ax = plt.subplots(figsize=(8, 5))
     ax.hist(sim_ceiling, bins=range(0, max(sim_ceiling.astype(int)) + 2), alpha=0.7, density=True)
-    ax.axvline(observed_ceiling, color="red", ls="--", linewidth=2, label=f"observed ({observed_ceiling})")
+    ax.axvline(
+        observed_ceiling, color="red", ls="--", linewidth=2, label=f"observed ({observed_ceiling})"
+    )
     ax.set_xlabel("Departments with P ≥ 0.985")
     ax.set_title("PPC: ceiling-count distribution")
     ax.legend()
@@ -906,7 +912,9 @@ def _classify_outcome(
             f"exploratory signal only (BP p={bp['p_value']:.4f}) — underpowered; not basis for rejection"
         )
     else:
-        hypothesis_status["H2_variance_spec"] = "not rejected — no reliable heteroskedasticity evidence"
+        hypothesis_status["H2_variance_spec"] = (
+            "not rejected — no reliable heteroskedasticity evidence"
+        )
 
     hypothesis_status["H3_sigma_quantification"] = "not evaluated with holdout power — inconclusive"
     hypothesis_status["H4_likelihood_spec"] = "not evaluated with holdout power — inconclusive"
@@ -920,14 +928,18 @@ def _classify_outcome(
             "PPC ceiling-count statistic extreme — warrants caution but not sole basis for revision"
         )
     elif falsifying_alts:
-        hypothesis_status["H5_adequacy"] = "insufficient evidence to reject — alternatives not confirmed on holdout"
+        hypothesis_status["H5_adequacy"] = (
+            "insufficient evidence to reject — alternatives not confirmed on holdout"
+        )
     else:
         hypothesis_status["H5_adequacy"] = (
             "insufficient evidence to reject H5 on holdout predictive performance and PPC"
         )
 
     if underpowered:
-        hypothesis_status["H5_adequacy"] += "; insufficient statistical power for moderate departures"
+        hypothesis_status[
+            "H5_adequacy"
+        ] += "; insufficient statistical power for moderate departures"
 
     if falsifying_alts and not underpowered:
         protocol_outcome = "B" if len(falsifying_alts) == 1 else "E"
@@ -945,7 +957,11 @@ def _classify_outcome(
     h5_summary = (
         "Internal coherence supported (forward algebra). "
         "Adequacy: insufficient evidence to reject H5; "
-        + ("insufficient power for moderate specification departures." if underpowered else "power adequate for large effects only.")
+        + (
+            "insufficient power for moderate specification departures."
+            if underpowered
+            else "power adequate for large effects only."
+        )
     )
 
     return InvestigationConclusion(
@@ -955,7 +971,11 @@ def _classify_outcome(
         h5_internal_coherence="supported at fixture inputs",
         h5_adequacy=hypothesis_status["H5_adequacy"],
         h5_verdict_summary=h5_summary,
-        h1_h4_verdict="not rejected with confidence (low power)" if underpowered else "not rejected on holdout",
+        h1_h4_verdict=(
+            "not rejected with confidence (low power)"
+            if underpowered
+            else "not rejected on holdout"
+        ),
         hypothesis_status=hypothesis_status,
     )
 
@@ -1052,10 +1072,7 @@ def _df_to_md(df: pd.DataFrame) -> str:
     cols = list(df.columns)
     header = "| " + " | ".join(str(c) for c in cols) + " |"
     sep = "| " + " | ".join("---" for _ in cols) + " |"
-    body = [
-        "| " + " | ".join(str(row[c]) for c in cols) + " |"
-        for _, row in df.iterrows()
-    ]
+    body = ["| " + " | ".join(str(row[c]) for c in cols) + " |" for _, row in df.iterrows()]
     return "\n".join([header, sep, *body])
 
 
@@ -1335,7 +1352,9 @@ def main() -> int:
     )
 
     print(f"[OK] Investigation artifacts written to {OUT_DIR}")
-    print(f"[OK] Conclusion label: {conclusion.conclusion_label} (protocol outcome {conclusion.protocol_outcome})")
+    print(
+        f"[OK] Conclusion label: {conclusion.conclusion_label} (protocol outcome {conclusion.protocol_outcome})"
+    )
     return 0 if h0_df["pass"].all() else 1
 
 
