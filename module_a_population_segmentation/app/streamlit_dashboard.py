@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -91,6 +92,11 @@ def _load_canonical_bundle() -> tuple[pd.DataFrame, dict[str, float], dict[str, 
         raw_seg = manifest.get("segmentation_metrics") or {}
         if isinstance(raw_seg, dict):
             seg_metrics = {k: float(v) for k, v in raw_seg.items()}
+
+    if run_id == "unknown":
+        env_commit = os.environ.get("RENDER_GIT_COMMIT", "").strip()
+        if env_commit:
+            run_id = env_commit[:12]
 
     _, anc, stratify_by = _load_cfg()
     prop = PropensityModel(random_state=42, stratify_by=stratify_by).fit_predict(feat, anc)
