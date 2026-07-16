@@ -60,6 +60,33 @@ def _load_cfg() -> tuple[dict, dict, tuple[str, ...]]:
     return gen, anc, strat
 
 
+def _manifest_run_id(manifest: dict[str, Any]) -> str:
+    commit = str(manifest.get("git_commit", "unknown"))
+    if commit != "unknown":
+        return commit[:12]
+    train_date = str(manifest.get("train_date", "unknown"))
+    return train_date[:19] if train_date != "unknown" else "unknown"
+
+
+def _manifest_segmentation_metrics(manifest: dict[str, Any]) -> dict[str, float]:
+    raw_seg = manifest.get("segmentation_metrics") or {}
+    if not isinstance(raw_seg, dict):
+        return {}
+    return {k: float(v) for k, v in raw_seg.items()}
+
+
+def _deploy_run_id() -> str:
+    env_commit = os.environ.get("RENDER_GIT_COMMIT", "").strip()
+    return env_commit[:12] if env_commit else "unknown"
+
+
+def _load_manifest_metadata(manifest_path: Path) -> tuple[str, dict[str, float]]:
+    if not manifest_path.is_file():
+        return "unknown", {}
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    return _manifest_run_id(manifest), _manifest_segmentation_metrics(manifest)
+
+
 @st.cache_data(show_spinner=False)
 def _load_canonical_bundle() -> tuple[pd.DataFrame, dict[str, float], dict[str, Any], dict, str]:
     """Load the canonical Module A export bundle from data/processed/."""
@@ -79,24 +106,9 @@ def _load_canonical_bundle() -> tuple[pd.DataFrame, dict[str, float], dict[str, 
         prop_df = pd.read_parquet(prop_path)
         feat = feat.merge(prop_df[["entity_id", "participation_propensity"]], on="entity_id")
 
-    run_id = "unknown"
-    seg_metrics: dict[str, float] = {}
-    if manifest_path.is_file():
-        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
-        commit = str(manifest.get("git_commit", "unknown"))
-        if commit != "unknown":
-            run_id = commit[:12]
-        else:
-            train_date = str(manifest.get("train_date", "unknown"))
-            run_id = train_date[:19] if train_date != "unknown" else "unknown"
-        raw_seg = manifest.get("segmentation_metrics") or {}
-        if isinstance(raw_seg, dict):
-            seg_metrics = {k: float(v) for k, v in raw_seg.items()}
-
+    run_id, seg_metrics = _load_manifest_metadata(manifest_path)
     if run_id == "unknown":
-        env_commit = os.environ.get("RENDER_GIT_COMMIT", "").strip()
-        if env_commit:
-            run_id = env_commit[:12]
+        run_id = _deploy_run_id()
 
     _, anc, stratify_by = _load_cfg()
     prop = PropensityModel(random_state=42, stratify_by=stratify_by).fit_predict(feat, anc)
