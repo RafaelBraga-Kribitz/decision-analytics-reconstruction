@@ -18,12 +18,11 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 GENERATOR = REPO_ROOT / "reports" / "eda" / "generate_eda.py"
 
 CHART_HEADER = re.compile(
-    r'@safe_chart\("(?P<chart_id>[^"]+)"\)\s*\n'
-    r"def (?P<func_name>chart_\w+)\(\):",
+    r'@safe_chart\("(?P<chart_id>[^"]+)"\)\s*\n' r"def (?P<func_name>chart_\w+)\(\):",
 )
 
-# ``s=`` values that are plain numeric literals (scalar bubble size).
-_SCALAR_S = re.compile(r"^\s*\d+(?:\.\d+)?(?:e[+-]?\d+)?\s*$", re.I)
+# Plain numeric ``s=`` (scalar bubble). Anything else is treated as array-sized.
+_SCALAR_S = re.compile(r"^\d+(?:\.\d+)?$")
 
 REQUIRED_PROXY = {
     "chart_b5": "B5",
@@ -31,101 +30,66 @@ REQUIRED_PROXY = {
 }
 
 
-def _balanced_call(text: str, start: int) -> str:
-    """Return the substring ``text[start:]`` through the matching close paren."""
-    if start >= len(text) or text[start] != "(":
-        return text[start : start + 1]
+def _slice_to_matching_paren(text: str, open_idx: int) -> str:
+    """Return text[open_idx:] through the matching ``)`` (open_idx points at ``(``)."""
     depth = 0
-    for i in range(start, len(text)):
-        ch = text[i]
-        if ch == "(":
+    for i in range(open_idx, len(text)):
+        if text[i] == "(":
             depth += 1
-        elif ch == ")":
+        elif text[i] == ")":
             depth -= 1
             if depth == 0:
-                return text[start : i + 1]
-    return text[start:]
+                return text[open_idx : i + 1]
+    return text[open_idx:]
 
 
-def _call_args(call: str) -> str:
-    """Inner argument list of a parenthesised call (without outer parens)."""
-    inner = call.strip()
-    if inner.startswith("(") and inner.endswith(")"):
-        return inner[1:-1]
-    return inner
+def _iter_calls(block: str, method: str) -> list[str]:
+    """Return argument strings (including parens) for each ``.<method>(...)`` call."""
+    needle = f".{method}("
+    out: list[str] = []
+    start = 0
+    while True:
+        idx = block.find(needle, start)
+        if idx < 0:
+            break
+        open_idx = idx + len(needle) - 1
+        out.append(_slice_to_matching_paren(block, open_idx))
+        start = open_idx + 1
+    return out
 
 
-def _kw_value(args: str, name: str) -> str | None:
-    """Best-effort extraction of a keyword argument value from a call arg string."""
+def _kw_simple(args: str, name: str) -> str | None:
+    """Extract a simple keyword value (stops at top-level comma)."""
     m = re.search(rf"\b{name}\s*=\s*", args)
     if not m:
         return None
-    pos = m.end()
-    rest = args[pos:].lstrip()
-    if not rest:
-        return ""
-    if rest[0] in "\"'":
-        quote = rest[0]
-        end = rest.find(quote, 1)
-        return rest[: end + 1] if end != -1 else rest
-    depth_paren = depth_bracket = 0
+    rest = args[m.end() :]
+    depth = 0
     for i, ch in enumerate(rest):
         if ch == "(":
-            depth_paren += 1
+            depth += 1
         elif ch == ")":
-            if depth_paren == 0:
-                return rest[:i].rstrip().rstrip(",")
-            depth_paren -= 1
-        elif ch == "[":
-            depth_bracket += 1
-        elif ch == "]":
-            depth_bracket -= 1
-        elif ch == "," and depth_paren == 0 and depth_bracket == 0:
-            return rest[:i].rstrip()
-    return rest.rstrip().rstrip(",")
+            if depth == 0:
+                return rest[:i].strip().rstrip(",")
+            depth -= 1
+        elif ch == "," and depth == 0:
+            return rest[:i].strip()
+    return rest.strip().rstrip(",")
 
 
 def _is_array_sized(value: str) -> bool:
     value = value.strip()
-    if not value:
-        return False
-    if _SCALAR_S.match(value):
-        return False
-    return True
-
-
-def _scatter_calls(block: str) -> list[str]:
-    calls: list[str] = []
-    for m in re.finditer(r"\.scatter\(", block):
-        calls.append(_balanced_call(block, m.end() - 1))
-    return calls
-
-
-def _legend_calls(block: str) -> list[str]:
-    calls: list[str] = []
-    for m in re.finditer(r"ax\.legend\(", block):
-        calls.append(_balanced_call(block, m.end() - 1))
-    return calls
+    return bool(value) and not _SCALAR_S.match(value)
 
 
 def _chart_has_regression(block: str) -> bool:
-    labeled_array_scatter = False
-    for call in _scatter_calls(block):
-        args = _call_args(call)
-        s_val = _kw_value(args, "s")
-        label_val = _kw_value(args, "label")
-        if s_val is not None and label_val is not None and _is_array_sized(s_val):
-            labeled_array_scatter = True
-            break
-
-    if not labeled_array_scatter:
+    labeled_array = any(
+        _is_array_sized(_kw_simple(call, "s") or "") and _kw_simple(call, "label") is not None
+        for call in _iter_calls(block, "scatter")
+    )
+    if not labeled_array:
         return False
-
-    for call in _legend_calls(block):
-        args = _call_args(call)
-        if _kw_value(args, "handles") is None:
-            return True
-    return False
+    return any(_kw_simple(call, "handles") is None for call in _iter_calls(block, "legend"))
 
 
 def _extract_chart_blocks(src: str) -> list[tuple[str, str, str]]:
@@ -134,40 +98,48 @@ def _extract_chart_blocks(src: str) -> list[tuple[str, str, str]]:
     for i, m in enumerate(markers):
         start = m.end()
         end = markers[i + 1].start() if i + 1 < len(markers) else len(src)
-        body = src[start:end]
-        # Drop the trailing ``chart_foo()`` invocation after the function body.
-        body = re.split(r"\nchart_\w+\(\)\s*\n", body, maxsplit=1)[0]
+        body = re.split(r"\nchart_\w+\(\)\s*\n", src[start:end], maxsplit=1)[0]
         blocks.append((m.group("chart_id"), m.group("func_name"), body))
     return blocks
 
 
-def main() -> int:
+def _check_required_proxies(blocks: list[tuple[str, str, str]]) -> list[str]:
     gaps: list[str] = []
+    for func_name, chart_label in REQUIRED_PROXY.items():
+        match = next((b for b in blocks if b[1] == func_name), None)
+        if match is None:
+            gaps.append(f"missing chart function {func_name}")
+        elif "_region_legend_handles(" not in match[2]:
+            gaps.append(
+                f"{chart_label} ({func_name}) must call _region_legend_handles() "
+                "for fixed-size legend markers (#124)"
+            )
+    return gaps
 
+
+def _check_regressions(blocks: list[tuple[str, str, str]]) -> list[str]:
+    gaps: list[str] = []
+    for chart_id, func_name, body in blocks:
+        if _chart_has_regression(body):
+            gaps.append(
+                f"{chart_id} ({func_name}): labeled scatter with array ``s`` "
+                "uses ax.legend() without handles= — legend swatch will size from "
+                "the largest bubble (#124)"
+            )
+    return gaps
+
+
+def main() -> int:
     if not GENERATOR.is_file():
-        gaps.append(f"missing generator {GENERATOR.relative_to(REPO_ROOT)}")
-    else:
-        src = GENERATOR.read_text(encoding="utf-8")
-        blocks = _extract_chart_blocks(src)
+        print(
+            f"[FAIL] check_eda_scatter_legend_proxy.py: missing generator "
+            f"{GENERATOR.relative_to(REPO_ROOT)}",
+            file=sys.stderr,
+        )
+        return 1
 
-        for func_name, chart_label in REQUIRED_PROXY.items():
-            match = next((b for b in blocks if b[1] == func_name), None)
-            if match is None:
-                gaps.append(f"missing chart function {func_name}")
-            elif "_region_legend_handles(" not in match[2]:
-                gaps.append(
-                    f"{chart_label} ({func_name}) must call _region_legend_handles() "
-                    "for fixed-size legend markers (#124)"
-                )
-
-        for chart_id, func_name, body in blocks:
-            if _chart_has_regression(body):
-                gaps.append(
-                    f"{chart_id} ({func_name}): labeled scatter with array ``s`` "
-                    "uses ax.legend() without handles= — legend swatch will size from "
-                    "the largest bubble (#124)"
-                )
-
+    blocks = _extract_chart_blocks(GENERATOR.read_text(encoding="utf-8"))
+    gaps = _check_required_proxies(blocks) + _check_regressions(blocks)
     if gaps:
         print("[FAIL] check_eda_scatter_legend_proxy.py: " + "; ".join(gaps), file=sys.stderr)
         return 1
