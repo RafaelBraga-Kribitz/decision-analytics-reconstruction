@@ -6,6 +6,8 @@ Run from project root:
 """
 
 import hashlib
+import subprocess
+import sys
 from pathlib import Path
 
 import pandas as pd
@@ -504,6 +506,20 @@ def test_idempotency_reports_stable():
         if not path.exists():
             pytest.skip(f"{fname} missing in idempotency check")
         assert path.stat().st_size > 0, f"{fname} is empty in idempotency check"
+
+
+def test_eda_scatter_legend_proxy_guard() -> None:
+    """Issue #124: bubble scatters must not auto-size legend swatches from array ``s``."""
+    script = ROOT / "scripts" / "check_eda_scatter_legend_proxy.py"
+    proc = subprocess.run(
+        [sys.executable, str(script)],
+        cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert proc.returncode == 0, f"{script.name} failed:\n{proc.stdout}\n{proc.stderr}"
+    assert "[PASS]" in proc.stdout
 
 
 # ════════════════════════════════════════════════════════════════════════════

@@ -277,3 +277,5 @@ jobs:
         run: poetry run black --check reports/eda/generate_eda.py reports/eda/build_notebook.py
       - name: Ruff lint
         run: poetry run ruff check reports/eda/generate_eda.py reports/eda/build_notebook.py
+      - name: Scatter legend proxy guard (#124)
+        run: poetry run python scripts/check_eda_scatter_legend_proxy.py
