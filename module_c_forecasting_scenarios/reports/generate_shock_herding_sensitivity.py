@@ -82,10 +82,14 @@ _LAMBDA_PARAMS: tuple[str, ...] = ("lambda1", "lambda2", "lambda3")
 
 
 def _config_hash() -> str:
-    """Sha256 over shock_params.yaml + herding_groups.yaml bytes (stale-artifact guard)."""
+    """Sha256 over shock_params.yaml + herding_groups.yaml bytes (stale-artifact guard).
+
+    CRLF is normalized to LF so the hash is checkout-independent: autocrlf
+    working trees materialize these YAMLs with CRLF on Windows (issue #168).
+    """
     h = hashlib.sha256()
     for name in ("shock_params.yaml", "herding_groups.yaml"):
-        h.update((module_config_dir() / name).read_bytes())
+        h.update((module_config_dir() / name).read_bytes().replace(b"\r\n", b"\n"))
     return h.hexdigest()
 
 
