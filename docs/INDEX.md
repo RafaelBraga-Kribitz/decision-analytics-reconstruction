@@ -95,6 +95,8 @@ Run `poetry run python scripts/generate_doc_index.py --write` after registry cha
 - **DOC-MODC-004** — `module_c_forecasting_scenarios/reports/phi_sensitivity.md` — *active*
 - **DOC-MODC-003** — `module_c_forecasting_scenarios/reports/shock_herding_sensitivity.md` — *active*
 - **DOC-REF-GEO-ADM1-001** — `module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/geo/paraguay_departments.SOURCE.md` — *active*
+- **DOC-MODC-006** — `reports/module_c/battleground_investigation/INVESTIGATION_REPORT.md` — *active*
+- **DOC-MODC-007** — `reports/module_c/battleground_investigation/scratch/battleground/anchor_comparison.md` — *active*
 - **DOC-MODC-005** — `reports/module_c/walk_forward_loo_report.md` — *active*
 
 ## Research inputs (reference only)
