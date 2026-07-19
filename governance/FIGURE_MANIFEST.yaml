@@ -20,7 +20,7 @@
 schema_version: 1
 run_id: a05a4a581676
 git_commit: a05a4a58167627614a8eaf724405f4824e75a6a9
-generated_at: '2026-07-15'
+generated_at: '2026-07-19'
 data_manifest: data/processed/model_run_manifest.json
 canonical_sample_size: 50000
 segmentation_label_hash: bd9e72fb2744e49e

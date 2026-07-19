@@ -26,16 +26,16 @@ Itapúa has the highest mean participation propensity of any department with sig
 ## Segment Strategy: Double Down vs Deprioritise
 
 **Double Down:**
-- **Youth Volatile (11.8% of population, propensity 0.56):** High reachability — the mobilisation opportunity. Digital-first (WhatsApp, Facebook), Jopara-friendly content, peer-to-peer activation via youth networks.
-- **Rural Committed (17.0% of population):** Baseline propensity (0.60, typical of every segment) but distinctively low reachability. The case for protecting this segment is reachability, not a propensity edge: radio + canvassing are the only channels that reach it, so each contact is hard to replace. Do not sacrifice these voters to cut costs.
+- **Youth Volatile (17.4% of population, propensity 0.58):** High reachability — the mobilisation opportunity. Digital-first (WhatsApp, Facebook), Jopara-friendly content, peer-to-peer activation via youth networks.
+- **Rural Committed (13.8% of population):** Baseline propensity (0.58, typical of every segment) but distinctively low reachability. The case for protecting this segment is reachability, not a propensity edge: radio + canvassing are the only channels that reach it, so each contact is hard to replace. Do not sacrifice these voters to cut costs.
 
 **Maintain:**
-- **Urban High Volatility (14.5%):** Good reachability, propensity 0.59. Currently receiving fair budget share. No change needed — the strategy is working.
-- **Structurally Dependent Bloc (17.3%):** High rural, high NBI stress. Sensitive segment requiring careful messaging. Maintain current radio + community organiser approach.
+- **Urban High Volatility (17.6%):** Good reachability, propensity 0.65. Currently receiving fair budget share. No change needed — the strategy is working.
+- **Structurally Dependent Bloc (18.1%):** High rural, high NBI stress. Sensitive segment requiring careful messaging. Maintain current radio + community organiser approach.
 
 **Deprioritise:**
-- **Committed Opposition (15.2%):** Participation propensity 0.65 (baseline, like every segment — it does *not* make them a mobilisation target), but their high, tightly clustered B-preference strength makes them locked opposition-aligned voters. Any persuasion spend here is waste. Reallocate immediately.
-- **Rural Low Propensity (24.1%):** Propensity 0.63 — despite the name, in the same narrow band as every other segment; the label reflects its cluster profile, not a distinctly low turnout score. Passive presence only — no active spend increases warranted.
+- **Committed Opposition (18.4%):** Participation propensity 0.63 (baseline, like every segment — it does *not* make them a mobilisation target), but their high, tightly clustered B-preference strength makes them locked opposition-aligned voters. Any persuasion spend here is waste. Reallocate immediately.
+- **Rural Low Propensity (14.6%):** Propensity 0.64 — despite the name, in the same narrow band as every other segment; the label reflects its cluster profile, not a distinctly low turnout score. Passive presence only — no active spend increases warranted.
 
 ---
 
@@ -75,7 +75,7 @@ The solver runs reach-constrained — every department sits at reach_utilization
 
 **Medium risk (requires contingency planning):**
 - Late-breaking adverse events: The extreme-tracker bucket (3,333 of 10,000 draws) assumes 1.83–2.43× shock scale. A major scandal or crisis event in weeks 12–14 could compress the margin by 5–8 pp. Pre-position a rapid-response team.
-- Participation depression in Youth Volatile: this segment's propensity is 0.56. If youth registration or turnout infrastructure fails (long queues, administrative errors), the mandate could shrink materially.
+- Participation depression in Youth Volatile: this segment's propensity is 0.58. If youth registration or turnout infrastructure fails (long queues, administrative errors), the mandate could shrink materially.
 
 **Low but non-zero systemic risk:**
 - Model miscalibration: Only 8 poll waves feed the tracking model. If all three pollsters share an unmeasured systematic bias not captured by the house effect model, the posterior could be significantly wrong. Diversify polling sources.
