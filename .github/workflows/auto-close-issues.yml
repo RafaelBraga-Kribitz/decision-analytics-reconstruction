@@ -35,27 +35,30 @@ jobs:
             const issueNumber = ${{ steps.extract.outputs.issue_number }};
 
             // Close the issue
-            github.rest.issues.update({
+            await github.rest.issues.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issueNumber,
               state: 'closed'
             });
 
-            // Remove status:claude-ready label if it exists
+            // Remove status:claude-ready label if it exists.
+            // Must await: without it a 404 becomes an unhandled rejection and
+            // fails the job even when the label was never on the issue (#124).
             try {
-              github.rest.issues.removeLabel({
+              await github.rest.issues.removeLabel({
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 issue_number: issueNumber,
                 name: 'status:claude-ready'
               });
             } catch (e) {
+              if (e.status !== 404) throw e;
               // Label may not exist, that's fine
             }
 
             // Add status:completed label
-            github.rest.issues.addLabels({
+            await github.rest.issues.addLabels({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: issueNumber,
