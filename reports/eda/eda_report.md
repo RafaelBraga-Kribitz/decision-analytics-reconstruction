@@ -13,13 +13,13 @@
 
 Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3.70 pp):
 
-- **Tracking posterior on fixtures:** Closes at **3.7 pp** margin (94% HDI: 3.0 to 4.7 pp). Modelled department win probabilities: **12%–100%**. Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp.
+- **Tracking posterior on fixtures:** Closes at **3.7 pp** margin (94% HDI: 2.8 to 4.7 pp). Modelled department win probabilities: **7%–100%**. Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp.
 - **Committed Opposition is the largest segment (18.4%)** with mean participation propensity 0.63. Youth Volatile (17.4%, propensity 0.58) remains the headline mobilisation cohort in Central and Alto Paraná.
 - **Central and Alto Paraná absorb 45% of the total budget** ($1,920,549 and $783,849 respectively), reflecting their demographic weight. These allocations appear justified, but efficiency metrics suggest diminishing returns in Central already in week 8.
 - **Participation propensity is near-uniform across all six segments** (segment means span just 0.58–0.65; no single cohort is a dramatically higher-propensity target, so propensity alone cannot rank segments — see §A4/§A5). The rural segments still receive little digital investment because of low internet penetration: radio is their dominant reach channel, and any reduction in radio spend directly suppresses participation in Itapúa and San Pedro strongholds.
 - **Bilateral (direct) channels absorb 52.5% of baseline budget** vs. 47.5% for broadcast. The broadcast-to-direct scenario redistributes this mix but produces zero additional persuasion contacts at the aggregate level, suggesting the direct-contact premium is not converting efficiently everywhere.
-- **Pollster house effects (from posterior_house_effects.parquet):** ATI_SNEAD has a -7.8 pp bias, ICA has a +4.6 pp bias; ECODAT is the closest to neutral (+2.3 pp). Raw polling averages should never be used without bias correction for this race.
-- **Chaco departments (Alto Paraguay, Boquerón, Presidente Hayes) are negligible-tier** in budget allocation; modelled department win probabilities cluster near **12%–100%** on fixture posteriors (Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp).
+- **Pollster house effects (from posterior_house_effects.parquet):** ATI_SNEAD has a -8.7 pp bias, ICA has a +5.0 pp bias; ECODAT is the closest to neutral (+2.9 pp). Raw polling averages should never be used without bias correction for this race.
+- **Chaco departments (Alto Paraguay, Boquerón, Presidente Hayes) are negligible-tier** in budget allocation; modelled department win probabilities cluster near **7%–100%** on fixture posteriors (Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp).
 
 ---
 
@@ -53,8 +53,8 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 ### module_c files
 - **daily_posterior_forecast.parquet:** 142 daily rows, single calibration series A, no gaps.
 - **posterior_house_effects.parquet:** 3 pollsters — small but complete.
-- **battleground_department_probability.parquet:** 18 departments, win_probability_a range [0.1240, 1.0000].
-- **monte_carlo_draws.parquet:** 600 draws across 3 scenario buckets: baseline (200), extreme_tracker (200), compounded_herd (200). WARNING: alloc_mean_persuasion_contacts is zero - B-to-C handshake broken.
+- **battleground_department_probability.parquet:** 18 departments, win_probability_a range [0.0736, 1.0000].
+- **monte_carlo_draws.parquet:** 10,000 draws across 3 scenario buckets: baseline (3,334), extreme_tracker (3,333), compounded_herd (3,333). alloc_mean_persuasion_contacts populated from the Module B baseline allocation (B-to-C handshake verified non-zero).
 
 ---
 
@@ -175,7 +175,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 ### C1 — Bayesian Tracking Retrodiction (2018 Series A)
 **What it shows:** 142-day Bayesian preference-margin *retrodiction* — in-sample tracking of the past 2018 Series A window, read against the verified +3.70 pp TSJE outcome anchor (drawn on the panel), **not** an out-of-sample forecast — with 94% HDI bands.
-**Key finding:** Candidate A's posterior mean preference margin closes near **3.7 pp** on fixture polls (Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp). The 94% HDI is wide (3.0 to 4.7 pp), reflecting only 8 poll waves.
+**Key finding:** Candidate A's posterior mean preference margin closes near **3.7 pp** on fixture polls (Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp). The 94% HDI is wide (2.8 to 4.7 pp), reflecting only 8 poll waves.
 **Strategic implication:** The lead is robust but the HDI is wide — more polling waves would dramatically tighten the uncertainty bounds. The campaign should commission 2–3 additional poll waves in the final 6 weeks.
 
 ### C2 — Calibrated Terminal Posterior Distribution
@@ -185,12 +185,12 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 ### C3 — Battleground Department Win Probability
 **What it shows:** Horizontal bar chart of tracking-implied P(Win, Candidate A) by department with 94% HDI whiskers (unanchored national posterior × TSJE swing factors, `c_battleground_v0.5` decoupled σ).
-**Key finding:** Modelled win probabilities span **12.4%–100.0%** (Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp; per-dept σ_idio from reference poll residuals where available). GANAR strongholds Central (23.2%) and Alto Paraná (25.0%) sit well below 50%; v0.5 reduces probability plateaus among Abdo-leaning departments (F-081).
-**Strategic implication:** Geographic risk is heterogeneous — budget in Central and Alto Paraná targets turnout/defence in GANAR territory, not persuasion swing. Caaguazu (52.5%) and San Pedro (58.0%) remain among the most competitive departments.
+**Key finding:** Modelled win probabilities span **7.4%–100.0%** (Illustrative model output on fixture survey polls — not verified outcome; TSJE Series A anchor is +3.70 pp; per-dept σ_idio from reference poll residuals where available). GANAR strongholds Central (17.9%) and Alto Paraná (19.9%) sit well below 50%; v0.5 reduces probability plateaus among Abdo-leaning departments (F-081).
+**Strategic implication:** Geographic risk is heterogeneous — budget in Central and Alto Paraná targets turnout/defence in GANAR territory, not persuasion swing. Caaguazu (53.5%) and San Pedro (60.0%) remain among the most competitive departments.
 
 ### C4 — House Effects Forest Plot
 **What it shows:** Posterior mean ± 94% HDI for each pollster's house effect (bias toward Candidate A).
-**Key finding:** ATI_SNEAD has the largest negative house effect (-7.8 pp), meaning its polls systematically understate A's lead; ICA has the largest positive house effect (+4.6 pp); ECODAT is the most neutral (+2.3 pp). (Derived from posterior_house_effects.parquet — the same frame the C4 figure plots.)
+**Key finding:** ATI_SNEAD has the largest negative house effect (-8.7 pp), meaning its polls systematically understate A's lead; ICA has the largest positive house effect (+5.0 pp); ECODAT is the most neutral (+2.9 pp). (Derived from posterior_house_effects.parquet — the same frame the C4 figure plots.)
 **Strategic implication:** Never cite raw ATI_SNEAD polls in communications — they will appear worse than reality. ECODAT is the closest to unbiased for public-facing narratives. The campaign analytics team should routinely adjust all external poll reports for these biases.
 
 ### C5 — Shock Scale Distribution by Scenario
@@ -205,22 +205,22 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 ### C7 — Exit Model Parameter Posteriors
 **What it shows:** Forest plot of exit model parameters: intercept, beta_oea, beta_eu, sigma.
-**Key finding:** The intercept (~24.5 pp) is the baseline exit-poll A−B margin when OEA/EU timing flags are off — exit fixtures run hotter (~26–33 pp) than the tracking posterior mean (~3.7 pp) because quick-count subsamples are a different estimand from the TSJE-anchored tracking series (+3.70 pp). beta_oea and beta_eu both straddle zero (HDI spans positive and negative territory), meaning international observer assessments (OEA, EU) have uncertain systematic influence.
+**Key finding:** The intercept (~25.5 pp) is the baseline exit-poll A−B margin when OEA/EU timing flags are off — exit fixtures run hotter (~26–33 pp) than the tracking posterior mean (~3.7 pp) because quick-count subsamples are a different estimand from the TSJE-anchored tracking series (+3.70 pp). beta_oea and beta_eu both straddle zero (HDI spans positive and negative territory), meaning international observer assessments (OEA, EU) have uncertain systematic influence.
 **Strategic implication:** The exit model calibration is weakly identified for international observer effects. Do not use exit model estimates as the primary real-time result metric — rely on the tracking model until polling closes.
 
 ### C8_v2 — Win Probability vs Participation Propensity by Department
 **What it shows:** Scatter plot of department-level win probability vs. mean participation propensity, coloured by region, with a ranked table of departments by propensity.
-**Key finding:** Win probability varies across departments (12.4%–100.0%) with wider spread under v0.5 decoupled σ; propensity varies more. High-propensity departments (Rural Committed-heavy) cluster separately from win-probability bands — both are model outputs on reconstruction fixtures.
+**Key finding:** Win probability varies across departments (7.4%–100.0%) with wider spread under v0.5 decoupled σ; propensity varies more. High-propensity departments (Rural Committed-heavy) cluster separately from win-probability bands — both are model outputs on reconstruction fixtures.
 **Strategic implication:** Competitive win probability combined with high reachability — not high propensity (Rural Committed cells in San Pedro, Cordillera, and Misiones sit in the flat ~0.52–0.65 band per A4) — identifies departments where turnout-defence spend may outperform persuasion swing bets.
 
 ### C9 — Polling Transparency Audit
 **What it shows:** Transparency score vs. house-effect magnitude, one point per pollster (n=3 pollsters — a per-pollster audit, not a fitted trend).
-**Key finding:** Across the three fixture pollsters, ATI_SNEAD carries the largest |house effect| (7.8 pp) while ECODAT is the closest to neutral (+2.3 pp). With n=3, no transparency–bias relationship can be inferred — read this as an audit, not evidence of a rule.
+**Key finding:** Across the three fixture pollsters, ATI_SNEAD carries the largest |house effect| (8.7 pp) while ECODAT is the closest to neutral (+2.9 pp). With n=3, no transparency–bias relationship can be inferred — read this as an audit, not evidence of a rule.
 **Strategic implication:** Apply bias corrections per pollster regardless of transparency rating; do not infer a transparency→bias rule from three points.
 
 ### C10 — MC Shock-Scale Distribution (legacy filename)
 **What it shows:** Distribution of shock_scale across all MC draws by scenario bucket. The committed filename references "win probability", but this panel does **not** derive P(win) — Candidate-A win probability is C3 / C8_v2.
-**Key finding:** Draws are split across 3 canonical buckets (baseline (200), extreme_tracker (200), compounded_herd (200)); shock-scale distributions are multimodal by design of the discrete scenario catalog.
+**Key finding:** Draws are split across 3 canonical buckets (baseline (3,334), extreme_tracker (3,333), compounded_herd (3,333)); shock-scale distributions are multimodal by design of the discrete scenario catalog.
 **Strategic implication:** Resource buffers and contingency plans should be stress-tested against the extreme-tracker bucket (1.8–2.4× baseline shock sensitivity) — not just the ±10% band around baseline.
 
 ---
@@ -270,9 +270,9 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 
 7. **Do not invest in Committed Opposition persuasion.** This segment has a mean propensity of 0.63 and high preference strength for Candidate B. The cost of persuading even a marginal share of this group far exceeds the returns. Redirect any persuasion budget earmarked for this segment to Youth Volatile micro-targeting.
 
-8. **Apply bias corrections to all external polling references.** ATI_SNEAD results understate the lead by ~8 pp; ICA overstates it by ~5 pp. All internal planning documents and public communications should use bias-corrected figures. Share the house effect estimates with the communications team immediately.
+8. **Apply bias corrections to all external polling references.** ATI_SNEAD results understate the lead by ~9 pp; ICA overstates it by ~5 pp. All internal planning documents and public communications should use bias-corrected figures. Share the house effect estimates with the communications team immediately.
 
-9. **Stress-test the extreme tracker scenario for weeks 12–14.** The extreme_tracker bucket (200 of 600 draws, shock_scale 1.83–2.43) encodes high-volatility outcomes. Ensure field operations have a 72-hour rapid-response protocol if a late-breaking adverse event triggers a 5–8 pp margin compression.
+9. **Stress-test the extreme tracker scenario for weeks 12–14.** The extreme_tracker bucket (3,333 of 10,000 draws, shock_scale 1.83–2.43) encodes high-volatility outcomes. Ensure field operations have a 72-hour rapid-response protocol if a late-breaking adverse event triggers a 5–8 pp margin compression.
 
 10. **Develop Jopara-language media content for all segments.** Jopara bilingual speakers are 47–51% of every segment. Spanish-only content structurally misses this plurality; Guaraní-only content is niche. Jopara-accessible creative is the single messaging investment with the broadest cross-segment reach.
 
@@ -284,7 +284,7 @@ Reconstruction decision-support insights (fixture polls; verified TSJE anchor +3
 - **Participation propensity:** Bayesian logistic regression with department-level random effects and post-stratification rake weights. Rake multipliers vary substantially across departments (mean 1.40×, range [0.63, 2.73]) indicating sampling imbalance in raw data.
 - **Bayesian tracking model:** Hierarchical Gaussian random walk with house effect corrections. Credible bands are true 94% highest-density intervals (`az.hdi`, ≈±1.9σ for a Gaussian posterior) — not 5/95 equal-tailed quantiles. Only 8 poll waves ingested — uncertainty is fundamentally limited by sparse polling data.
 - **Budget optimisation:** Linear programming solver (OPTIMAL status confirmed for all cells). Constraints include reach caps, department tiers, and channel eligibility rules. FX conversion uses retail spread rate (not reference rate).
-- **Monte Carlo:** 600 draws across 3 scenario buckets. Shock scale parameterises outcome volatility. WARNING: alloc_mean_persuasion_contacts is zero - B-to-C handshake broken.
+- **Monte Carlo:** 10,000 draws across 3 scenario buckets. Shock scale parameterises outcome volatility. alloc_mean_persuasion_contacts populated from the Module B baseline allocation (B-to-C handshake verified non-zero).
 - **Exit model:** Gaussian likelihood with intercept + two international observer beta parameters. Identified on historical exit survey data. Wide HDI intervals suggest limited historical data for calibration.
 
 ---
