@@ -1,6 +1,6 @@
 # README Quality Gate — drop this file into .github/workflows/ of a portfolio repository.
-# Runs in ~10 s: clones the contract repo, installs PyYAML + Pillow, audits this repository's README.
-# Fails the check when a required requirement FAILs. BLOCKED_HUMAN and WARN do not fail CI.
+# Runs in ~10 s: clones the contract repo, installs PyYAML + Pillow + fontTools, audits this repository's README.
+# Fails the check only when a required requirement FAILs (exit 1). BLOCKED_HUMAN (exit 2) and WARN do not fail CI.
 name: README quality gate
 
 on:
@@ -23,14 +23,26 @@ jobs:
         with:
           repository: RafaelBraga-Kribitz/braga-portfolio-docs
           path: contract
+          fetch-depth: 0
+      - name: Use the gate branch until it is merged into main
+        working-directory: contract
+        run: |
+          if [ ! -d readme_quality ] && git show-ref --verify --quiet refs/remotes/origin/readme-quality-gate; then
+            git checkout -q readme-quality-gate
+          fi
+          test -d readme_quality || { echo "::error::contract repo has no readme_quality package"; exit 1; }
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
       - run: pip install -q pyyaml pillow fonttools
       - name: Audit README against the portfolio contract
         working-directory: contract
+        shell: bash {0}
         run: |
           python -m readme_quality audit --repo "$GITHUB_WORKSPACE/repo" --verbose
           code=$?
-          if [ "$code" = "1" ]; then echo "::error::README fails the portfolio contract"; exit 1; fi
-          exit 0
+          case "$code" in
+            0) echo "README passes the portfolio contract" ;;
+            2) echo "::warning::README is BLOCKED_HUMAN on at least one requirement (see log)" ;;
+            *) echo "::error::README fails the portfolio contract"; exit 1 ;;
+          esac
