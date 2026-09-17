@@ -1,16 +1,6 @@
 # Decision Analytics Reconstruction — Paraguay 2018 Presidential Election
 
-<p align="center">
-  <img
-    src="reports/eda/C1_forecast_timeline.png"
-    alt="Module C Bayesian poll-tracking retrodiction: posterior mean vote-preference margin with a 94% credible band across the 2018 campaign, converging on the verified TSJE outcome anchor of +3.70 pp"
-    width="100%"
-  />
-</p>
-
-*Module C — Bayesian poll tracking. This is a **retrodiction, not a forecast**: the model
-conditions on the verified TSJE outcome and reconciles the eight real 2018 poll waves inside
-a 94% credible band. Out-of-sample scoring is a separate, honest exercise — see Results.*
+![Decision Analytics Reconstruction — Paraguay 2018 Presidential Election — Segmentation, MILP budget allocation, and Bayesian poll tracking reconstruct one election from public anchors and synthetic voters.](docs/assets/hero.png)
 
 [![CI](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/ci.yml/badge.svg)](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/ci.yml)
 [![Governance](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/governance.yml/badge.svg)](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/governance.yml)
@@ -26,6 +16,18 @@ across the country, and stay honest about what you actually know?** This project
 reconstructs the 2018 Paraguay presidential election as three connected decision-analytics
 modules and answers that question end to end. The verified result it reasons toward:
 Candidate A (Abdo) won by **+3.70 pp** (46.43% vs 42.73%) on **61.25%** turnout (TSJE).
+
+<p align="center">
+  <img
+    src="reports/eda/C1_forecast_timeline.png"
+    alt="Module C Bayesian poll-tracking retrodiction: posterior mean vote-preference margin with a 94% credible band across the 2018 campaign, converging on the verified TSJE outcome anchor of +3.70 pp"
+    width="100%"
+  />
+</p>
+
+*Module C — Bayesian poll tracking. This is a **retrodiction, not a forecast**: the model
+conditions on the verified TSJE outcome and reconciles the eight real 2018 poll waves inside
+a 94% credible band. Out-of-sample scoring is a separate, honest exercise — see Results.*
 
 ## Decision summary
 

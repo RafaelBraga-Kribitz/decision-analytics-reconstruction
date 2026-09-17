@@ -1,0 +1,85 @@
+{
+  "output": "C:\\Users\\Benutzer1\\Dev\\portfolio-readme-work\\decision-analytics-reconstruction\\docs\\assets\\hero.png",
+  "width": 1600,
+  "height": 640,
+  "mode": "light",
+  "fonts": "Söhne from C:\\Users\\Benutzer1\\Dev\\braga-design-system-template\\public\\fonts",
+  "title_size": 88,
+  "descriptor_size": 28,
+  "attempts": 23,
+  "blocks": {
+    "kind": {
+      "bbox": [
+        72,
+        72,
+        488,
+        104
+      ],
+      "lines": [
+        "BRAGA · ANALYTICAL PROJECT"
+      ],
+      "font": "SohneMono-Buch.otf"
+    },
+    "status": {
+      "bbox": [
+        1368,
+        72,
+        1528,
+        104
+      ],
+      "lines": [
+        "FUNCTIONAL"
+      ],
+      "font": "SohneMono-Buch.otf"
+    },
+    "facts": {
+      "bbox": [
+        72,
+        542,
+        878,
+        570
+      ],
+      "lines": [
+        "LICENSE  MIT  ·  RUNTIME  Python 3.11.7  ·  CI  GitHub Actions"
+      ],
+      "font": "SohneMono-Buch.otf"
+    },
+    "title": {
+      "bbox": [
+        72,
+        128,
+        1502,
+        395
+      ],
+      "lines": [
+        "Decision Analytics Reconstruction",
+        "— Paraguay 2018 Presidential",
+        "Election"
+      ],
+      "font": "Sohne-Fett.otf"
+    },
+    "descriptor": {
+      "bbox": [
+        72,
+        423,
+        1102,
+        497
+      ],
+      "lines": [
+        "Segmentation, MILP budget allocation, and Bayesian poll tracking reconstruct one",
+        "election from public anchors and synthetic voters."
+      ],
+      "font": "Sohne-Buch.otf"
+    }
+  },
+  "guardrails": [
+    "safe-area",
+    "wrap-and-shrink",
+    "line-length",
+    "no-overlap",
+    "glyph-coverage-per-char",
+    "contrast>=4.5",
+    "pixel-scan"
+  ],
+  "validated": true
+}
