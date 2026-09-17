@@ -16,6 +16,7 @@ a 94% credible band. Out-of-sample scoring is a separate, honest exercise — se
 [![Governance](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/governance.yml/badge.svg)](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/governance.yml)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue)](.python-version)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Status: Functional](https://img.shields.io/badge/status-Functional-green)](#status)
 
 **Status:** Functional
 
@@ -66,7 +67,7 @@ Hosted-demo availability is governed by finding **F-021** (`scripts/check_live_d
 
 | Audience | Start here |
 |---|---|
-| Recruiter | This page through Results (2-minute summary) |
+| Recruiter | This page through [Results](#results) (2-minute summary) |
 | Hiring manager | [Decision summary](#decision-summary) + [Method](#method) + [Limitations](#limitations) |
 | Technical reviewer | [Architecture](ARCHITECTURE.md) + [Reproduce](#reproduce) + module packages |
 | Auditor | [Data](#data) + [Validation](#validation) + [`governance/AUDIT_PROCEDURE.md`](governance/AUDIT_PROCEDURE.md) |
@@ -269,6 +270,8 @@ every decision number must carry its epistemic tag.
 Three modules run locally and through `make pipeline-full`. CI and the governance
 Adversary re-verify closed findings on every PR. Hosted-demo URLs remain under F-021.
 This is a portfolio reconstruction, not a production campaign system.
+
+Repository last updated 2026-09-16 (date of the last commit).
 
 ## License
 
