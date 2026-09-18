@@ -1,0 +1,84 @@
+{
+  "output": "C:\\Users\\Benutzer1\\Dev\\portfolio-readme-work\\governance-bootstrap\\docs\\assets\\hero.png",
+  "width": 1600,
+  "height": 640,
+  "mode": "light",
+  "fonts": "Söhne from C:\\Users\\Benutzer1\\Dev\\braga-design-system-template\\public\\fonts",
+  "title_size": 112,
+  "descriptor_size": 36,
+  "attempts": 1,
+  "blocks": {
+    "kind": {
+      "bbox": [
+        72,
+        72,
+        344,
+        104
+      ],
+      "lines": [
+        "BRAGA · FRAMEWORK"
+      ],
+      "font": "SohneMono-Buch.otf"
+    },
+    "status": {
+      "bbox": [
+        1368,
+        72,
+        1528,
+        104
+      ],
+      "lines": [
+        "MAINTAINED"
+      ],
+      "font": "SohneMono-Buch.otf"
+    },
+    "facts": {
+      "bbox": [
+        72,
+        542,
+        1032,
+        570
+      ],
+      "lines": [
+        "LICENSE  MIT  ·  REPO  github.com/RafaelBraga-Kribitz/governance-bootstrap"
+      ],
+      "font": "SohneMono-Buch.otf"
+    },
+    "title": {
+      "bbox": [
+        72,
+        160,
+        1269,
+        274
+      ],
+      "lines": [
+        "governance-bootstrap"
+      ],
+      "font": "Sohne-Fett.otf"
+    },
+    "descriptor": {
+      "bbox": [
+        72,
+        302,
+        1146,
+        446
+      ],
+      "lines": [
+        "A vendorable governance kit: YAML findings that ratchet from open",
+        "gap to CI-enforced gate, synced bidirectionally to every consumer",
+        "project."
+      ],
+      "font": "Sohne-Buch.otf"
+    }
+  },
+  "guardrails": [
+    "safe-area",
+    "wrap-and-shrink",
+    "line-length",
+    "no-overlap",
+    "glyph-coverage-per-char",
+    "contrast>=4.5",
+    "pixel-scan"
+  ],
+  "validated": true
+}
