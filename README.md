@@ -164,7 +164,7 @@ Validation gates: [`reports/VALIDATION.md`](reports/VALIDATION.md). Golden snaps
 ## Architecture
 
 ```mermaid
-flowchart LR
+flowchart TD
   A[Module A — population, segments, turnout] --> B[Module B — MILP allocation + routing]
   B --> C[Module C — poll tracking + MC scenarios]
   polls[Eight 2018 tracking polls] --> C
