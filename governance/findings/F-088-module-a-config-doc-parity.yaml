@@ -1,0 +1,45 @@
+id: F-088
+title: "Module A config keys and README links contradict runtime behavior"
+category: fake_completion
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-10-11
+closed_at: 2026-10-11
+recurrence_count: 1   # F-044 closed the config-wiring pattern without a loader
+evidence: |
+  module_a_population_segmentation/config/model_params.yaml listed PCA,
+  DBSCAN, KMeans and propensity-CV parameters as "NOT yet wired to runtime
+  loading (code defaults match)", but they did not match:
+  - kmeans.bootstrap_n_samples: 100 while KMeansSegmenter._bootstrap_ari
+    called compute_bootstrap_ari with its hardcoded default of 25 (every
+    published ARI, 0.5418 / 0.4304, is a 25-rep figure);
+  - kmeans.n_init: 10 while KMeans ran n_init="auto" (1 restart for
+    k-means++);
+  - propensity.C_grid / cv_folds described a CV grid search that does not
+    exist (LogisticRegression uses C=1.0); propensity.shap_sample_size and
+    model had no consumer.
+  module_a_population_segmentation/README.md linked four reports that exist
+  nowhere (reports/segment_action_matrix.md, ../reports/transformation_log.md,
+  ../reports/decision_log.md, ../reports/statistical_independence_note.md) and
+  claimed "14-step" cleaning; clean_population chains 10 steps.
+verification_script: scripts/check_module_a_config_doc_parity.py
+notes: |
+  Spec: governance/improvement_plan/IMP-A06_config-doc-parity.md
+  Closed 2026-10-11 (value-preserving switchover, per the spec's NFR):
+  - utils/model_params.py: one cached loader; DBSCANNoiseFilter (eps,
+    min_samples, metric, n_jobs), KMeansSegmenter (default_k, n_init, init,
+    max_iter, random_state, bootstrap_n_samples, bootstrap_subsample_frac) and
+    PropensityModel (penalty, solver, max_iter, random_state, split
+    fractions) read their settings from it.
+  - YAML corrected to what executed: bootstrap_n_samples 25, n_init auto;
+    C_grid, cv_folds, model, shap_sample_size removed; k_range kept as a
+    comment (sweep record, not a runtime key).
+  - model_run_manifest.json records effective_hyperparameters.
+  - 50k rerun: segment_labels, participation_propensity and
+    population_master_clean identical; silhouette 0.2562 and ARI 0.4304
+    unchanged.
+  - README: dead links replaced by existing ones; "14-step" -> the 10 steps
+    in clean_population (ARCHITECTURE.md too).
+  The README/model-card gate numbers already matched (IMP-A01/A03 fixed
+  them); the script now pins them to the YAML. The notebook slice was done
+  in #88/#110 (stubs removed, walkthrough executed in CI).
