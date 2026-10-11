@@ -38,11 +38,12 @@ specs done.
 
 ## Cross-repo
 
-- **IMP-F01..F04** (Chart_Audit_Framework PR #13): rule engine, CLI and
-  coverage-matrix gate shipped. F04's zero-duplicate invariant is not met —
-  187 byte-identical groups remain inside the scraped site mirrors; the
-  maintainer decides between rewriting mirror links, amending the spec, or
-  dropping the mirrors.
+- **IMP-F01..F03** (Chart_Audit_Framework PR #13, merged): rule engine, CLI
+  and coverage-matrix gate shipped.
+- **IMP-F04** (Chart_Audit_Framework PR #14): by maintainer decision the
+  zero-duplicate invariant exempts groups lying entirely inside the scraped
+  site mirrors (187 groups); the one duplicate outside them was deleted and
+  `hygiene/check_repo_hygiene.py` gates the invariant on every PR.
 
 ## Noted, not changed
 
