@@ -1,0 +1,177 @@
+source_file,reason,department,channel,count
+budget_lines_raw.csv,duplicate_row_id,Alto Paraguay,radio_spots,2
+budget_lines_raw.csv,duplicate_row_id,Alto Parana,billboards,1
+budget_lines_raw.csv,duplicate_row_id,Alto Parana,facebook_ads,1
+budget_lines_raw.csv,duplicate_row_id,Alto Parana,radio_spots,2
+budget_lines_raw.csv,duplicate_row_id,Alto Parana,rallies_events,1
+budget_lines_raw.csv,duplicate_row_id,Alto Parana,sms,1
+budget_lines_raw.csv,duplicate_row_id,Amambay,radio_spots,1
+budget_lines_raw.csv,duplicate_row_id,Amambay,rallies_events,1
+budget_lines_raw.csv,duplicate_row_id,Asuncion,rallies_events,1
+budget_lines_raw.csv,duplicate_row_id,Asuncion,sound_cars,2
+budget_lines_raw.csv,duplicate_row_id,Asuncion,whatsapp_chatbot,2
+budget_lines_raw.csv,duplicate_row_id,Boqueron,billboards,1
+budget_lines_raw.csv,duplicate_row_id,Boqueron,sms,1
+budget_lines_raw.csv,duplicate_row_id,Caaguazu,whatsapp_chatbot,1
+budget_lines_raw.csv,duplicate_row_id,Canindeyu,facebook_ads,1
+budget_lines_raw.csv,duplicate_row_id,Canindeyu,radio_spots,1
+budget_lines_raw.csv,duplicate_row_id,Canindeyu,rallies_events,1
+budget_lines_raw.csv,duplicate_row_id,Canindeyu,sound_cars,1
+budget_lines_raw.csv,duplicate_row_id,Central,canvassing,1
+budget_lines_raw.csv,duplicate_row_id,Central,facebook_ads,1
+budget_lines_raw.csv,duplicate_row_id,Cordillera,radio_spots,2
+budget_lines_raw.csv,duplicate_row_id,Guaira,whatsapp_chatbot,1
+budget_lines_raw.csv,duplicate_row_id,Itapua,billboards,1
+budget_lines_raw.csv,duplicate_row_id,Itapua,radio_spots,2
+budget_lines_raw.csv,duplicate_row_id,Itapua,tv_spots,1
+budget_lines_raw.csv,duplicate_row_id,Itapua,whatsapp_chatbot,1
+budget_lines_raw.csv,duplicate_row_id,Misiones,email,1
+budget_lines_raw.csv,duplicate_row_id,Misiones,tv_spots,1
+budget_lines_raw.csv,duplicate_row_id,Neembucu,billboards,2
+budget_lines_raw.csv,duplicate_row_id,Neembucu,email,1
+budget_lines_raw.csv,duplicate_row_id,Neembucu,facebook_ads,1
+budget_lines_raw.csv,duplicate_row_id,Neembucu,messenger_chatbot,2
+budget_lines_raw.csv,duplicate_row_id,Paraguari,radio_spots,2
+budget_lines_raw.csv,duplicate_row_id,San Pedro,billboards,2
+budget_lines_raw.csv,duplicate_row_id,San Pedro,facebook_ads,1
+budget_lines_raw.csv,duplicate_row_id,San Pedro,rallies_events,1
+budget_lines_raw.csv,duplicate_row_id,San Pedro,sms,2
+budget_lines_raw.csv,duplicate_row_id,San Pedro,whatsapp_chatbot,1
+budget_lines_raw.csv,non_canonical_channel,Alto Paraguay,(unresolved),1
+budget_lines_raw.csv,non_canonical_channel,Alto Parana,(unresolved),2
+budget_lines_raw.csv,non_canonical_channel,Asuncion,(unresolved),1
+budget_lines_raw.csv,non_canonical_channel,Boqueron,(unresolved),2
+budget_lines_raw.csv,non_canonical_channel,Caaguazu,(unresolved),1
+budget_lines_raw.csv,non_canonical_channel,Caazapa,(unresolved),1
+budget_lines_raw.csv,non_canonical_channel,Canindeyu,(unresolved),1
+budget_lines_raw.csv,non_canonical_channel,Central,(unresolved),1
+budget_lines_raw.csv,non_canonical_channel,Cordillera,(unresolved),1
+budget_lines_raw.csv,non_canonical_channel,Itapua,(unresolved),2
+budget_lines_raw.csv,non_canonical_channel,Misiones,(unresolved),1
+budget_lines_raw.csv,non_canonical_channel,Neembucu,(unresolved),2
+budget_lines_raw.csv,non_canonical_channel,Paraguari,(unresolved),2
+budget_lines_raw.csv,non_canonical_channel,Presidente Hayes,(unresolved),2
+budget_lines_raw.csv,non_canonical_department,(unresolved),billboards,6
+budget_lines_raw.csv,non_canonical_department,(unresolved),canvassing,3
+budget_lines_raw.csv,non_canonical_department,(unresolved),email,3
+budget_lines_raw.csv,non_canonical_department,(unresolved),facebook_ads,2
+budget_lines_raw.csv,non_canonical_department,(unresolved),messenger_chatbot,2
+budget_lines_raw.csv,non_canonical_department,(unresolved),radio_spots,1
+budget_lines_raw.csv,non_canonical_department,(unresolved),rallies_events,1
+budget_lines_raw.csv,non_canonical_department,(unresolved),sms,1
+budget_lines_raw.csv,non_canonical_department,(unresolved),sound_cars,2
+budget_lines_raw.csv,non_canonical_department,(unresolved),tv_spots,2
+budget_lines_raw.csv,non_canonical_department,(unresolved),whatsapp_chatbot,6
+budget_lines_raw.csv,unparsable_amount,Alto Paraguay,tv_spots,1
+budget_lines_raw.csv,unparsable_amount,Alto Parana,billboards,1
+budget_lines_raw.csv,unparsable_amount,Alto Parana,radio_spots,1
+budget_lines_raw.csv,unparsable_amount,Alto Parana,whatsapp_chatbot,1
+budget_lines_raw.csv,unparsable_amount,Amambay,canvassing,1
+budget_lines_raw.csv,unparsable_amount,Amambay,messenger_chatbot,1
+budget_lines_raw.csv,unparsable_amount,Amambay,radio_spots,3
+budget_lines_raw.csv,unparsable_amount,Amambay,sound_cars,1
+budget_lines_raw.csv,unparsable_amount,Asuncion,billboards,1
+budget_lines_raw.csv,unparsable_amount,Asuncion,canvassing,1
+budget_lines_raw.csv,unparsable_amount,Asuncion,facebook_ads,1
+budget_lines_raw.csv,unparsable_amount,Asuncion,radio_spots,1
+budget_lines_raw.csv,unparsable_amount,Boqueron,billboards,3
+budget_lines_raw.csv,unparsable_amount,Boqueron,email,1
+budget_lines_raw.csv,unparsable_amount,Boqueron,radio_spots,1
+budget_lines_raw.csv,unparsable_amount,Boqueron,tv_spots,1
+budget_lines_raw.csv,unparsable_amount,Caaguazu,radio_spots,1
+budget_lines_raw.csv,unparsable_amount,Caazapa,rallies_events,1
+budget_lines_raw.csv,unparsable_amount,Caazapa,sound_cars,1
+budget_lines_raw.csv,unparsable_amount,Canindeyu,canvassing,1
+budget_lines_raw.csv,unparsable_amount,Canindeyu,rallies_events,2
+budget_lines_raw.csv,unparsable_amount,Canindeyu,tv_spots,1
+budget_lines_raw.csv,unparsable_amount,Central,billboards,2
+budget_lines_raw.csv,unparsable_amount,Concepcion,facebook_ads,1
+budget_lines_raw.csv,unparsable_amount,Cordillera,radio_spots,1
+budget_lines_raw.csv,unparsable_amount,Cordillera,sms,1
+budget_lines_raw.csv,unparsable_amount,Cordillera,tv_spots,1
+budget_lines_raw.csv,unparsable_amount,Guaira,billboards,1
+budget_lines_raw.csv,unparsable_amount,Guaira,email,1
+budget_lines_raw.csv,unparsable_amount,Guaira,rallies_events,1
+budget_lines_raw.csv,unparsable_amount,Itapua,billboards,1
+budget_lines_raw.csv,unparsable_amount,Itapua,email,1
+budget_lines_raw.csv,unparsable_amount,Itapua,radio_spots,1
+budget_lines_raw.csv,unparsable_amount,Itapua,rallies_events,1
+budget_lines_raw.csv,unparsable_amount,Itapua,sms,1
+budget_lines_raw.csv,unparsable_amount,Itapua,tv_spots,5
+budget_lines_raw.csv,unparsable_amount,Itapua,whatsapp_chatbot,1
+budget_lines_raw.csv,unparsable_amount,Misiones,billboards,2
+budget_lines_raw.csv,unparsable_amount,Misiones,sound_cars,1
+budget_lines_raw.csv,unparsable_amount,Neembucu,canvassing,2
+budget_lines_raw.csv,unparsable_amount,Neembucu,rallies_events,2
+budget_lines_raw.csv,unparsable_amount,Neembucu,sound_cars,1
+budget_lines_raw.csv,unparsable_amount,Neembucu,whatsapp_chatbot,1
+budget_lines_raw.csv,unparsable_amount,Paraguari,facebook_ads,1
+budget_lines_raw.csv,unparsable_amount,Paraguari,radio_spots,1
+budget_lines_raw.csv,unparsable_amount,Presidente Hayes,billboards,1
+budget_lines_raw.csv,unparsable_amount,Presidente Hayes,messenger_chatbot,1
+budget_lines_raw.csv,unparsable_amount,Presidente Hayes,radio_spots,1
+budget_lines_raw.csv,unparsable_amount,Presidente Hayes,tv_spots,1
+budget_lines_raw.csv,unparsable_amount,Presidente Hayes,whatsapp_chatbot,1
+budget_lines_raw.csv,unparsable_amount,San Pedro,email,1
+budget_lines_raw.csv,unparsable_amount,San Pedro,tv_spots,1
+media_buy_sheet_raw.csv,unparsable_impressions,Alto Paraguay,billboards,1
+media_buy_sheet_raw.csv,unparsable_impressions,Alto Parana,billboards,2
+media_buy_sheet_raw.csv,unparsable_impressions,Alto Parana,facebook_ads,1
+media_buy_sheet_raw.csv,unparsable_impressions,Alto Parana,tv_spots,2
+media_buy_sheet_raw.csv,unparsable_impressions,Amambay,radio_spots,2
+media_buy_sheet_raw.csv,unparsable_impressions,Asuncion,billboards,1
+media_buy_sheet_raw.csv,unparsable_impressions,Asuncion,radio_spots,1
+media_buy_sheet_raw.csv,unparsable_impressions,Boqueron,radio_spots,1
+media_buy_sheet_raw.csv,unparsable_impressions,Boqueron,tv_spots,3
+media_buy_sheet_raw.csv,unparsable_impressions,Caaguazu,radio_spots,1
+media_buy_sheet_raw.csv,unparsable_impressions,Caazapa,radio_spots,1
+media_buy_sheet_raw.csv,unparsable_impressions,Caazapa,tv_spots,1
+media_buy_sheet_raw.csv,unparsable_impressions,Concepcion,facebook_ads,1
+media_buy_sheet_raw.csv,unparsable_impressions,Concepcion,tv_spots,1
+media_buy_sheet_raw.csv,unparsable_impressions,Itapua,billboards,1
+media_buy_sheet_raw.csv,unparsable_impressions,Itapua,radio_spots,1
+media_buy_sheet_raw.csv,unparsable_impressions,Itapua,tv_spots,2
+media_buy_sheet_raw.csv,unparsable_impressions,Misiones,radio_spots,1
+media_buy_sheet_raw.csv,unparsable_impressions,Misiones,tv_spots,2
+media_buy_sheet_raw.csv,unparsable_impressions,Neembucu,radio_spots,2
+media_buy_sheet_raw.csv,unparsable_impressions,Neembucu,tv_spots,3
+media_buy_sheet_raw.csv,unparsable_impressions,Paraguari,radio_spots,1
+media_buy_sheet_raw.csv,unparsable_impressions,Paraguari,tv_spots,1
+media_buy_sheet_raw.csv,unparsable_impressions,Presidente Hayes,facebook_ads,1
+media_buy_sheet_raw.csv,unparsable_impressions,Presidente Hayes,radio_spots,1
+media_buy_sheet_raw.csv,unparsable_impressions,Presidente Hayes,tv_spots,1
+media_buy_sheet_raw.csv,unparsable_impressions,San Pedro,facebook_ads,1
+media_buy_sheet_raw.csv,unparsable_impressions,San Pedro,radio_spots,2
+media_buy_sheet_raw.csv,unparsable_impressions,San Pedro,tv_spots,1
+volunteer_logs_raw.csv,unparsable_contacts,Alto Paraguay,canvassing,5
+volunteer_logs_raw.csv,unparsable_contacts,Alto Paraguay,sound_cars,1
+volunteer_logs_raw.csv,unparsable_contacts,Alto Parana,canvassing,5
+volunteer_logs_raw.csv,unparsable_contacts,Alto Parana,sound_cars,1
+volunteer_logs_raw.csv,unparsable_contacts,Asuncion,canvassing,2
+volunteer_logs_raw.csv,unparsable_contacts,Asuncion,rallies_events,1
+volunteer_logs_raw.csv,unparsable_contacts,Asuncion,sound_cars,1
+volunteer_logs_raw.csv,unparsable_contacts,Boqueron,canvassing,4
+volunteer_logs_raw.csv,unparsable_contacts,Boqueron,rallies_events,1
+volunteer_logs_raw.csv,unparsable_contacts,Boqueron,sound_cars,1
+volunteer_logs_raw.csv,unparsable_contacts,Caaguazu,canvassing,3
+volunteer_logs_raw.csv,unparsable_contacts,Caazapa,canvassing,1
+volunteer_logs_raw.csv,unparsable_contacts,Canindeyu,canvassing,2
+volunteer_logs_raw.csv,unparsable_contacts,Canindeyu,sound_cars,1
+volunteer_logs_raw.csv,unparsable_contacts,Central,sound_cars,1
+volunteer_logs_raw.csv,unparsable_contacts,Guaira,canvassing,7
+volunteer_logs_raw.csv,unparsable_contacts,Guaira,sound_cars,3
+volunteer_logs_raw.csv,unparsable_contacts,Itapua,canvassing,5
+volunteer_logs_raw.csv,unparsable_contacts,Itapua,rallies_events,1
+volunteer_logs_raw.csv,unparsable_contacts,Itapua,sound_cars,1
+volunteer_logs_raw.csv,unparsable_contacts,Misiones,canvassing,4
+volunteer_logs_raw.csv,unparsable_contacts,Misiones,sound_cars,1
+volunteer_logs_raw.csv,unparsable_contacts,Neembucu,canvassing,9
+volunteer_logs_raw.csv,unparsable_contacts,Neembucu,rallies_events,1
+volunteer_logs_raw.csv,unparsable_contacts,Neembucu,sound_cars,3
+volunteer_logs_raw.csv,unparsable_contacts,Paraguari,canvassing,3
+volunteer_logs_raw.csv,unparsable_contacts,Paraguari,rallies_events,1
+volunteer_logs_raw.csv,unparsable_contacts,Presidente Hayes,canvassing,6
+volunteer_logs_raw.csv,unparsable_contacts,Presidente Hayes,rallies_events,1
+volunteer_logs_raw.csv,unparsable_contacts,San Pedro,canvassing,5
+volunteer_logs_raw.csv,unparsable_contacts,San Pedro,rallies_events,2
+volunteer_logs_raw.csv,unparsable_contacts,San Pedro,sound_cars,3

@@ -86,7 +86,7 @@ assigned at filing time. Status: draft → approved → filed → done.
 | IMP-B01 | Allocation parameter provenance | P1 | high | issues | soft: B02 | #57 | done |
 | IMP-B02 | Uncertainty-aware ingestion of Module A outputs | P1 | high | issues | A01, A03 | #58 | done |
 | IMP-B03 | MILP robustness & contract corrections | P2 | low | issues | — | #59 | done |
-| IMP-B04 | Silent-substitution elimination in B data layer | P1 | low | findings | — | — | draft |
+| IMP-B04 | Silent-substitution elimination in B data layer | P1 | low | findings | — | F-086 | done |
 | IMP-C01 | MCMC convergence remediation & hard diagnostic gates | P0 | high | dual | — | #60 + F-083 | done |
 | IMP-C02 | Model spec: pollster prior families; calibrated φ→σ_obs | P1 | high | issues | C01 | #61 | done |
 | IMP-C03 | Report computed-from-artifact integrity | P1 | medium | findings | C01, C02, C05 | F-084 | done |
