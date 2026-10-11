@@ -1,0 +1,46 @@
+id: F-084
+title: "post_mortem.qmd publishes hand-typed diagnostics, stale 95% labels, and superseded methodology"
+category: fake_completion
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-10-11
+closed_at: 2026-10-11
+recurrence_count: 1   # F-068 fixed the same interval mislabel outside the report
+evidence: |
+  module_c_forecasting_scenarios/portfolio/quarto/post_mortem.qmd (published to
+  GitHub Pages):
+  - Labels intervals "95% HDI" (fig-posterior-track caption and trace name,
+    house-effects table headers "HDI 95% low/high", fig-house-effects caption)
+    while config/pymc_sampler.yaml sets hdi_prob: 0.94 and hierarchical.py
+    computes a 94% HDI. F-068's script does not scan the report.
+  - tbl-diagnostics is a literal display(HTML(...)) block reporting "4"
+    divergences, R-hat "> 1.01" and ESS "< 100" with warning marks: the v0.3
+    numbers. Nothing is read from the fit; the v0.4 model has 0 divergences.
+  - Prose and the Methodology Summary describe the superseded model
+    (GaussianRandomWalk(sigma ~ HalfNormal(2.0)), house prior Normal(0, 3),
+    "non-centered reparameterization" recommended as future work although v0.4
+    ships it), sampler target_accept 0.95 (full NUTS uses 0.99), and a
+    reproducibility command `MC_FAST=0 make module-c-all` that selects the
+    50-draw fast path because MC_FAST is truthy for any non-empty value.
+  - .github/workflows/deploy-module-c-pages.yml rendered the report from an
+    MC_FAST=1 run, so even computed diagnostics would have shown 50-draw values.
+verification_script: scripts/check_report_computed_integrity.py
+notes: |
+  Spec: governance/improvement_plan/IMP-C03_report-computed-integrity.md
+  Closed 2026-10-11:
+  - hierarchical.py exports tracking/mcmc_diagnostics_summary.json (R-hat max,
+    bulk/tail ESS min, divergences, tree-depth hits, chains, draws,
+    sampler_path, model_version, created_at, gates, passed) via
+    diagnostics_summary(); gates match tests/test_mcmc_diagnostics_summary.py.
+  - The report derives HDI_LABEL from pymc_sampler.yaml, renders the
+    diagnostics table from the summary (missing-artifact notice; aborts on a
+    model_version mismatch with the daily parquet; flags MC_FAST runs), and
+    renders the model-stack bullets and methodology table from config and
+    corrected code constants.
+  - Pages deploy now runs the Module C pipeline under full NUTS (~4 min).
+    Local full-NUTS run on the poll fixture: R-hat max 1.0051, ESS bulk 1173 /
+    tail 718, 0 divergences, 0 tree-depth hits — all gates pass.
+  Script checks: no literal "NN% HDI"; HDI_LABEL from config; no numeric
+  literal table cells in tbl-diagnostics and it reads the summary; pipeline
+  exports the summary; methodology sigma_rw/sigma_house priors and
+  battleground MODEL_VERSION match code; banned superseded strings absent.
