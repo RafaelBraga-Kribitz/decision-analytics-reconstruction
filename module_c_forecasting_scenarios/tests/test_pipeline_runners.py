@@ -329,7 +329,9 @@ def test_run_exit_main_with_fixture_mocked(fixture_raw_polls_csv: Path, tmp_path
                 "hdi_low": 2.0,
                 "hdi_high": 8.0,
                 "calibration_series": "A",
-                "model_version": "c_exit_bias_v0.1",
+                "model_version": "c_exit_bias_v0.2",
+                "n_waves": 4,
+                "low_n": True,
             }
         ]
     )

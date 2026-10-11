@@ -92,7 +92,7 @@ assigned at filing time. Status: draft → approved → filed → done.
 | IMP-C03 | Report computed-from-artifact integrity | P1 | medium | findings | C01, C02, C05 | — | draft |
 | IMP-C04 | Shock & herding parameter calibration/disclosure | P1 | high | issues | — | #62 | filed |
 | IMP-C05 | Battleground/geo uncertainty integrity | P1 | high | dual | C01, C02; soft: V01 | #63 | issue filed |
-| IMP-C06 | Small-sample honesty (walk-forward, exit model) | P1 | medium | findings | C01 | — | draft |
+| IMP-C06 | Small-sample honesty (walk-forward, exit model) | P1 | medium | findings | C01 | F-085 | done |
 | IMP-C07 | Contract validator full-spec enforcement | P1 | medium | issues | — | #64 | filed |
 | IMP-C08 | MC scenario stratification reweighting | P2 | medium | issues | C01 | #65 | filed |
 | IMP-V01 | Shared visual system (palette + figure template) | P1 | medium | issues | — | #66 | filed |
