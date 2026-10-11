@@ -13,6 +13,23 @@ from sklearn.metrics import brier_score_loss, roc_auc_score
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
 
+from population_segmentation.utils.model_params import section
+
+# Fit-time settings from model_params.yaml ``propensity`` (F-088 / IMP-A06).
+_P: dict[str, Any] = section("propensity")
+_HOLDOUT_FRAC = 1.0 - float(_P.get("train_frac", 0.60))
+_TEST_SHARE_OF_HOLDOUT = float(_P.get("test_frac", 0.20)) / _HOLDOUT_FRAC
+
+
+def _logistic(random_state: int) -> LogisticRegression:
+    return LogisticRegression(
+        penalty=str(_P.get("penalty", "l2")),  # type: ignore[arg-type]  # validated by sklearn
+        solver=str(_P.get("solver", "lbfgs")),  # type: ignore[arg-type]
+        max_iter=int(_P.get("max_iter", 1000)),
+        random_state=random_state,
+    )
+
+
 FEATURES = [
     "age_bin_encoded",
     "gender_encoded",
@@ -40,7 +57,7 @@ class PropensityModel:
             partitions when class balance allows.
     """
 
-    random_state: int = 42
+    random_state: int = int(_P.get("random_state", 42))
     individual_spread_std: float = 0.065
     stratify_by: tuple[str, ...] = field(
         default_factory=lambda: ("department", "age_bin_encoded", "gender_encoded")
@@ -90,15 +107,19 @@ class PropensityModel:
             raise ValueError("stratify_by must name at least one column")
         try:
             x_train, x_tmp, y_train, y_tmp = train_test_split(
-                x, y, test_size=0.4, random_state=self.random_state, stratify=strat_series
+                x, y, test_size=_HOLDOUT_FRAC, random_state=self.random_state, stratify=strat_series
             )
         except ValueError:
             # Rare strata (small n or high-cardinality composite keys) — fall back to department.
             x_train, x_tmp, y_train, y_tmp = train_test_split(
-                x, y, test_size=0.4, random_state=self.random_state, stratify=df["department"]
+                x,
+                y,
+                test_size=_HOLDOUT_FRAC,
+                random_state=self.random_state,
+                stratify=df["department"],
             )
         x_cal, x_test, y_cal, y_test = train_test_split(
-            x_tmp, y_tmp, test_size=0.5, random_state=self.random_state
+            x_tmp, y_tmp, test_size=_TEST_SHARE_OF_HOLDOUT, random_state=self.random_state
         )
 
         scaler = StandardScaler()
@@ -107,14 +128,14 @@ class PropensityModel:
         x_test_s = scaler.transform(x_test)
         x_all_s = scaler.transform(x)
 
-        base = LogisticRegression(max_iter=1000, random_state=self.random_state)
+        base = _logistic(self.random_state)
         base.fit(x_train_s, y_train)
         raw_cal = base.decision_function(x_cal_s)
         raw_test = base.decision_function(x_test_s)
         raw_all = base.decision_function(x_all_s)
 
         # Platt scaling: logistic on raw scores against calibration set
-        platt = LogisticRegression(max_iter=1000, random_state=self.random_state)
+        platt = _logistic(self.random_state)
         platt.fit(raw_cal.reshape(-1, 1), y_cal)
         prob_test = platt.predict_proba(raw_test.reshape(-1, 1))[:, 1]
         prob_all = platt.predict_proba(raw_all.reshape(-1, 1))[:, 1]
@@ -203,7 +224,7 @@ class PropensityModel:
         scaler_abl = StandardScaler()
         x_train_abl = scaler_abl.fit_transform(np.asarray(x_train)[:, keep])
         x_test_abl = scaler_abl.transform(np.asarray(x_test)[:, keep])
-        base_abl = LogisticRegression(max_iter=1000, random_state=self.random_state)
+        base_abl = _logistic(self.random_state)
         base_abl.fit(x_train_abl, y_train)
         prob_test_abl = base_abl.predict_proba(x_test_abl)[:, 1]
         return float(roc_auc_score(y_test, prob_test_abl)), keep

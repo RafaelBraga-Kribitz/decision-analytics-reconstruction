@@ -67,6 +67,12 @@ _GENDER_MAP = {
     "2": "F",
 }
 
+# Fallback written for a DOB that cannot be parsed. Every use is flagged in
+# ``dob_imputed`` and counted in the QA report (F-087 / IMP-A04), so the
+# resulting age spike is never mistaken for real 1980 births.
+_DOB_FALLBACK = "01/01/1980"
+AGE_MIN, AGE_MAX = 18, 115
+
 _LANGUAGE_IMPUTATION_KEYS = (
     "jopara_bilingual",
     "guarani_only",
@@ -116,16 +122,20 @@ def _normalize_departments_and_dedupe(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def _derive_age_from_dob(df: pd.DataFrame) -> None:
-    dob_series = _normalize_dob(pd.Series(df["dob"].astype(str)))
+    dob_series, dob_imputed = _normalize_dob(pd.Series(df["dob"].astype(str)))
     df["dob"] = dob_series
+    df["dob_imputed"] = dob_imputed
     event_date = pd.Timestamp("2018-04-22")
     dob_parsed = pd.to_datetime(df["dob"], format="%d/%m/%Y", errors="coerce")
     age = ((event_date - dob_parsed).dt.days / 365.25).fillna(0).astype(int)
     df["age_on_event_date"] = age
     df["dob_ambiguous"] = dob_parsed.isna()
-    df["age_out_of_range"] = ~df["age_on_event_date"].between(18, 115)
-    df.loc[df["age_on_event_date"] < 18, "age_on_event_date"] = 18
-    df.loc[df["age_on_event_date"] > 115, "age_on_event_date"] = 115
+    # Flag before clamping: the [AGE_MIN, AGE_MAX] checks in validator.py and
+    # schema_validator.py are post-conditions of this clamp (schema contract),
+    # not independent plausibility gates; the pre-clamp rate is in the QA report.
+    df["age_out_of_range"] = ~df["age_on_event_date"].between(AGE_MIN, AGE_MAX)
+    df.loc[df["age_on_event_date"] < AGE_MIN, "age_on_event_date"] = AGE_MIN
+    df.loc[df["age_on_event_date"] > AGE_MAX, "age_on_event_date"] = AGE_MAX
 
 
 def _impute_municipalities(df: pd.DataFrame) -> None:
@@ -149,10 +159,24 @@ def _canonicalize_phone(df: pd.DataFrame) -> None:
 
 
 def _ensure_rural_flag(df: pd.DataFrame, config: dict[str, Any], rng: np.random.Generator) -> None:
-    if "rural_flag" not in df.columns:
+    """Impute a missing ``rural_flag`` per department, as the generator does.
+
+    Each entity is rural with probability ``1 - department_urban_share[dept]``;
+    departments absent from the table fall back to the national anchor
+    ``cleaner_synthetic_defaults.rural_flag_true_rate``. A flat national draw
+    would erase the 1.00 (Asuncion) to 0.24 (Canindeyu) urban-share spread.
+    """
+    df.attrs["rural_flag_imputed"] = "rural_flag" not in df.columns
+    if df.attrs["rural_flag_imputed"]:
         csd: dict[str, Any] = config.get("cleaner_synthetic_defaults") or {}
-        rural_p = float(csd.get("rural_flag_true_rate", 0.383))
-        df["rural_flag"] = rng.random(len(df)) < rural_p
+        national_urban = 1.0 - float(csd.get("rural_flag_true_rate", 0.383))
+        urban_share: dict[str, float] = config.get("department_urban_share") or {}
+        p_urban = (
+            df["department"]
+            .map(lambda d: urban_share.get(str(d), national_urban))
+            .to_numpy(dtype=float)
+        )
+        df["rural_flag"] = rng.random(len(df)) >= p_urban
     df["rural_flag"] = df["rural_flag"].fillna(False).astype(bool)
     df["rural_flag_derived"] = True
 
@@ -241,13 +265,16 @@ def clean_population(
     return out
 
 
-def _normalize_dob(dob: pd.Series) -> pd.Series:
+def _normalize_dob(dob: pd.Series) -> tuple[pd.Series, pd.Series]:
+    """Normalize DOB strings to DD/MM/YYYY; return (dob, imputed-with-fallback mask)."""
     out: list[str] = []
+    imputed: list[bool] = []
     for raw_item in dob:
         raw: str = str(raw_item)
         parts = raw.split("/")
+        imputed.append(True)
         if len(parts) != 3:
-            out.append("01/01/1980")
+            out.append(_DOB_FALLBACK)
             continue
         a, b, c = parts
         # detect likely MM/DD vs DD/MM
@@ -256,12 +283,13 @@ def _normalize_dob(dob: pd.Series) -> pd.Series:
             bi = int(b)
             ci = int(c)
         except ValueError:
-            out.append("01/01/1980")
+            out.append(_DOB_FALLBACK)
             continue
         if ci < 1900 or ci > 2025:
             # malformed year; fallback
-            out.append("01/01/1980")
+            out.append(_DOB_FALLBACK)
             continue
+        imputed[-1] = False
         day, month = ai, bi
         if ai <= 12 and bi > 12:
             # likely MM/DD -> swap
@@ -269,7 +297,7 @@ def _normalize_dob(dob: pd.Series) -> pd.Series:
         day = min(max(day, 1), 28)
         month = min(max(month, 1), 12)
         out.append(f"{day:02d}/{month:02d}/{ci}")
-    return pd.Series(out, index=dob.index)
+    return pd.Series(out, index=dob.index), pd.Series(imputed, index=dob.index, dtype=bool)
 
 
 def _write_qa_report(clean_df: pd.DataFrame, raw_df: pd.DataFrame, out_dir: Path) -> None:
@@ -285,8 +313,32 @@ def _write_qa_report(clean_df: pd.DataFrame, raw_df: pd.DataFrame, out_dir: Path
         f"- Municipality null rate (post-clean): {clean_df['municipality'].isna().mean():.4f}",
         f"- Cedula invalid rate: {clean_df['cedula_invalid'].mean():.4f}",
         f"- Rural flag nulls: {clean_df['rural_flag'].isna().sum()}",
+        *_imputation_lines(clean_df),
     ]
     path.write_text("\n".join(lines), encoding="utf-8")
+
+
+def _imputation_lines(clean_df: pd.DataFrame) -> list[str]:
+    """QA lines that make every imputation and clamp observable (F-087)."""
+    imputed = clean_df["dob_imputed"].astype(bool)
+    ages = pd.Series(clean_df["age_on_event_date"])
+    mode_all = int(ages.mode().iat[0]) if len(ages) else 0
+    kept = pd.Series(ages[~imputed])
+    mode_kept = int(kept.mode().iat[0]) if len(kept) else 0
+    lines = [
+        f"- DOB imputed with {_DOB_FALLBACK} fallback: {int(imputed.sum())} "
+        f"({imputed.mean():.4f}); age mode {mode_all} with imputed rows, {mode_kept} without",
+        f"- Age outside [{AGE_MIN}, {AGE_MAX}] before clamping: "
+        f"{int(clean_df['age_out_of_range'].sum())} ({clean_df['age_out_of_range'].mean():.4f})"
+        " — the post-clean age bound is a schema-contract check, not a quality gate",
+    ]
+    if clean_df.attrs.get("rural_flag_imputed"):
+        by_dept = clean_df.groupby("department")["rural_flag"].mean().sort_index()
+        lines.append("- rural_flag imputed per department urban share; rural rate by department:")
+        lines += [f"  - {dept}: {rate:.3f}" for dept, rate in by_dept.items()]
+    else:
+        lines.append("- rural_flag: present in raw input (not imputed)")
+    return lines
 
 
 def _parse_cli() -> argparse.Namespace:

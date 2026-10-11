@@ -31,7 +31,7 @@ Optional container flow (see repo root `docker-compose.yml`): Colima + `docker c
 
 | Artifact | Description | Consumer |
 |----------|-------------|---------|
-| `population_master_clean.parquet` | 50,000 voters (default run; 4.26M design scale), 14-step cleaned | Module B, Module C |
+| `population_master_clean.parquet` | 50,000 voters (default run; 4.26M design scale), cleaned by the 10 steps in `data/cleaner.py:clean_population` | Module B, Module C |
 | `segment_labels.parquet` | 6 behavioral segments (DBSCAN + K-Means) | Module B |
 | `participation_propensity.parquet` | Calibrated propensity scores per voter | Module B, Module C |
 | `media_reachability_by_segment.csv` | Channel reach proportions per segment | Module B |
@@ -44,11 +44,10 @@ Optional container flow (see repo root `docker-compose.yml`): Colima + `docker c
 |----------|-------------|
 | [`reports/model_card_segmentation.md`](reports/model_card_segmentation.md) | Segmentation model: intended use, limits, metrics |
 | [`reports/model_card_propensity.md`](reports/model_card_propensity.md) | Propensity model: methodology, calibration, acceptance criteria |
-| [`reports/segment_action_matrix.md`](reports/segment_action_matrix.md) | Segment → channel / priority / policy bridge (stakeholder-facing) |
-| [`reports/transformation_log.md`](../reports/transformation_log.md) | 14-step cleaning log with implementation status |
-| [`reports/decision_log.md`](../reports/decision_log.md) | All non-trivial modeling decisions with alternatives considered |
+| [`../reports/module_a/k_sweep_2026-07-09.md`](../reports/module_a/k_sweep_2026-07-09.md) | Pre-registered k-selection sweep and the k = 6 taxonomy decision |
+| [`config/model_params.yaml`](config/model_params.yaml) | Every runtime hyperparameter and acceptance gate (values recorded per run in `model_run_manifest.json`) |
 
-For synthetic data independence assumptions and limitations, see [`reports/statistical_independence_note.md`](../reports/statistical_independence_note.md).
+For synthetic-data assumptions and limitations, see [`../reports/epistemic_boundaries.md`](../reports/epistemic_boundaries.md).
 
 ---
 

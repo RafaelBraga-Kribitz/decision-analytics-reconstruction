@@ -1,9 +1,12 @@
 # pyright: reportUnknownMemberType=false, reportUnknownVariableType=false, reportUnknownArgumentType=false, reportUnknownLambdaType=false
 """Deterministic flaw injection layer.
 
-Injects all 13 flaw types from scope §4.2 into a clean synthetic population
+Injects 12 flaw types from scope §4.2 into a clean synthetic population
 to simulate the original data collection environment (TSJE regional re-type,
-DGEEC CSV exports, encoding errors, etc.).
+DGEEC CSV exports, encoding errors, etc.). ``rural_flag`` is not a raw-layer
+flaw: the generator always derives it from department urban share, and the
+cleaner re-derives it per department only when the column is absent.
+``df.attrs["flaw_types_injected"]`` lists exactly the operations performed.
 
 All operations are seeded for reproducibility. Flaw rates are read from config.
 """
@@ -170,7 +173,7 @@ def inject_flaws(
     config: dict[str, Any],
     seed: int | None = None,
 ) -> pd.DataFrame:
-    """Inject all 13 flaw types into a clean population DataFrame.
+    """Inject the 12 raw-layer flaw types into a clean population DataFrame.
 
     Args:
         df:     Clean population DataFrame from generator.py.
@@ -241,7 +244,6 @@ def inject_flaws(
         "SCH",
         "TYP_sentiment",
         "NUL_qualitative_district",
-        "NUL_rural_flag",  # always derived — counts as flaw type 13
     ]
 
     return df

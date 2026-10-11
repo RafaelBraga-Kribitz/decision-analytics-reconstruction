@@ -74,6 +74,23 @@ subject to:
 
 See [`SPECIFICATION.md`](SPECIFICATION.md) and [`../reports/module_b_optimization_formulation.md`](../reports/module_b_optimization_formulation.md) for full LP formulation and shadow-price extraction.
 
+## Data-quality disclosure
+
+The data layer never drops or substitutes silently (F-086):
+
+- `data/cleaner.py` records every rejected row with its first failing check
+  (`clean_directory_with_report`) and gates each source at a 2% rejection rate.
+- `fx/spread_model.py` reports every week that falls back to the default
+  50 PYG/USD add-on (`fx_fallback_report`); any fallback week fails the FX gate.
+
+Published for the deterministic demo batch by
+`scripts/generate_module_b_data_quality_report.py`:
+[`data_rejection_report.csv`](../reports/module_b/data_rejection_report.csv),
+[`fx_fallback_report.csv`](../reports/module_b/fx_fallback_report.csv) (empty: every week
+has a configured spread), and
+[`data_quality_summary.json`](../reports/module_b/data_quality_summary.json). The demo
+batch injects nulls and duplicates on purpose, so its rejection gates read FAIL by design.
+
 ## Tests and CI
 
 ```bash

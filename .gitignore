@@ -37,6 +37,9 @@ data/processed/*
 # F-082 investigation gate artifacts (check_battleground_ceiling_investigation.py).
 !reports/module_c/battleground_investigation/h0_verification_table.csv
 !reports/module_c/battleground_investigation/summary_tables.csv
+# F-086 Module B data-quality disclosure artifacts (check_module_b_silent_substitution.py).
+!reports/module_b/data_rejection_report.csv
+!reports/module_b/fx_fallback_report.csv
 
 # ─── MLflow ──────────────────────────────────────────────────────────────────
 mlruns/

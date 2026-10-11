@@ -16,3 +16,6 @@ wont_fix_reason: null
 notes: |
   Closure: config-loading adapter in pipeline/export.py OR sync YAML to code
   defaults with CI drift gate. Do not delete YAML honesty header until wired.
+  2026-10-11 (F-088): the loader now exists (utils/model_params.py) and the
+  header states keys are read at runtime; the script accepts that state in
+  place of the unwired-keys disclosure.

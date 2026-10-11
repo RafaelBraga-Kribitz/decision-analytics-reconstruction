@@ -10,7 +10,8 @@ soft_depends_on: []
 queue: dual
 target_repo: decision-analytics-reconstruction
 issue: 55
-status: draft
+status: done
+closed_by: "6a49bdd (#55), F-089"
 ---
 
 # IMP-A03 — Clustering Model Selection & Quality-Gate Integrity

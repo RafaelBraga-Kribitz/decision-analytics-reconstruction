@@ -82,6 +82,7 @@ def run_export(
     )
     from population_segmentation.models.propensity import PropensityModel
     from population_segmentation.models.segmentation import build_segmentation_frame
+    from population_segmentation.utils.model_params import effective_hyperparameters
 
     model_params_path = Path(__file__).resolve().parents[3] / "config" / "model_params.yaml"
     with open(model_params_path, encoding="utf-8") as f:
@@ -201,6 +202,7 @@ def run_export(
             "propensity": 42,
         },
     )
+    manifest_payload["effective_hyperparameters"] = effective_hyperparameters()
     manifest_payload["segmentation_metrics"] = {
         "silhouette": float(seg_metrics.get("silhouette", 0.0)),
         "bootstrap_ari": float(seg_metrics.get("bootstrap_ari", 0.0)),

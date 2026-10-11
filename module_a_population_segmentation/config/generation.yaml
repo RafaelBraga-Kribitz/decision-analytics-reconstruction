@@ -190,7 +190,8 @@ flaw_injection:
   schema_drift_rate: 0.015             # SCH: column naming inconsistency
   sentiment_scale_inconsistency: 0.20  # TYP: inconsistent 1-5 scale
   qualitative_district_null_rate: 0.25 # NUL: neighborhood name only
-  rural_flag_missing_rate: 1.00        # NUL: always absent in raw (always derived)
+  # rural_flag is not injected as a raw-layer flaw: the generator derives it from
+  # department_urban_share and the cleaner re-derives it per department if absent.
 
 # ─── Media penetration lookup (national defaults; overridden by dept) ─────────
 media_penetration_defaults:

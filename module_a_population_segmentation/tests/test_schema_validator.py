@@ -33,6 +33,7 @@ def _valid_clean_row() -> dict:
         "structural_dependency_proxy": False,
         "cedula_invalid": False,
         "age_out_of_range": False,
+        "dob_imputed": False,
     }
 
 

@@ -79,20 +79,20 @@ assigned at filing time. Status: draft → approved → filed → done.
 |---|---|---|---|---|---|---|---|
 | IMP-A01 | Propensity honesty: non-circular target, real AUC gate, no fabricated variance | P0 | high | findings | — | F-079 | done |
 | IMP-A02 | Categorical encoding for distance-based methods | P1 | medium | issues | — | #54 | done |
-| IMP-A03 | Clustering selection & quality-gate integrity | P1 | high | dual | A02, A05 | #55 | issue filed |
-| IMP-A04 | Cleaner & injector integrity | P1 | medium | findings | — | — | draft |
+| IMP-A03 | Clustering selection & quality-gate integrity | P1 | high | dual | A02, A05 | #55 + F-089 | done |
+| IMP-A04 | Cleaner & injector integrity | P1 | medium | findings | — | F-087 | done |
 | IMP-A05 | Fixed-reference feature scaling | P2 | medium | issues | — | #56 | done |
-| IMP-A06 | Config-runtime parity & documentation truth | P1 | medium | findings | — | — | draft |
+| IMP-A06 | Config-runtime parity & documentation truth | P1 | medium | findings | — | F-088 | done |
 | IMP-B01 | Allocation parameter provenance | P1 | high | issues | soft: B02 | #57 | done |
 | IMP-B02 | Uncertainty-aware ingestion of Module A outputs | P1 | high | issues | A01, A03 | #58 | done |
 | IMP-B03 | MILP robustness & contract corrections | P2 | low | issues | — | #59 | done |
-| IMP-B04 | Silent-substitution elimination in B data layer | P1 | low | findings | — | — | draft |
-| IMP-C01 | MCMC convergence remediation & hard diagnostic gates | P0 | high | dual | — | #60 | issue filed |
+| IMP-B04 | Silent-substitution elimination in B data layer | P1 | low | findings | — | F-086 | done |
+| IMP-C01 | MCMC convergence remediation & hard diagnostic gates | P0 | high | dual | — | #60 + F-083 | done |
 | IMP-C02 | Model spec: pollster prior families; calibrated φ→σ_obs | P1 | high | issues | C01 | #61 | done |
-| IMP-C03 | Report computed-from-artifact integrity | P1 | medium | findings | C01, C02, C05 | — | draft |
+| IMP-C03 | Report computed-from-artifact integrity | P1 | medium | findings | C01, C02, C05 | F-084 | done |
 | IMP-C04 | Shock & herding parameter calibration/disclosure | P1 | high | issues | — | #62 | done |
 | IMP-C05 | Battleground/geo uncertainty integrity | P1 | high | dual | C01, C02; soft: V01 | #63 | done |
-| IMP-C06 | Small-sample honesty (walk-forward, exit model) | P1 | medium | findings | C01 | — | draft |
+| IMP-C06 | Small-sample honesty (walk-forward, exit model) | P1 | medium | findings | C01 | F-085 | done |
 | IMP-C07 | Contract validator full-spec enforcement | P1 | medium | issues | — | #64 | done |
 | IMP-C08 | MC scenario stratification reweighting | P2 | medium | issues | C01 | #65 | done |
 | IMP-V01 | Shared visual system (palette + figure template) | P1 | medium | issues | — | #66 | done |

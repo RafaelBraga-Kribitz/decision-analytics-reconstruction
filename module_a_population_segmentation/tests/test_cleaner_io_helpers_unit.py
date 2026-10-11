@@ -17,6 +17,9 @@ def test_write_qa_report_creates_markdown(tmp_path: Path) -> None:
             MUNICIPALITY: ["X"] * n,
             CEDULA_INVALID: [False] * n,
             RURAL_FLAG: [False] * n,
+            "dob_imputed": [True, False, False, False, False],
+            "age_on_event_date": [38, 25, 25, 40, 60],
+            "age_out_of_range": [False, True, False, False, False],
         }
     )
     raw_df = pd.DataFrame({"k": range(n)})
@@ -27,6 +30,8 @@ def test_write_qa_report_creates_markdown(tmp_path: Path) -> None:
     assert "QA Report" in text
     assert "Input rows: 5" in text
     assert "Output rows: 5" in text
+    assert "DOB imputed with 01/01/1980 fallback: 1" in text
+    assert "before clamping: 1" in text
 
 
 def test_parse_cli_reads_argv(monkeypatch) -> None:

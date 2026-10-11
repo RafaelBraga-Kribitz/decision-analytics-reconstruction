@@ -1,0 +1,38 @@
+id: F-089
+title: "Clustering gates unenforced on the production run; gate wording drifts across surfaces"
+category: fragmented_standards
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-10-11
+closed_at: 2026-10-11
+recurrence_count: 0
+evidence: |
+  The IMP-A03 code slice shipped in 6a49bdd (#55): one canonical
+  compute_bootstrap_ari, Davies-Bouldin / Calinski-Harabasz in the segmenter,
+  PSI in export.py. The governance slice (audit codes A7/A8/A9) was never
+  filed and has no regression check:
+  - The 50k production gates documented in model_params.yaml
+    (silhouette_threshold 0.22, bootstrap_ari_threshold 0.40, max_noise_rate
+    0.01), the segmentation model card and reports/NUMERIC_SSOT.md are
+    asserted by no test or script against the production run; tests only
+    check the 15k fixture floors (0.18 silhouette, 0.50 ARI).
+  - module_a_population_segmentation/reports/model_card_segmentation.md read
+    "Bootstrap ARI > 0.40" while the YAML, NUMERIC_SSOT and README read
+    "≥ 0.40".
+verification_script: scripts/check_clustering_gate_consistency.py
+notes: |
+  Spec: governance/improvement_plan/IMP-A03_cluster-selection-gates.md
+  (finding slice; the re-selection slice closed as issue #55).
+  Closed 2026-10-11: the model card reads "Bootstrap ARI ≥ 0.40". The script
+  (a) asserts the 50k manifest's segmentation_metrics against the YAML gates
+  (the Adversary job regenerates data/processed with the 50k pipeline before
+  re-verifying; current run: silhouette 0.2562, ARI 0.4304, noise 0.0001);
+  (b) checks the gate strings in the model card and NUMERIC_SSOT and that the
+  YAML-documented 15k ARI test floor equals the test_segmentation.py assert;
+  (c) requires a single adjusted_rand_score implementation in src
+  (clustering_metrics.py) with the segmenter delegating to it; (d) requires
+  production callers for DB, CH and PSI.
+  Observation, not changed here: test_segmentation.py's comment says the 15k
+  fixture yields silhouette ~0.197 single-threaded; a single-threaded run in
+  this session measured 0.2689 (matching the model card). The 0.18 test floor
+  is untouched pending a CI-side measurement.

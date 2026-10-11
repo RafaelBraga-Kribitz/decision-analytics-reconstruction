@@ -1,7 +1,7 @@
 """Tests for population_segmentation.data.raw_injector.
 
 TDD: tests written before implementation.
-Gate A2: all 13 flaw types present at configured rates ±20%.
+Gate A2: all 12 injected flaw types present at configured rates ±20%.
 """
 
 from __future__ import annotations
@@ -157,18 +157,21 @@ class TestDeterminism:
         ), f"Expected ~{expected_extra} duplicate rows, got {actual_extra}"
 
 
-class TestFlaw13Coverage:
-    """All 13 flaw types from scope §4.2 must be present."""
+class TestFlawManifestCoverage:
+    """The flaw manifest lists exactly the 12 operations inject_flaws performs (F-087)."""
 
-    def test_all_13_flaw_types_accounted(self, raw_population: pd.DataFrame) -> None:
-        """inject_flaws must record exactly 13 flaw types in df.attrs."""
+    def test_all_12_flaw_types_accounted(self, raw_population: pd.DataFrame) -> None:
+        """inject_flaws must record exactly the 12 injected flaw types in df.attrs."""
         assert (
             "flaw_types_injected" in raw_population.attrs
         ), "inject_flaws must store the injected flaw list in df.attrs['flaw_types_injected']"
         injected = raw_population.attrs["flaw_types_injected"]
         assert (
-            len(injected) == 13
-        ), f"Expected exactly 13 flaw types (scope §4.2), got {len(injected)}: {injected}"
+            len(injected) == 12
+        ), f"Expected 12 injected flaw types, got {len(injected)}: {injected}"
+        # rural_flag is derived upstream, never nulled in the raw layer.
+        assert "NUL_rural_flag" not in injected
+        assert "rural_flag" in raw_population.columns
 
 
 def test_raw_injector_source_avoids_string_dataframe_column_keys() -> None:

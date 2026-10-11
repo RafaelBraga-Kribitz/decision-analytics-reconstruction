@@ -10,7 +10,8 @@ soft_depends_on: []
 queue: findings
 target_repo: decision-analytics-reconstruction
 issue: null
-status: draft
+status: done
+closed_by: "F-086"
 ---
 
 # IMP-B04 — Silent-Substitution Elimination in the Module B Data Layer

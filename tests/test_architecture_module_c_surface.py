@@ -13,7 +13,7 @@ _LEGACY_NOT_SHIPPED = [
 ]
 
 _REQUIRED = [
-    _MOD_C / "reports" / "C_research_proof_table.md",
+    _MOD_C / "reports" / "C_research_evidence_table.md",
     _MOD_C / "METHODOLOGY.md",
     _SRC / "models" / "tracking" / "hierarchical.py",
     _SRC / "pipeline" / "run_all.py",
@@ -30,8 +30,8 @@ def test_module_c_canonical_paths_and_methodology_artifacts_exist() -> None:
         ), f"Unexpected legacy-only path (checklist stale): {legacy.relative_to(_REPO_ROOT)}"
     for path in _REQUIRED:
         assert path.is_file(), f"Missing Module C artifact: {path.relative_to(_REPO_ROOT)}"
-    proof = (_MOD_C / "reports" / "C_research_proof_table.md").read_text(encoding="utf-8")
-    assert len(proof) >= 200, "C_research_proof_table.md unexpectedly short"
+    proof = (_MOD_C / "reports" / "C_research_evidence_table.md").read_text(encoding="utf-8")
+    assert len(proof) >= 200, "C_research_evidence_table.md unexpectedly short"
 
 
 def test_module_c_lightweight_import_surface() -> None:

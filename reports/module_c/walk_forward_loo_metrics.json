@@ -5,9 +5,15 @@
   "min_train_size": 2,
   "n_total_polls": 8,
   "mc_fast": true,
-  "brier_score": 0.31001666666666666,
-  "log_loss": 1.0236631753066616,
+  "brier_score": 0.3139166666666667,
+  "log_loss": 1.0363235077546948,
   "coverage_80pct": 0.3333333333333333,
   "coverage_95pct": 0.5,
+  "coverage_80pct_k": 2.0,
+  "coverage_80pct_ci_low": 0.043271868292889565,
+  "coverage_80pct_ci_high": 0.7772219044964505,
+  "coverage_95pct_k": 3.0,
+  "coverage_95pct_ci_low": 0.11811724875702524,
+  "coverage_95pct_ci_high": 0.8818827512429748,
   "n_holdouts": 6.0
 }

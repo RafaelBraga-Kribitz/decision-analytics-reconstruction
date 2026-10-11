@@ -15,6 +15,7 @@ from module_c_forecasting_scenarios.data.contract_validate import validate_dataf
 from module_c_forecasting_scenarios.data.raw_loader import load_raw_polls_csv
 from module_c_forecasting_scenarios.models.exit.exit_model import fit_exit_quickcount
 from module_c_forecasting_scenarios.paths import module_config_dir
+from module_c_forecasting_scenarios.validation.small_n import EXIT_MIN_RELIABLE_WAVES
 
 logger = logging.getLogger(__name__)
 
@@ -33,18 +34,33 @@ def main(argv: list[str] | None = None) -> None:
     args.out_dir.mkdir(parents=True, exist_ok=True)
     if exit_df.empty:
         logger.warning("no exit rows in raw feed")
-        pd.DataFrame([{"note": "no_exit_rows"}]).to_parquet(
+        pd.DataFrame([{"note": "no_exit_rows", "n_waves": 0, "low_n": True}]).to_parquet(
             args.out_dir / "exit_model_summary.parquet", index=False
         )
         (args.out_dir / "run_exit_manifest.json").write_text(
-            json.dumps({"calibration_series": series, "n_exit_rows": 0}, indent=2)
+            json.dumps({"calibration_series": series, "n_exit_rows": 0, "low_n": True}, indent=2)
         )
         return
     validate_dataframe_contract(exit_df, "polls_clean_exit_wave")
     summary, _idata = fit_exit_quickcount(exit_df, calibration_series=series)
     summary.to_parquet(args.out_dir / "exit_model_summary.parquet", index=False)
+    low_n = bool(summary["low_n"].iloc[0])
+    if low_n:
+        logger.warning(
+            "exit model fit on %d waves (< %d reliability floor); outputs flagged low_n",
+            len(exit_df),
+            EXIT_MIN_RELIABLE_WAVES,
+        )
     (args.out_dir / "run_exit_manifest.json").write_text(
-        json.dumps({"calibration_series": series, "n_exit_rows": len(exit_df)}, indent=2)
+        json.dumps(
+            {
+                "calibration_series": series,
+                "n_exit_rows": len(exit_df),
+                "low_n": low_n,
+                "min_reliable_waves": EXIT_MIN_RELIABLE_WAVES,
+            },
+            indent=2,
+        )
     )
     logger.info("exit stage complete -> %s", args.out_dir)
 

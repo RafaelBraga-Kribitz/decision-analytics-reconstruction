@@ -93,7 +93,8 @@ Case narrative: [`reports/CASE_STUDY.md`](reports/CASE_STUDY.md). Numeric SSOT:
 In a leave-one-wave-out test on the eight real 2018 polls — each time refitting the tracking
 model with the actual election result held out (provably excluded, F-069) — the model's 95%
 uncertainty band caught the held-out poll in **3 of 6** tested waves (95% interval coverage
-50%; Brier 0.31 on the sign task; `MC_FAST=1` committed artifact). This is the project's
+50%, exact binomial 95% CI [0.12, 0.88]; Brier 0.31 on the sign task; `MC_FAST=1` committed
+artifact). This is the project's
 *first true out-of-sample check*, and it is deliberately reported unflattered: with only
 **eight polls** the intervals are wide and the sample is far too small to claim forecasting
 skill. Detail:
