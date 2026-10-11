@@ -10,7 +10,8 @@ soft_depends_on: []
 queue: issues
 target_repo: decision-analytics-reconstruction
 issue: 58
-status: filed
+status: done
+closed_by: "3526f79 (#58)"
 ---
 
 # IMP-B02 — Uncertainty-Aware Ingestion of Module A Outputs
