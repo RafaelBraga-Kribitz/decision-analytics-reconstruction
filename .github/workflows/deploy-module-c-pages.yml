@@ -55,9 +55,12 @@ jobs:
             --out-dir data/processed/module_b \
             --seed 20180422
 
-      - name: Run Module C pipeline (fast mode — fixture data)
+      # Full NUTS (MC_FAST unset, ~4 min): the report's sampling-diagnostics
+      # table is computed from this run's mcmc_diagnostics_summary.json (F-084),
+      # so the published values must come from the real sampler, not the
+      # 50-draw fast path.
+      - name: Run Module C pipeline (full NUTS — fixture data)
         env:
-          MC_FAST: "1"
           MLFLOW_TRACKING_URI: ""
         run: |
           poetry run python -m module_c_forecasting_scenarios.pipeline.run_all \

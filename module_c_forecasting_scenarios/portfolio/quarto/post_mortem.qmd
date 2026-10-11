@@ -70,6 +70,25 @@ mc       = _load("mc",       "monte_carlo_draws.parquet")
 battle   = _load("battleground", "battleground_department_probability.parquet")
 house_seed = _load("tracking", "house_effect_seed_matrix.csv")
 
+# Interval probability and sampler settings are read from config and every
+# diagnostic from the run's exported summary — never retyped here (F-084).
+import yaml
+_sampler_cfg = yaml.safe_load(
+    (_find_repo_root() / "module_c_forecasting_scenarios/config/pymc_sampler.yaml").read_text()
+)
+HDI_PROB = float(_sampler_cfg.get("hdi_prob", 0.94))
+HDI_LABEL = f"{HDI_PROB:.0%} HDI"
+
+_diag_path = _base / "tracking" / "mcmc_diagnostics_summary.json"
+diag = json.loads(_diag_path.read_text()) if _diag_path.exists() else None
+if diag is not None and daily is not None:
+    _daily_version = str(daily["model_version"].iloc[0])
+    if diag["model_version"] != _daily_version:
+        raise RuntimeError(
+            f"diagnostics summary is from {diag['model_version']} but the daily posterior "
+            f"is {_daily_version}; rerun `make module-c-all` before rendering"
+        )
+
 # Choropleth GeoJSON (polygon geometries + posterior_win_prob).
 _heatmap_path = _base / "battleground" / "battleground_probability_heatmap.geojson"
 battle_geo = json.loads(_heatmap_path.read_text()) if _heatmap_path.exists() else None
@@ -101,10 +120,21 @@ This report presents the output of the **Module C probabilistic forecasting pipe
 **Reconstruction note:** All inputs are synthetic. Survey measurement records are reconstructed from published ficha técnica summaries. The model is specified to mirror the inferential challenge of the original program.
 
 **Model stack:**
-- Latent daily preference-proxy margin follows a Gaussian random walk
-- Survey-measurement firm-level house effects modeled as hierarchical normal
-- NUTS sampler (PyMC 5.27): 4 chains × 1 000 draws, `target_accept = 0.95`, `max_treedepth = 15`
-- Monte Carlo scenario engine: 10 000 draws × 3 scenario buckets
+
+```{python}
+#| label: model-stack
+from IPython.display import Markdown
+
+_c = _sampler_cfg
+display(Markdown(
+    "- Latent daily preference-proxy margin follows a non-centered Gaussian random walk\n"
+    "- Survey-measurement firm-level house effects modeled as a non-centered hierarchical normal\n"
+    f"- NUTS sampler (PyMC): {_c['chains']} chains × {_c['draws']:,} draws "
+    f"(tune {_c['tune']:,}), `target_accept = {_c['target_accept_full']}`, "
+    f"`max_treedepth = {_c['max_treedepth']}`, seed {_c['random_seed']}\n"
+    "- Monte Carlo scenario engine: 10 000 draws × 3 scenario buckets"
+))
+```
 
 ---
 
@@ -112,7 +142,7 @@ This report presents the output of the **Module C probabilistic forecasting pipe
 
 ```{python}
 #| label: fig-posterior-track
-#| fig-cap: "Daily posterior preference-proxy margin (pp) with 95% HDI bands. Survey measurement waves shown as diamonds."
+#| fig-cap: "Daily posterior preference-proxy margin (pp) with its highest-density-interval band (probability mass in the legend, from config). Survey measurement waves shown as diamonds."
 
 if daily is not None:
     daily["date"] = pd.to_datetime(daily["date"])
@@ -126,7 +156,7 @@ if daily is not None:
         fill="toself",
         fillcolor="rgba(99,110,250,0.15)",
         line=dict(color="rgba(255,255,255,0)"),
-        name="95% HDI",
+        name=HDI_LABEL,
         hoverinfo="skip",
     ))
 
@@ -181,7 +211,7 @@ else:
     display(HTML("<p><em>Pipeline output not found — run <code>make module-c-all</code> first.</em></p>"))
 ```
 
-**Interpretation:** The posterior mean tracks the direction of the verified outcome. The 95% HDI is widest on the poll-free mid-program stretches — where the Gaussian random walk prior dominates and the band opens to tens of percentage points — then tightens sharply toward the outcome-anchored terminal date. Expanding the fixture from 4 to 8 survey measurement waves over 142 days pins the track down at more points, but the wide mid-program bands persist: they are a structural consequence of sparse, irregularly-spaced measurements, not a model deficiency. Production use would require denser measurement cadence or a non-centered random-walk reparameterization.
+**Interpretation:** The posterior mean tracks the direction of the verified outcome. The HDI band is widest on the poll-free mid-program stretches — where the Gaussian random walk prior dominates and the band opens to tens of percentage points — then tightens sharply toward the outcome-anchored terminal date. Expanding the fixture from 4 to 8 survey measurement waves over 142 days pins the track down at more points, but the wide mid-program bands persist: they are a structural consequence of sparse, irregularly-spaced measurements, not a model deficiency. Production use would require a denser measurement cadence; the non-centered reparameterization (model v0.4) already removed the sampler pathology, so the width reflects the data, not the geometry.
 
 ---
 
@@ -191,7 +221,7 @@ House effects quantify systematic measurement bias per survey firm — the tende
 
 ```{python}
 #| label: tbl-house-effects
-#| tbl-cap: "Posterior house effects by survey measurement firm (pp). Wide credible intervals reflect 4-wave sparse data."
+#| tbl-cap: "Posterior house effects by survey measurement firm (pp). Wide credible intervals reflect sparse, irregularly spaced survey waves."
 
 if houses is not None:
     tbl = houses[[
@@ -200,10 +230,11 @@ if houses is not None:
         "house_effect_hdi_low",
         "house_effect_hdi_high",
     ]].copy()
-    tbl.columns = ["Firm", "Posterior mean (pp)", "HDI 95% low", "HDI 95% high"]
+    _lo, _hi = f"{HDI_LABEL} low", f"{HDI_LABEL} high"
+    tbl.columns = ["Firm", "Posterior mean (pp)", _lo, _hi]
     tbl["Posterior mean (pp)"] = tbl["Posterior mean (pp)"].round(2)
-    tbl["HDI 95% low"] = tbl["HDI 95% low"].round(2)
-    tbl["HDI 95% high"] = tbl["HDI 95% high"].round(2)
+    tbl[_lo] = tbl[_lo].round(2)
+    tbl[_hi] = tbl[_hi].round(2)
 
     fig = go.Figure(data=[go.Table(
         header=dict(
@@ -227,7 +258,7 @@ else:
 
 ```{python}
 #| label: fig-house-effects
-#| fig-cap: "House effect posterior means with 95% HDI — firm-level measurement bias."
+#| fig-cap: "House effect posterior means with HDI intervals (probability mass from config) — firm-level measurement bias."
 
 if houses is not None:
     fig = go.Figure()
@@ -249,7 +280,7 @@ if houses is not None:
         ))
     fig.add_vline(x=0, line_dash="dash", line_color="#888", annotation_text="No bias")
     fig.update_layout(
-        title="Survey measurement firm house effects (pp)",
+        title=f"Survey measurement firm house effects (pp), {HDI_LABEL}",
         xaxis_title="House effect (pp); positive = over-reports preference proxy A",
         yaxis_title="Survey measurement firm",
         template="plotly_white",
@@ -513,34 +544,57 @@ else:
 ```{python}
 #| label: tbl-diagnostics
 
-display(HTML("""
-<table style='font-size:13px;border-collapse:collapse;width:100%'>
-<thead>
-<tr style='background:#636EFA;color:white'>
-  <th style='padding:6px 12px;text-align:left'>Diagnostic</th>
-  <th style='padding:6px 12px'>Value</th>
-  <th style='padding:6px 12px'>Pass criterion</th>
-  <th style='padding:6px 12px'>Status</th>
-</tr>
-</thead>
-<tbody>
-<tr><td style='padding:5px 12px'>Chains</td><td style='padding:5px 12px'>4</td><td style='padding:5px 12px'>≥ 4</td><td style='padding:5px 12px'>✅</td></tr>
-<tr style='background:#f9f9f9'><td style='padding:5px 12px'>NUTS divergences</td><td style='padding:5px 12px'>4</td><td style='padding:5px 12px'>0</td><td style='padding:5px 12px'>⚠️</td></tr>
-<tr><td style='padding:5px 12px'>Max tree depth reached</td><td style='padding:5px 12px'>No chains</td><td style='padding:5px 12px'>No chains</td><td style='padding:5px 12px'>✅</td></tr>
-<tr style='background:#f9f9f9'><td style='padding:5px 12px'>R̂ (some params)</td><td style='padding:5px 12px'>&gt; 1.01</td><td style='padding:5px 12px'>All &lt; 1.01</td><td style='padding:5px 12px'>⚠️</td></tr>
-<tr><td style='padding:5px 12px'>ESS (some params)</td><td style='padding:5px 12px'>&lt; 100</td><td style='padding:5px 12px'>≥ 100</td><td style='padding:5px 12px'>⚠️</td></tr>
-</tbody>
-</table>
+def _diag_row(name, value, criterion, ok, shade):
+    bg = " style='background:#f9f9f9'" if shade else ""
+    cell = "style='padding:5px 12px'"
+    mark = "✅" if ok else "⚠️"
+    return (
+        f"<tr{bg}><td {cell}>{name}</td><td {cell}>{value}</td>"
+        f"<td {cell}>{criterion}</td><td {cell}>{mark}</td></tr>"
+    )
 
-<p style='margin-top:12px;font-size:12px;color:#555'>
-<strong>Root cause (not a configuration bug):</strong> The fixture dataset contains only 8 survey measurement
-waves over 142 days. Expanding from 4 to 8 waves visibly improves the geometry — divergences fell from 14 to 4
-and no chain reaches the max tree depth — but the Gaussian random walk prior still dominates on the poll-free
-stretches, leaving R̂ marginally above 1.01 and bulk ESS below 100 for some parameters. The residual pathology
-is structural, not a tuning failure.
-Production remediation: (a) denser survey measurement cadence or (b) non-centered random walk reparameterization.
-</p>
-"""))
+if diag is None:
+    display(HTML(
+        "<p><em>Diagnostics artifact not found (<code>tracking/mcmc_diagnostics_summary.json</code>) "
+        "— run <code>make module-c-all</code>.</em></p>"
+    ))
+else:
+    _v, _g, _p = diag["values"], diag["gates"], diag["passed"]
+    _hits = diag.get("max_treedepth_hits")
+    _rows = [
+        _diag_row("Chains", diag["chains"], "≥ 4", diag["chains"] >= 4, False),
+        _diag_row("NUTS divergences", _v["divergences"], f"{_g['divergences']:.0f}", _p["divergences"], True),
+        _diag_row("Max tree depth hits", "n/a" if _hits is None else _hits, "0", not _hits, False),
+        _diag_row("Max R̂ (all params)", f"{_v['rhat_max']:.4f}", f"≤ {_g['rhat_max']}", _p["rhat_max"], True),
+        _diag_row("Min bulk ESS", f"{_v['ess_bulk_min']:.0f}", f"≥ {_g['ess_bulk_min']:.0f}", _p["ess_bulk_min"], False),
+        _diag_row("Min tail ESS", f"{_v['ess_tail_min']:.0f}", f"≥ {_g['ess_tail_min']:.0f}", _p["ess_tail_min"], True),
+    ]
+    _all_ok = all(_p.values())
+    _note = (
+        "All convergence gates pass on this run."
+        if _all_ok
+        else "One or more convergence gates fail on this run; treat the posteriors above as unvalidated."
+    )
+    if diag.get("sampler_path") is None:
+        _note += " The sampler path (full NUTS vs MC_FAST) was not recorded for this run."
+    elif diag["sampler_path"] != "full_nuts":
+        _note += (
+            " <strong>This run used the MC_FAST 50-draw path</strong>, so these values are not a "
+            "convergence assessment; the full-NUTS gates run in CI (<code>module-c-slow-nuts</code>)."
+        )
+    display(HTML(
+        "<table style='font-size:13px;border-collapse:collapse;width:100%'><thead>"
+        "<tr style='background:#636EFA;color:white'>"
+        "<th style='padding:6px 12px;text-align:left'>Diagnostic</th>"
+        "<th style='padding:6px 12px'>Value</th><th style='padding:6px 12px'>Pass criterion</th>"
+        "<th style='padding:6px 12px'>Status</th></tr></thead><tbody>"
+        + "".join(_rows)
+        + "</tbody></table>"
+        f"<p style='margin-top:12px;font-size:12px;color:#555'>Computed from "
+        f"<code>{_diag_path.name}</code> (model <code>{diag['model_version']}</code>, "
+        f"{diag['chains']} chains × {diag['draws']} draws, created {diag.get('created_at')}). "
+        f"{_note}</p>"
+    ))
 ```
 
 ---
@@ -605,24 +659,32 @@ else:
     display(HTML("<p><em>PPC summary not found.</em></p>"))
 ```
 
-**Calibration interpretation:** With 8 tracking waves the posterior predictive intervals now cover every (or nearly every) observed wave — the table above reports over-coverage at the 80% and 95% levels, an **under-confident** verdict. This is the expected signature of a stiff Gaussian random walk prior combined with the outcome anchor: on the poll-free stretches between sparse, irregularly-spaced waves the prior widens the predictive bands beyond what the observed scatter requires, so the nominal intervals over-cover. Under-confidence is the honest failure mode here — the model overstates rather than understates its uncertainty. Tightening it (denser cadence, a non-centered reparameterization, or a weaker anchor) is the remediation path; the walk-forward validation (T9-1) probes the same behavior on held-out waves. Note that the original 4-wave fixture was instead **prior-dominated** (near-zero coverage); the extra waves move the model from "cannot resolve the signal" to "resolves it but with conservative intervals."
+**Calibration interpretation:** With 8 tracking waves the posterior predictive intervals now cover every (or nearly every) observed wave — the table above reports over-coverage at the 80% and 95% levels, an **under-confident** verdict. This is the expected signature of a stiff Gaussian random walk prior combined with the outcome anchor: on the poll-free stretches between sparse, irregularly-spaced waves the prior widens the predictive bands beyond what the observed scatter requires, so the nominal intervals over-cover. Under-confidence is the honest failure mode here — the model overstates rather than understates its uncertainty. Tightening it (denser cadence or a weaker anchor) is the remediation path; the walk-forward validation (T9-1) probes the same behavior on held-out waves. Note that the original 4-wave fixture was instead **prior-dominated** (near-zero coverage); the extra waves move the model from "cannot resolve the signal" to "resolves it but with conservative intervals."
 
 ---
 
 ## Methodology Summary
 
+```{python}
+#| label: tbl-methodology
+_c = _sampler_cfg
+display(Markdown(f"""
 | Component | Specification | Status |
 |-----------|---------------|--------|
-| Prior: daily margin | `GaussianRandomWalk(sigma ~ HalfNormal(2.0))` | Implemented |
-| Prior: house effects | `Normal(0, 3)` per survey measurement firm | Implemented |
+| Prior: daily margin | Non-centered random walk: `mu_margin_init ~ Normal(0, 10)`, innovations `Normal(0, 1)` scaled by `sigma_rw ~ HalfNormal(1.5)` | Implemented |
+| Prior: house effects | Non-centered: `house_offset = sigma_house · z`, `z ~ Normal(0, 1)` per survey measurement firm, `sigma_house ~ HalfNormal(2.5)` | Implemented |
 | Likelihood: survey measurements | `Normal(mu_t + h_f, sigma_obs)` | Implemented |
-| Sampler | NUTS, 4 chains × 1 000 draws, `target_accept=0.95` | Configured |
+| Sampler | NUTS, {_c['chains']} chains × {_c['draws']:,} draws, `target_accept={_c['target_accept_full']}`, {HDI_LABEL} intervals | Configured |
 | Exit measurement bias | Bayesian regression: intercept + OEA timing + release window flags | Implemented |
 | Monte Carlo engine | 10 000 draws × shock scale × scenario bucket | Implemented |
 | Battleground mapping | TSJE 2018 swing factors × unanchored national posterior (`c_battleground_v0.5`, poll-implied; σ_idio from reference polls) | Implemented |
+"""))
+```
 
-**Reproducibility:** `MC_FAST=0 make module-c-all --raw-csv <polls.csv> --out-dir data/processed/module_c/`
-re-runs the full pipeline deterministically (NUTS stochastic; posterior means stable across runs given sufficient draws).
+**Reproducibility:** `make module-c-all` with `MC_FAST` **unset** re-runs the full-NUTS pipeline
+(any non-empty `MC_FAST`, including `0`, selects the 50-draw fast path). Sampling is seeded
+(`random_seed` in `config/pymc_sampler.yaml`); `test_posterior_stability_across_independent_fits`
+asserts two independent fits agree within 0.05 pp per day.
 
 ---
 

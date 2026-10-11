@@ -41,8 +41,12 @@ def _render_report(payload: dict[str, object], per_holdout_rows: list[dict[str, 
     n_holdouts = int(m["n_holdouts"])
     min_train = int(m["min_train_size"])
     mc_fast = "1" if os.environ.get("MC_FAST", "1") == "1" else "0"
-    cov80 = 100 * float(m["coverage_80pct"])
-    cov95 = 100 * float(m["coverage_95pct"])
+
+    def _cov(level: str) -> str:
+        k = int(m[f"coverage_{level}pct_k"])
+        lo, hi = float(m[f"coverage_{level}pct_ci_low"]), float(m[f"coverage_{level}pct_ci_high"])
+        return f"{k}/{n_holdouts} = {k / n_holdouts:.0%} [{lo:.2f}, {hi:.2f}]"
+
     fixture_rel = FIXTURE.relative_to(REPO_ROOT).as_posix()
     lines = [
         "# Module C — Leave-One-Wave-Out Walk-Forward Report",
@@ -60,7 +64,12 @@ def _render_report(payload: dict[str, object], per_holdout_rows: list[dict[str, 
         ),
         (
             "- **Wide intervals expected:** sparse polls + house effects → interval "
-            "coverage is a structural diagnostic, not proof of calibration."
+            "coverage is a structural diagnostic, not evidence of calibration."
+        ),
+        (
+            "- **No power:** coverage is quoted as k/n with its exact binomial 95% CI; "
+            f"with n={n_holdouts} that CI spans most of [0, 1], so this check cannot "
+            "distinguish a calibrated model from a badly miscalibrated one."
         ),
         (
             "- **Regeneration mode:** this committed artifact was produced with "
@@ -73,8 +82,14 @@ def _render_report(payload: dict[str, object], per_holdout_rows: list[dict[str, 
         "|---|---:|---|",
         f"| Brier score (sign task) | {m['brier_score']:.4f} | P(margin>0) vs observed sign |",
         f"| Log loss | {m['log_loss']:.4f} | Same task, log score |",
-        (f"| 80% interval coverage | {cov80:.1f}% | " "Share of holdouts inside 80% HDI |"),
-        (f"| 95% interval coverage | {cov95:.1f}% | " "Share of holdouts inside 95% HDI |"),
+        (
+            f"| 80% interval coverage | {_cov('80')} | "
+            "Holdouts inside 80% HDI [exact binomial 95% CI] |"
+        ),
+        (
+            f"| 95% interval coverage | {_cov('95')} | "
+            "Holdouts inside 95% HDI [exact binomial 95% CI] |"
+        ),
         "",
         "## Per-holdout detail",
         "",

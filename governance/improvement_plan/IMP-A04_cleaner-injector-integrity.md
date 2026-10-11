@@ -10,7 +10,8 @@ soft_depends_on: []
 queue: findings
 target_repo: decision-analytics-reconstruction
 issue: null
-status: draft
+status: done
+closed_by: "F-087"
 ---
 
 # IMP-A04 — Cleaner & Injector Integrity: No Silent Sentinels, Truthful Flaw Taxonomy

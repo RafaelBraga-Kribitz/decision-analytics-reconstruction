@@ -19,9 +19,11 @@ Reported metrics:
   whose observed value falls inside the posterior-predictive HDI.
 
 The Paraguay 2018 fixture provides only eight tracking polls, so the
-walk-forward loop is still small (six holdouts at ``min_train_size=2``). This
-is documented in the metrics summary as a data sparsity caveat, not a
-methodology limitation; the same routine scales to denser polling.
+walk-forward loop is small (six holdouts at ``min_train_size=2``): coverage can
+only take values k/6, and its exact binomial 95% CI (reported alongside every
+coverage figure) spans most of [0, 1]. The check therefore has little power to
+detect miscalibration — it is a plumbing/smoke check on this fixture, not
+evidence of calibration. The same routine scales to denser polling.
 """
 
 from __future__ import annotations
@@ -40,6 +42,7 @@ from module_c_forecasting_scenarios.models.tracking.hierarchical import (
     fit_tracking_hierarchical,
     observation_sigma,
 )
+from module_c_forecasting_scenarios.validation.small_n import exact_binomial_ci
 
 _EPS = 1e-6
 _PREDICTIVE_SEED = int(_load_sampler_config().get("predictive_seed", 20180422))
@@ -232,7 +235,9 @@ def summarize_walk_forward(per_holdout: pd.DataFrame) -> dict[str, float]:
 
     Returns:
         Dict with ``brier_score``, ``log_loss``, ``coverage_80pct``,
-        ``coverage_95pct``, ``n_holdouts``.
+        ``coverage_95pct``, ``n_holdouts``, and for each coverage level the
+        hit count ``coverage_<lvl>_k`` and its exact binomial 95% CI
+        ``coverage_<lvl>_ci_low`` / ``coverage_<lvl>_ci_high``.
 
     Raises:
         KeyError: If required columns are absent from ``per_holdout``.
@@ -247,6 +252,12 @@ def summarize_walk_forward(per_holdout: pd.DataFrame) -> dict[str, float]:
             "log_loss": float("nan"),
             "coverage_80pct": float("nan"),
             "coverage_95pct": float("nan"),
+            "coverage_80pct_k": 0.0,
+            "coverage_80pct_ci_low": float("nan"),
+            "coverage_80pct_ci_high": float("nan"),
+            "coverage_95pct_k": 0.0,
+            "coverage_95pct_ci_low": float("nan"),
+            "coverage_95pct_ci_high": float("nan"),
             "n_holdouts": 0.0,
         }
     p = per_holdout["prob_margin_positive"].to_numpy(dtype=np.float64)
@@ -254,12 +265,23 @@ def summarize_walk_forward(per_holdout: pd.DataFrame) -> dict[str, float]:
     y = per_holdout["observed_positive"].to_numpy(dtype=np.float64)
     brier = float(np.mean((p - y) ** 2))
     log_loss = float(-np.mean(y * np.log(p_clip) + (1.0 - y) * np.log(1.0 - p_clip)))
-    cov80 = float(per_holdout["in_hdi80"].mean())
-    cov95 = float(per_holdout["in_hdi95"].mean())
+    n = len(per_holdout)
+    k80 = int(per_holdout["in_hdi80"].sum())
+    k95 = int(per_holdout["in_hdi95"].sum())
+    ci80 = exact_binomial_ci(k80, n)
+    ci95 = exact_binomial_ci(k95, n)
     return {
         "brier_score": brier,
         "log_loss": log_loss,
-        "coverage_80pct": cov80,
-        "coverage_95pct": cov95,
-        "n_holdouts": float(len(per_holdout)),
+        "coverage_80pct": k80 / n,
+        "coverage_95pct": k95 / n,
+        # Exact (Clopper-Pearson) 95% CI on each coverage fraction: with a
+        # handful of holdouts these span most of [0, 1] (F-085).
+        "coverage_80pct_k": float(k80),
+        "coverage_80pct_ci_low": ci80[0],
+        "coverage_80pct_ci_high": ci80[1],
+        "coverage_95pct_k": float(k95),
+        "coverage_95pct_ci_low": ci95[0],
+        "coverage_95pct_ci_high": ci95[1],
+        "n_holdouts": float(n),
     }

@@ -222,7 +222,7 @@ paths:
     authority: canonical
     sensitivity: public
     owner: module_c
-  module_c_forecasting_scenarios/reports/C_research_proof_table.md:
+  module_c_forecasting_scenarios/reports/C_research_evidence_table.md:
     doc_id: DOC-MODC-002
     doc_type: evidence
     doc_role: evidence

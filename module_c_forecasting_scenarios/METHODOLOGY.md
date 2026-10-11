@@ -145,9 +145,18 @@ m_exit[i] ~ Normal(intercept + beta_oea * oea[i] + beta_eu * eu[i], sigma)
 
 If exit_df has < 2 rows: return summary stub with `note="insufficient_exit_rows_for_regression"` (no PyMC run).
 
-**Posterior extraction (5th, 50th, 95th quantiles):**
+### Reliability floor (`low_n`)
+
+The reliability floor is a single constant,
+`validation/small_n.py`: `EXIT_MIN_RELIABLE_WAVES = 5`. Fits on fewer waves
+still run (from 2 rows up), but every output row carries `low_n = true` and
+`n_waves`, and `run_exit_manifest.json` records `low_n`; consumers must render
+the caveat or drop the row. The committed fixture has 4 exit waves, so its exit
+estimates are flagged `low_n` by construction.
+
+**Posterior extraction (94% HDI, `hdi_prob` in `config/pymc_sampler.yaml`):**
 - Coefficient posteriors for intercept, beta_oea, beta_eu, sigma
-- Output: `exit_model_summary.parquet` (parameter, posterior_mean, hdi_low, hdi_high, calibration_series, model_version)
+- Output: `exit_model_summary.parquet` (parameter, posterior_mean, hdi_low, hdi_high, calibration_series, model_version, n_waves, low_n)
 
 ---
 
@@ -405,7 +414,7 @@ poetry run python -m module_c_forecasting_scenarios.pipeline.run_tracking \
    house-effects table purely as a display/grouping tag for downstream
    readers — it does not participate in the likelihood.
 3. **Weekly stationarity:** GRW assumes no structural breaks (e.g., major events, debate shocks). Detected events should trigger separate model branches.
-4. **Exit sample size:** Exit quickcount requires ≥ 2 observations; typically unreliable with < 5 waves. Audit exit_df before run.
+4. **Exit sample size:** Exit quickcount requires ≥ 2 observations and is flagged `low_n` below `EXIT_MIN_RELIABLE_WAVES = 5` waves (see § Reliability floor).
 5. **Bayesian prior sensitivity:** Priors on sigma_rw, sigma_house, and intercept are weakly informative. Sensitivity analysis recommended for high-stakes decisions (swap priors, rerun, compare posteriors).
 
 ---

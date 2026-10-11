@@ -10,15 +10,20 @@ consumes:
 The cleaner is **idempotent** and **deterministic**: a clean frame fed back
 through it returns unchanged, and the same inputs always produce the same
 output ordering (sorted by ``row_id``).
+
+No row is dropped silently (F-086 / IMP-B04): every rejected row is recorded on
+the frame's ``rejections`` table with the first failing predicate as its
+``reason``, and :func:`rejection_summary` gates each source at
+``REJECTION_RATE_GATE``.
 """
 
 from __future__ import annotations
 
 import re
 import unicodedata
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Final
+from typing import Any, Final
 
 import pandas as pd
 
@@ -142,19 +147,58 @@ def _valid_week(label: str | None) -> str | None:
     return None
 
 
+#: A source file whose rejected-row share exceeds this fails its gate.
+REJECTION_RATE_GATE: Final[float] = 0.02
+REJECTION_COLUMNS: Final[tuple[str, ...]] = (
+    "source_file",
+    "row_id",
+    "reason",
+    "department",
+    "channel",
+)
+
+
+def _empty_rejections() -> pd.DataFrame:
+    return pd.DataFrame({c: pd.Series(dtype="object") for c in REJECTION_COLUMNS})
+
+
+def _filter_and_record(
+    df: pd.DataFrame, source_file: str, checks: list[tuple[str, Any]]
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """Split ``df`` into kept rows and a rejection table (first failing check wins).
+
+    Rows passing every check are then de-duplicated on ``row_id``; dropped
+    duplicates are recorded with reason ``duplicate_row_id``.
+    """
+    reason = pd.Series(None, index=df.index, dtype="object")
+    for name, ok in checks:
+        reason = reason.where(reason.notna() | ok.fillna(False).astype(bool), name)
+    kept = df.loc[reason.isna()]
+    dup = kept["row_id"].duplicated(keep="first")
+    reason.loc[dup[dup].index] = "duplicate_row_id"
+    rejected = df.loc[reason.notna()].assign(source_file=source_file, reason=reason.dropna())
+    rejections = rejected.reindex(columns=list(REJECTION_COLUMNS)).sort_values(
+        ["reason", "row_id"], kind="stable"
+    )
+    return df.loc[reason.isna()], rejections.reset_index(drop=True)
+
+
 @dataclass(frozen=True)
 class BudgetLineFrame:
     df: pd.DataFrame  # see clean_budget_lines for canonical schema
+    rejections: pd.DataFrame = field(default_factory=_empty_rejections)
 
 
 @dataclass(frozen=True)
 class VolunteerLogFrame:
     df: pd.DataFrame
+    rejections: pd.DataFrame = field(default_factory=_empty_rejections)
 
 
 @dataclass(frozen=True)
 class MediaBuySheetFrame:
     df: pd.DataFrame
+    rejections: pd.DataFrame = field(default_factory=_empty_rejections)
 
 
 def clean_budget_lines(raw: pd.DataFrame) -> BudgetLineFrame:
@@ -194,17 +238,21 @@ def clean_budget_lines(raw: pd.DataFrame) -> BudgetLineFrame:
     df["amount_native"] = df["amount_text"].map(_parse_locale_number)
     df["fx_tier"] = df["fx_tier_hint"].where(df["fx_tier_hint"].isin(["REF", "RETAIL"]), "REF")
 
-    # Reject rows missing any of the LP-critical fields.
-    valid_mask = (
-        df["channel"].notna()
-        & df["department"].notna()
-        & df["iso_week"].notna()
-        & df["currency"].notna()
-        & df["amount_native"].notna()
-        & (df["amount_native"] > 0)
+    # Reject rows missing any of the LP-critical fields, recording why.
+    kept, rejections = _filter_and_record(
+        df,
+        "budget_lines_raw.csv",
+        [
+            ("non_canonical_channel", df["channel"].notna()),
+            ("non_canonical_department", df["department"].notna()),
+            ("non_canonical_week", df["iso_week"].notna()),
+            ("unrecognized_currency", df["currency"].notna()),
+            ("unparsable_amount", df["amount_native"].notna()),
+            ("non_positive_amount", df["amount_native"] > 0),
+        ],
     )
-    cleaned = df.loc[
-        valid_mask,
+    cleaned = kept.loc[
+        :,
         [
             "row_id",
             "vendor",
@@ -217,9 +265,8 @@ def clean_budget_lines(raw: pd.DataFrame) -> BudgetLineFrame:
         ],
     ].copy()
 
-    cleaned = cleaned.drop_duplicates(subset=["row_id"], keep="first")
     cleaned = cleaned.sort_values("row_id").reset_index(drop=True)
-    return BudgetLineFrame(df=cleaned)
+    return BudgetLineFrame(df=cleaned, rejections=rejections)
 
 
 def clean_volunteer_logs(raw: pd.DataFrame) -> VolunteerLogFrame:
@@ -258,18 +305,22 @@ def clean_volunteer_logs(raw: pd.DataFrame) -> VolunteerLogFrame:
     df["hours"] = df["hours_text"].map(_parse_locale_number)
     df["cost_pyg"] = df["cost_pyg_text"].map(_parse_locale_number)
 
-    valid_mask = (
-        df["channel"].notna()
-        & df["department"].notna()
-        & df["iso_week"].notna()
-        & df["contacts"].notna()
-        & (df["contacts"] > 0)
-        & df["hours"].notna()
-        & df["cost_pyg"].notna()
-        & (df["cost_pyg"] > 0)
+    kept, rejections = _filter_and_record(
+        df,
+        "volunteer_logs_raw.csv",
+        [
+            ("non_canonical_channel", df["channel"].notna()),
+            ("non_canonical_department", df["department"].notna()),
+            ("non_canonical_week", df["iso_week"].notna()),
+            ("unparsable_contacts", df["contacts"].notna()),
+            ("non_positive_contacts", df["contacts"] > 0),
+            ("unparsable_hours", df["hours"].notna()),
+            ("unparsable_cost", df["cost_pyg"].notna()),
+            ("non_positive_cost", df["cost_pyg"] > 0),
+        ],
     )
-    cleaned = df.loc[
-        valid_mask,
+    cleaned = kept.loc[
+        :,
         [
             "row_id",
             "team_lead",
@@ -282,9 +333,8 @@ def clean_volunteer_logs(raw: pd.DataFrame) -> VolunteerLogFrame:
         ],
     ].copy()
     cleaned["contacts"] = cleaned["contacts"].astype("int64")
-    cleaned = cleaned.drop_duplicates(subset=["row_id"], keep="first")
     cleaned = cleaned.sort_values("row_id").reset_index(drop=True)
-    return VolunteerLogFrame(df=cleaned)
+    return VolunteerLogFrame(df=cleaned, rejections=rejections)
 
 
 def clean_media_buy_sheet(raw: pd.DataFrame) -> MediaBuySheetFrame:
@@ -325,18 +375,22 @@ def clean_media_buy_sheet(raw: pd.DataFrame) -> MediaBuySheetFrame:
     df["amount_native"] = df["amount_text"].map(_parse_locale_number)
     df["fx_tier"] = df["fx_tier_hint"].where(df["fx_tier_hint"].isin(["REF", "RETAIL"]), "REF")
 
-    valid_mask = (
-        df["channel"].notna()
-        & df["department"].notna()
-        & df["iso_week"].notna()
-        & df["impressions"].notna()
-        & (df["impressions"] > 0)
-        & df["currency"].notna()
-        & df["amount_native"].notna()
-        & (df["amount_native"] > 0)
+    kept, rejections = _filter_and_record(
+        df,
+        "media_buy_sheet_raw.csv",
+        [
+            ("non_canonical_channel", df["channel"].notna()),
+            ("non_canonical_department", df["department"].notna()),
+            ("non_canonical_week", df["iso_week"].notna()),
+            ("unparsable_impressions", df["impressions"].notna()),
+            ("non_positive_impressions", df["impressions"] > 0),
+            ("unrecognized_currency", df["currency"].notna()),
+            ("unparsable_amount", df["amount_native"].notna()),
+            ("non_positive_amount", df["amount_native"] > 0),
+        ],
     )
-    cleaned = df.loc[
-        valid_mask,
+    cleaned = kept.loc[
+        :,
         [
             "row_id",
             "vendor",
@@ -350,9 +404,8 @@ def clean_media_buy_sheet(raw: pd.DataFrame) -> MediaBuySheetFrame:
         ],
     ].copy()
     cleaned["impressions"] = cleaned["impressions"].astype("int64")
-    cleaned = cleaned.drop_duplicates(subset=["row_id"], keep="first")
     cleaned = cleaned.sort_values("row_id").reset_index(drop=True)
-    return MediaBuySheetFrame(df=cleaned)
+    return MediaBuySheetFrame(df=cleaned, rejections=rejections)
 
 
 def clean_directory(in_dir: Path) -> dict[str, pd.DataFrame]:
@@ -372,11 +425,82 @@ def clean_directory(in_dir: Path) -> dict[str, pd.DataFrame]:
     Example:
         ``clean_directory(Path(\"data/raw/module_b\"))`` in integration tests.
     """
-    budget = clean_budget_lines(pd.read_csv(in_dir / "budget_lines_raw.csv"))
-    volunteer = clean_volunteer_logs(pd.read_csv(in_dir / "volunteer_logs_raw.csv"))
-    media = clean_media_buy_sheet(pd.read_csv(in_dir / "media_buy_sheet_raw.csv"))
-    return {
+    frames, _rejections, _summary = clean_directory_with_report(in_dir)
+    return frames
+
+
+def rejection_summary(rejections: pd.DataFrame, raw_counts: dict[str, int]) -> pd.DataFrame:
+    """Per-source rejected-row counts and rates gated at ``REJECTION_RATE_GATE``.
+
+    Args:
+        rejections: Row-level rejection table (``REJECTION_COLUMNS``).
+        raw_counts: Raw row count per ``source_file``.
+
+    Returns:
+        One row per source with ``n_raw``, ``n_rejected``, ``rejection_rate``
+        and ``gate_status`` (``PASS`` / ``FAIL``), sorted by ``source_file``.
+
+    Raises:
+        KeyError: If ``rejections`` lacks a ``source_file`` column.
+
+    Example:
+        ``rejection_summary(frame.rejections, {"budget_lines_raw.csv": len(raw)})``.
+    """
+    rows = []
+    for source, n_raw in sorted(raw_counts.items()):
+        n_rejected = int((rejections["source_file"] == source).sum())
+        rate = n_rejected / n_raw if n_raw else 0.0
+        rows.append(
+            {
+                "source_file": source,
+                "n_raw": n_raw,
+                "n_rejected": n_rejected,
+                "rejection_rate": rate,
+                "gate_threshold": REJECTION_RATE_GATE,
+                "gate_status": "FAIL" if rate > REJECTION_RATE_GATE else "PASS",
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def clean_directory_with_report(
+    in_dir: Path,
+) -> tuple[dict[str, pd.DataFrame], pd.DataFrame, pd.DataFrame]:
+    """Clean the three raw CSVs and return frames plus the rejection record.
+
+    Args:
+        in_dir: Directory containing the three raw CSV fixtures.
+
+    Returns:
+        ``(frames, rejections, summary)``: the cleaned frames as in
+        :func:`clean_directory`, the row-level rejection table, and the
+        per-source :func:`rejection_summary`. For every source,
+        ``n_raw - len(clean) == n_rejected`` exactly.
+
+    Raises:
+        FileNotFoundError: If expected CSVs are absent from ``in_dir``.
+        KeyError: Propagated from the cleaners when raw columns are missing.
+
+    Example:
+        ``frames, rejections, summary = clean_directory_with_report(raw_dir)``.
+    """
+    # Raw vendor extracts are text: letting read_csv infer dtypes turned the
+    # mostly-numeric contacts_text column into floats, which the locale parser
+    # rejects, silently emptying volunteer_logs_clean.
+    raws = {
+        name: pd.read_csv(in_dir / name, dtype=str)
+        for name in ("budget_lines_raw.csv", "volunteer_logs_raw.csv", "media_buy_sheet_raw.csv")
+    }
+    budget = clean_budget_lines(raws["budget_lines_raw.csv"])
+    volunteer = clean_volunteer_logs(raws["volunteer_logs_raw.csv"])
+    media = clean_media_buy_sheet(raws["media_buy_sheet_raw.csv"])
+    frames = {
         "budget_lines_clean": budget.df,
         "volunteer_logs_clean": volunteer.df,
         "media_buy_sheet_clean": media.df,
     }
+    rejections = pd.concat(
+        [budget.rejections, volunteer.rejections, media.rejections], ignore_index=True
+    )
+    summary = rejection_summary(rejections, {k: len(v) for k, v in raws.items()})
+    return frames, rejections, summary

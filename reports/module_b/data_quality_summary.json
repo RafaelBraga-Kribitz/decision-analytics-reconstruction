@@ -1,0 +1,41 @@
+{
+  "clean_row_counts": {
+    "budget_lines_clean": 2387,
+    "media_buy_sheet_clean": 1160,
+    "volunteer_logs_clean": 3414
+  },
+  "fx_fallback_gate": "PASS",
+  "fx_fallback_weeks": 0,
+  "input_batch": {
+    "generator": "DirtyGenConfig defaults",
+    "seed": 20180422
+  },
+  "note": "The demo batch injects nulls and duplicates on purpose (DirtyGenConfig.null_rate / duplicate_rate), so its rejection gates report FAIL by design; the point is that every drop is counted.",
+  "rejection_gate_threshold": 0.02,
+  "sources": [
+    {
+      "gate_status": "FAIL",
+      "gate_threshold": 0.02,
+      "n_raw": 2550,
+      "n_rejected": 163,
+      "rejection_rate": 0.06392156862745098,
+      "source_file": "budget_lines_raw.csv"
+    },
+    {
+      "gate_status": "FAIL",
+      "gate_threshold": 0.02,
+      "n_raw": 1200,
+      "n_rejected": 40,
+      "rejection_rate": 0.03333333333333333,
+      "source_file": "media_buy_sheet_raw.csv"
+    },
+    {
+      "gate_status": "FAIL",
+      "gate_threshold": 0.02,
+      "n_raw": 3500,
+      "n_rejected": 86,
+      "rejection_rate": 0.02457142857142857,
+      "source_file": "volunteer_logs_raw.csv"
+    }
+  ]
+}

@@ -11,8 +11,10 @@ import pandas as pd
 import pymc as pm
 
 from module_c_forecasting_scenarios.config import load_sampler_config
+from module_c_forecasting_scenarios.validation.small_n import is_low_n
 
-MODEL_VERSION = "c_exit_bias_v0.1"
+# v0.2: every output row carries n_waves + low_n (reliability floor, F-085).
+MODEL_VERSION = "c_exit_bias_v0.2"
 
 # Backward-compat alias used by _exit_sampler_kwargs below.
 _load_sampler_config = load_sampler_config
@@ -44,14 +46,23 @@ def _exit_sampler_kwargs() -> dict:
 def fit_exit_quickcount(
     exit_df: pd.DataFrame, *, calibration_series: str
 ) -> tuple[pd.DataFrame, object | None]:
-    """Bayesian normal model for exit margin with OEA/EU timing flags as linear covariates."""
-    if exit_df.shape[0] < 2:
+    """Bayesian normal model for exit margin with OEA/EU timing flags as linear covariates.
+
+    Every output row carries ``n_waves`` and ``low_n``: below
+    ``EXIT_MIN_RELIABLE_WAVES`` (the floor cited in METHODOLOGY.md) the model
+    still runs, but its estimates are flagged as unreliable rather than
+    published bare (F-085).
+    """
+    n_waves = int(exit_df.shape[0])
+    flags = {"n_waves": n_waves, "low_n": is_low_n(n_waves)}
+    if n_waves < 2:
         summary = pd.DataFrame(
             [
                 {
                     "calibration_series": calibration_series,
                     "model_version": MODEL_VERSION,
                     "note": "insufficient_exit_rows_for_regression",
+                    **flags,
                     "m_poll_pp_mean": (
                         float(exit_df["m_poll_pp"].mean()) if len(exit_df) else float("nan")
                     ),
@@ -91,6 +102,7 @@ def fit_exit_quickcount(
                 "hdi_high": float(_hdi[1]),
                 "calibration_series": calibration_series,
                 "model_version": MODEL_VERSION,
+                **flags,
             }
         )
     return pd.DataFrame(rows), idata
