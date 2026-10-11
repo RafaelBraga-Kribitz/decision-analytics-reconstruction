@@ -10,7 +10,8 @@ soft_depends_on: []
 queue: issues
 target_repo: decision-analytics-reconstruction
 issue: 56
-status: filed
+status: done
+closed_by: "1252ce6 (#56)"
 ---
 
 # IMP-A05 — Fixed-Reference Feature Scaling
