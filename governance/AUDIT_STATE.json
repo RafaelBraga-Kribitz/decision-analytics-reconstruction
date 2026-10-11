@@ -771,9 +771,9 @@
       "verification_script": "scripts/check_shap_artifact_provenance.py"
     }
   ],
-  "generated_at": "2026-10-11T18:58:06.474202+00:00",
+  "generated_at": "2026-10-11T19:07:10.671211+00:00",
   "git_branch": "claude/status-complete",
-  "git_head_sha": "2f51299515e567cea7bc01dda2979d8a35423430",
+  "git_head_sha": "8e6940643069b65bb5a2d899f7794c873ef4fcdb",
   "migrations": [],
   "summary": {
     "findings_closed": 68,

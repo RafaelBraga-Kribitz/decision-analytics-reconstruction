@@ -101,10 +101,10 @@ assigned at filing time. Status: draft → approved → filed → done.
 | IMP-V04 | Reliability-diagram standard | P1 | medium | issues | V01, V02; soft: A01 | #68 | done |
 | IMP-V05 | Residual chart encoding fixes | P2 | medium | issues | V01, V02 | #69 | done |
 | IMP-V06 | Dashboard parity & defects | P2 | low | issues | V01 | #70 | done |
-| IMP-F01 | Deterministic rule engine + numeric rubric anchors | P1 | high | issues (CAF) | — | CAF#1 | filed |
-| IMP-F02 | Chart-library verification pipeline | P2 | high | issues (CAF) | soft: F01 | CAF#2 | filed |
-| IMP-F03 | Cross-repo audit ratchet | P1 | medium | issues (both) | F01, V02 | CAF#3 + #71 | issue filed |
-| IMP-F04 | Chart_Audit_Framework repo hygiene | P2 | low | issues (CAF) | — | CAF#4 | filed |
+| IMP-F01 | Deterministic rule engine + numeric rubric anchors | P1 | high | issues (CAF) | — | CAF#1 + CAF#13 | done |
+| IMP-F02 | Chart-library verification pipeline | P2 | high | issues (CAF) | soft: F01 | CAF#13 | done |
+| IMP-F03 | Cross-repo audit ratchet | P1 | medium | issues (both) | F01, V02 | CAF#13 + #71 | done |
+| IMP-F04 | Chart_Audit_Framework repo hygiene | P2 | low | issues (CAF) | — | CAF#13 | done |
 
 ## Traceability matrix (audit finding → document)
 
@@ -208,3 +208,7 @@ of scope for this plan — it is neither statistical nor visual.
   queue items shipped (closing commits recorded in each doc's `closed_by`
   front matter) set to `done`. Remaining: IMP-A03 (finding slice), A04, A06,
   B04, C01 (CI lane), C03, C06, V03, and the IMP-F series.
+- 2026-10-11 — remaining eight closed as findings F-083..F-090 (#199–#206).
+  IMP-F01..F04 done in Chart_Audit_Framework PR #13 (CAF#13); F04's
+  zero-duplicate invariant amended to exempt the scraped site mirrors. All 28
+  documents are `done`.
