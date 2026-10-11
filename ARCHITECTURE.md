@@ -111,7 +111,7 @@ decision-analytics-reconstruction/
 │   │   ├── data/
 │   │   │   ├── generator.py             synthetic population (→ population_raw.parquet)
 │   │   │   ├── raw_injector.py          13-flaw injection (→ population_raw_flawed.parquet)
-│   │   │   ├── cleaner.py              14-step cleaning (→ population_master_clean.parquet)
+│   │   │   ├── cleaner.py              10-step cleaning (→ population_master_clean.parquet)
 │   │   │   └── validator.py            schema + calibration anchor checks (QAGateFailure)
 │   │   ├── features/
 │   │   │   ├── demographic.py           age_bin, gender, youth/senior flags

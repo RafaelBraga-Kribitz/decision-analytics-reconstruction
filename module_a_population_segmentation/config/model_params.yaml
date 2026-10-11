@@ -1,27 +1,25 @@
 # Model hyperparameters — Module A
 #
-# Canonical reference for all tunable parameters.  Code-level defaults in
-# src/ deliberately mirror this file so the pipeline is runnable without
-# explicit config loading by model classes.  Orchestration entry points
-# (export.py, make module-a-export) are the intended consumers of this file.
+# Every hyperparameter below is read at runtime through
+# src/population_segmentation/utils/model_params.py by the code it describes
+# (F-088 / IMP-A06), and the export manifest records the values a run used
+# (model_run_manifest.json → effective_hyperparameters):
+#   - pca.*                                → segmentation._matrix
+#   - dbscan.eps / min_samples / metric / n_jobs → segmentation.DBSCANNoiseFilter
+#   - kmeans.default_k / n_init / init / max_iter / random_state,
+#     bootstrap_n_samples / bootstrap_subsample_frac → segmentation.KMeansSegmenter
+#   - propensity.penalty / solver / max_iter / *_frac → propensity.PropensityModel
+#   - propensity.stratify_by / individual_spread_std → export.py → PropensityModel
+#   - reachability_*                       → features/reachability.py
+#   - segmentation_features                → must equal segmentation.FEATURE_COLUMNS
+#                                            (checked by scripts/check_module_a_config_doc_parity.py)
 #
-# Parameters NOT yet wired to runtime loading (code defaults match):
-#   - pca.n_components / pca.random_state  → segmentation._matrix (hardcoded)
-#   - dbscan.eps / min_samples / metric    → segmentation.DBSCANNoiseFilter (hardcoded)
-#   - kmeans.k / n_init / max_iter / random_state → segmentation.KMeansSegmenter (hardcoded)
-#   - propensity.C_grid / cv_folds         → propensity.PropensityModel (LogisticRegression
-#                                            uses default C=1.0; no CV grid search)
-#   - propensity.stratify_by               → wired via export.py → PropensityModel
-#   - propensity.shap_sample_size          → SHAP analysis not yet implemented in src/
+# Gate keys (*_threshold, *_floor, max_noise_rate, reliability_max_deviation_pp)
+# are acceptance thresholds, not fit settings: they mirror the asserting tests
+# and the model cards, and the parity script checks them against both.
 #
-# Wired to runtime:
-#   - reachability_weights                 → features/reachability.load_reachability_weights()
-#   - reachability_tier_bounds             → features/reachability.load_reachability_tier_bounds()
-#   - reachability_tier_bounds.tier_share_tolerance
-#                                          → features/reachability.check_reachability_tier_drift()
-#
-# Planned: a config-loading adapter in pipeline/export.py to read these
-# values and pass them into model constructors, eliminating the duplication.
+# Keys with no runtime consumer are not kept here: a config key the code
+# ignores is a false affordance.
 
 # ─── PCA preprocessing (applied before DBSCAN and KMeans) ────────────────────
 # In the raw 13-D standardized feature space the median pairwise distance is
@@ -77,9 +75,12 @@ kmeans:
   # modeling one. A taxonomy-stability constraint (k = 6) was therefore added
   # and the constrained selection is k=6; the k=4 signal is recorded in
   # reports/module_a/k_sweep_2026-07-09.md for maintainer review.
-  k_range: [4, 5, 6, 7, 8]
+  # Swept k values for the rule above: [4, 5, 6, 7, 8] (record of the
+  # registered sweep in reports/module_a/k_sweep_2026-07-09.md; not a runtime key).
   default_k: 6
-  n_init: 10                     # Independent restarts; best WCSS retained
+  # sklearn "auto" = 1 restart for k-means++. This is what has always executed;
+  # the former "n_init: 10" was never wired and did not describe the run.
+  n_init: auto
   init: k-means++
   max_iter: 300
   random_state: 42               # Overridden by RANDOM_SEED env var at runtime
@@ -105,15 +106,15 @@ kmeans:
   # the full picture, including that unconstrained selection favors k=4
   # (ARI 0.5910 at 15k). The 15k test floor is 0.50 (tests/test_segmentation.py).
   bootstrap_ari_threshold: 0.40
-  bootstrap_n_samples: 100
+  # 25 reps is what every published ARI (0.5418 / 0.4304) was computed with; the
+  # former "100" was never wired (F-088). Changing it re-baselines the gate.
+  bootstrap_n_samples: 25
   bootstrap_subsample_frac: 0.80
 
 # ─── Propensity model ─────────────────────────────────────────────────────────
 propensity:
-  model: logistic_regression
+  # Logistic regression with sklearn's default C=1.0: there is no CV grid search.
   penalty: l2
-  C_grid: [0.01, 0.1, 1.0, 10.0]  # Cross-validation search grid
-  cv_folds: 5
   solver: lbfgs
   max_iter: 1000
   random_state: 42
@@ -147,7 +148,6 @@ propensity:
   # dataclass default) so the shipped parquet's configuration is what CI
   # exercises.
   individual_spread_std: 0.095
-  shap_sample_size: 10000         # Entities sampled for SHAP analysis
 
 # ─── Reachability index weights (wired in features/reachability.py) ───────────
 # ─── Reachability tier cutpoints (fixed reference; IMP-A05 / issue #56) ────────

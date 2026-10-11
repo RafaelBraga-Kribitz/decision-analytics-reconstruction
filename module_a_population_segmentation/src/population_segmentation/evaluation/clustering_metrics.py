@@ -40,6 +40,7 @@ def compute_bootstrap_ari(
     k: int,
     random_state: int = 42,
     n_bootstrap: int = 25,
+    subsample_frac: float = 0.8,
 ) -> float:
     """Mean adjusted Rand index between reference labels and KMeans on bootstrap subsamples.
 
@@ -48,7 +49,8 @@ def compute_bootstrap_ari(
         labels: Reference cluster labels (e.g., primary KMeans fit).
         k: Number of clusters passed to the bootstrap KMeans.
         random_state: RNG seed for reproducibility.
-        n_bootstrap: Number of subsample draws.
+        n_bootstrap: Number of subsample draws (``kmeans.bootstrap_n_samples``).
+        subsample_frac: Fraction of rows per draw (``kmeans.bootstrap_subsample_frac``).
 
     Returns:
         Mean ARI across successful bootstrap fits.
@@ -63,7 +65,7 @@ def compute_bootstrap_ari(
     n = len(x)
     scores: list[float] = []
     for _ in range(n_bootstrap):
-        sample_size = min(n, max(2, int(0.8 * n)))
+        sample_size = min(n, max(2, int(subsample_frac * n)))
         idx = rng.choice(n, size=sample_size, replace=False)
         km = KMeans(n_clusters=k, n_init="auto", random_state=random_state)
         sub = km.fit_predict(x[idx])

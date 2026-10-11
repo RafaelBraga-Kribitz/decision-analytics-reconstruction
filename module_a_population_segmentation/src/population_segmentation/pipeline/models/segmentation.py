@@ -10,12 +10,10 @@ index order is never assumed to mean anything.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any, cast
 
 import numpy as np
 import pandas as pd
-import yaml
 from scipy.optimize import linear_sum_assignment
 from sklearn.cluster import DBSCAN, KMeans
 from sklearn.decomposition import PCA
@@ -27,17 +25,18 @@ from population_segmentation.evaluation.clustering_metrics import (
     compute_calinski_harabasz,
     compute_davies_bouldin,
 )
+from population_segmentation.utils.model_params import load_model_params
 
 
 def _load_model_params() -> dict[str, Any]:
     """Load model parameters from centralized config."""
-    config_path = Path(__file__).resolve().parents[4] / "config" / "model_params.yaml"
-    with open(config_path) as f:
-        return yaml.safe_load(f)
+    return load_model_params()
 
 
 # Loaded once at import time; avoids repeated file reads in dataclass defaults and _matrix().
 _MODEL_PARAMS: dict[str, Any] = _load_model_params()
+_DBSCAN: dict[str, Any] = _MODEL_PARAMS.get("dbscan", {})
+_KMEANS: dict[str, Any] = _MODEL_PARAMS.get("kmeans", {})
 
 # Canonical k=6 segment label vocabulary. The historical index keys are kept
 # only so downstream consumers can enumerate the canonical names and k —
@@ -265,8 +264,10 @@ class DBSCANNoiseFilter:
     # The old eps=2.0 sat far beyond the distance distribution and flagged
     # exactly 0 rows — a dead pre-pass. eps=1.0 sits past the p99.5 elbow and
     # yields a 0.14% noise rate (within the max_noise_rate: 0.01 gate).
-    eps: float = 1.0
-    min_samples: int = 5
+    eps: float = float(_DBSCAN.get("eps", 1.0))
+    min_samples: int = int(_DBSCAN.get("min_samples", 5))
+    metric: str = str(_DBSCAN.get("metric", "euclidean"))
+    n_jobs: int | None = _DBSCAN.get("n_jobs")
 
     def fit_transform(
         self, df: pd.DataFrame, *, x: np.ndarray | None = None
@@ -292,17 +293,22 @@ class DBSCANNoiseFilter:
         """
         if x is None:
             x = _matrix(df)
-        labels = DBSCAN(eps=self.eps, min_samples=self.min_samples, metric="euclidean").fit_predict(
-            x
-        )
+        labels = DBSCAN(
+            eps=self.eps, min_samples=self.min_samples, metric=self.metric, n_jobs=self.n_jobs
+        ).fit_predict(x)
         noise_flags: np.ndarray = labels == -1
         return {"noise_rate": float(noise_flags.mean()), "noise_flags": noise_flags}
 
 
 @dataclass
 class KMeansSegmenter:
-    k: int = int(_MODEL_PARAMS.get("kmeans", {}).get("default_k", 6))
-    random_state: int = int(_MODEL_PARAMS.get("kmeans", {}).get("random_state", 42))
+    k: int = int(_KMEANS.get("default_k", 6))
+    random_state: int = int(_KMEANS.get("random_state", 42))
+    n_init: int | str = _KMEANS.get("n_init", "auto")
+    init: str = str(_KMEANS.get("init", "k-means++"))
+    max_iter: int = int(_KMEANS.get("max_iter", 300))
+    bootstrap_n_samples: int = int(_KMEANS.get("bootstrap_n_samples", 25))
+    bootstrap_subsample_frac: float = float(_KMEANS.get("bootstrap_subsample_frac", 0.8))
 
     def fit_predict(
         self, df: pd.DataFrame, *, x: np.ndarray | None = None
@@ -330,7 +336,11 @@ class KMeansSegmenter:
         if x is None:
             x = _matrix(df)
         km = KMeans(
-            n_clusters=self.k, init="k-means++", n_init="auto", random_state=self.random_state
+            n_clusters=self.k,
+            init=self.init,
+            n_init=self.n_init,  # type: ignore[arg-type]  # "auto" or an int, per sklearn
+            max_iter=self.max_iter,
+            random_state=self.random_state,
         )
         labels = km.fit_predict(x)
 
@@ -359,7 +369,14 @@ class KMeansSegmenter:
         runs from the same process, so the platform-stability property (P2-5,
         BLAS variance cancellation) is preserved.
         """
-        return compute_bootstrap_ari(x, full_labels, self.k, random_state=self.random_state)
+        return compute_bootstrap_ari(
+            x,
+            full_labels,
+            self.k,
+            random_state=self.random_state,
+            n_bootstrap=self.bootstrap_n_samples,
+            subsample_frac=self.bootstrap_subsample_frac,
+        )
 
 
 def build_segmentation_frame(
