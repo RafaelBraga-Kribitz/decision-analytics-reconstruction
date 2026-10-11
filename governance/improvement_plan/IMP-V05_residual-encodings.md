@@ -10,7 +10,8 @@ soft_depends_on: []
 queue: issues
 target_repo: decision-analytics-reconstruction
 issue: 69
-status: filed
+status: done
+closed_by: "a18bc64 (#69)"
 ---
 
 # IMP-V05 — Residual Chart Encoding Fixes

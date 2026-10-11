@@ -10,7 +10,8 @@ soft_depends_on: []
 queue: issues
 target_repo: decision-analytics-reconstruction
 issue: 61
-status: filed
+status: done
+closed_by: "d2c7d61 (#61)"
 ---
 
 # IMP-C02 — Hierarchical Model Specification: Dead Prior-Family Config and Uncalibrated φ
