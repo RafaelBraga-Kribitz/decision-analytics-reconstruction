@@ -6,6 +6,21 @@ All notable changes to this project are documented here. This file follows [Keep
 
 ## [Unreleased]
 
+### Improvement-plan closure + status Complete (F-083..F-090, 2026-10-11)
+
+- **Eight findings filed and closed**, one PR each (#199–#206): slow MCMC lane
+  as a CI merge gate (F-083), Quarto report computed from the fit artifact
+  (F-084), small-sample honesty with Clopper–Pearson intervals (F-085), Module B
+  rejection and FX-fallback disclosure (F-086), Module A cleaner and injector
+  integrity (F-087), config-to-runtime parity (F-088), enforced 50k clustering
+  gates (F-089), SHAP artifact provenance (F-090).
+- **State refresh** (#198): `AUDIT_STATE.json` and the handout regenerated; the
+  16 already-shipped improvement specs marked done in the register.
+- **Status flip**: README status Functional → Complete; hosted demos linked;
+  stale F-021 notes removed from the module READMEs; charter §3.6 debt claim
+  and deployment row corrected; `ISSUE_TRIAGE_MASTER.yaml` finding rows and
+  summary synced with the closed findings.
+
 ### Battleground v0.5 — evidence-based σ_idio + anti-clustering mapping (F-081, 2026-07-14)
 
 - **`c_battleground_v0.5`**: decoupled department dispersion — `μ_dept = swing × m`,

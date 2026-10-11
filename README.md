@@ -6,9 +6,9 @@
 [![Governance](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/governance.yml/badge.svg)](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/governance.yml)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-blue)](.python-version)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-[![Status: Functional](https://img.shields.io/badge/status-Functional-green)](#status)
+[![Status: Complete](https://img.shields.io/badge/status-Complete-brightgreen)](#status)
 
-**Status:** Functional
+**Status:** Complete
 
 **Given only what a campaign could see in early 2018 — eight public polls, census
 aggregates, and a fixed budget — how do you track a national election, allocate money
@@ -60,9 +60,11 @@ point of the work.
 
 *Module B allocation API (FastAPI) — live OpenAPI docs; every endpoint serves solver outputs from the canonical run.*
 
-The Module C report is published at
-[RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction](https://RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction/).
-Both apps run locally with `make dashboard` and `make module-b-api` (screenshots above are from local runs of this repo).
+Hosted demos:
+[Module A dashboard](https://decision-analytics-module-a.onrender.com) (Render; the free tier sleeps, so the first load can take a minute),
+[Module B API docs](https://decision-analytics-module-b-production.up.railway.app/docs) (Railway), and the
+[Module C report](https://RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction/) (GitHub Pages).
+Both apps also run locally with `make dashboard` and `make module-b-api` (screenshots above are from local runs of this repo).
 Hosted-demo availability is governed by finding **F-021** (`scripts/check_live_deployment_urls.py`): this README never claims a live URL the script has not verified, and because free-tier hosts sleep, a down demo means F-021 regressed and must be reopened.
 
 ## Explore this project
@@ -205,8 +207,7 @@ make module-c-all    # Module C — poll-tracking + scenario artifacts
 ```
 
 Python 3.11, Poetry lockfile, seed 42 on the canonical 50k run. Deployment notes:
-[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). Live URL verification: finding **F-021**
-(human platform auth required).
+[`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md). Live URL verification: finding **F-021**.
 
 ## Limitations
 
@@ -268,13 +269,17 @@ every decision number must carry its epistemic tag.
 
 ## Status
 
-**Status:** Functional
+**Status:** Complete
 
-Three modules run locally and through `make pipeline-full`. CI and the governance
-Adversary re-verify closed findings on every PR. Hosted-demo URLs remain under F-021.
-This is a portfolio reconstruction, not a production campaign system.
+All three modules run locally, through `make pipeline-full`, and as hosted demos.
+Every governance finding is closed (70 total, 0 open) and every spec in the
+statistical improvement plan (`governance/improvement_plan/INDEX.md`) is done.
+Each closure is backed by a `verification_script` that the governance Adversary
+re-runs on every PR, alongside the full-NUTS MCMC diagnostics lane and the
+technical-debt ratchet (at zero). This is a portfolio reconstruction, not a
+production campaign system.
 
-Repository last updated 2026-09-16 (date of the last commit).
+Status as of 2026-10-11.
 
 ## License
 

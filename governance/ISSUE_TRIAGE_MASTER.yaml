@@ -32,9 +32,12 @@ status_legend:
   insufficient_fix: Partial fix landed; quality bar not met — reopen or new finding
 
 summary:
-  findings_total: 32
-  findings_open: 3
-  findings_closed_verified: 27
+  # Findings counts refreshed 2026-10-11 from governance/AUDIT_STATE.json; the
+  # `findings:` list below inventories F-001..F-052 only. Other counts are from
+  # the 2026-06-12 triage.
+  findings_total: 70
+  findings_open: 0
+  findings_closed_verified: 68
   findings_historical: 2
   masterplan_items: 54
   project_evaluation_phases: 18
@@ -70,7 +73,7 @@ findings:
     status: verified_closed
     verification: scripts/check_ruff_unused_zero.py
   - id: F-008
-    status: open_finding
+    status: verified_closed
     verification: scripts/check_radon_complexity_zero.py
     last_check: "2026-06-12 radon_complex_blocks=8 (down from 34; target 0)"
     notes: CL Agent owns remediation
@@ -114,18 +117,18 @@ findings:
     verification: scripts/check_pipeline_golden_metrics.py
     supersedes: [F-010, F-011, F-015-partial, F-022, E-2, C-2-wiring]
   - id: F-041
-    status: open_finding
+    status: verified_closed
     title: Terminology compliance in public markdown
     verification: scripts/check_terminology_compliance.py
   - id: F-042
     status: verified_closed
     verification: scripts/check_mcmc_diagnostics_disclosure.py
   - id: F-043
-    status: open_finding
+    status: verified_closed
     title: Operator-only artifacts remain publicly tracked
     verification: scripts/check_tracked_operator_artifacts.py
   - id: F-044
-    status: open_finding
+    status: verified_closed
     title: Module A model_params.yaml not wired to runtime loaders
     verification: scripts/check_module_a_config_wiring.py
   - id: F-045
@@ -145,17 +148,17 @@ findings:
     status: verified_closed
     verification: scripts/check_eda_notebook_chart_parity.py
   - id: F-050
-    status: open_finding
+    status: verified_closed
     title: Committed chart PNGs bind to single canonical data run
     verification: scripts/check_figure_artifact_lineage.py
   - id: F-051
-    status: open_finding
+    status: verified_closed
     title: Canonical chart population earns segment label semantics
     verification: scripts/check_segment_label_chart_semantics.py
     supersedes_partial: F-039
     note: F-039 gates fresh fit; F-051 gates data/processed artifact charts consume
   - id: F-052
-    status: open_finding
+    status: verified_closed
     title: Propensity varies within departments and segments
     verification: scripts/check_propensity_individual_variation.py
 
@@ -165,12 +168,12 @@ findings:
 
 chart_audit_2026_06:
   cross_cutting:
-    - {id: AUD-XCUT-001, status: open_finding, finding: F-051, title: Segment labels wrong on canonical parquet (A6 convicts)}
-    - {id: AUD-XCUT-002, status: open_finding, finding: F-050, title: Stale figure pairs / missing run_id (C4 table vs forest, C6 vs C10)}
-    - {id: AUD-XCUT-003, status: open_finding, finding: F-050, title: Dashboard live rebuild vs N=50k chart population}
+    - {id: AUD-XCUT-001, status: verified_closed, finding: F-051, title: Segment labels wrong on canonical parquet (A6 convicts)}
+    - {id: AUD-XCUT-002, status: verified_closed, finding: F-050, title: Stale figure pairs / missing run_id (C4 table vs forest, C6 vs C10)}
+    - {id: AUD-XCUT-003, status: verified_closed, finding: F-050, title: Dashboard live rebuild vs N=50k chart population}
     - {id: AUD-XCUT-004, status: open_unfiled, spec: IMP-V01, root_cause: figure_template, title: Watermark/legend collisions all modules}
     - {id: AUD-XCUT-005, status: open_unfiled, spec: IMP-C05, root_cause: module_c_coherence, title: C2 national win certain vs C3/C8 dept coin flips}
-    - {id: AUD-XCUT-006, status: open_finding, finding: F-052, title: Individual covariates are dept constants (A5/A10/A11)}
+    - {id: AUD-XCUT-006, status: verified_closed, finding: F-052, title: Individual covariates are dept constants (A5/A10/A11)}
     - {id: AUD-XCUT-007, status: open_unfiled, spec: IMP-V02, root_cause: chart_cull, title: Deliverable cull to ~5 Module C + 6 Module B keepers}
   module_c:
     - {id: AUD-C1, status: verified_closed, finding: F-055, severity: critical, title: C1 anchor unlabeled / retrodiction vs forecast, blocks: [AUD-C2]}
@@ -204,20 +207,20 @@ chart_audit_2026_06:
     - {id: AUD-A1, status: insufficient_fix, finding: F-050, title: A1 segment sizes contradict dashboard shares}
     - {id: AUD-A2, status: open_unfiled, spec: IMP-A03, severity: rework, title: A2 hard age cut at 25 exposes flag-driven segments}
     - {id: AUD-A3, status: deferred, title: A3 gender null — replace with one sentence}
-    - {id: AUD-A4, status: open_finding, finding: F-051, title: A4 rural_committed only in metro depts}
-    - {id: AUD-A5, status: open_finding, finding: F-052, title: A5 degenerate propensity violins}
-    - {id: AUD-A6, status: open_finding, finding: F-051, title: A6 rural_committed 95% urban — promoted exhibit}
+    - {id: AUD-A4, status: verified_closed, finding: F-051, title: A4 rural_committed only in metro depts}
+    - {id: AUD-A5, status: verified_closed, finding: F-052, title: A5 degenerate propensity violins}
+    - {id: AUD-A6, status: verified_closed, finding: F-051, title: A6 rural_committed 95% urban — promoted exhibit}
     - {id: AUD-A7, status: open_unfiled, spec: IMP-A03, severity: approved_revisions, title: A7 language after label fix}
     - {id: AUD-A8, status: open_unfiled, spec: IMP-A03, severity: approved_revisions, title: A8 structurally_dependent name falsified}
     - {id: AUD-A9, status: open_unfiled, spec: IMP-V05, severity: rework, title: A9 correlation QA internal only}
     - {id: AUD-A10, status: verified_closed, finding: F-066, severity: reject, title: A10 PCA lattice proves dept constants}
-    - {id: AUD-A11, status: open_finding, finding: F-052, title: A11 NBI bimodality misdrawn as outliers}
+    - {id: AUD-A11, status: verified_closed, finding: F-052, title: A11 NBI bimodality misdrawn as outliers}
     - {id: AUD-A12, status: verified_closed, finding: F-061, severity: reject, title: A12 reachability histogram unreadable}
     - {id: AUD-A13, status: deferred, spec: IMP-A02, title: A13 preference proxy null — drop feature}
     - {id: AUD-SHAP, status: open_unfiled, spec: IMP-V03, severity: rework, title: SHAP missing model/target label}
   public_layer:
     - {id: AUD-PUB-001, status: verified_closed, finding: F-067, severity: reject, title: Dashboard QA tab empty}
-    - {id: AUD-PUB-002, status: open_finding, finding: F-050, title: GitHub Pages report 280px capture useless}
+    - {id: AUD-PUB-002, status: verified_closed, finding: F-050, title: GitHub Pages report 280px capture useless}
     - {id: AUD-PUB-003, status: open_unfiled, spec: IMP-V04, severity: rework, title: Calibration tab disclaimer stripped from PNG}
     - {id: AUD-PUB-004, status: verified_closed, finding: F-061, severity: reject, title: eda_overview data/model scope mislabel + truncated bars}
     - {id: AUD-PUB-005, status: open_unfiled, severity: appendix, title: Module B API OpenAPI schemas absent}
@@ -354,7 +357,7 @@ masterplan:
     - {id: C-1, status: verified_closed, finding: F-036}
     - {id: C-2, status: superseded, finding: F-040, note: metadata wiring done; analytical coupling see C-10}
     - {id: C-3, status: verified_closed, finding: F-034}
-    - {id: C-4, status: open_finding, finding: F-045, title: Synthetic battleground dept probs}
+    - {id: C-4, status: verified_closed, finding: F-045, title: Synthetic battleground dept probs}
     - {id: C-5, status: verified_closed, finding: F-040, note: golden_metrics.json CI-gated}
     - {id: C-6, status: verified_closed, finding: F-023}
     - {id: C-7, status: verified_closed, finding: F-034}
@@ -363,7 +366,7 @@ masterplan:
     - {id: C-10, status: deferred, title: MC scenarios do not feed back into forecasts}
     - {id: C-11, status: open_unfiled, title: house_effect_seed_matrix naming}
     - {id: C-12, status: open_unfiled, title: Posterior bracket test weak tolerance}
-    - {id: C-13, status: open_finding, finding: F-042, title: MCMC gates xfail}
+    - {id: C-13, status: verified_closed, finding: F-042, title: MCMC gates xfail}
     - {id: C-14, status: verified_closed, finding: F-034}
   eda_flow:
     - {id: E-1, status: verified_closed, finding: F-040}
@@ -392,7 +395,7 @@ masterplan:
     - {id: N-12, status: verified_closed, finding: F-032}
     - {id: N-13, status: verified_closed, finding: F-023}
     - {id: N-14, status: open_unfiled, title: Test-count drift across docs}
-    - {id: N-15, status: open_finding, finding: F-041, title: Terminology in flagship docs}
+    - {id: N-15, status: verified_closed, finding: F-041, title: Terminology in flagship docs}
 
 # ─── Project_Evaluation.md PHASE N* (net-new audit) ─────────────────────────────
 
@@ -422,7 +425,7 @@ audit_tasks:
   blockers:
     - {id: T0-01, status: verified_closed, merged_into: F-021}
     - {id: T0-02, status: open_unfiled, finding: F-043, title: Untrack maintainer operator tree}
-    - {id: T0-03, status: open_finding, finding: F-043, title: ruvector.db tracked in git}
+    - {id: T0-03, status: verified_closed, finding: F-043, title: ruvector.db tracked in git}
     - {id: T0-04, status: insufficient_fix, note: AGENTS.md+CLAUDE.md still tracked; .cursor untracked}
     - {id: T0-05, status: obsolete, note: Phantom Mermaid artifacts removed}
     - {id: T0-06, status: reframe_sufficient, finding: F-023}
@@ -437,7 +440,7 @@ audit_tasks:
     - {id: T1-06, status: open_unfiled, title: DBSCAN theater at eps=2.0}
     - {id: T1-07, status: open_unfiled, finding: F-017, title: 13th flaw type NUL_rural_flag}
     - {id: T1-08, status: open_unfiled, title: transaction-gate pre-commit hooks in clean clone}
-    - {id: T1-09, status: open_finding, finding: F-042}
+    - {id: T1-09, status: verified_closed, finding: F-042}
   tier2:
     - {id: T2-01, status: open_unfiled, finding: F-027}
     - {id: T2-02, status: open_unfiled, finding: F-025, F-026}

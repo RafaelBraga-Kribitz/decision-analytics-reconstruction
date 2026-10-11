@@ -34,8 +34,8 @@ Module B ships as a FastAPI service. Run it locally:
 make module-b-api   # docs at http://127.0.0.1:8088/docs, health at /healthz
 ```
 
-A hosted deployment is tracked as open finding `F-021` and will be linked
-here once it is verifiably live.
+Hosted deployment: [Module B API docs](https://decision-analytics-module-b-production.up.railway.app/docs)
+on Railway, probed on every PR by finding `F-021`.
 
 ## Source surface
 
