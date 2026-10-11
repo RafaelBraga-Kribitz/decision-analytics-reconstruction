@@ -10,7 +10,8 @@ soft_depends_on: []
 queue: issues
 target_repo: decision-analytics-reconstruction
 issue: 65
-status: filed
+status: done
+closed_by: "7513d89 (#65)"
 ---
 
 # IMP-C08 — Monte Carlo Scenario Stratification

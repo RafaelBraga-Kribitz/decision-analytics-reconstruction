@@ -10,7 +10,8 @@ soft_depends_on: [IMP-B02]
 queue: issues
 target_repo: decision-analytics-reconstruction
 issue: 57
-status: filed
+status: done
+closed_by: "c35c603 (#57)"
 ---
 
 # IMP-B01 — Allocation Parameter Provenance

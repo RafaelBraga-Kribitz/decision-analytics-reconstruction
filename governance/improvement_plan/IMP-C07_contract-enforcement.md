@@ -10,7 +10,8 @@ soft_depends_on: []
 queue: issues
 target_repo: decision-analytics-reconstruction
 issue: 64
-status: filed
+status: done
+closed_by: "6c4fb50 (#64)"
 ---
 
 # IMP-C07 — Contract Validator Full-Spec Enforcement
