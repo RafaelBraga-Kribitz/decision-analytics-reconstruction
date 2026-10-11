@@ -10,7 +10,8 @@ soft_depends_on: []
 queue: issues
 target_repo: decision-analytics-reconstruction
 issue: 54
-status: filed
+status: done
+closed_by: "6a49bdd (#54)"
 ---
 
 # IMP-A02 — Categorical Encoding for Distance-Based Methods
