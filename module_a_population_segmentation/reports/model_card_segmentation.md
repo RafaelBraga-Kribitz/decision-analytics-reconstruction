@@ -12,7 +12,7 @@
 |------|-----------|----------|--------|
 | A4 | DBSCAN noise rate < 1% | 0.000% | PASS |
 | A5 | Silhouette > 0.22 | 0.2562 (canonical n=50k run; 0.2689 at the 15k fixture) | PASS |
-| A6 | Bootstrap ARI > 0.40 (canonical reference-labeling method, 25 reps; 50k gate) | 0.4304 (50k; 0.5418 at the 15k fixture) | PASS |
+| A6 | Bootstrap ARI ≥ 0.40 (canonical reference-labeling method, 25 reps; 50k gate) | 0.4304 (50k; 0.5418 at the 15k fixture) | PASS |
 | A11 | Min segment share ≥ 1% | 9.1% | PASS |
 
 ## Gate threshold changes from original design
