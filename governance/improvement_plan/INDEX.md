@@ -77,30 +77,30 @@ assigned at filing time. Status: draft → approved → filed → done.
 
 | ID | Title (short) | Pri | Effort | Queue | Depends on | Issue | Status |
 |---|---|---|---|---|---|---|---|
-| IMP-A01 | Propensity honesty: non-circular target, real AUC gate, no fabricated variance | P0 | high | findings | — | — | draft |
-| IMP-A02 | Categorical encoding for distance-based methods | P1 | medium | issues | — | #54 | filed |
+| IMP-A01 | Propensity honesty: non-circular target, real AUC gate, no fabricated variance | P0 | high | findings | — | F-079 | done |
+| IMP-A02 | Categorical encoding for distance-based methods | P1 | medium | issues | — | #54 | done |
 | IMP-A03 | Clustering selection & quality-gate integrity | P1 | high | dual | A02, A05 | #55 | issue filed |
 | IMP-A04 | Cleaner & injector integrity | P1 | medium | findings | — | — | draft |
-| IMP-A05 | Fixed-reference feature scaling | P2 | medium | issues | — | #56 | filed |
+| IMP-A05 | Fixed-reference feature scaling | P2 | medium | issues | — | #56 | done |
 | IMP-A06 | Config-runtime parity & documentation truth | P1 | medium | findings | — | — | draft |
-| IMP-B01 | Allocation parameter provenance | P1 | high | issues | soft: B02 | #57 | filed |
-| IMP-B02 | Uncertainty-aware ingestion of Module A outputs | P1 | high | issues | A01, A03 | #58 | filed |
-| IMP-B03 | MILP robustness & contract corrections | P2 | low | issues | — | #59 | filed |
+| IMP-B01 | Allocation parameter provenance | P1 | high | issues | soft: B02 | #57 | done |
+| IMP-B02 | Uncertainty-aware ingestion of Module A outputs | P1 | high | issues | A01, A03 | #58 | done |
+| IMP-B03 | MILP robustness & contract corrections | P2 | low | issues | — | #59 | done |
 | IMP-B04 | Silent-substitution elimination in B data layer | P1 | low | findings | — | — | draft |
 | IMP-C01 | MCMC convergence remediation & hard diagnostic gates | P0 | high | dual | — | #60 + F-083 | done |
-| IMP-C02 | Model spec: pollster prior families; calibrated φ→σ_obs | P1 | high | issues | C01 | #61 | filed |
+| IMP-C02 | Model spec: pollster prior families; calibrated φ→σ_obs | P1 | high | issues | C01 | #61 | done |
 | IMP-C03 | Report computed-from-artifact integrity | P1 | medium | findings | C01, C02, C05 | — | draft |
-| IMP-C04 | Shock & herding parameter calibration/disclosure | P1 | high | issues | — | #62 | filed |
-| IMP-C05 | Battleground/geo uncertainty integrity | P1 | high | dual | C01, C02; soft: V01 | #63 | issue filed |
+| IMP-C04 | Shock & herding parameter calibration/disclosure | P1 | high | issues | — | #62 | done |
+| IMP-C05 | Battleground/geo uncertainty integrity | P1 | high | dual | C01, C02; soft: V01 | #63 | done |
 | IMP-C06 | Small-sample honesty (walk-forward, exit model) | P1 | medium | findings | C01 | F-085 | done |
-| IMP-C07 | Contract validator full-spec enforcement | P1 | medium | issues | — | #64 | filed |
-| IMP-C08 | MC scenario stratification reweighting | P2 | medium | issues | C01 | #65 | filed |
-| IMP-V01 | Shared visual system (palette + figure template) | P1 | medium | issues | — | #66 | filed |
-| IMP-V02 | Chart single-sourcing & manifest lineage coverage | P1 | high | dual | — | #67 | issue filed |
+| IMP-C07 | Contract validator full-spec enforcement | P1 | medium | issues | — | #64 | done |
+| IMP-C08 | MC scenario stratification reweighting | P2 | medium | issues | C01 | #65 | done |
+| IMP-V01 | Shared visual system (palette + figure template) | P1 | medium | issues | — | #66 | done |
+| IMP-V02 | Chart single-sourcing & manifest lineage coverage | P1 | high | dual | — | #67 | done |
 | IMP-V03 | SHAP artifact provenance | P0 | low | findings | — | — | draft |
-| IMP-V04 | Reliability-diagram standard | P1 | medium | issues | V01, V02; soft: A01 | #68 | filed |
-| IMP-V05 | Residual chart encoding fixes | P2 | medium | issues | V01, V02 | #69 | filed |
-| IMP-V06 | Dashboard parity & defects | P2 | low | issues | V01 | #70 | filed |
+| IMP-V04 | Reliability-diagram standard | P1 | medium | issues | V01, V02; soft: A01 | #68 | done |
+| IMP-V05 | Residual chart encoding fixes | P2 | medium | issues | V01, V02 | #69 | done |
+| IMP-V06 | Dashboard parity & defects | P2 | low | issues | V01 | #70 | done |
 | IMP-F01 | Deterministic rule engine + numeric rubric anchors | P1 | high | issues (CAF) | — | CAF#1 | filed |
 | IMP-F02 | Chart-library verification pipeline | P2 | high | issues (CAF) | soft: F01 | CAF#2 | filed |
 | IMP-F03 | Cross-repo audit ratchet | P1 | medium | issues (both) | F01, V02 | CAF#3 + #71 | issue filed |
@@ -204,3 +204,7 @@ of scope for this plan — it is neither statistical nor visual.
   finding YAMLs are filed later by Remediator sessions, one per PR;
   `status: filed` means all of a doc's queue items exist, `issue filed`
   means the finding stub is still pending.
+- 2026-10-11 — register reconciled against the code: 16 documents whose
+  queue items shipped (closing commits recorded in each doc's `closed_by`
+  front matter) set to `done`. Remaining: IMP-A03 (finding slice), A04, A06,
+  B04, C01 (CI lane), C03, C06, V03, and the IMP-F series.

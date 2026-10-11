@@ -10,7 +10,8 @@ soft_depends_on: []
 queue: findings
 target_repo: decision-analytics-reconstruction
 issue: null
-status: draft
+status: done
+closed_by: "336a5fe (F-079)"
 ---
 
 # IMP-A01 — Propensity Honesty: Non-Circular Target, Real AUC Gate, No Fabricated Variance
