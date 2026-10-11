@@ -19,6 +19,11 @@ REACHABILITY = (
 )
 
 # Documented in model_params header as not yet wired — must stay declared until wired.
+# F-088 shipped the loader: once it exists, the header must say keys are read at runtime.
+LOADER = (
+    REPO_ROOT / "module_a_population_segmentation" / "src" / "population_segmentation" / "utils"
+) / "model_params.py"
+WIRED_MARKER = "read at runtime"
 UNWIRED_MARKERS = (
     "NOT yet wired",
     "hardcoded",
@@ -26,14 +31,19 @@ UNWIRED_MARKERS = (
 )
 
 
-def main() -> int:
-    gaps: list[str] = []
+def _header_gaps() -> list[str]:
     if not MODEL_PARAMS.is_file():
-        gaps.append("missing model_params.yaml")
-    else:
-        text = MODEL_PARAMS.read_text(encoding="utf-8")
-        if not any(m in text for m in UNWIRED_MARKERS):
-            gaps.append("model_params.yaml must document unwired keys until loader exists")
+        return ["missing model_params.yaml"]
+    text = MODEL_PARAMS.read_text(encoding="utf-8")
+    if LOADER.is_file() and WIRED_MARKER in text:
+        return []
+    if any(m in text for m in UNWIRED_MARKERS):
+        return []
+    return ["model_params.yaml must document unwired keys until loader exists"]
+
+
+def main() -> int:
+    gaps: list[str] = _header_gaps()
 
     if REACHABILITY.is_file():
         code = REACHABILITY.read_text(encoding="utf-8")

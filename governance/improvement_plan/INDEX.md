@@ -82,7 +82,7 @@ assigned at filing time. Status: draft → approved → filed → done.
 | IMP-A03 | Clustering selection & quality-gate integrity | P1 | high | dual | A02, A05 | #55 | issue filed |
 | IMP-A04 | Cleaner & injector integrity | P1 | medium | findings | — | — | draft |
 | IMP-A05 | Fixed-reference feature scaling | P2 | medium | issues | — | #56 | filed |
-| IMP-A06 | Config-runtime parity & documentation truth | P1 | medium | findings | — | — | draft |
+| IMP-A06 | Config-runtime parity & documentation truth | P1 | medium | findings | — | F-088 | done |
 | IMP-B01 | Allocation parameter provenance | P1 | high | issues | soft: B02 | #57 | filed |
 | IMP-B02 | Uncertainty-aware ingestion of Module A outputs | P1 | high | issues | A01, A03 | #58 | filed |
 | IMP-B03 | MILP robustness & contract corrections | P2 | low | issues | — | #59 | filed |
