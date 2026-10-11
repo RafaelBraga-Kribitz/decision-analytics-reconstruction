@@ -16,7 +16,7 @@ All notable changes to this project are documented here. This file follows [Keep
   gates (F-089), SHAP artifact provenance (F-090).
 - **State refresh** (#198): `AUDIT_STATE.json` and the handout regenerated; the
   16 already-shipped improvement specs marked done in the register.
-- **Status flip**: README status Functional → Complete; hosted demos linked;
+- **Status flip**: README status and hero banner Functional → Complete; hosted demos linked;
   stale F-021 notes removed from the module READMEs; charter §3.6 debt claim
   and deployment row corrected; `ISSUE_TRIAGE_MASTER.yaml` finding rows and
   summary synced with the closed findings.
