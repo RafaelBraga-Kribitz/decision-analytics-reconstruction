@@ -10,7 +10,8 @@ soft_depends_on: []
 queue: findings
 target_repo: decision-analytics-reconstruction
 issue: null
-status: draft
+status: done
+closed_by: "F-084"
 ---
 
 # IMP-C03 — Post-Mortem Report Computed-From-Artifact Integrity

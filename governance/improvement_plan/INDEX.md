@@ -89,7 +89,7 @@ assigned at filing time. Status: draft → approved → filed → done.
 | IMP-B04 | Silent-substitution elimination in B data layer | P1 | low | findings | — | — | draft |
 | IMP-C01 | MCMC convergence remediation & hard diagnostic gates | P0 | high | dual | — | #60 | issue filed |
 | IMP-C02 | Model spec: pollster prior families; calibrated φ→σ_obs | P1 | high | issues | C01 | #61 | filed |
-| IMP-C03 | Report computed-from-artifact integrity | P1 | medium | findings | C01, C02, C05 | — | draft |
+| IMP-C03 | Report computed-from-artifact integrity | P1 | medium | findings | C01, C02, C05 | F-084 | done |
 | IMP-C04 | Shock & herding parameter calibration/disclosure | P1 | high | issues | — | #62 | filed |
 | IMP-C05 | Battleground/geo uncertainty integrity | P1 | high | dual | C01, C02; soft: V01 | #63 | issue filed |
 | IMP-C06 | Small-sample honesty (walk-forward, exit model) | P1 | medium | findings | C01 | — | draft |

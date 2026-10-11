@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 from datetime import date, timedelta
 from pathlib import Path
@@ -31,6 +32,16 @@ _load_sampler_config = load_sampler_config
 # interval (az.hdi), not 5/95 equal-tailed quantiles (the prior, mislabelled
 # behaviour). Loaded from pymc_sampler.yaml for centralized control.
 HDI_PROB = float(_load_sampler_config().get("hdi_prob", 0.94))
+
+# Machine-readable sampling diagnostics read by the Quarto post-mortem (F-084).
+# The pass criteria match the hard gates in tests/test_mcmc_diagnostics_summary.py.
+DIAGNOSTICS_FILENAME = "mcmc_diagnostics_summary.json"
+DIAGNOSTIC_GATES: dict[str, float] = {
+    "rhat_max": 1.01,
+    "ess_bulk_min": 400.0,
+    "ess_tail_min": 400.0,
+    "divergences": 0.0,
+}
 
 
 def _sampler_kwargs() -> dict[str, Any]:
@@ -257,6 +268,43 @@ def export_house_effects_table(
     return pd.DataFrame(rows)
 
 
+def diagnostics_summary(idata: az.InferenceData) -> dict[str, Any]:
+    """Summarize convergence of a fitted tracking model against ``DIAGNOSTIC_GATES``."""
+    stats = idata.sample_stats  # type: ignore[union-attr]  # arviz stubs omit InferenceData.sample_stats
+    treedepth = stats.get("reached_max_treedepth")
+    # arviz stubs type rhat/ess as float | Dataset; on InferenceData they return a Dataset.
+    rhat, ess_bulk, ess_tail = (
+        cast(Any, az.rhat(idata)),
+        cast(Any, az.ess(idata, method="bulk")),
+        cast(Any, az.ess(idata, method="tail")),
+    )
+    values = {
+        "rhat_max": float(rhat.max().to_array().max().item()),
+        "ess_bulk_min": float(ess_bulk.min().to_array().min().item()),
+        "ess_tail_min": float(ess_tail.min().to_array().min().item()),
+        "divergences": int(stats["diverging"].sum().item()),
+    }
+    passed = {
+        "rhat_max": values["rhat_max"] <= DIAGNOSTIC_GATES["rhat_max"],
+        "ess_bulk_min": values["ess_bulk_min"] >= DIAGNOSTIC_GATES["ess_bulk_min"],
+        "ess_tail_min": values["ess_tail_min"] >= DIAGNOSTIC_GATES["ess_tail_min"],
+        "divergences": values["divergences"] <= DIAGNOSTIC_GATES["divergences"],
+    }
+    return {
+        "model_version": idata.attrs.get("model_version", MODEL_VERSION),
+        "created_at": idata.posterior.attrs.get("created_at"),  # type: ignore[union-attr]
+        # Any non-empty MC_FAST selects the 50-draw path (see _sampler_kwargs).
+        "sampler_path": "mc_fast" if os.environ.get("MC_FAST") else "full_nuts",
+        "chains": int(stats.sizes["chain"]),
+        "draws": int(stats.sizes["draw"]),
+        "max_treedepth_hits": int(treedepth.sum().item()) if treedepth is not None else None,
+        "hdi_prob": float(idata.attrs.get("interval_prob", HDI_PROB)),
+        "values": values,
+        "gates": DIAGNOSTIC_GATES,
+        "passed": passed,
+    }
+
+
 def run_tracking_fit_and_export(
     tracking: pd.DataFrame,
     out_dir: Path,
@@ -280,4 +328,7 @@ def run_tracking_fit_and_export(
     out_dir.mkdir(parents=True, exist_ok=True)
     daily.to_parquet(out_dir / "daily_posterior_forecast.parquet", index=False)
     houses.to_parquet(out_dir / "posterior_house_effects.parquet", index=False)
+    (out_dir / DIAGNOSTICS_FILENAME).write_text(
+        json.dumps(diagnostics_summary(idata), indent=2), encoding="utf-8"
+    )
     return idata, daily, houses
