@@ -67,7 +67,10 @@ CLEAN_POPULATION_SCHEMA = DataFrameSchema(
                 Check.less_than_or_equal_to(115),
             ],
             nullable=False,
-            title="Age in years on 2018-04-22",
+            title=(
+                "Age in years on 2018-04-22 (schema-contract check: the cleaner clamps to "
+                "[18, 115]; see age_out_of_range for the pre-clamp rate)"
+            ),
         ),
         "rural_flag": Column(
             pa.Bool,
@@ -110,6 +113,11 @@ CLEAN_POPULATION_SCHEMA = DataFrameSchema(
             pa.Bool,
             nullable=False,
             title="Flag: DOB produced an age outside [18, 115] before clamping",
+        ),
+        "dob_imputed": Column(
+            pa.Bool,
+            nullable=False,
+            title="Flag: malformed DOB replaced by the 01/01/1980 fallback",
         ),
     },
     checks=[

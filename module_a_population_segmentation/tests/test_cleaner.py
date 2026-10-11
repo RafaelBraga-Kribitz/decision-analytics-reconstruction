@@ -76,15 +76,35 @@ def test_cleaner_synthetic_internet_flag_uses_config_rates(
     assert out.loc[~rural, "internet_access_flag"].mean() > 0.85
 
 
-def test_cleaner_synthetic_rural_flag_respects_yaml_prior(
+def test_cleaner_synthetic_rural_flag_uses_department_urban_share(
     raw_population: pd.DataFrame, config: dict, tmp_path: Path  # type: ignore[type-arg]
 ) -> None:
-    """When rural_flag column is absent, Bernoulli rate comes from cleaner_synthetic_defaults."""
+    """Absent rural_flag is imputed per department from department_urban_share (F-087)."""
+    from population_segmentation.data.cleaner import clean_population
+
+    raw = raw_population.drop(columns=["rural_flag"])
+    out = clean_population(raw, config, qa_report_dir=tmp_path, seed=123)
+    rural_by_dept = out.groupby("department")["rural_flag"].agg(["mean", "size"])
+    for dept, urban in config["department_urban_share"].items():
+        if dept not in rural_by_dept.index or rural_by_dept.loc[dept, "size"] < 400:
+            continue
+        # Binomial noise at n >= 400 is < 2.5 pp; allow 6 pp.
+        assert abs(rural_by_dept.loc[dept, "mean"] - (1.0 - urban)) < 0.06, dept
+    assert rural_by_dept.loc["Asuncion", "mean"] == 0.0  # urban share 1.00
+    report = next(tmp_path.glob("qa_report_*.md")).read_text(encoding="utf-8")
+    assert "rural_flag imputed per department urban share" in report
+
+
+def test_cleaner_rural_flag_falls_back_to_national_anchor(
+    raw_population: pd.DataFrame, config: dict, tmp_path: Path  # type: ignore[type-arg]
+) -> None:
+    """Departments without an urban share use cleaner_synthetic_defaults.rural_flag_true_rate."""
     from population_segmentation.data.cleaner import clean_population
 
     raw = raw_population.drop(columns=["rural_flag"])
     cfg = {
         **config,
+        "department_urban_share": {},
         "cleaner_synthetic_defaults": {
             **(config.get("cleaner_synthetic_defaults") or {}),
             "rural_flag_true_rate": 0.95,
@@ -92,6 +112,25 @@ def test_cleaner_synthetic_rural_flag_respects_yaml_prior(
     }
     out = clean_population(raw, cfg, qa_report_dir=tmp_path, seed=123)
     assert out["rural_flag"].astype(bool).mean() > 0.88
+
+
+def test_malformed_dob_is_flagged_and_counted(
+    raw_population: pd.DataFrame, config: dict, tmp_path: Path  # type: ignore[type-arg]
+) -> None:
+    """Malformed DOBs get the fallback date and dob_imputed=True; QA report counts them."""
+    from population_segmentation.data.cleaner import clean_population
+
+    raw = raw_population.copy()
+    bad = raw.index[:25]
+    raw.loc[bad, "dob"] = "not-a-date"
+    out = clean_population(raw, config, qa_report_dir=tmp_path, seed=123)
+    flagged = out.loc[out["entity_id"].isin(raw.loc[bad, "entity_id"])]
+    assert flagged["dob_imputed"].all()
+    assert (flagged["dob"] == "01/01/1980").all()
+    assert out["dob_imputed"].sum() >= 25
+    report = next(tmp_path.glob("qa_report_*.md")).read_text(encoding="utf-8")
+    assert "DOB imputed with 01/01/1980 fallback" in report
+    assert "before clamping" in report
 
 
 def test_cleaner_synthetic_language_respects_yaml_priors(

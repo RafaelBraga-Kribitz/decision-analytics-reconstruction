@@ -60,6 +60,8 @@ def _validate_gender_and_age(df: pd.DataFrame) -> None:
     bad_gender = set(df["gender"].dropna().unique()) - CANONICAL_GENDER
     if bad_gender:
         raise QAGateFailure(f"Non-canonical gender values: {sorted(bad_gender)}")
+    # Schema-contract post-condition of the cleaner's clamp, not an independent
+    # plausibility gate: the pre-clamp rate is `age_out_of_range` (QA report).
     if not df["age_on_event_date"].between(18, 115).all():
         raise QAGateFailure("age_on_event_date must be within [18, 115]")
 
