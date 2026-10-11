@@ -80,7 +80,7 @@ assigned at filing time. Status: draft → approved → filed → done.
 | IMP-A01 | Propensity honesty: non-circular target, real AUC gate, no fabricated variance | P0 | high | findings | — | — | draft |
 | IMP-A02 | Categorical encoding for distance-based methods | P1 | medium | issues | — | #54 | filed |
 | IMP-A03 | Clustering selection & quality-gate integrity | P1 | high | dual | A02, A05 | #55 | issue filed |
-| IMP-A04 | Cleaner & injector integrity | P1 | medium | findings | — | — | draft |
+| IMP-A04 | Cleaner & injector integrity | P1 | medium | findings | — | F-087 | done |
 | IMP-A05 | Fixed-reference feature scaling | P2 | medium | issues | — | #56 | filed |
 | IMP-A06 | Config-runtime parity & documentation truth | P1 | medium | findings | — | — | draft |
 | IMP-B01 | Allocation parameter provenance | P1 | high | issues | soft: B02 | #57 | filed |

@@ -1,0 +1,45 @@
+id: F-087
+title: "Module A cleaner: flat rural fallback, untracked DOB sentinel, phantom 13th flaw type"
+category: fake_completion
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-10-11
+closed_at: 2026-10-11
+recurrence_count: 0
+evidence: |
+  module_a_population_segmentation/src/population_segmentation/data/:
+  - cleaner.py _ensure_rural_flag imputed a missing rural_flag with one
+    national Bernoulli(0.383), ignoring generation.yaml department_urban_share
+    (1.00 Asuncion .. 0.24 Canindeyu) that the generator uses.
+  - raw_injector.py listed "NUL_rural_flag" as the 13th of "all 13 flaw types"
+    in df.attrs["flaw_types_injected"], but inject_flaws never touched
+    rural_flag; generation.yaml documented rural_flag_missing_rate: 1.00, read
+    by nothing.
+  - cleaner.py _normalize_dob replaced malformed DOBs with the literal
+    "01/01/1980" at three call sites with no flag (406 rows, 0.81%, of the 50k
+    production run), creating an untracked age-38 spike.
+  - _derive_age_from_dob clamps age to [18, 115]; validator.py and
+    schema_validator.py then assert the same bound and were presented as
+    quality gates, while the pre-clamp age_out_of_range rate (2.10%) was
+    reported nowhere.
+verification_script: scripts/check_cleaner_injector_integrity.py
+notes: |
+  Spec: governance/improvement_plan/IMP-A04_cleaner-injector-integrity.md
+  Closed 2026-10-11:
+  - _ensure_rural_flag draws rural with p = 1 - department_urban_share[dept]
+    (national anchor only for unlisted departments), from the threaded rng.
+  - inject_flaws manifest lists the 12 operations it performs; docstrings and
+    generation.yaml no longer claim a rural_flag flaw (option (b) of the spec:
+    rural_flag stays generator-derived, so pipeline outputs are unchanged).
+  - New dob_imputed column (clean contract + Pandera schema); the fallback
+    date is kept but flagged.
+  - QA report adds the DOB-imputation count and age mode with/without imputed
+    rows, the pre-clamp age_out_of_range count, and per-department rural
+    rates when imputed; the [18, 115] checks are documented as schema-contract
+    post-conditions.
+  - 50k pipeline rerun: population_master_clean, segment_labels and
+    participation_propensity identical to main on every existing column.
+  Script: AST check that every manifest token maps to an operation executed
+  before the manifest is set; no "13 flaw types" claim or
+  rural_flag_missing_rate knob; functional 6k-row check of per-department
+  rural imputation, dob_imputed flagging and QA report lines.

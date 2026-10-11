@@ -46,5 +46,7 @@ def test_language_imputation_normalises_nonzero_priors() -> None:
 )
 def test_normalize_dob_parsing(raw: str, expected: str) -> None:
     s = pd.Series([raw])
-    out = _normalize_dob(s)
+    out, imputed = _normalize_dob(s)
     assert out.iloc[0] == expected
+    # The fallback date is always flagged; a parsed DOB never is (F-087).
+    assert bool(imputed.iloc[0]) == (expected == "01/01/1980" and raw != "01/01/1980")
