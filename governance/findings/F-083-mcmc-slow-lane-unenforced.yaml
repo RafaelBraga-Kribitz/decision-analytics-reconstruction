@@ -1,0 +1,36 @@
+id: F-083
+title: "Full-NUTS MCMC gates are claimed enforced but no CI job runs the slow lane"
+category: fake_completion
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-10-11
+closed_at: 2026-10-11
+recurrence_count: 1   # F-042 closed this class via disclosure only
+evidence: |
+  module_c_forecasting_scenarios/tests/test_mcmc_diagnostics_summary.py is
+  `pytestmark = pytest.mark.slow` and holds the hard R-hat <= 1.01, ESS >= 400,
+  zero-divergence and posterior-stability assertions (xfails were removed in
+  6c4fb50). But every pytest invocation in .github/workflows/ci.yml (repo
+  make test, Module C job) and the Makefile `test` target passes
+  -m "not slow", and no workflow runs -m slow, so the gates never block a merge.
+  module_c_forecasting_scenarios/README.md and METHODOLOGY.md state the gates
+  are "enforced (not xfail'd) in the slow lane"; reports/VALIDATION.md says
+  "enforced: slow-lane tests fail on any divergence" — no such lane exists.
+  module_c_forecasting_scenarios/reports/C_research_proof_table.md:23-27 still
+  headlines the section "MCMC diagnostics (aspirational)", and the Module C
+  README cites a `--run-slow` flag that is not defined anywhere.
+verification_script: scripts/check_mcmc_convergence_gates_hard.py
+notes: |
+  Spec: governance/improvement_plan/IMP-C01_mcmc-convergence-gates.md
+  (finding slice; the model remediation slice shipped as issue #60).
+  Script checks: (1) no xfail and all five gate assertions present in the
+  diagnostics test; (2) ci.yml has an unconditional `module-c-slow-nuts` job
+  running that file with -m slow and without MC_FAST (any non-empty MC_FAST
+  selects the 50-draw path); (3) the proof table's MCMC section does not say
+  "aspirational" and names the lane; the README does not cite --run-slow.
+  Distinct from F-042, whose script only checks disclosure.
+  Closed 2026-10-11: added the `module-c-slow-nuts` job to ci.yml (all
+  Module C `-m slow` tests, MC_FAST unset; 25 tests pass locally in ~3 min,
+  diagnostics file ~2 min); rewrote the proof-table section as an enforced
+  merge gate naming the lane; replaced the README's nonexistent --run-slow
+  flag with the real invocation. Script passes.

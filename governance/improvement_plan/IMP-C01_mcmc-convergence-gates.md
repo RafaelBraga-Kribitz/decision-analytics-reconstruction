@@ -10,7 +10,8 @@ soft_depends_on: []
 queue: dual
 target_repo: decision-analytics-reconstruction
 issue: 60
-status: draft
+status: done
+closed_by: "6c4fb50 (#60), F-083"
 ---
 
 # IMP-C01 — MCMC Convergence Remediation and Hard Diagnostic Gates
