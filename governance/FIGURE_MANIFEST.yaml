@@ -179,11 +179,11 @@ figures:
   save_name: S5_reach_vs_contacts.png
 - chart_id: reliability_diagram
   path: reports/module_a/reliability_diagram.png
-  generator: module_a_population_segmentation/pipeline/export.py
+  generator: scripts/generate_module_a_report_charts.py
   save_name: reliability_diagram.png
 - chart_id: shap_summary
   path: reports/module_a/shap_summary.png
-  generator: module_a_population_segmentation/pipeline/export.py
+  generator: scripts/generate_module_a_report_charts.py
   save_name: shap_summary.png
 - chart_id: bg_abs_residual_vs_abs_swing
   path: reports/module_c/battleground_investigation/figures/abs_residual_vs_abs_swing.png

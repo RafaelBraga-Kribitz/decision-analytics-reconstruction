@@ -97,7 +97,7 @@ assigned at filing time. Status: draft → approved → filed → done.
 | IMP-C08 | MC scenario stratification reweighting | P2 | medium | issues | C01 | #65 | done |
 | IMP-V01 | Shared visual system (palette + figure template) | P1 | medium | issues | — | #66 | done |
 | IMP-V02 | Chart single-sourcing & manifest lineage coverage | P1 | high | dual | — | #67 | done |
-| IMP-V03 | SHAP artifact provenance | P0 | low | findings | — | — | draft |
+| IMP-V03 | SHAP artifact provenance | P0 | low | findings | — | F-090 | done |
 | IMP-V04 | Reliability-diagram standard | P1 | medium | issues | V01, V02; soft: A01 | #68 | done |
 | IMP-V05 | Residual chart encoding fixes | P2 | medium | issues | V01, V02 | #69 | done |
 | IMP-V06 | Dashboard parity & defects | P2 | low | issues | V01 | #70 | done |
