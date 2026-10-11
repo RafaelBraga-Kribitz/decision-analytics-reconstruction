@@ -1,9 +1,9 @@
 {
-  "output": "C:\\Users\\Benutzer1\\Dev\\portfolio-readme-work\\decision-analytics-reconstruction\\docs\\assets\\hero.png",
+  "output": "docs/assets/hero.png",
   "width": 1600,
   "height": 640,
   "mode": "light",
-  "fonts": "Söhne from C:\\Users\\Benutzer1\\Dev\\braga-design-system-template\\public\\fonts",
+  "fonts": "Söhne (braga-design-system-template history, e9c37917^:public/fonts)",
   "title_size": 88,
   "descriptor_size": 28,
   "attempts": 23,
@@ -12,7 +12,7 @@
       "bbox": [
         72,
         72,
-        488,
+        498,
         104
       ],
       "lines": [
@@ -22,13 +22,13 @@
     },
     "status": {
       "bbox": [
-        1368,
+        1397,
         72,
         1528,
         104
       ],
       "lines": [
-        "FUNCTIONAL"
+        "COMPLETE"
       ],
       "font": "SohneMono-Buch.otf"
     },
@@ -36,7 +36,7 @@
       "bbox": [
         72,
         542,
-        878,
+        890,
         570
       ],
       "lines": [
@@ -48,7 +48,7 @@
       "bbox": [
         72,
         128,
-        1502,
+        1496,
         395
       ],
       "lines": [
@@ -62,12 +62,12 @@
       "bbox": [
         72,
         423,
-        1102,
+        1193,
         497
       ],
       "lines": [
-        "Segmentation, MILP budget allocation, and Bayesian poll tracking reconstruct one",
-        "election from public anchors and synthetic voters."
+        "Segmentation, MILP budget allocation, and Bayesian poll tracking reconstruct one election",
+        "from public anchors and synthetic voters."
       ],
       "font": "Sohne-Buch.otf"
     }

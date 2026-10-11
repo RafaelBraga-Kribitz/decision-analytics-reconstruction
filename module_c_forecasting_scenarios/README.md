@@ -50,9 +50,10 @@ make deploy-module-c
 
 ## Live report
 
-Quarto-rendered posterior report: build locally with the Pages workflow steps
-(`.github/workflows/deploy-module-c-pages.yml`). The hosted GitHub Pages link
-is tracked as open finding `F-021` and will be added once verifiably live.
+Quarto-rendered posterior report, hosted on
+[GitHub Pages](https://RafaelBraga-Kribitz.github.io/decision-analytics-reconstruction/)
+and probed on every PR by finding `F-021`. It is built by
+`.github/workflows/deploy-module-c-pages.yml` under full NUTS.
 
 ## Source surface
 

@@ -88,8 +88,8 @@ The project succeeds if all of these are true:
   compatible with the Mac Pro 6,1 constraints documented in Cursor rules.
 - Some historical docs and artifacts are retained in `maintainer/archive/` for
   audit trail only.
-- Current test and lint baselines include inherited failures recorded before this
-  governance replacement.
+- The technical-debt baseline (`make debt-check`) is at zero on every measured
+  metric; the ratchet fails any PR that grows it.
 
 ## 4. Documentation Index
 
@@ -101,6 +101,6 @@ The project succeeds if all of these are true:
 | ADRs | Append-only decision log | `governance/adrs/` |
 | Change Log | Version history | `governance/CHANGELOG.md` |
 | Architecture | Derived technical map | `ARCHITECTURE.md` |
-| Deployment | Cloud Run deployment guide | `docs/DEPLOYMENT.md` |
+| Deployment | Cloud Run guide; hosted demos run on Render, Railway and GitHub Pages (probed by F-021) | `docs/DEPLOYMENT.md` |
 
 <!-- END OF SSOT. Any content below this line is a violation. -->
