@@ -10,7 +10,8 @@ soft_depends_on: []
 queue: issues
 target_repo: decision-analytics-reconstruction
 issue: 66
-status: filed
+status: done
+closed_by: "e9fa5e3 (#66)"
 ---
 
 # IMP-V01 — Shared Visual System
