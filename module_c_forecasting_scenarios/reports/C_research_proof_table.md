@@ -20,11 +20,17 @@ effect and survey noise. Synthetic fixture (`MC_FAST=1`) must report Brier ≥
 
 Reproduce: `MC_FAST=1 poetry run pytest module_c_forecasting_scenarios/tests/test_walk_forward.py -q`
 
-## MCMC diagnostics (aspirational)
+## MCMC diagnostics (enforced merge gate)
 
-Full NUTS runs export R̂ and ESS in pipeline artifacts. **Aspirational** —
-not a merge gate while `MC_FAST=1` is the default CI path. See Module C README
-and `reports/VALIDATION.md` for disclosure.
+Full-NUTS R̂ ≤ 1.01, bulk/tail ESS ≥ 400, zero divergences, and seed-42
+posterior stability are hard assertions in
+`module_c_forecasting_scenarios/tests/test_mcmc_diagnostics_summary.py`. The
+`module-c-slow-nuts` job in `.github/workflows/ci.yml` runs them, with the
+rest of the Module C `slow` suite, on every PR with `MC_FAST` unset, so a
+convergence regression fails the build. The fast
+lane (`MC_FAST=1`) skips them.
+
+Reproduce: `poetry run pytest module_c_forecasting_scenarios/tests/test_mcmc_diagnostics_summary.py -m slow`
 
 ## Monte Carlo scenarios
 

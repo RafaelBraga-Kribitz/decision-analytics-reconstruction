@@ -73,9 +73,10 @@ is tracked as open finding `F-021` and will be added once verifiably live.
 | ESS bulk / tail | ≥ 400 | ~2540 bulk / ~1860 tail on the 8-wave fixture |
 | Divergences | 0 | 0 (non-centered random walk + `target_accept_full=0.99`) |
 
-These gates are enforced (not xfail'd) in the slow lane by
-`tests/test_mcmc_diagnostics_summary.py`; the fast CI path (`MC_FAST=1`) still
-uses a 50-draw fixture and does not run them. See `ROADMAP.md` § Module C.
+These gates are enforced (not xfail'd) by
+`tests/test_mcmc_diagnostics_summary.py`, which the `module-c-slow-nuts` CI job
+runs on every PR under full NUTS; the fast CI path (`MC_FAST=1`) uses a
+50-draw fixture and does not run them. See `ROADMAP.md` § Module C.
 
 ## Walk-forward validation
 
@@ -89,7 +90,9 @@ external validation — see `VALIDATION.md` and `epistemic_boundaries.md`.
 poetry run pytest module_c_forecasting_scenarios/tests/ -v
 ```
 
-Fast CI uses `MC_FAST=1` fixture mode (no NUTS sampling). Full diagnostics require `--run-slow` flag.
+Fast CI uses `MC_FAST=1` fixture mode (no NUTS sampling). The full-NUTS
+diagnostics run with `pytest -m slow` and `MC_FAST` unset (CI job
+`module-c-slow-nuts`).
 
 ## Docs
 
