@@ -10,7 +10,8 @@ soft_depends_on: [IMP-A01]
 queue: issues
 target_repo: decision-analytics-reconstruction
 issue: 68
-status: filed
+status: done
+closed_by: "58031fd (#68)"
 ---
 
 # IMP-V04 — Reliability-Diagram Standard

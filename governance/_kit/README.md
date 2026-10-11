@@ -10,7 +10,7 @@
 LLM coding sessions invent a new audit, declare the work closed, and leave no machine-readable state. This kit turns each recurrence-prone problem into a YAML finding that ratchets from an open gap to a CI-enforced gate, then vendors that discipline into the projects that subscribe to it.
 
 ```mermaid
-flowchart LR
+flowchart TD
     open["open: script reports GAP<br/>CI stays green"]
     closed["closed: same script is a hard gate"]
     adversary["every PR: Adversary re-runs it"]

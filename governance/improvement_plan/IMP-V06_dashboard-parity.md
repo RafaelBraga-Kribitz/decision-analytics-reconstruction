@@ -10,7 +10,8 @@ soft_depends_on: [IMP-V02]
 queue: issues
 target_repo: decision-analytics-reconstruction
 issue: 70
-status: filed
+status: done
+closed_by: "9f4f76a (#70)"
 ---
 
 # IMP-V06 — Dashboard Parity & Defects

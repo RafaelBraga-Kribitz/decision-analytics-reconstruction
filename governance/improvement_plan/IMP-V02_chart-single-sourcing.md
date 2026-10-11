@@ -10,7 +10,8 @@ soft_depends_on: []
 queue: dual
 target_repo: decision-analytics-reconstruction
 issue: 67
-status: draft
+status: done
+closed_by: "6a3cec8 (#67, F-077)"
 ---
 
 # IMP-V02 — Chart Single-Sourcing

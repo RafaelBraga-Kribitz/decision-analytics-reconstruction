@@ -10,7 +10,8 @@ soft_depends_on: [IMP-V01]
 queue: dual
 target_repo: decision-analytics-reconstruction
 issue: 63
-status: draft
+status: done
+closed_by: "0067f36 (#63, F-078)"
 ---
 
 # IMP-C05 — Battleground / Geo Uncertainty Integrity

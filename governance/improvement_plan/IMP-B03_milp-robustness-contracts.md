@@ -10,7 +10,8 @@ soft_depends_on: []
 queue: issues
 target_repo: decision-analytics-reconstruction
 issue: 59
-status: filed
+status: done
+closed_by: "6c4fb50 (#59)"
 ---
 
 # IMP-B03 — MILP Robustness & Contract Corrections
