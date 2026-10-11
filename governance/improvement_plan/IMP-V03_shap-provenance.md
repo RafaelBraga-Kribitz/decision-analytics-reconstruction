@@ -10,7 +10,8 @@ soft_depends_on: []
 queue: findings
 target_repo: decision-analytics-reconstruction
 issue: null
-status: draft
+status: done
+closed_by: "F-090"
 ---
 
 # IMP-V03 — SHAP Artifact Provenance

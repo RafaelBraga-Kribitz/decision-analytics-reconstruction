@@ -37,7 +37,9 @@ MODEL_MANIFEST = REPO_ROOT / "data" / "processed" / "model_run_manifest.json"
 SEGMENT_LABELS = REPO_ROOT / "data" / "processed" / "segment_labels.parquet"
 GENERATORS = {
     "eda": "reports/eda/generate_eda.py",
-    "module_a": "module_a_population_segmentation/pipeline/export.py",
+    # Both reports/module_a figures (reliability_diagram, shap_summary) are written
+    # by the report-charts script from pipeline artifacts, not by export.py (F-090).
+    "module_a": "scripts/generate_module_a_report_charts.py",
     "battleground_investigation": "scripts/run_battleground_ceiling_investigation.py",
 }
 REPORT_DIRS: tuple[tuple[Path, str, str], ...] = (
