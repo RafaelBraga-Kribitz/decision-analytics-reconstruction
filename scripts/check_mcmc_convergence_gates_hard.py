@@ -22,7 +22,9 @@ MCMC_TEST = (
     REPO_ROOT / "module_c_forecasting_scenarios" / "tests" / "test_mcmc_diagnostics_summary.py"
 )
 CI_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "ci.yml"
-PROOF_TABLE = REPO_ROOT / "module_c_forecasting_scenarios" / "reports" / "C_research_proof_table.md"
+EVIDENCE_TABLE = (
+    REPO_ROOT / "module_c_forecasting_scenarios" / "reports" / "C_research_evidence_table.md"
+)
 MODULE_C_README = REPO_ROOT / "module_c_forecasting_scenarios" / "README.md"
 
 SLOW_LANE_JOB = "module-c-slow-nuts"
@@ -81,15 +83,15 @@ def _ci_gaps() -> list[str]:
 
 def _doc_gaps() -> list[str]:
     gaps = []
-    if PROOF_TABLE.is_file():
-        text = PROOF_TABLE.read_text(encoding="utf-8")
+    if EVIDENCE_TABLE.is_file():
+        text = EVIDENCE_TABLE.read_text(encoding="utf-8")
         section = text.split("## MCMC diagnostics", 1)[-1].split("\n## ", 1)[0]
         if "## MCMC diagnostics" not in text:
-            gaps.append("C_research_proof_table.md has no MCMC diagnostics section")
+            gaps.append("C_research_evidence_table.md has no MCMC diagnostics section")
         elif "aspirational" in section.lower():
-            gaps.append("C_research_proof_table.md still calls the MCMC gates aspirational")
+            gaps.append("C_research_evidence_table.md still calls the MCMC gates aspirational")
         elif SLOW_LANE_JOB not in section:
-            gaps.append(f"C_research_proof_table.md does not name the '{SLOW_LANE_JOB}' CI lane")
+            gaps.append(f"C_research_evidence_table.md does not name the '{SLOW_LANE_JOB}' CI lane")
     if MODULE_C_README.is_file() and "--run-slow" in MODULE_C_README.read_text(encoding="utf-8"):
         gaps.append("Module C README cites a nonexistent --run-slow flag")
     return gaps

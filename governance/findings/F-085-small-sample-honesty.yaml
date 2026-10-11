@@ -1,0 +1,39 @@
+id: F-085
+title: "Underpowered Module C checks presented as proof; exit model publishes unflagged low-n results"
+category: fake_completion
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-10-11
+closed_at: 2026-10-11
+recurrence_count: 0
+evidence: |
+  module_c_forecasting_scenarios/reports/C_research_proof_table.md was titled a
+  "proof table" (column "Proof artifact", "Proof:" lines) and presented the
+  walk-forward smoke assertion (95% coverage >= 2/3 on three synthetic
+  holdouts, tests/test_walk_forward.py) as a gate. The real fixture yields six
+  holdouts, so coverage is k/6; reports/module_c/walk_forward_loo_report.md,
+  reports/VALIDATION.md and README.md quoted "95% coverage 50%" with no
+  interval although the exact binomial 95% CI for 3/6 is [0.12, 0.88].
+  METHODOLOGY.md said the exit quick-count is "typically unreliable with < 5
+  waves", but models/exit/exit_model.py:fit_exit_quickcount stubbed only below
+  2 rows and published bare posteriors otherwise; the committed fixture has 4
+  exit waves, inside the documented unreliable band, with no flag. The
+  threshold existed only in prose.
+verification_script: scripts/check_small_sample_honesty.py
+notes: |
+  Spec: governance/improvement_plan/IMP-C06_small-sample-honesty.md
+  Closed 2026-10-11:
+  - validation/small_n.py: EXIT_MIN_RELIABLE_WAVES = 5 (cited by
+    METHODOLOGY.md), is_low_n, exact_binomial_ci (Clopper-Pearson).
+  - Exit model v0.2: every output row carries n_waves and low_n; run_exit
+    logs and records low_n in run_exit_manifest.json.
+  - summarize_walk_forward reports coverage k and the exact binomial CI;
+    the LOO report quotes "k/n = p [lo, hi]" with a no-power caveat (artifact
+    regenerated with MC_FAST=1 as before; coverage unchanged at 2/6 and 3/6,
+    Brier 0.3100 -> 0.3139 from model changes since the 2026-07-14 run).
+  - C_research_proof_table.md renamed C_research_evidence_table.md and
+    reworded; README/VALIDATION quote the CI.
+  Script: imports the shared threshold and checks METHODOLOGY cites it, runs
+  the exit stub path for the low_n flag, checks walk-forward/LOO artifacts
+  carry k + CI, and bans proof/validated/calibrated wording without a power
+  qualifier in the evidence table and LOO report.

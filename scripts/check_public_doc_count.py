@@ -38,7 +38,7 @@ OPERATOR_FILES = {
     "governance/chart_audit_completion_sprint.md",
     # Gate-evidence trail consumed by test_architecture_module_c_surface, not
     # reviewer-facing narrative.
-    "module_c_forecasting_scenarios/reports/C_research_proof_table.md",
+    "module_c_forecasting_scenarios/reports/C_research_evidence_table.md",
     # Gate-evidence trail for the IMP-A03 clustering selection (issue #55) —
     # cited by model_params.yaml and the segmentation model card, not
     # reviewer-facing narrative.

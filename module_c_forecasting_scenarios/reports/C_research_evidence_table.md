@@ -1,4 +1,4 @@
-# Module C — Research proof table
+# Module C — Research evidence table
 
 Evidence trail for Bayesian tracking, exit bias, and scenario inference. This
 document is the canonical **evidence** artifact (`DOC-MODC-002`) cited by the
@@ -6,7 +6,7 @@ Module C architecture surface test and portfolio registry.
 
 ## Estimand and calibration
 
-| Claim | Proof artifact | Gate |
+| Claim | Evidence artifact | Gate |
 |-------|----------------|------|
 | Series A/B anchors never mixed | `config/calibration.yaml` + `data/contract_validate.py` | F-034 estimand gates |
 | Outcome anchor m★ wired post-likelihood | `models/tracking/hierarchical.py` | F-036 outcome anchor test |
@@ -15,8 +15,17 @@ Module C architecture surface test and portfolio registry.
 ## Walk-forward validation (tracking)
 
 Hold out final waves; score against posterior predictive margin with house
-effect and survey noise. Synthetic fixture (`MC_FAST=1`) must report Brier ≥
-0, log loss ≥ 0, and 95% interval coverage ≥ 2/3 on three holdouts.
+effect and survey noise. **This is a plumbing/smoke check, not evidence of
+calibration:** the synthetic-fixture test (`MC_FAST=1`) asserts Brier ≥ 0,
+log loss ≥ 0, and 95% interval coverage ≥ 2/3 on three holdouts, and the real
+fixture yields six holdouts, so coverage is k/6 with an exact binomial 95% CI
+spanning most of [0, 1] (e.g. 3/6 → [0.12, 0.88]; see
+`reports/module_c/walk_forward_loo_report.md`). It has no power to detect
+miscalibration.
+
+The exit quick-count model is fit on 4 exit waves in the committed fixture,
+below its reliability floor (`EXIT_MIN_RELIABLE_WAVES = 5`), so every exit
+output row is flagged `low_n`.
 
 Reproduce: `MC_FAST=1 poetry run pytest module_c_forecasting_scenarios/tests/test_walk_forward.py -q`
 
@@ -35,7 +44,7 @@ Reproduce: `poetry run pytest module_c_forecasting_scenarios/tests/test_mcmc_dia
 ## Monte Carlo scenarios
 
 Stratified draws ingest Module B allocation when present; silent-zero contacts
-are rejected. Proof: `module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/scenarios/monte_carlo.py` + `module_c_forecasting_scenarios/tests/test_monte_carlo_stratified.py`.
+are rejected. Evidence: `module_c_forecasting_scenarios/src/module_c_forecasting_scenarios/scenarios/monte_carlo.py` + `module_c_forecasting_scenarios/tests/test_monte_carlo_stratified.py`.
 
 ## Portfolio outputs
 
