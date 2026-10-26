@@ -46,12 +46,36 @@ This document classifies **what is verified**, **what is calibrated**, **what is
 
 ## Cross-Cutting Verification Sources
 
+Full register with origin, licence, date and verification status: [Data Source Register](#data-source-register) below.
+
 | Source | What It Anchors | Where Used |
 |--------|----------------|------------|
 | TSJE 2018 final results (Tribunal Superior de Justicia Electoral) | Election-outcome margin +3.70 pp; department turnout rates; roll counts by department | Module A calibration targets; Module C posterior anchor; README claim verification |
-| DGEEC 2012 Census / 2018 estimates | Rural share ≈ 38.3%; bilingualism ≈ 27.6% Guaraní-dominant; age structure | Module A voter-record generation priors; rural flag calibration |
-| INE 2018 ICT Household Survey | Internet access ≈ 73.4% urban / 27.9% rural; WhatsApp penetration proxies | Module A `internet_access_flag`; Module B reach caps for digital channels |
-| BCP (Banco Central del Paraguay) 2018Q1 FX corridor | USD/PYG reference rate ≈ 5,000; retail spread band ≤ 0.5% | Module B `fx_layer`; `schema_contracts/bcp_tc_ref_daily_2018Q1.csv` |
+| DGEEC 2012 Census / 2018 estimates | Rural share 38.3%; language 46% Jopará-bilingual / 34% Guaraní-only / 15% Spanish-only; age structure (values as in `module_a_population_segmentation/config/calibration_anchors.yaml`, `demographics` and `language`) | Module A voter-record generation priors; rural flag calibration |
+| INE EPHC 2018 household survey (Encuesta Permanente de Hogares Continua) / SENATIC | Internet access 74.1% urban / 48.7% rural; WhatsApp used by 96.3% of internet users (values as in `calibration_anchors.yaml`, `ict`) | Module A `internet_access_flag`; Module B reach caps for digital channels |
+| BCP (Banco Central del Paraguay) 2018Q1 FX corridor | **PRIOR, not yet verified** against the published BCP daily series: weekly USD/PYG reference rate 5,500 to 5,640 (2018-W01..W14); retail spread over reference 1.7% to 2.6% (`module_b_resource_allocation/config/bcp_tc_ref_2018Q1_prior.yaml`, `fx_retail_spread_prior.yaml`) | Module B `fx_layer`. No BCP daily CSV is committed; an earlier version of this table cited `schema_contracts/bcp_tc_ref_daily_2018Q1.csv`, which does not exist. |
+
+---
+
+## Data Source Register
+
+Every input the pipeline reads that did not originate in this repository, plus the hand-set priors that stand in for data not yet obtained. **Status** uses the taxonomy above; **PRIOR, not yet verified** means the value is a placeholder that has not been checked against the named source. Where an origin URL or access date is not recorded in the repository, the cell says so instead of guessing.
+
+| Source | Origin | Licence / terms | Date | How it is used | Status |
+|---|---|---|---|---|---|
+| TSJE 2018 general election, results per polling table (`Resultados-por-mesa-2018.csv`, 21,206 presidential rows) | Tribunal Superior de Justicia Electoral. Origin URL to be added by author; the raw file is not committed (aggregated locally, see `governance/findings/F-070-*.yaml`) | Official public electoral record; terms to be confirmed by author | Election 2018-04-22; access date to be added by author | Aggregated to `module_c_forecasting_scenarios/.../geo/tsje_2018_department_results.csv` (Module C battleground); national and department turnout anchors in `module_a_population_segmentation/config/calibration_anchors.yaml` | VERIFIED (department sums reconcile to the national 1,206,067 / 1,110,464) |
+| TSJE 2013 presidential results by department | Portal Guaraní reproduction of TSJE 2013 final totals (secondary source). Origin URL to be added by author | Terms to be confirmed by author | Election 2013-04-21; access date to be added by author | `data/reference/battleground/tsje_2013_department_results.csv`; 2013 to 2018 dispersion floor for the battleground sigma estimate | VERIFIED at national totals (Cartes 1,104,169 / Alegre 889,451); department rows rest on the secondary source |
+| DGEEC 2012 National Census and 2018 projections | Dirección General de Estadística, Encuestas y Censos (now INE). Origin URL to be added by author; NBI tables V01 to V08 and P01 to P07, INE Tableau LUID `53cfb7a5-3074-40e0-9d27-7b046d0ce5a8` | Official public statistics; terms to be confirmed by author | Census 2012, projections 2018; access date to be added by author | `calibration_anchors.yaml`: `demographics` (urban 61.7%, rural 38.3%, sex split), `language` (46% / 34% / 15%), `nbi` | VERIFIED (aggregates) |
+| INE EPHC 2018 household survey / SENATIC | Encuesta Permanente de Hogares Continua 2018. Origin URL to be added by author | Official public statistics; terms to be confirmed by author | Survey year 2018; access date to be added by author | `calibration_anchors.yaml` `ict`: internet 74.1% urban / 48.7% rural, WhatsApp 96.3% of internet users; Module A `internet_access_flag`, Module B digital reach caps | VERIFIED (aggregates) |
+| Eight published 2018 tracking polls | Outlets and publication dates in the poll table below (ABC Color, La Nación, Última Hora, Radio Ñandutí); the same fixture also holds four exit surveys. Per-article URLs to be added by author | Published press figures, transcribed for analysis | 2018-02-01 to 2018-04-18 (exit surveys 2018-04-20 to 04-22) | `module_c_forecasting_scenarios/tests/fixtures/polls_raw_fixture.csv`; Module C tracking likelihood | VERIFIED for outlet, date and figures; pollster labels partly pseudonymized |
+| Department-level poll margins (2013, 2018) | Última Hora, 2013-04-14 ([article](https://www.ultimahora.com/cartes-aumenta-ventaja-alegre-la-encuesta-grau-asociados-n613847.html)); Última Hora, 2018-04-10 ([article](https://www.ultimahora.com/marito-aventaja-24-puntos-alegre-intencion-voto-n1142092.html)); Infobae, 2018-04-19 ([article](https://www.infobae.com/america/america-latina/2018/04/19/guerra-de-encuestas-y-cuenta-regresiva-en-paraguay-quienes-son-los-favoritos/)) | Published press figures | Access date to be added by author | `data/reference/battleground/dept_poll_margins.csv`; per-department residual dispersion | VERIFIED for the published figures; several rows are regional breakdowns weighted down |
+| geoBoundaries PRY ADM1 (department boundaries) | [geoBoundaries](https://www.geoboundaries.org/), gbOpen PRY ADM1; underlying source DGEEC 2012 departments | **CC BY 4.0** (Creative Commons Attribution 4.0 International), per the geoBoundaries API metadata for PRY ADM1, read 2026-10-26; cite per `CITATION-AND-USE-geoBoundaries.txt` in the source archive | Boundary year 2012; repo build 2026-07-14 (`paraguay_departments.SOURCE.md`) | `paraguay_departments.geojson` (18 features) for the battleground choropleth | VERIFIED (geometry) |
+| BCP USD/PYG weekly reference rate, 2018-W01 to W14 | Banco Central del Paraguay. Values are hand-set, not downloaded | Not applicable until replaced by the published series | 2018Q1 | `module_b_resource_allocation/config/bcp_tc_ref_2018Q1_prior.yaml` (5,500 to 5,640 PYG per USD); Module B `fx_layer` | **PRIOR, not yet verified** |
+| Retail FX spread over the BCP reference rate | Hand-set | Not applicable | 2018-01 to 2018-04 | `fx_retail_spread_prior.yaml` (1.7% to 2.6%); Module B `fx_layer` | **PRIOR, not yet verified** |
+| Channel unit costs (PYG per reachable contact) | Hand-set; to be replaced by 2018 vendor rate cards | Not applicable | 2018 | `channel_unit_costs_pyg.yaml`; Module B MILP cost coefficients | **PRIOR, not yet verified** |
+| Department population | Hand-set, rounded thousands; to be hardened against DGEEC 2012 census plus projection | Not applicable | 2018 | `department_population_prior.yaml`; Module B reach-cap fallback only | **PRIOR, not yet verified** |
+| MILP objective weights (tier weights, week weights, diminishing-returns curves) | Hand-set modelling assumptions | Not applicable | n/a | `allocation_parameter_provenance.yaml` lists every coefficient with its provenance | ESTIMATED (no calibration data) |
+| Synthetic 50,000-row voter file | Generated in this repository (Module A, seed 42), raked to the VERIFIED aggregates above | MIT, as the repository | Regenerated per run | All individual-level Module A outputs | SIMULATED / CALIBRATED at anchored aggregates |
 
 ---
 
@@ -101,4 +125,4 @@ Each row transcribes a real public poll published ahead of the April 2018 Paragu
 
 ---
 
-*Last updated: 2026-07-15. Linked from README.md §Epistemic calibration.*
+*Last updated: 2026-10-26. Linked from README.md §Epistemic calibration.*

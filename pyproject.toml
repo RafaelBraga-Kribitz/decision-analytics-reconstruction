@@ -56,6 +56,9 @@ graphifyy = ">=0.7,<0.8"
 httpx = ">=0.27"
 pre-commit = ">=4.0"
 matplotlib = ">=3.8"
+# Braga-Kribitz chart theme (portfolio-wide). Used by scripts/generate_decision_kpi_panel.py;
+# the EDA factory keeps its own colorblind-safe visual system (shared/src/visual_system).
+bk-viz = { git = "https://github.com/RafaelBraga-Kribitz/bk-viz.git", rev = "fca9d2c282d35c7288b38a8926c3070c3c1d15f1" }
 ipykernel = "^7.2.0"
 matplotlib-inline = "^0.2.2"
 jupyter = "^1.1.1"
