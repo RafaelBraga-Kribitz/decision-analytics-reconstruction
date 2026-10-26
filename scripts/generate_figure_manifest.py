@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Regenerate governance/FIGURE_MANIFEST.yaml from pipeline artifacts.
 
-The manifest binds every committed PNG under reports/eda and reports/module_a
+The manifest binds every committed PNG under reports/eda, reports/module_a, reports/decision
+and the battleground investigation figures
 to the model run (data/processed/model_run_manifest.json) that produced the
 data behind it. check_figure_artifact_lineage.py (F-050) verifies the binding;
 this script is the only sanctioned writer — never edit the manifest by hand.
@@ -41,6 +42,8 @@ GENERATORS = {
     # by the report-charts script from pipeline artifacts, not by export.py (F-090).
     "module_a": "scripts/generate_module_a_report_charts.py",
     "battleground_investigation": "scripts/run_battleground_ceiling_investigation.py",
+    # README "decision at a glance" panel, drawn from committed result JSON only.
+    "decision": "scripts/generate_decision_kpi_panel.py",
 }
 REPORT_DIRS: tuple[tuple[Path, str, str], ...] = (
     (REPO_ROOT / "reports" / "eda", "eda", ""),
@@ -50,6 +53,7 @@ REPORT_DIRS: tuple[tuple[Path, str, str], ...] = (
         "battleground_investigation",
         "bg_",
     ),
+    (REPO_ROOT / "reports" / "decision", "decision", ""),
 )
 CANONICAL_SAMPLE_SIZE = 50_000
 

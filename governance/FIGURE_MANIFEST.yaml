@@ -237,3 +237,7 @@ figures:
   path: reports/module_c/battleground_investigation/figures/residual_vs_swing.png
   generator: scripts/run_battleground_ceiling_investigation.py
   save_name: residual_vs_swing.png
+- chart_id: decision_kpi_panel
+  path: reports/decision/decision_kpi_panel.png
+  generator: scripts/generate_decision_kpi_panel.py
+  save_name: decision_kpi_panel.png
