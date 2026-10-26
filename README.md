@@ -175,33 +175,7 @@ Validation gates: [`reports/VALIDATION.md`](reports/VALIDATION.md). Golden snaps
 ## Architecture
 
 ```mermaid
-%%{init: {
-  "theme": "base",
-  "fontFamily": "BKribitz, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif",
-  "themeVariables": {
-    "background": "#E4E6EA",
-    "primaryColor": "#DCDEE2",
-    "primaryTextColor": "#26282C",
-    "primaryBorderColor": "#26282C",
-    "secondaryColor": "#E4E6EA",
-    "secondaryTextColor": "#26282C",
-    "secondaryBorderColor": "#5A5C61",
-    "tertiaryColor": "#E4E6EA",
-    "tertiaryTextColor": "#26282C",
-    "tertiaryBorderColor": "#C2C4CA",
-    "lineColor": "#5A5C61",
-    "textColor": "#26282C",
-    "mainBkg": "#DCDEE2",
-    "nodeBorder": "#26282C",
-    "clusterBkg": "#E4E6EA",
-    "clusterBorder": "#C2C4CA",
-    "edgeLabelBackground": "#E4E6EA",
-    "titleColor": "#26282C",
-    "fontFamily": "BKribitz, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif",
-    "fontSize": "14px"
-  },
-  "flowchart": { "curve": "linear", "htmlLabels": true, "padding": 8 }
-}}%%
+%%{init: {"theme":"base","fontFamily":"BKribitz, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif","themeVariables":{"background":"#E4E6EA","primaryColor":"#DCDEE2","primaryTextColor":"#26282C","primaryBorderColor":"#26282C","secondaryColor":"#E4E6EA","secondaryTextColor":"#26282C","secondaryBorderColor":"#5A5C61","tertiaryColor":"#E4E6EA","tertiaryTextColor":"#26282C","tertiaryBorderColor":"#C2C4CA","lineColor":"#5A5C61","textColor":"#26282C","mainBkg":"#DCDEE2","nodeBorder":"#26282C","clusterBkg":"#E4E6EA","clusterBorder":"#C2C4CA","edgeLabelBackground":"#E4E6EA","titleColor":"#26282C","fontFamily":"BKribitz, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif","fontSize":"14px"},"flowchart":{"curve":"linear","htmlLabels":true,"padding":8}}}%%
 flowchart TD
   A[Module A — population, segments, turnout] --> B[Module B — MILP allocation + routing]
   B --> C[Module C — poll tracking + MC scenarios]
