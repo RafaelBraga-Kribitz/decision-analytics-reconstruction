@@ -35,6 +35,20 @@ OUT.mkdir(parents=True, exist_ok=True)
 # every chart surface in the repo. This is the *only* place segment colors may
 # come from (scripts/check_no_local_color_literals.py enforces it).
 sys.path.insert(0, str(ROOT / "shared" / "src"))
+# ── Design system v2.1 (bk-viz) ─────────────────────────────────────────────
+# Every figure is drawn on the Braga design system v2.1 through bk-viz
+# (D-053): colours only through roles, no hex literal in this file. The names
+# below are roles, not a brand palette:
+#   INK / INK2      type and reference lines (labels are ink or ink-2 only)
+#   MID / SURFACE   structure grey and the page surface (mark separators)
+#   CAT             the categorical hue slots, used in slot order
+#   CAND_A/CAND_B   the two candidates: two-sided, neither is good (``two``)
+#   REGION_COLORS   ORIENTAL / CHACO / METRO, one mapping for every chart
+#   CHANNEL_COLORS  one channel-type mapping for every chart
+#   ACTUAL          IBCS actual (sc-ac) for a single unhighlighted series
+#   HL / HL_TINT    the one highlight per chart and its opaque band tint
+#   VAR_NEG         a bad variance (always labelled with the ▲ glyph)
+import bk_theme as bk
 from visual_system.figure_template import (
     SOURCE_TEXT as SOURCE,
 )
@@ -49,22 +63,7 @@ from visual_system.palette import (
     SEGMENT_LINESTYLES,
     SEGMENT_MARKERS,
 )
-
-# ── Design system v2.1 (bk-viz) ─────────────────────────────────────────────
-# Every figure is drawn on the Braga design system v2.1 through bk-viz
-# (D-053): colours only through roles, no hex literal in this file. The names
-# below are roles, not a brand palette:
-#   INK / INK2      type and reference lines (labels are ink or ink-2 only)
-#   MID / SURFACE   structure grey and the page surface (mark separators)
-#   CAT             the categorical hue slots, used in slot order
-#   CAND_A/CAND_B   the two candidates: two-sided, neither is good (``two``)
-#   REGION_COLORS   ORIENTAL / CHACO / METRO, one mapping for every chart
-#   CHANNEL_COLORS  one channel-type mapping for every chart
-#   ACTUAL          IBCS actual (sc-ac) for a single unhighlighted series
-#   HL / HL_TINT    the one highlight per chart and its opaque band tint
-#   VAR_NEG         a bad variance (always labelled with the ▲ glyph)
-import bk_theme as bk  # noqa: E402
-from visual_system.theme import (  # noqa: E402
+from visual_system.theme import (
     apply_theme,
     conform_figure,
     label_on,
