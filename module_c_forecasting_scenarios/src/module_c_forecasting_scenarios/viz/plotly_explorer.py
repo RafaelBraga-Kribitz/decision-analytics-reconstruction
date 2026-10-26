@@ -1,9 +1,14 @@
-"""Interactive Plotly HTML for daily posterior margin + shock overlay."""
+"""Interactive Plotly HTML for daily posterior margin + shock overlay.
+
+Styled on the Braga design system v2.1 through bk-viz's plotly template
+(``bk_theme.plotly_template``); colours from roles only (D-053).
+"""
 
 from __future__ import annotations
 
 from pathlib import Path
 
+import bk_theme as bk
 import pandas as pd
 import plotly.graph_objects as go
 
@@ -43,7 +48,9 @@ def write_scenario_explorer_html(
     out_path.parent.mkdir(parents=True, exist_ok=True)
     daily_plot = daily.copy()
     daily_plot["date"] = pd.to_datetime(daily_plot["date"])
-    fig = go.Figure()
+    bk.apply("light")
+    template = bk.plotly_template(set_default=False)
+    fig = go.Figure(layout={"template": template})
     # HDI as a filled band (IMP-V05 / issue #69): the interactive surface
     # renders the same estimand the static charts shade — two dotted lines
     # with empty space between them misread as separate series.
@@ -64,7 +71,7 @@ def write_scenario_explorer_html(
             mode="lines",
             line={"width": 0},
             fill="tonexty",
-            fillcolor="rgba(0,114,178,0.18)",
+            fillcolor=bk.palette("seq")[7],
             name=_HDI_LABEL,
         )
     )
@@ -73,7 +80,7 @@ def write_scenario_explorer_html(
             x=daily_plot["date"],
             y=daily_plot["posterior_mean_preference_margin_pp"],
             mode="lines",
-            line={"color": "#0072B2"},
+            line={"color": bk.c("hl")},
             name="Posterior mean margin (pp)",
         )
     )
@@ -85,7 +92,7 @@ def write_scenario_explorer_html(
                 x=t["publication_date"],
                 y=t["m_poll_pp"],
                 mode="markers",
-                marker={"size": 10, "symbol": "diamond"},
+                marker={"size": 10, "symbol": "diamond", "color": bk.c("sc-ac")},
                 name="Survey waves (m_poll)",
             )
         )

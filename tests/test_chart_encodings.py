@@ -44,7 +44,12 @@ def test_ppc_bands_are_lightness_stepped_not_alpha_only() -> None:
     source = PPC_PLOT.read_text(encoding="utf-8")
     fills = re.findall(r'fill_between\([^)]*color="(#[0-9a-fA-F]{6})"', source)
     band_colors = re.findall(r'\(q\w+, q\w+, "(#[0-9a-fA-F]{6})", "\d+%"\)', source)
-    colors = band_colors or fills
+    # Design system v2.1 (D-053): no hex in chart code; the bands name distinct
+    # stops of the bk-viz sequential scale (``seq[i]``), one lightness step each.
+    scale_stops = re.findall(r'\(q\w+, q\w+, seq\[(\d+)\], "\d+%"\)', source)
+    colors = band_colors or scale_stops or fills
+    if scale_stops:
+        assert 'seq = bk.palette("seq")' in source, "bands must come from the sequential scale"
     assert len(colors) >= 3, "expected three nested PPC interval bands"
     assert len(set(colors)) == len(colors), (
         "nested PPC intervals share one color — alpha-only stacking is not a "

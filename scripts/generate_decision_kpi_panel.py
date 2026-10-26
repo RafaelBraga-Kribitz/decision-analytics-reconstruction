@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Render the README's "decision at a glance" panel from committed results only.
 
-One figure, drawn with the portfolio chart theme (bk-viz, ``bk_theme``): a KPI
+One figure, drawn on the Braga design system v2.1 (bk-viz 2.0.0, ``bk_theme``): a KPI
 row with the numbers a campaign manager acts on, the finding as the headline, and
 the per-department budget shift of the week-8 decision replay as the chart.
 
@@ -96,9 +96,9 @@ def load_inputs() -> dict:
 def build_panel(v: dict) -> list[Path]:
     """Draw the decision panel and write it as PNG."""
     with warnings.catch_warnings():
-        # No Söhne binaries in CI or on a fresh clone: bk falls back to a
-        # metric-neutral grotesque and says so. The fallback is expected here.
-        warnings.simplefilter("ignore")
+        # bk-viz 2 ships BKribitz / BKribitz Mono and registers them itself; the
+        # only warnings left are v1-alias deprecations, none of which apply here.
+        warnings.simplefilter("ignore", DeprecationWarning)
         bk.apply("light", grid="x")
 
     kpis = [
@@ -136,7 +136,7 @@ def build_panel(v: dict) -> list[Path]:
     )
 
     fig, ax = bk.decision_panel(
-        kpis=kpis, finding=finding, context=context, rows=10, left=0.17, bottom=0.12
+        kpis=kpis, finding=finding, context=context, rows=10, left=0.17, bottom=0.155
     )
 
     depts = v["departments"]

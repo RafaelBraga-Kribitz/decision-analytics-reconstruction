@@ -1,19 +1,20 @@
-"""Canonical, colorblind-safe segment palette.
+"""Canonical segment palette, on the Braga design system v2.1.
 
 One ``segment_label -> color`` mapping for the six population segments,
 consumed by every chart-producing surface in the repository. This module is
 the *only* place a segment color, marker, hatch, or linestyle may be
-hard-coded (``scripts/check_no_local_color_literals.py`` enforces this).
+assigned (``scripts/check_no_local_color_literals.py`` enforces this). It
+holds no hex value: each segment names a design-system role and bk-viz
+(``bk_theme``) resolves it (D-053, colours only through roles).
 
-Hex values are drawn from the Okabe-Ito colorblind-safe qualitative palette
-(Okabe, M. & Ito, K. (2008), "Color Universal Design (CUD): How to make
-figures and presentations that are friendly to colorblind people"), minus
-black (reserved for text/foreground) and yellow (poor contrast on a white
-figure background). The remaining six hues are, by construction, pairwise
-separable under simulated protanopia, deuteranopia, and tritanopia — see
-``scripts/check_palette_cvd_contrast.py``, which asserts this for the exact
-assignment below rather than relying on the source palette's reputation
-alone.
+Assignment, in :data:`SEGMENT_DISPLAY_ORDER`: the categorical hue slots
+``cat-1`` .. ``cat-4`` in slot order, then two structure greys, the dark
+``catg-2`` and ``cat-other``. The fifth hue slot ``cat-5`` (brown) is not
+used: under simulated tritanopia it collapses onto ``cat-2`` (ochre) to
+deltaE ~10.5, below the 12.0 floor ``scripts/check_palette_cvd_contrast.py``
+holds every segment pair to; the set used here clears it on all 15 pairs
+under all three CVD types. The redundant marker / linestyle / hatch
+encodings below carry segment identity independently of hue.
 
 The previous per-pipeline palettes this module replaces:
 
@@ -22,12 +23,16 @@ The previous per-pipeline palettes this module replaces:
 - ``reports/eda/build_notebook.py``'s local ``COLOR``/``SEG_COLORS``.
 - The Module A dashboard's ``segment_size_chart``, which used Plotly
   Express's default colorway and ignored segment identity entirely.
+- The Okabe-Ito hex assignment this module carried before the design
+  system v2.1 (hex literals in chart code are retired, D-053).
 """
 
 from __future__ import annotations
 
 from collections.abc import Mapping
 from typing import Final
+
+import bk_theme as bk
 
 # A matplotlib linestyle: either a named style ("solid", "dashed", ...) or a
 # dash tuple ``(offset, (on, off, on, off, ...))``.
@@ -61,16 +66,21 @@ SEGMENT_DISPLAY_ORDER: Final[tuple[str, ...]] = (
     "committed_opposition",
 )
 
-# Okabe-Ito colorblind-safe qualitative palette (vermillion, blue, orange,
-# reddish purple, bluish green, sky blue — the six-hue subset commonly
-# recommended for categorical charts once black and yellow are excluded).
+# Design-system role per segment (see the module docstring for the order and
+# why ``cat-5`` is skipped). Resolved through bk-viz, never a hex literal.
+SEGMENT_COLOR_ROLES: Final[dict[str, str]] = {
+    "youth_volatile": "cat-1",
+    "urban_high_volatility": "cat-2",
+    "rural_committed": "cat-3",
+    "rural_low_propensity": "cat-4",
+    "structurally_dependent_bloc": "catg-2",
+    "committed_opposition": "cat-other",
+}
+
+# Light-mode resolution, for callers that need a plain mapping (the dashboard,
+# the CVD check). get_segment_color() resolves in the current bk mode.
 SEGMENT_COLORS: Final[dict[str, str]] = {
-    "rural_committed": "#D55E00",  # vermillion
-    "urban_high_volatility": "#0072B2",  # blue
-    "structurally_dependent_bloc": "#E69F00",  # orange
-    "committed_opposition": "#CC79A7",  # reddish purple
-    "rural_low_propensity": "#009E73",  # bluish green
-    "youth_volatile": "#56B4E9",  # sky blue
+    label: bk.COLOR["light"][role] for label, role in SEGMENT_COLOR_ROLES.items()
 }
 
 # Redundant, non-color encodings for charts whose legend is the *only*
@@ -135,17 +145,19 @@ def get_segment_color(segment_label: str) -> str:
             (see :data:`SEGMENT_LABELS`).
 
     Returns:
-        Hex color string, e.g. ``"#D55E00"``.
+        Hex color string resolved from the segment's design-system role in
+        the current bk-viz mode.
 
     Raises:
         UnknownSegmentError: If ``segment_label`` is not one of the six
             canonical segments.
 
     Example:
-        >>> get_segment_color("rural_committed")
-        '#D55E00'
+        >>> get_segment_color("youth_volatile") == bk.c("cat-1")
+        True
     """
-    return _lookup(SEGMENT_COLORS, segment_label, "color")  # type: ignore[return-value]
+    role = _lookup(SEGMENT_COLOR_ROLES, segment_label, "color")
+    return bk.c(str(role))
 
 
 def get_segment_marker(segment_label: str) -> str:

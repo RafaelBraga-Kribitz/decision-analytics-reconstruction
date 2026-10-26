@@ -11,7 +11,8 @@ motivating defect: the prior six-color brand palette
 #e60000 with GREEN #2ca02c and PURPLE #9467bd with BLUE #1a6eb5) has pairs
 that collapse toward the same perceived color under simulated dichromacy —
 its worst pair falls to deltaE ~2.67, well below the threshold. The
-Okabe-Ito-class replacement palette clears the threshold on all pairs. The
+current palette (design system v2.1 roles; Okabe-Ito before that) clears the
+threshold on all pairs. The
 motivating-case sanity check in ``main()`` re-derives the old palette's
 collapse on every run so the guard cannot silently rot.
 
@@ -45,10 +46,12 @@ from visual_system.palette import SEGMENT_COLORS  # noqa: E402 -- after sys.path
 # six-color brand palette (generate_eda.py's former ``SEG_COLORS``) collapses
 # to deltaE ~2.67 on its worst pair (purple vs blue under protanopia) and
 # ~9.88 on its second-worst — both below 12.0, so this check would have
-# caught it. The Okabe-Ito-class replacement palette clears 12.0 on all 15
-# pairs under all three CVD types with margin (its worst comparison is
-# ~15.7). The threshold therefore sits in the gap between the two palettes:
-# the old one fails, the new one passes.
+# caught it. The Okabe-Ito-class palette that replaced it cleared 12.0 on all
+# 15 pairs (worst ~15.7); the design system v2.1 role assignment that replaced
+# that (shared/src/visual_system/palette.py) clears it too (worst ~12.4, which
+# is why that module skips the cat-5 slot: cat-2 vs cat-5 falls to ~10.5
+# under tritanopia). The threshold therefore sits in the gap: the old brand
+# palette fails, the current one passes. The threshold is unchanged.
 MIN_DELTA_E: float = 12.0
 
 # Machado, Oliveira & Fernandes (2009), "A Physiologically-based Model for

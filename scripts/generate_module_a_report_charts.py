@@ -7,6 +7,10 @@ Writes:
 
 Requires processed Module A artifacts (``make module-a-pipeline``).
 SHAP requires ``poetry install --extras explainability``.
+
+Both charts are drawn on the Braga design system v2.1 (bk-viz, through
+``visual_system.theme``): colours from roles only, type floor 12px, labels in
+ink / ink-2.
 """
 
 from __future__ import annotations
@@ -23,6 +27,11 @@ import pandas as pd
 import yaml
 
 ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "shared" / "src"))
+
+import bk_theme as bk  # noqa: E402 -- matplotlib backend chosen above
+from visual_system.theme import apply_theme, conform_figure  # noqa: E402 -- after sys.path insert
+
 OUT = ROOT / "reports" / "module_a"
 DATA = ROOT / "data" / "processed"
 ANCHORS = ROOT / "module_a_population_segmentation" / "config" / "calibration_anchors.yaml"
@@ -47,6 +56,7 @@ def write_reliability_diagram(out_path: Path) -> None:
     frame = reliability_frame(y_true, y_prob)
 
     fig = reliability_chart(frame, subtitle="national-rate reference diagnostic")
+    conform_figure(fig)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(out_path, dpi=150, bbox_inches="tight")
     plt.close(fig)
@@ -88,7 +98,22 @@ def write_shap_summary(out_path: Path) -> int:
         feature_names=feature_names,
         plot_type="bar",
         show=False,
+        color=bk.c("sc-ac"),
     )
+    # One highlight per chart (D-053): the feature with the largest mean |SHAP|
+    # (shap draws it last, at the top) takes hl; the rest stay actual grey.
+    fig = plt.gcf()
+    ax = plt.gca()
+    bars = sorted(ax.patches, key=lambda p: p.get_y())
+    for patch in bars:
+        patch.set_facecolor(bk.c("sc-ac"))
+    if bars:
+        bars[-1].set_facecolor(bk.c("hl"))
+    bk.strip_chrome(ax, keep=("bottom",))
+    # shap's one-line axis label runs past the canvas at the system's type
+    # size; the same words, wrapped onto two lines.
+    ax.set_xlabel(ax.get_xlabel().replace(" (", "\n(", 1))
+    conform_figure(fig)
     plt.tight_layout()
     out_path.parent.mkdir(parents=True, exist_ok=True)
     plt.savefig(out_path, dpi=150, bbox_inches="tight")
@@ -97,6 +122,7 @@ def write_shap_summary(out_path: Path) -> int:
 
 
 def main() -> int:
+    apply_theme("light")
     pop_path = DATA / "population_master_clean.parquet"
     if not pop_path.is_file():
         print(f"Missing {pop_path} — run make module-a-pipeline first", file=sys.stderr)

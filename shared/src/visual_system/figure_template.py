@@ -14,6 +14,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Final
 
+import bk_theme as bk
+
 if TYPE_CHECKING:
     from matplotlib.axes import Axes
     from matplotlib.figure import Figure
@@ -21,12 +23,13 @@ if TYPE_CHECKING:
 #: Standard source-attribution string stamped on every governed chart.
 SOURCE_TEXT: Final[str] = "Source: Paraguay Campaign Data Pipeline 2018 | April 2026"
 
-#: Muted grey used for the watermark/source text — matches the repo's brand
-#: GREY (``#adb5bd``) without importing matplotlib rc state.
-SOURCE_COLOR: Final[str] = "#adb5bd"
-SOURCE_FONTSIZE: Final[float] = 7.5
+#: The source line is recessive wayfinding: ``ink-2`` (``mid`` is never text,
+#: D-007), BKribitz Mono at the 12px floor (design system v2.1, D-053).
+SOURCE_ROLE: Final[str] = "ink-2"
+SOURCE_FONTSIZE: Final[float] = bk.SIZE["mono-sm"]
 
-#: Default y-offset (axes-fraction) for a per-Axes source stamp.
+#: Legacy y-offset (axes-fraction) for a per-Axes source stamp; the stamp is now
+#: anchored under the x-axis label instead (kept for importers).
 AXES_SOURCE_Y: Final[float] = -0.13
 #: Default y-offset (figure-fraction) for a per-Figure source stamp, used by
 #: multi-panel charts that stamp the source once for the whole figure.
@@ -75,17 +78,27 @@ def annotate_source(target: Axes | Figure, source: str = SOURCE_TEXT) -> None:
     from matplotlib.figure import Figure as _Figure
 
     if isinstance(target, _Axes):
+        # Anchored under the x-axis label (not a fixed axes fraction), so the
+        # design system's larger mono labels can never collide with it.
         target.annotate(
             source,
-            xy=(0.5, AXES_SOURCE_Y),
-            xycoords="axes fraction",
+            xy=(0.5, 0.0),
+            xycoords=target.xaxis.label,
+            xytext=(0, -6),
+            textcoords="offset points",
             ha="center",
-            fontsize=SOURCE_FONTSIZE,
-            color=SOURCE_COLOR,
+            va="top",
+            color=bk.c(SOURCE_ROLE),
+            fontproperties=bk.font("mono", "regular", SOURCE_FONTSIZE),
         )
     elif isinstance(target, _Figure):
         target.text(
-            0.5, FIGURE_SOURCE_Y, source, ha="center", fontsize=SOURCE_FONTSIZE, color=SOURCE_COLOR
+            0.5,
+            FIGURE_SOURCE_Y,
+            source,
+            ha="center",
+            color=bk.c(SOURCE_ROLE),
+            fontproperties=bk.font("mono", "regular", SOURCE_FONTSIZE),
         )
     else:
         raise TypeError(f"annotate_source() expects an Axes or Figure, got {type(target)!r}")
@@ -129,7 +142,7 @@ def apply_figure_template(
         annotate_source(fig, source)
 
 
-def place_legend(ax: Axes, *, title: str | None = None, fontsize: int = 9) -> None:
+def place_legend(ax: Axes, *, title: str | None = None, fontsize: float = bk.SIZE["mono"]) -> None:
     """Place a legend using the shared outside-upper-left convention.
 
     Args:

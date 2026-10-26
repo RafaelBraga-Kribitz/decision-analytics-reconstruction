@@ -3,6 +3,10 @@
 
 Read-only analysis: generates reports/module_c/battleground_investigation/ artifacts.
 Does not modify heatmap.py or production export paths.
+
+Figures are drawn on the Braga design system v2.1 (bk-viz, D-053): observed
+values are the one highlight (``hl``), simulated distributions the structure
+grey, reference curves ink; labels ink / ink-2; no text below 12px.
 """
 
 from __future__ import annotations
@@ -17,11 +21,13 @@ from typing import Any
 import matplotlib
 
 matplotlib.use("Agg")
+import bk_theme as bk
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from module_b_resource_allocation.constants import DEPARTMENTS
 from scipy import stats
+from visual_system.theme import apply_theme, conform_figure
 
 from module_c_forecasting_scenarios.geo.heatmap import (
     MODEL_VERSION,
@@ -46,6 +52,15 @@ from module_c_forecasting_scenarios.paths import repo_root
 REPO = repo_root()
 OUT_DIR = REPO / "reports" / "module_c" / "battleground_investigation"
 FIG_DIR = OUT_DIR / "figures"
+
+# Design system v2.1 roles (bk-viz): observed = the one highlight, simulated =
+# structure grey, reference curves and guides = ink / ink-2.
+apply_theme("light")
+plt.rcParams["axes.titlesize"] = bk.SIZE["lead"]
+OBS = bk.c("hl")
+SIM = bk.c("mid")
+POINTS = bk.c("sc-ac")
+REF = bk.c("ink-2")
 REF_DIR = REPO / "data" / "reference" / "battleground"
 TSJE_2013 = REF_DIR / "tsje_2013_department_results.csv"
 TSJE_2018 = (
@@ -803,12 +818,15 @@ def _make_ppc_figures(forward_df: pd.DataFrame, ppc_ctx: dict[str, Any]) -> None
     # Dept margins 2018: pooled density overlay
     fig, ax = plt.subplots(figsize=(9, 5))
     pooled_sim = np.concatenate([fixture_margins[d] for d in DEPARTMENTS if d in obs_2018.index])
-    ax.hist(pooled_sim, bins=40, alpha=0.5, density=True, label="simulated (fixture m)")
-    ax.hist(obs_2018.to_numpy(), bins=15, alpha=0.6, density=True, label="observed 2018 TSJE")
+    ax.hist(pooled_sim, bins=40, density=True, color=SIM, label="simulated (fixture m)")
+    ax.hist(
+        obs_2018.to_numpy(), bins=15, alpha=0.6, density=True, color=OBS, label="observed 2018 TSJE"
+    )
     ax.set_xlabel("Department margin (pp)")
     ax.set_title("PPC: department margin distribution (2018)")
     ax.legend()
     fig.tight_layout()
+    conform_figure(fig)
     fig.savefig(FIG_DIR / "ppc_dept_margins_2018.png", dpi=150)
     plt.close(fig)
 
@@ -820,13 +838,14 @@ def _make_ppc_figures(forward_df: pd.DataFrame, ppc_ctx: dict[str, Any]) -> None
         sim = fixture_margins.get(dept, [])
         obs_val = float(obs_2018.get(dept, np.nan))
         if sim:
-            ax.hist(sim, bins=25, alpha=0.6, density=True)
+            ax.hist(sim, bins=25, density=True, color=SIM)
         if not math.isnan(obs_val):
-            ax.axvline(obs_val, color="red", ls="--", label="obs 2018")
-        ax.set_title(dept, fontsize=9)
-        ax.set_xlabel("margin (pp)", fontsize=8)
+            ax.axvline(obs_val, color=OBS, ls="--", label="obs 2018")
+        ax.set_title(dept)
+        ax.set_xlabel("margin (pp)")
     fig.suptitle("PPC: selected department margins (fixture m replicates)")
     fig.tight_layout()
+    conform_figure(fig)
     fig.savefig(FIG_DIR / "ppc_dept_margins_faceted.png", dpi=150)
     plt.close(fig)
 
@@ -834,37 +853,40 @@ def _make_ppc_figures(forward_df: pd.DataFrame, ppc_ctx: dict[str, Any]) -> None
     fig, ax = plt.subplots(figsize=(9, 5))
     obs_p_vals = observed_p.reindex(DEPARTMENTS).dropna().to_numpy()
     sim_p_pool = np.concatenate([fixture_probs[d] for d in DEPARTMENTS])
-    ax.hist(sim_p_pool, bins=40, alpha=0.5, density=True, label="simulated P(A wins)")
-    ax.hist(obs_p_vals, bins=15, alpha=0.6, density=True, label="observed fixture P")
+    ax.hist(sim_p_pool, bins=40, density=True, color=SIM, label="simulated P(A wins)")
+    ax.hist(obs_p_vals, bins=15, alpha=0.6, density=True, color=OBS, label="observed fixture P")
     ax.set_xlabel("Win probability P(A)")
     ax.set_title("PPC: department win-probability distribution")
     ax.legend()
     fig.tight_layout()
+    conform_figure(fig)
     fig.savefig(FIG_DIR / "ppc_dept_probabilities.png", dpi=150)
     plt.close(fig)
 
     # z distribution
     fig, ax = plt.subplots(figsize=(9, 5))
     obs_z_vals = observed_z.reindex(DEPARTMENTS).dropna().to_numpy()
-    ax.hist(fixture_z_vals, bins=40, alpha=0.5, density=True, label="simulated z (fixture m)")
-    ax.hist(obs_z_vals, bins=15, alpha=0.6, density=True, label="observed z")
+    ax.hist(fixture_z_vals, bins=40, density=True, color=SIM, label="simulated z (fixture m)")
+    ax.hist(obs_z_vals, bins=15, alpha=0.6, density=True, color=OBS, label="observed z")
     ax.set_xlabel("z score")
     ax.set_title("PPC: z-score distribution")
     ax.legend()
     fig.tight_layout()
+    conform_figure(fig)
     fig.savefig(FIG_DIR / "ppc_z_distribution.png", dpi=150)
     plt.close(fig)
 
     # Ceiling count
     fig, ax = plt.subplots(figsize=(8, 5))
-    ax.hist(sim_ceiling, bins=range(0, max(sim_ceiling.astype(int)) + 2), alpha=0.7, density=True)
+    ax.hist(sim_ceiling, bins=range(0, max(sim_ceiling.astype(int)) + 2), density=True, color=SIM)
     ax.axvline(
-        observed_ceiling, color="red", ls="--", linewidth=2, label=f"observed ({observed_ceiling})"
+        observed_ceiling, color=OBS, ls="--", linewidth=2, label=f"observed ({observed_ceiling})"
     )
     ax.set_xlabel("Departments with P ≥ 0.985")
     ax.set_title("PPC: ceiling-count distribution")
     ax.legend()
     fig.tight_layout()
+    conform_figure(fig)
     fig.savefig(FIG_DIR / "ppc_ceiling_count.png", dpi=150)
     plt.close(fig)
 
@@ -873,20 +895,21 @@ def _make_ppc_figures(forward_df: pd.DataFrame, ppc_ctx: dict[str, Any]) -> None
     sim_min = np.asarray(ppc_ctx["sim_min"], dtype=float)
     sim_maz = np.asarray(ppc_ctx["sim_mean_abs_z"], dtype=float)
     fig, axes = plt.subplots(2, 2, figsize=(10, 8))
-    axes[0, 0].hist(sim_max, bins=35, alpha=0.7)
-    axes[0, 0].axvline(float(obs_2018.max()), color="red", ls="--")
+    axes[0, 0].hist(sim_max, bins=35, color=SIM)
+    axes[0, 0].axvline(float(obs_2018.max()), color=OBS, ls="--")
     axes[0, 0].set_title("Max dept margin")
-    axes[0, 1].hist(sim_min, bins=35, alpha=0.7)
-    axes[0, 1].axvline(float(obs_2018.min()), color="red", ls="--")
+    axes[0, 1].hist(sim_min, bins=35, color=SIM)
+    axes[0, 1].axvline(float(obs_2018.min()), color=OBS, ls="--")
     axes[0, 1].set_title("Min dept margin")
-    axes[1, 0].hist(sim_ceiling, bins=range(0, int(sim_ceiling.max()) + 2), alpha=0.7)
-    axes[1, 0].axvline(observed_ceiling, color="red", ls="--")
+    axes[1, 0].hist(sim_ceiling, bins=range(0, int(sim_ceiling.max()) + 2), color=SIM)
+    axes[1, 0].axvline(observed_ceiling, color=OBS, ls="--")
     axes[1, 0].set_title("Ceiling count")
-    axes[1, 1].hist(sim_maz, bins=35, alpha=0.7)
-    axes[1, 1].axvline(float(np.mean(np.abs(obs_z_vals))), color="red", ls="--")
+    axes[1, 1].hist(sim_maz, bins=35, color=SIM)
+    axes[1, 1].axvline(float(np.mean(np.abs(obs_z_vals))), color=OBS, ls="--")
     axes[1, 1].set_title("Mean |z|")
-    fig.suptitle("PPC summary: observed (red) vs simulated")
+    fig.suptitle("PPC summary: observed (accent line) vs simulated (grey)")
     fig.tight_layout()
+    conform_figure(fig)
     fig.savefig(FIG_DIR / "ppc_summary_panel.png", dpi=150)
     plt.close(fig)
 
@@ -1064,80 +1087,100 @@ def _make_figures(
 
     fig, ax = plt.subplots(figsize=(8, 5))
     sizes = 20 + 80 * (polls["weight"] / polls["weight"].max())
-    ax.scatter(polls["swing_2018"], polls["residual_linear_pp"], s=sizes, alpha=0.7)
-    ax.axhline(0, color="grey", lw=1)
+    ax.scatter(polls["swing_2018"], polls["residual_linear_pp"], s=sizes, color=POINTS, alpha=0.7)
+    ax.axhline(0, color=REF, lw=1)
     ax.set_xlabel("2018 swing factor")
     ax.set_ylabel("Poll − predicted margin (pp)")
     ax.set_title("Residual vs swing (size ∝ poll weight)")
     fig.tight_layout()
+    conform_figure(fig)
     fig.savefig(FIG_DIR / "residual_vs_swing.png", dpi=150)
     plt.close(fig)
 
     resid = polls["residual_linear_pp"].to_numpy(dtype=float)
     fig, ax = plt.subplots(figsize=(6, 6))
     stats.probplot(resid, dist="norm", plot=ax)
+    # scipy draws its own blue points / red fit line; recolour onto roles.
+    qq_points, qq_fit = ax.get_lines()[:2]
+    qq_points.set_markerfacecolor(POINTS)
+    qq_points.set_markeredgecolor(POINTS)
+    qq_fit.set_color(bk.c("ink"))
     ax.set_title("QQ plot — linear-spec residuals")
     fig.tight_layout()
+    conform_figure(fig)
     fig.savefig(FIG_DIR / "qq_residuals.png", dpi=150)
     plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(8, 5))
-    ax.scatter(polls["pred_linear_pp"], polls["margin_realized_pp"], s=sizes, alpha=0.7)
+    ax.scatter(
+        polls["pred_linear_pp"], polls["margin_realized_pp"], s=sizes, color=POINTS, alpha=0.7
+    )
     lims = [
         min(polls["pred_linear_pp"].min(), polls["margin_realized_pp"].min()) - 5,
         max(polls["pred_linear_pp"].max(), polls["margin_realized_pp"].max()) + 5,
     ]
-    ax.plot(lims, lims, color="grey", ls="--", lw=1)
+    ax.plot(lims, lims, color=REF, ls="--", lw=1)
     ax.set_xlim(lims)
     ax.set_ylim(lims)
     ax.set_xlabel("Predicted dept margin (pp)")
     ax.set_ylabel("Realized TSJE margin (pp)")
     ax.set_title("Calibration: linear swing spec vs realized")
     fig.tight_layout()
+    conform_figure(fig)
     fig.savefig(FIG_DIR / "calibration_pred_vs_realized.png", dpi=150)
     plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(8, 5))
-    ax.scatter(np.abs(polls["swing_2018"]), np.abs(polls["residual_linear_pp"]), s=sizes, alpha=0.7)
+    ax.scatter(
+        np.abs(polls["swing_2018"]),
+        np.abs(polls["residual_linear_pp"]),
+        s=sizes,
+        color=POINTS,
+        alpha=0.7,
+    )
     ax.set_xlabel("|swing|")
     ax.set_ylabel("|poll − predicted| (pp)")
     ax.set_title("Absolute residual vs |swing| (H2 probe)")
     fig.tight_layout()
+    conform_figure(fig)
     fig.savefig(FIG_DIR / "abs_residual_vs_abs_swing.png", dpi=150)
     plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(8, 5))
-    ax.scatter(forward_df["z"], forward_df["P_exported"], label="departments")
+    ax.scatter(forward_df["z"], forward_df["P_exported"], color=POINTS, label="departments")
     z_line = np.linspace(forward_df["z"].min(), forward_df["z"].max(), 200)
-    ax.plot(z_line, stats.norm.cdf(z_line), color="orange", label="Phi(z)")
+    ax.plot(z_line, stats.norm.cdf(z_line), color=bk.c("ink"), label="Phi(z)")
     ax.set_xlabel("z")
     ax.set_ylabel("P(Abdo wins)")
     ax.set_title("Forward mapping: P vs z (H5 null)")
     ax.legend()
     fig.tight_layout()
+    conform_figure(fig)
     fig.savefig(FIG_DIR / "P_vs_z.png", dpi=150)
     plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(8, 4))
-    ax.plot(m_sweep_df["m_pp"], m_sweep_df["n_depts_P_ge_0_985"])
-    ax.axvline(forward_df["m_pp"].iloc[0], color="red", ls="--", label="fixture m")
+    ax.plot(m_sweep_df["m_pp"], m_sweep_df["n_depts_P_ge_0_985"], color=POINTS)
+    ax.axvline(forward_df["m_pp"].iloc[0], color=OBS, ls="--", label="fixture m")
     ax.set_xlabel("National margin m (pp)")
     ax.set_ylabel("Departments with P ≥ 0.985")
     ax.set_title("Counterfactual m sweep (H5 sensitivity)")
     ax.legend()
     fig.tight_layout()
+    conform_figure(fig)
     fig.savefig(FIG_DIR / "m_sweep_ceiling.png", dpi=150)
     plt.close(fig)
 
     sim_max = np.asarray(ppc_ctx["sim_max"], dtype=float)
     obs_2018 = ppc_ctx["observed_margins_2018"]
     fig, ax = plt.subplots(figsize=(8, 5))
-    ax.hist(sim_max, bins=40, alpha=0.7, label="sim max dept margin")
-    ax.axvline(float(obs_2018.max()), color="red", ls="--", label="obs 2018 max")
+    ax.hist(sim_max, bins=40, color=SIM, label="sim max dept margin")
+    ax.axvline(float(obs_2018.max()), color=OBS, ls="--", label="obs 2018 max")
     ax.set_xlabel("Max department margin (pp)")
     ax.set_title("PPC: max department margin (2018 TSJE)")
     ax.legend()
     fig.tight_layout()
+    conform_figure(fig)
     fig.savefig(FIG_DIR / "ppc_max_margin_2018.png", dpi=150)
     plt.close(fig)
 

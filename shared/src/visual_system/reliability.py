@@ -172,17 +172,31 @@ def reliability_diagram(
     import matplotlib
 
     matplotlib.use("Agg")
+    import bk_theme as bk
     import matplotlib.pyplot as plt
 
     from visual_system.figure_template import annotate_source
+    from visual_system.theme import apply_theme
 
     if frame.empty:
         raise ValueError("reliability frame has no populated bins")
     if not disclaimer.strip():
         raise ValueError("a reliability diagram must carry its calibration disclaimer")
 
+    # Design system v2.1 (bk-viz): the model's bins are the one earned series
+    # (hl); the perfect-calibration reference is a mid hairline; sparse bins
+    # recede to mid grey. Flat, opaque marks; no hex in this builder.
+    apply_theme()
     fig, ax = plt.subplots(figsize=(7.0, 7.0))
-    ax.plot([0, 1], [0, 1], "--", color="#25282b", lw=1.2, label="Perfect calibration", zorder=1)
+    ax.plot(
+        [0, 1],
+        [0, 1],
+        "--",
+        color=bk.c("mid"),
+        lw=bk.HAIRLINE_PT * 1.5,
+        label="Perfect calibration",
+        zorder=1,
+    )
 
     frame = frame.sort_values("bin").reset_index(drop=True)
     counts = frame["count"].to_numpy()
@@ -205,13 +219,13 @@ def reliability_diagram(
         xs.append(float(row["predicted_mean"]))
         ys.append(float(row["observed_mean"]))
         prev_bin = cur_bin
-    ax.plot(xs, ys, "-", color="#0072B2", lw=1.4, zorder=2)
+    ax.plot(xs, ys, "-", color=bk.c("hl"), lw=1.4, zorder=2)
 
-    groups: tuple[tuple[np.ndarray, str, float, str, str], ...] = (
-        (emphasized, "#0072B2", 0.95, "#25282b", f"Bins (n >= {min_bin_count}, area ~ n)"),
-        (~emphasized, "#adb5bd", 0.55, "#adb5bd", f"Sparse bins (n < {min_bin_count})"),
+    groups: tuple[tuple[np.ndarray, str, str, str], ...] = (
+        (emphasized, bk.c("hl"), bk.c("surface"), f"Bins (n >= {min_bin_count}, area ~ n)"),
+        (~emphasized, bk.c("mid"), bk.c("mid"), f"Sparse bins (n < {min_bin_count})"),
     )
-    for mask, color, alpha, edgecolor, label in groups:
+    for mask, color, edgecolor, label in groups:
         sub = frame[mask]
         if sub.empty:
             continue
@@ -227,8 +241,7 @@ def reliability_diagram(
             fmt="none",
             ecolor=color,
             elinewidth=1.4,
-            capsize=3,
-            alpha=alpha,
+            capsize=0,
             zorder=3,
         )
         ax.scatter(
@@ -238,7 +251,6 @@ def reliability_diagram(
             zorder=4,
             label=label,
             color=color,
-            alpha=alpha,
             edgecolors=edgecolor,
         )
 
@@ -250,7 +262,7 @@ def reliability_diagram(
     ax.set_xlabel("Predicted mean propensity (bin)")
     ax.set_ylabel("Observed rate")
     ax.set_title(title if subtitle is None else f"{title}\n{subtitle}")
-    ax.legend(fontsize=8, loc="upper left")
+    ax.legend(loc="upper left")
 
     # Disclaimer inside the canvas so PNG exports keep it.
     ax.text(
@@ -260,10 +272,14 @@ def reliability_diagram(
         transform=ax.transAxes,
         ha="right",
         va="bottom",
-        fontsize=7.0,
-        color="#495057",
-        style="italic",
-        bbox={"boxstyle": "round,pad=0.35", "facecolor": "#f8f9fa", "edgecolor": "#adb5bd"},
+        color=bk.c("ink-2"),
+        fontproperties=bk.font("display", "regular", "mono-sm"),
+        bbox={
+            "boxstyle": "square,pad=0.35",
+            "facecolor": bk.c("surface-2"),
+            "edgecolor": bk.c("rule-c"),
+            "linewidth": bk.HAIRLINE_PT,
+        },
     )
     annotate_source(fig)
     fig.subplots_adjust(bottom=0.12)

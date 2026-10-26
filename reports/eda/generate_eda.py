@@ -20,7 +20,7 @@ matplotlib.use("Agg")
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 import matplotlib.ticker as mticker
-from matplotlib.colors import LinearSegmentedColormap
+from matplotlib.colors import TwoSlopeNorm
 
 warnings.filterwarnings("ignore")
 
@@ -50,17 +50,49 @@ from visual_system.palette import (
     SEGMENT_MARKERS,
 )
 
-# ── Brand palette ────────────────────────────────────────────────────────────
-RED = "#e60000"
-CHARCOAL = "#25282b"
-BLUE = "#1a6eb5"
-GOLD = "#f0a500"
-GREEN = "#2ca02c"
-ORANGE = "#ff7f0e"
-PURPLE = "#9467bd"
-TEAL = "#17becf"
-GREY = "#adb5bd"
-WHITE = "#ffffff"
+# ── Design system v2.1 (bk-viz) ─────────────────────────────────────────────
+# Every figure is drawn on the Braga design system v2.1 through bk-viz
+# (D-053): colours only through roles, no hex literal in this file. The names
+# below are roles, not a brand palette:
+#   INK / INK2      type and reference lines (labels are ink or ink-2 only)
+#   MID / SURFACE   structure grey and the page surface (mark separators)
+#   CAT             the categorical hue slots, used in slot order
+#   CAND_A/CAND_B   the two candidates: two-sided, neither is good (``two``)
+#   REGION_COLORS   ORIENTAL / CHACO / METRO, one mapping for every chart
+#   CHANNEL_COLORS  one channel-type mapping for every chart
+#   ACTUAL          IBCS actual (sc-ac) for a single unhighlighted series
+#   HL / HL_TINT    the one highlight per chart and its opaque band tint
+#   VAR_NEG         a bad variance (always labelled with the ▲ glyph)
+import bk_theme as bk  # noqa: E402
+from visual_system.theme import (  # noqa: E402
+    apply_theme,
+    conform_figure,
+    label_on,
+    parts_of_whole,
+    scale_cmap,
+)
+
+apply_theme("light")
+INK = bk.c("ink")
+INK2 = bk.c("ink-2")
+MID = bk.c("mid")
+SURFACE = bk.c("surface")
+CAT = bk.palette("categorical")
+CAT_OTHER = bk.c("cat-other")
+CAND_A, CAND_B = CAT[0], CAT[1]
+REGION_COLORS = {"ORIENTAL": CAT[0], "CHACO": CAT[1], "METRO": CAT[2]}
+CHANNEL_COLORS = {
+    "broadcast": CAT[0],
+    "bilateral": CAT[1],
+    "broadcast_to_bilateral": CAT[2],
+    "in_person": CAT[3],
+}
+ACTUAL = bk.c("sc-ac")
+HL = bk.c("hl")
+HL_TINT = bk.c("hl-8")
+VAR_NEG = bk.c("var-neg")
+#: The type floor: no text below 12px (9.5pt at the 96px/in figure maths).
+FS_MIN = bk.SIZE["mono-sm"]
 
 # Segment colors come from the shared visual system (imported above as
 # SEG_COLORS). The former local RED/BLUE/ORANGE/... brand assignment paired
@@ -68,28 +100,14 @@ WHITE = "#ffffff"
 # governance/improvement_plan/IMP-V01_visual-system.md.
 
 # ── Global rcParams ──────────────────────────────────────────────────────────
+# apply_theme() (above) installed the design system: surface, BKribitz Mono,
+# hairline axes in mid, rule-c gridlines. Only the factory's own output
+# geometry and title size are set here.
 plt.rcParams.update(
     {
-        "figure.facecolor": WHITE,
-        "axes.facecolor": WHITE,
-        "axes.edgecolor": CHARCOAL,
-        "axes.labelcolor": CHARCOAL,
-        "text.color": CHARCOAL,
-        "xtick.color": CHARCOAL,
-        "ytick.color": CHARCOAL,
-        "font.family": "DejaVu Sans",
-        "font.size": 11,
-        "axes.titlesize": 13,
-        "axes.titleweight": "bold",
-        "axes.labelsize": 11,
-        "legend.fontsize": 10,
-        "legend.framealpha": 0.9,
-        "grid.color": "#e0e0e0",
-        "grid.linewidth": 0.6,
-        "axes.grid": True,
+        "axes.titlesize": bk.SIZE["lead"],
         "savefig.dpi": 160,
         "savefig.bbox": "tight",
-        "savefig.facecolor": WHITE,
     }
 )
 
@@ -115,18 +133,27 @@ _succeeded = 0
 def save_fig(fig: plt.Figure, fname: str) -> None:
     global _succeeded
     # Provenance stamp on every figure (run id + model version) — F-073.
-    fig.text(
-        0.995,
-        0.004,
-        FIGURE_STAMP,
-        ha="right",
-        va="bottom",
-        fontsize=5,
-        color=GREY,
-        alpha=0.6,
-    )
+    # Recessive wayfinding: ink-2, BKribitz Mono, at the 12px floor. Set on the
+    # chart's source line when it has one (one provenance line, no collision),
+    # otherwise in the bottom-right corner.
+    source_texts = [t for t in fig.findobj(matplotlib.text.Text) if t.get_text() == SOURCE]
+    if source_texts:
+        for t in source_texts:
+            t.set_text(f"{SOURCE}   ·   {FIGURE_STAMP}")
+    else:
+        fig.text(
+            0.995,
+            0.004,
+            FIGURE_STAMP,
+            ha="right",
+            va="bottom",
+            color=INK2,
+            fontproperties=bk.font("mono", "regular", "mono-sm"),
+        )
+    # Save-time guard (design system v2.1): type floor, ink-only labels.
+    conform_figure(fig)
     path = OUT / fname
-    fig.savefig(path, dpi=DPI, bbox_inches="tight", facecolor=WHITE)
+    fig.savefig(path, dpi=DPI, bbox_inches="tight", facecolor=SURFACE)
     plt.close(fig)
     size = path.stat().st_size
     try:
@@ -139,8 +166,8 @@ def save_fig(fig: plt.Figure, fname: str) -> None:
 
 
 def _region_point_color(department: str) -> str:
-    """ORIENTAL departments → RED; CHACO → BLUE (B5/S5 shared encoding)."""
-    return BLUE if department in CHACO_DEPARTMENTS else RED
+    """ORIENTAL / CHACO region hue (B5/S5 shared encoding, ``REGION_COLORS``)."""
+    return REGION_COLORS[_region_for_department(department)]
 
 
 def _region_for_department(department: str) -> str:
@@ -155,8 +182,8 @@ def _region_legend_handles() -> list[plt.Line2D]:
             [0],
             marker="o",
             linestyle="none",
-            markerfacecolor=RED,
-            markeredgecolor=CHARCOAL,
+            markerfacecolor=REGION_COLORS["ORIENTAL"],
+            markeredgecolor=SURFACE,
             markersize=9,
             label="ORIENTAL",
         ),
@@ -165,8 +192,8 @@ def _region_legend_handles() -> list[plt.Line2D]:
             [0],
             marker="o",
             linestyle="none",
-            markerfacecolor=BLUE,
-            markeredgecolor=CHARCOAL,
+            markerfacecolor=REGION_COLORS["CHACO"],
+            markeredgecolor=SURFACE,
             markersize=9,
             label="CHACO",
         ),
@@ -180,7 +207,7 @@ def _stagger_annotate(
     y_col: str,
     label_col: str,
     *,
-    fontsize: float = 7.5,
+    fontsize: float = FS_MIN,
 ) -> None:
     """Place department labels with greedy collision avoidance (#149)."""
     if df.empty:
@@ -257,8 +284,8 @@ def _caption_zone(fig: plt.Figure, caption: str, *, bottom: float = 0.18) -> Non
         caption,
         ha="center",
         va="center",
-        fontsize=8,
-        color=GREY,
+        fontsize=FS_MIN,
+        color=MID,
         wrap=True,
     )
     fig.text(
@@ -267,8 +294,8 @@ def _caption_zone(fig: plt.Figure, caption: str, *, bottom: float = 0.18) -> Non
         SOURCE,
         ha="center",
         va="center",
-        fontsize=7.5,
-        color=GREY,
+        fontsize=FS_MIN,
+        color=MID,
     )
 
 
@@ -367,8 +394,8 @@ def chart_a1():
     pcts = counts / counts.sum() * 100
 
     fig, ax = plt.subplots(figsize=(10, 5))
-    colors = [SEG_COLORS.get(s, GREY) for s in counts.index]
-    bars = ax.barh(counts.index, counts.values, color=colors, edgecolor=WHITE, linewidth=0.5)
+    colors = [SEG_COLORS.get(s, MID) for s in counts.index]
+    bars = ax.barh(counts.index, counts.values, color=colors, edgecolor=SURFACE, linewidth=0.5)
 
     for bar, pct, cnt in zip(bars, pcts.values, counts.values):
         ax.text(
@@ -406,10 +433,10 @@ def chart_a2():
     for i, seg in enumerate(segs_present):
         ax = axes[i]
         data = pop.loc[pop["segment_label"] == seg, "age_on_event_date"].dropna()
-        color = SEG_COLORS.get(seg, GREY)
+        color = SEG_COLORS.get(seg, MID)
 
         ax.hist(
-            data, bins=25, color=color, alpha=0.55, density=True, edgecolor=WHITE, linewidth=0.4
+            data, bins=25, color=color, alpha=0.55, density=True, edgecolor=SURFACE, linewidth=0.4
         )
         # KDE via numpy — use Scott's rule (adaptive per-segment bandwidth, avoids over-smoothing)
         from scipy.stats import gaussian_kde
@@ -420,7 +447,7 @@ def chart_a2():
 
         ax.axvline(
             data.median(),
-            color=CHARCOAL,
+            color=INK,
             lw=1.2,
             ls="--",
             alpha=0.7,
@@ -429,7 +456,7 @@ def chart_a2():
         ax.set_title(seg.replace("_", " ").title(), fontsize=10, pad=4)
         ax.set_xlabel("Age")
         ax.set_ylabel("Density")
-        ax.legend(fontsize=8)
+        ax.legend(fontsize=FS_MIN)
 
     for j in range(i + 1, len(axes)):
         axes[j].set_visible(False)
@@ -437,7 +464,7 @@ def chart_a2():
     fig.suptitle(
         "A2 — Age Distribution by Segment (Histogram + KDE)", fontsize=13, fontweight="bold", y=1.01
     )
-    fig.text(0.5, -0.01, SOURCE, ha="center", fontsize=7.5, color=GREY)
+    fig.text(0.5, -0.01, SOURCE, ha="center", fontsize=FS_MIN, color=MID)
     fig.tight_layout()
     save_fig(fig, "A2_age_distribution_by_segment.png")
 
@@ -483,7 +510,7 @@ def chart_a3():
         fontweight="bold",
         pad=16,
     )
-    fig.text(0.5, 0.01, SOURCE, ha="center", fontsize=7.5, color=GREY)
+    fig.text(0.5, 0.01, SOURCE, ha="center", fontsize=FS_MIN, color=MID)
     fig.tight_layout()
     save_fig(fig, "A3_gender_by_segment.png")
 
@@ -502,12 +529,12 @@ def chart_a4():
     heat = heat.reindex(columns=[c for c in SEG_ORDER if c in heat.columns])
 
     fig, ax = plt.subplots(figsize=(13, 8))
-    cmap = LinearSegmentedColormap.from_list("rw", ["#ffffff", RED])
+    cmap = scale_cmap("seq", reverse=True)
     # Empty (no-population) cells must not read as a low numeric value: the
     # colormap's low end is near-white, so a blank cell was indistinguishable
     # from a genuine ~0.45 reading. Render NaN cells on a neutral ground and
     # overprint a hatch so "no population" is visually distinct from a value.
-    cmap.set_bad("#ececec")
+    cmap.set_bad(bk.c("surface-3"))
     # IMP-V05 / issue #69: color scale bounded to the observed range (padded
     # to 0.05 ticks) with the range disclosed in the subtitle — the former
     # fixed [0, 1] scale washed out all real variation in a ~0.5-0.7 metric,
@@ -519,9 +546,9 @@ def chart_a4():
     im = ax.imshow(heat.values, aspect="auto", cmap=cmap, vmin=scale_lo, vmax=scale_hi)
 
     ax.set_xticks(range(len(heat.columns)))
-    ax.set_xticklabels([c.replace("_", "\n") for c in heat.columns], fontsize=9)
+    ax.set_xticklabels([c.replace("_", "\n") for c in heat.columns], fontsize=FS_MIN)
     ax.set_yticks(range(len(heat.index)))
-    ax.set_yticklabels(heat.index, fontsize=9)
+    ax.set_yticklabels(heat.index, fontsize=FS_MIN)
 
     for i in range(heat.shape[0]):
         for j in range(heat.shape[1]):
@@ -533,8 +560,8 @@ def chart_a4():
                     f"{val:.2f}",
                     ha="center",
                     va="center",
-                    fontsize=8,
-                    color=WHITE if val > 0.6 else CHARCOAL,
+                    fontsize=FS_MIN,
+                    color=SURFACE if val > 0.6 else INK,
                 )
             else:
                 # Hatched overlay marks an empty cell (no population), so it can
@@ -546,7 +573,7 @@ def chart_a4():
                         1,
                         fill=False,
                         hatch="///",
-                        edgecolor="#9aa0a6",
+                        edgecolor=MID,
                         linewidth=0.0,
                     )
                 )
@@ -600,15 +627,15 @@ def chart_a5():
     )
 
     for i, (pc, seg) in enumerate(zip(parts["bodies"], segs_present)):
-        pc.set_facecolor(SEG_COLORS.get(seg, GREY))
+        pc.set_facecolor(SEG_COLORS.get(seg, MID))
         pc.set_alpha(0.7)
-    parts["cmedians"].set_color(CHARCOAL)
-    parts["cbars"].set_color(CHARCOAL)
-    parts["cmins"].set_color(CHARCOAL)
-    parts["cmaxes"].set_color(CHARCOAL)
+    parts["cmedians"].set_color(INK)
+    parts["cbars"].set_color(INK)
+    parts["cmins"].set_color(INK)
+    parts["cmaxes"].set_color(INK)
 
     ax.set_xticks(range(len(segs_present)))
-    ax.set_xticklabels([s.replace("_", "\n") for s in segs_present], fontsize=9)
+    ax.set_xticklabels([s.replace("_", "\n") for s in segs_present], fontsize=FS_MIN)
     ax.set_ylabel("Participation Propensity")
     ax.set_title(
         "A5 — Participation Propensity Distribution by Segment\n"
@@ -638,16 +665,17 @@ def chart_a6():
 
     fig, ax = plt.subplots(figsize=(11, 5))
     bottoms = np.zeros(len(grp))
-    palette = {"Urban": BLUE, "Rural": GOLD}
+    # Parts of a whole: structure greys (IBCS), not hues.
+    palette = dict(zip(["Urban", "Rural"], parts_of_whole(2)))
     for col in grp.columns:
         vals = grp[col].values
         ax.bar(
             grp.index,
             vals,
             bottom=bottoms,
-            color=palette.get(col, GREY),
+            color=palette.get(col, MID),
             label=col,
-            edgecolor=WHITE,
+            edgecolor=SURFACE,
             lw=0.4,
         )
         for xi, (v, b) in enumerate(zip(vals, bottoms)):
@@ -658,8 +686,8 @@ def chart_a6():
                     f"{v:.0f}%",
                     ha="center",
                     va="center",
-                    fontsize=9,
-                    color=WHITE,
+                    fontsize=FS_MIN,
+                    color=label_on(palette.get(col, MID)),
                     fontweight="bold",
                 )
         bottoms += vals
@@ -670,7 +698,7 @@ def chart_a6():
         "rural_committed is ~85% rural; urban_high_volatility is ~100% urban\n"
         "⚠ Note: rural_low_propensity segment label may be inverted (F-051 pending)"
     )
-    ax.set_xticklabels([s.replace("_", "\n") for s in grp.index], rotation=0, fontsize=9)
+    ax.set_xticklabels([s.replace("_", "\n") for s in grp.index], rotation=0, fontsize=FS_MIN)
     ax.legend(title="Area")
     ax.set_ylim(0, 110)
     annotate_source(ax)
@@ -700,7 +728,8 @@ def chart_a7():
     grp = grp.reindex([s for s in SEG_ORDER if s in grp.index])
 
     fig, ax = plt.subplots(figsize=(12, 5))
-    lang_colors = {"Jopara": ORANGE, "Spanish": BLUE, "Guarani": GREEN, "Other": GREY}
+    # Parts of a whole: structure greys (IBCS), darkest first.
+    lang_colors = dict(zip(["Jopara", "Spanish", "Guarani", "Other"], parts_of_whole(4)))
     bottoms = np.zeros(len(grp))
     for lang in ["Jopara", "Spanish", "Guarani", "Other"]:
         if lang in grp.columns:
@@ -711,7 +740,7 @@ def chart_a7():
                 bottom=bottoms,
                 color=lang_colors[lang],
                 label=lang,
-                edgecolor=WHITE,
+                edgecolor=SURFACE,
                 lw=0.4,
             )
             for xi, (v, b) in enumerate(zip(vals, bottoms)):
@@ -722,15 +751,15 @@ def chart_a7():
                         f"{v:.0f}%",
                         ha="center",
                         va="center",
-                        fontsize=9,
-                        color=WHITE,
+                        fontsize=FS_MIN,
+                        color=label_on(lang_colors[lang]),
                         fontweight="bold",
                     )
             bottoms += vals
 
     ax.set_ylabel("Share (%)")
     ax.set_title("A7 — Language Composition by Segment (%)")
-    ax.set_xticklabels([s.replace("_", "\n") for s in grp.index], rotation=0, fontsize=9)
+    ax.set_xticklabels([s.replace("_", "\n") for s in grp.index], rotation=0, fontsize=FS_MIN)
     ax.legend(title="Language")
     ax.set_ylim(0, 110)
     annotate_source(ax)
@@ -748,8 +777,8 @@ def chart_a8():
     rate = rate.reindex([s for s in SEG_ORDER if s in rate.index])
 
     fig, ax = plt.subplots(figsize=(10, 5))
-    colors = [SEG_COLORS.get(s, GREY) for s in rate.index]
-    bars = ax.barh(rate.index, rate.values, color=colors, edgecolor=WHITE, lw=0.5)
+    colors = [SEG_COLORS.get(s, MID) for s in rate.index]
+    bars = ax.barh(rate.index, rate.values, color=colors, edgecolor=SURFACE, lw=0.5)
 
     for bar, val in zip(bars, rate.values):
         ax.text(
@@ -800,18 +829,29 @@ def chart_a9():
     # vermillion, matching the shared palette) instead of the brand blue/red
     # pair; sign is additionally carried by the +/− glyphs in the cell
     # annotations below, so it never depends on hue alone.
-    cmap = LinearSegmentedColormap.from_list("rw_rb", ["#0072B2", "#ffffff", "#D55E00"])
+    cmap = scale_cmap("two")
+    # The masked upper triangle is page, not a value: r = 0 already takes the
+    # scale's surface-3 midpoint.
+    cmap.set_bad(SURFACE)
     mask = np.triu(np.ones_like(corr, dtype=bool), k=1)
 
-    im = ax.imshow(np.ma.array(corr.values, mask=mask), cmap=cmap, vmin=-1, vmax=1, aspect="auto")
+    # Diverging only around the real midpoint r = 0 (D-053 continuous fills):
+    # the full `two` scale (neither sign is good), anchored with TwoSlopeNorm
+    # on the fixed [-1, 1] range, never the data's own min and max.
+    im = ax.imshow(
+        np.ma.array(corr.values, mask=mask),
+        cmap=cmap,
+        norm=TwoSlopeNorm(vcenter=0.0, vmin=-1.0, vmax=1.0),
+        aspect="auto",
+    )
     plt.colorbar(im, ax=ax, fraction=0.03, pad=0.02, label="Pearson r")
 
     ax.set_xticks(range(len(corr.columns)))
     ax.set_xticklabels(
-        [c.replace("_", " ")[:18] for c in corr.columns], rotation=45, ha="right", fontsize=8
+        [c.replace("_", " ")[:18] for c in corr.columns], rotation=45, ha="right", fontsize=FS_MIN
     )
     ax.set_yticks(range(len(corr.index)))
-    ax.set_yticklabels([c.replace("_", " ")[:18] for c in corr.index], fontsize=8)
+    ax.set_yticklabels([c.replace("_", " ")[:18] for c in corr.index], fontsize=FS_MIN)
 
     for i in range(corr.shape[0]):
         for j in range(i + 1):
@@ -826,8 +866,8 @@ def chart_a9():
                 f"{val:+.2f}",
                 ha="center",
                 va="center",
-                fontsize=7,
-                color=WHITE if abs(val) > 0.55 else CHARCOAL,
+                fontsize=FS_MIN,
+                color=SURFACE if abs(val) > 0.55 else INK,
             )
 
     ax.set_title(
@@ -835,7 +875,7 @@ def chart_a9():
         "Media penetration variables are collinear (r≈0.99); propensity is structurally independent\n"
         "Note: r≈0.99 cluster is co-derived from dept-level constants, not independent measurement"
     )
-    fig.text(0.5, -0.02, SOURCE, ha="center", fontsize=7.5, color=GREY)
+    fig.text(0.5, -0.02, SOURCE, ha="center", fontsize=FS_MIN, color=MID)
     fig.tight_layout()
     save_fig(fig, "A9_correlation_heatmap.png")
 
@@ -878,7 +918,7 @@ def chart_a10():
             Z[mask, 0],
             Z[mask, 1],
             label=seg.replace("_", " ").title(),
-            color=SEG_COLORS.get(seg, GREY),
+            color=SEG_COLORS.get(seg, MID),
             # Redundant non-color encoding (IMP-V01): marker shape carries
             # segment identity so the legend survives grayscale / CVD.
             marker=SEGMENT_MARKERS.get(seg, "o"),
@@ -895,14 +935,14 @@ def chart_a10():
             "",
             xy=(loadings[i, 0] * scale, loadings[i, 1] * scale),
             xytext=(0, 0),
-            arrowprops=dict(arrowstyle="->", color=CHARCOAL, lw=1.0),
+            arrowprops=dict(arrowstyle="->", color=INK, lw=1.0),
         )
         ax.text(
             loadings[i, 0] * scale * 1.12,
             loadings[i, 1] * scale * 1.12,
             feat.replace("_", "\n"),
-            fontsize=7,
-            color=CHARCOAL,
+            fontsize=FS_MIN,
+            color=INK,
             ha="center",
         )
 
@@ -912,9 +952,9 @@ def chart_a10():
     ax.set_title(
         "A10 — Department Feature-Space Map (PCA)\n(⚠ features are dept-level constants — lattice = 17 dept clusters, not individual voter variance)"
     )
-    ax.legend(title="Segment", bbox_to_anchor=(1.01, 1), loc="upper left", fontsize=9)
-    ax.axhline(0, color=GREY, lw=0.7, ls="--")
-    ax.axvline(0, color=GREY, lw=0.7, ls="--")
+    ax.legend(title="Segment", bbox_to_anchor=(1.01, 1), loc="upper left", fontsize=FS_MIN)
+    ax.axhline(0, color=MID, lw=0.7, ls="--")
+    ax.axvline(0, color=MID, lw=0.7, ls="--")
     ax.annotate(
         "Most input features (media penetration, NBI stress, reachability indices) are "
         "assigned at department level — all voters in a department share the same value. "
@@ -922,10 +962,10 @@ def chart_a10():
         xy=(0.5, -0.14),
         xycoords="axes fraction",
         ha="center",
-        fontsize=7.5,
-        color=GREY,
+        fontsize=FS_MIN,
+        color=MID,
     )
-    fig.text(0.5, -0.01, SOURCE, ha="center", fontsize=7.5, color=GREY)
+    fig.text(0.5, -0.01, SOURCE, ha="center", fontsize=FS_MIN, color=MID)
     fig.tight_layout()
     save_fig(fig, "A10_pca_biplot.png")
 
@@ -946,13 +986,13 @@ def chart_a11():
     dept_order = dept_nbi.index.tolist()
     values = dept_nbi.values
 
-    colors = [RED if d in CHACO_DEPARTMENTS else CHARCOAL for d in dept_order]
+    colors = [HL if d in CHACO_DEPARTMENTS else ACTUAL for d in dept_order]
 
     fig, ax = plt.subplots(figsize=(14, 6))
-    ax.bar(range(len(dept_order)), values, color=colors, edgecolor=WHITE, linewidth=0.5)
+    ax.bar(range(len(dept_order)), values, color=colors, edgecolor=SURFACE, linewidth=0.5)
 
     ax.set_xticks(range(len(dept_order)))
-    ax.set_xticklabels(dept_order, rotation=45, ha="right", fontsize=9)
+    ax.set_xticklabels(dept_order, rotation=45, ha="right", fontsize=FS_MIN)
     ax.set_ylabel("Mean NBI Stress Prior Score")
     ax.set_title(
         "A11 — NBI Poverty Stress by Department (sorted descending)\n"
@@ -960,8 +1000,8 @@ def chart_a11():
     )
 
     # Region legend
-    chaco_patch = mpatches.Patch(color=RED, label="CHACO region")
-    oriental_patch = mpatches.Patch(color=CHARCOAL, label="ORIENTAL region")
+    chaco_patch = mpatches.Patch(color=HL, label="CHACO region")
+    oriental_patch = mpatches.Patch(color=ACTUAL, label="ORIENTAL region")
     ax.legend(handles=[chaco_patch, oriental_patch], loc="upper right")
 
     ax.annotate(
@@ -970,10 +1010,10 @@ def chart_a11():
         xy=(0.5, -0.28),
         xycoords="axes fraction",
         ha="center",
-        fontsize=7.5,
-        color=GREY,
+        fontsize=FS_MIN,
+        color=MID,
     )
-    fig.text(0.5, -0.02, SOURCE, ha="center", fontsize=7.5, color=GREY)
+    fig.text(0.5, -0.02, SOURCE, ha="center", fontsize=FS_MIN, color=MID)
     fig.tight_layout()
     save_fig(fig, "A11_nbi_stress_by_department.png")
 
@@ -997,7 +1037,7 @@ def chart_a12():
             density=True,
             histtype="step",
             lw=2.0,
-            color=SEG_COLORS.get(seg, GREY),
+            color=SEG_COLORS.get(seg, MID),
             # Redundant non-color encoding (IMP-V01): each segment's step
             # outline carries a distinct linestyle for grayscale / CVD legibility.
             linestyle=SEGMENT_LINESTYLES.get(seg, "solid"),
@@ -1007,7 +1047,7 @@ def chart_a12():
     ax.set_xlabel("Reachability Index")
     ax.set_ylabel("Density")
     ax.set_title("A12 — Reachability Index Distribution by Segment (step outlines for legibility)")
-    ax.legend(title="Segment", bbox_to_anchor=(1.01, 1), loc="upper left", fontsize=9)
+    ax.legend(title="Segment", bbox_to_anchor=(1.01, 1), loc="upper left", fontsize=FS_MIN)
     annotate_source(ax)
     fig.tight_layout()
     save_fig(fig, "A12_reachability_distribution.png")
@@ -1019,7 +1059,7 @@ chart_a12()
 @safe_chart("A13")
 def chart_a13():
     """A13: Preference proxy strength distribution per segment + voting intent."""
-    intent_colors = {"A": RED, "B": BLUE, "other": GOLD, "none": GREY}
+    intent_colors = {"A": CAND_A, "B": CAND_B, "other": CAT[2], "none": CAT_OTHER}
 
     segs_present = [s for s in SEG_ORDER if s in pop["segment_label"].values]
     n = len(segs_present)
@@ -1038,22 +1078,22 @@ def chart_a13():
                 bins=20,
                 density=True,
                 alpha=0.55,
-                color=intent_colors.get(intent, GREY),
+                color=intent_colors.get(intent, MID),
                 label=f"Intent {intent}",
             )
             # Per-intent median line annotation
             med = data.median()
             ax.axvline(
                 med,
-                color=intent_colors.get(intent, GREY),
+                color=intent_colors.get(intent, MID),
                 lw=1.2,
                 ls="--",
                 alpha=0.8,
                 label=f"Median {intent}: {med:.2f}",
             )
-        ax.set_title(seg.replace("_", " ").title(), fontsize=9, pad=3)
-        ax.set_xlabel("Strength", fontsize=8)
-        ax.legend(fontsize=6)
+        ax.set_title(seg.replace("_", " ").title(), fontsize=FS_MIN, pad=3)
+        ax.set_xlabel("Strength", fontsize=FS_MIN)
+        ax.legend(fontsize=FS_MIN)
 
     for j in range(i + 1, len(axes)):
         axes[j].set_visible(False)
@@ -1064,7 +1104,7 @@ def chart_a13():
         fontsize=12,
         fontweight="bold",
     )
-    fig.text(0.5, -0.01, SOURCE, ha="center", fontsize=7.5, color=GREY)
+    fig.text(0.5, -0.01, SOURCE, ha="center", fontsize=FS_MIN, color=MID)
     fig.tight_layout()
     save_fig(fig, "A13_preference_strength_by_segment.png")
 
@@ -1083,8 +1123,8 @@ def chart_b1():
     dept_budget = alloc_base.groupby("department")["budget_allocation_usd"].sum().sort_values()
 
     fig, ax = plt.subplots(figsize=(10, 7))
-    colors = [RED if dept_budget[d] == dept_budget.max() else BLUE for d in dept_budget.index]
-    bars = ax.barh(dept_budget.index, dept_budget.values, color=colors, edgecolor=WHITE, lw=0.4)
+    colors = [HL if dept_budget[d] == dept_budget.max() else ACTUAL for d in dept_budget.index]
+    bars = ax.barh(dept_budget.index, dept_budget.values, color=colors, edgecolor=SURFACE, lw=0.4)
 
     for bar, val in zip(bars, dept_budget.values):
         ax.text(
@@ -1092,7 +1132,7 @@ def chart_b1():
             bar.get_y() + bar.get_height() / 2,
             f"${val:,.0f}",
             va="center",
-            fontsize=9,
+            fontsize=FS_MIN,
         )
 
     ax.set_xlabel("Total Budget Allocated (USD)")
@@ -1115,12 +1155,7 @@ def chart_b2():
         .sum()
         .unstack(fill_value=0)
     )
-    chan_colors = {
-        "broadcast": RED,
-        "bilateral": BLUE,
-        "in_person": GREEN,
-        "broadcast_to_bilateral": ORANGE,
-    }
+    chan_colors = CHANNEL_COLORS
 
     fig, ax = plt.subplots(figsize=(11, 5))
     for ct in weekly.columns:
@@ -1131,11 +1166,11 @@ def chart_b2():
             weekly[ct],
             marker="o",
             markersize=4,
-            color=chan_colors.get(ct, GREY),
+            color=chan_colors.get(ct, MID),
             label=ct.replace("_", " ").title(),
             lw=2,
         )
-        ax.fill_between(weekly.index, weekly[ct], alpha=0.12, color=chan_colors.get(ct, GREY))
+        ax.fill_between(weekly.index, weekly[ct], alpha=0.12, color=chan_colors.get(ct, MID))
 
     ax.set_xlabel("Campaign Week")
     ax.set_ylabel("Budget Allocated (USD)")
@@ -1184,7 +1219,7 @@ def chart_b3():
     ax.plot(
         combined.index,
         combined["Baseline (Broadcast)"],
-        color=RED,
+        color=CAT[0],
         lw=2.5,
         marker="o",
         ms=4,
@@ -1193,7 +1228,7 @@ def chart_b3():
     ax.plot(
         combined.index,
         combined["Broadcast-to-Direct"],
-        color=BLUE,
+        color=CAT[1],
         lw=2.5,
         marker="s",
         ms=4,
@@ -1217,15 +1252,19 @@ def chart_b3():
         bcast_to_bilat.values,
         in_person.values,
         labels=["Broadcast", "Bilateral/Direct", "Broadcast-to-Bilateral", "In-Person"],
-        colors=[RED, BLUE, ORANGE, GREEN],
-        alpha=0.7,
+        colors=[
+            CHANNEL_COLORS["broadcast"],
+            CHANNEL_COLORS["bilateral"],
+            CHANNEL_COLORS["broadcast_to_bilateral"],
+            CHANNEL_COLORS["in_person"],
+        ],
     )
     ax2.set_title("B3b — Weekly Budget by Channel Type (Baseline, all channels)")
     ax2.set_xlabel("Week")
-    ax2.legend(loc="upper left", fontsize=8)
+    ax2.legend(loc="upper left", fontsize=FS_MIN)
 
     fig.suptitle("B3 — Budget Split: Broadcast vs Direct Channels", fontsize=13, fontweight="bold")
-    fig.text(0.5, -0.01, SOURCE, ha="center", fontsize=7.5, color=GREY)
+    fig.text(0.5, -0.01, SOURCE, ha="center", fontsize=FS_MIN, color=MID)
     fig.tight_layout()
     save_fig(fig, "B3_broadcast_vs_direct_budget.png")
 
@@ -1252,13 +1291,13 @@ def chart_b4():
     pivot = pivot.reindex(dept_order_b4)
 
     fig, ax = plt.subplots(figsize=(14, 9))
-    cmap = LinearSegmentedColormap.from_list("wred", ["#ffffff", RED])
+    cmap = scale_cmap("seq", reverse=True)
     im = ax.imshow(pivot.values, aspect="auto", cmap=cmap, vmin=0, vmax=1)
 
     ax.set_xticks(range(len(pivot.columns)))
-    ax.set_xticklabels(pivot.columns, rotation=45, ha="right", fontsize=9)
+    ax.set_xticklabels(pivot.columns, rotation=45, ha="right", fontsize=FS_MIN)
     ax.set_yticks(range(len(pivot.index)))
-    ax.set_yticklabels(pivot.index, fontsize=9)
+    ax.set_yticklabels(pivot.index, fontsize=FS_MIN)
 
     for i in range(pivot.shape[0]):
         for j in range(pivot.shape[1]):
@@ -1270,8 +1309,8 @@ def chart_b4():
                     f"{val:.2f}",
                     ha="center",
                     va="center",
-                    fontsize=7.5,
-                    color=WHITE if val > 0.6 else CHARCOAL,
+                    fontsize=FS_MIN,
+                    color=SURFACE if val > 0.6 else INK,
                 )
 
     plt.colorbar(im, ax=ax, label="Avg Reach Utilisation (0–1)")
@@ -1285,10 +1324,10 @@ def chart_b4():
         xy=(0.5, -0.06),
         xycoords="axes fraction",
         ha="center",
-        fontsize=7.5,
-        color=GREY,
+        fontsize=FS_MIN,
+        color=MID,
     )
-    fig.text(0.5, -0.02, SOURCE, ha="center", fontsize=7.5, color=GREY)
+    fig.text(0.5, -0.02, SOURCE, ha="center", fontsize=FS_MIN, color=MID)
     fig.tight_layout()
     save_fig(fig, "B4_reach_utilisation_heatmap.png")
 
@@ -1319,14 +1358,17 @@ def chart_b5():
     dept_agg["region_color"] = dept_agg["department"].map(_region_point_color)
 
     fig, ax = plt.subplots(figsize=(11, 6.2))
-    for _region, color, label in [("ORIENTAL", RED, "ORIENTAL"), ("CHACO", BLUE, "CHACO")]:
+    for _region, color, label in [
+        ("ORIENTAL", REGION_COLORS["ORIENTAL"], "ORIENTAL"),
+        ("CHACO", REGION_COLORS["CHACO"], "CHACO"),
+    ]:
         mask = dept_agg["region_color"] == color
         ax.scatter(
             dept_agg.loc[mask, "total_persuasion"],
             dept_agg.loc[mask, "cpp"],
             s=dept_agg.loc[mask, "total_budget"] / 300,
             color=color,
-            edgecolors=CHARCOAL,
+            edgecolors=SURFACE,
             lw=0.5,
             alpha=0.7,
         )
@@ -1339,7 +1381,7 @@ def chart_b5():
         "total_persuasion",
         "cpp",
         "department",
-        fontsize=8,
+        fontsize=FS_MIN,
     )
 
     ax.set_xlabel("Total Persuasion-Adjusted Contacts")
@@ -1369,7 +1411,7 @@ def chart_b6():
         range(len(fx_series)),
         fx_series["tc_ref_pyg_per_usd"],
         marker="o",
-        color=BLUE,
+        color=CAT[0],
         lw=2,
         label="Reference Rate",
     )
@@ -1377,7 +1419,7 @@ def chart_b6():
         range(len(fx_series)),
         fx_series["tc_retail_pyg_per_usd"],
         marker="s",
-        color=RED,
+        color=CAT[1],
         lw=2,
         ls="--",
         label="Retail Rate (w/ spread)",
@@ -1387,13 +1429,14 @@ def chart_b6():
         range(len(fx_series)),
         fx_series["tc_ref_pyg_per_usd"],
         fx_series["tc_retail_pyg_per_usd"],
-        alpha=0.2,
-        color=ORANGE,
-        label="Retail Spread Cost",
+        color=bk.c("var-neg-tint"),
+        zorder=1,
+        # The spread is a cost (a bad variance): var-neg tint, labelled with ▲.
+        label=bk.variance_label("Retail Spread Cost", -1.0),
     )
 
     ax.set_xticks(range(len(fx_series)))
-    ax.set_xticklabels(fx_series["iso_week"], rotation=45, ha="right", fontsize=8)
+    ax.set_xticklabels(fx_series["iso_week"], rotation=45, ha="right", fontsize=FS_MIN)
     ax.set_ylabel("PYG per USD")
     ax.set_title("B6 — FX Rate Series (USD/PYG) over Campaign Weeks")
     ax.legend()
@@ -1425,20 +1468,20 @@ def chart_b7():
     im = ax.imshow(
         vals,
         aspect="auto",
-        cmap=LinearSegmentedColormap.from_list("wr", ["#ffffff", RED]),
+        cmap=scale_cmap("seq", reverse=True),
         vmax=vmax,
     )
     plt.colorbar(im, ax=ax, label="Avg travel time (minutes)")
 
     ax.set_xticks(range(len(piv.columns)))
-    ax.set_xticklabels(piv.columns, rotation=55, ha="right", fontsize=6)
+    ax.set_xticklabels(piv.columns, rotation=55, ha="right", fontsize=FS_MIN)
     ax.set_yticks(range(len(piv.index)))
-    ax.set_yticklabels(piv.index, fontsize=6)
+    ax.set_yticklabels(piv.index, fontsize=FS_MIN)
     ax.set_title(
         "B7 — Routing Cost Matrix: Travel Time by Department Pair\n"
         "(Dry Standard Conditions · every origin→destination labelled)"
     )
-    fig.text(0.5, -0.02, SOURCE, ha="center", fontsize=7.5, color=GREY)
+    fig.text(0.5, -0.02, SOURCE, ha="center", fontsize=FS_MIN, color=MID)
     fig.tight_layout()
     save_fig(fig, "B7_routing_cost_matrix.png")
 
@@ -1473,14 +1516,14 @@ def chart_b8():
     fig, (ax_cap, ax_exp, ax_bud) = plt.subplots(
         3, 1, figsize=(12, 9), sharex=True, gridspec_kw={"hspace": 0.15}
     )
-    ax_cap.bar(x, merged["reach_cap"], color=GREY, alpha=0.8)
-    ax_cap.set_ylabel("Reach Cap\n(unique voters)", fontsize=9)
-    ax_exp.bar(x, merged["total_expected"], color=RED, alpha=0.85)
-    ax_exp.set_ylabel("Expected Contacts\n(multi-channel cumulative)", fontsize=9)
-    ax_bud.plot(list(x), merged["total_budget"], color=BLUE, marker="D", lw=2, ms=6)
-    ax_bud.set_ylabel("Total Budget (USD)", fontsize=9)
+    ax_cap.bar(x, merged["reach_cap"], color=MID)
+    ax_cap.set_ylabel("Reach Cap\n(unique voters)", fontsize=FS_MIN)
+    ax_exp.bar(x, merged["total_expected"], color=ACTUAL)
+    ax_exp.set_ylabel("Expected Contacts\n(multi-channel cumulative)", fontsize=FS_MIN)
+    ax_bud.plot(list(x), merged["total_budget"], color=INK, marker="D", lw=2, ms=6)
+    ax_bud.set_ylabel("Total Budget (USD)", fontsize=FS_MIN)
     ax_bud.set_xticks(list(x))
-    ax_bud.set_xticklabels(merged["department"], rotation=30, ha="right", fontsize=9)
+    ax_bud.set_xticklabels(merged["department"], rotation=30, ha="right", fontsize=FS_MIN)
 
     ax_cap.set_title(
         "B8 — Reach Cap, Expected Contacts, and Budget (Top 10 Departments)\n"
@@ -1492,10 +1535,10 @@ def chart_b8():
         xy=(0.5, -0.42),
         xycoords="axes fraction",
         ha="center",
-        fontsize=7.5,
-        color=GREY,
+        fontsize=FS_MIN,
+        color=MID,
     )
-    fig.text(0.5, -0.015, SOURCE, ha="center", fontsize=7.5, color=GREY)
+    fig.text(0.5, -0.015, SOURCE, ha="center", fontsize=FS_MIN, color=MID)
     fig.tight_layout()
     save_fig(fig, "B8_reach_caps_vs_contacts.png")
 
@@ -1524,7 +1567,7 @@ def chart_c1():
     ax.plot(
         fc["date"],
         fc["posterior_mean_preference_margin_pp"],
-        color=RED,
+        color=HL,
         lw=2.5,
         label="Posterior mean margin (in-sample retrodiction)",
     )
@@ -1532,16 +1575,16 @@ def chart_c1():
         fc["date"],
         fc["posterior_hdi_low_pp"],
         fc["posterior_hdi_high_pp"],
-        alpha=0.22,
-        color=RED,
+        color=HL_TINT,
+        zorder=1,
         label="94% HDI",
     )
-    ax.axhline(0, color=CHARCOAL, lw=1.2, ls="--", label="Toss-up line (0 pp)")
+    ax.axhline(0, color=MID, lw=1.2, ls="--", label="Toss-up line (0 pp)")
     # Verified outcome anchor — the known Series A result the retrodiction is read
     # against. Replaces the previously unlabelled terminal posterior-mean line.
     ax.axhline(
         TSJE_ANCHOR_PP,
-        color=GOLD,
+        color=INK,
         lw=1.5,
         ls=":",
         label=f"Verified TSJE Series A outcome anchor (+{TSJE_ANCHOR_PP:.2f} pp)",
@@ -1562,7 +1605,7 @@ def chart_c1():
     _caption_zone(
         fig,
         "Retrospective reconciliation on fixture polls — in-sample tracking of the known "
-        "2018 Series A outcome that conditions on the verified outcome anchor (gold line); "
+        "2018 Series A outcome that conditions on the verified outcome anchor (dotted ink line); "
         "not a forward forecast and not an out-of-sample forecast. See walk-forward validation for that.",
         bottom=0.24,
     )
@@ -1590,12 +1633,12 @@ def chart_c2():
     hdi_hi = float(last_row["posterior_hdi_high_pp"])
 
     fig, ax = plt.subplots(figsize=(10, 4.4))
-    ax.axvspan(hdi_lo, hdi_hi, color=RED, alpha=0.25, label="94% HDI")
-    ax.axvline(mean_v, color=CHARCOAL, lw=2.5, label=f"Calibrated posterior mean: {mean_v:.1f} pp")
-    ax.axvline(0, color=GREY, lw=1.2, ls="--", label="Toss-up (0 pp)")
+    ax.axvspan(hdi_lo, hdi_hi, color=HL_TINT, label="94% HDI")
+    ax.axvline(mean_v, color=HL, lw=2.5, label=f"Calibrated posterior mean: {mean_v:.1f} pp")
+    ax.axvline(0, color=MID, lw=1.2, ls="--", label="Toss-up (0 pp)")
     ax.axvline(
         TSJE_ANCHOR_PP,
-        color=GOLD,
+        color=INK,
         lw=1.5,
         ls=":",
         label=f"Calibration target m★ (+{TSJE_ANCHOR_PP:.2f} pp, entered likelihood σ=0.5)",
@@ -1610,15 +1653,15 @@ def chart_c2():
         f"C2 — Calibrated Terminal Posterior Margin (mean + 94% HDI)\n"
         f"({last_date.strftime('%d %b %Y')})"
     )
-    ax.legend(fontsize=9, loc="upper left")
+    ax.legend(fontsize=FS_MIN, loc="upper left")
     ax.annotate(
         "Terminal margin is pinned to the verified outcome anchor (σ=0.5 pp) — "
         "proximity to m★ is by construction, not out-of-sample validation.",
         xy=(0.5, -0.3),
         xycoords="axes fraction",
         ha="center",
-        fontsize=7.5,
-        color=GREY,
+        fontsize=FS_MIN,
+        color=MID,
     )
     annotate_source(ax)
     fig.tight_layout()
@@ -1634,7 +1677,7 @@ def chart_c3():
     bg = battleground.sort_values("win_probability_a", ascending=True)
     _has_hdi = {"hdi_low", "hdi_high"} <= set(bg.columns)
 
-    colors = [RED if p >= 0.5 else BLUE for p in bg["win_probability_a"]]
+    colors = [CAND_A if p >= 0.5 else CAND_B for p in bg["win_probability_a"]]
 
     fig, ax = plt.subplots(figsize=(10, 7))
     y_pos = np.arange(len(bg))
@@ -1650,14 +1693,14 @@ def chart_c3():
         y_pos,
         bg["win_probability_a"],
         color=colors,
-        edgecolor=WHITE,
+        edgecolor=SURFACE,
         lw=0.4,
         xerr=xerr,
-        error_kw=dict(ecolor=CHARCOAL, capsize=2, linewidth=1.0, elinewidth=1.0),
+        error_kw=dict(ecolor=INK, capsize=2, linewidth=1.0, elinewidth=1.0),
     )
     ax.set_yticks(y_pos)
     ax.set_yticklabels(bg["department"])
-    ax.axvline(0.5, color=CHARCOAL, lw=1.5, ls="--", label="50% threshold")
+    ax.axvline(0.5, color=INK, lw=1.5, ls="--", label="50% threshold")
 
     for bar, val in zip(bars, bg["win_probability_a"].values):
         label = "≥99%" if val >= 0.999 else f"{val:.1%}"
@@ -1666,14 +1709,14 @@ def chart_c3():
             bar.get_y() + bar.get_height() / 2,
             label,
             va="center",
-            fontsize=9,
+            fontsize=FS_MIN,
         )
 
-    red_patch = mpatches.Patch(color=RED, label="Candidate A favoured")
-    blue_patch = mpatches.Patch(color=BLUE, label="Candidate B favoured")
+    red_patch = mpatches.Patch(color=CAND_A, label="Candidate A favoured")
+    blue_patch = mpatches.Patch(color=CAND_B, label="Candidate B favoured")
     ax.legend(
-        handles=[red_patch, blue_patch, plt.Line2D([0], [0], color=CHARCOAL, ls="--", label="50%")],
-        fontsize=9,
+        handles=[red_patch, blue_patch, plt.Line2D([0], [0], color=INK, ls="--", label="50%")],
+        fontsize=FS_MIN,
     )
     ax.set_xlim(0, 1.08)
     ax.set_xlabel("P(Win — Candidate A)")
@@ -1713,14 +1756,12 @@ def chart_c4():
     y = range(len(he))
 
     ax.scatter(
-        he["house_effect_posterior_mean"], y, s=80, color=RED, zorder=3, label="Posterior Mean"
+        he["house_effect_posterior_mean"], y, s=80, color=INK, zorder=3, label="Posterior Mean"
     )
     for i, row in enumerate(he.itertuples()):
-        ax.hlines(
-            i, row.house_effect_hdi_low, row.house_effect_hdi_high, color=BLUE, lw=3, alpha=0.6
-        )
+        ax.hlines(i, row.house_effect_hdi_low, row.house_effect_hdi_high, color=MID, lw=3)
 
-    ax.axvline(0, color=CHARCOAL, lw=1.5, ls="--", label="Zero effect")
+    ax.axvline(0, color=INK, lw=1.5, ls="--", label="Zero effect")
     ax.set_yticks(list(y))
     ax.set_yticklabels(he["pollster_id"])
     ax.set_xlabel("House Effect (pp bias toward Candidate A)")
@@ -1749,12 +1790,11 @@ def chart_c5():
     SYNTHETIC_BUCKET = "compounded_herd"
 
     def _bucket_color(b: str) -> str:
+        # One highlight: the synthetic prior is the bucket the chart calls out;
+        # every empirical bucket is the actual grey (named on the x axis).
         if b == SYNTHETIC_BUCKET:
-            return GOLD
-        empirical_palette = [RED, BLUE, GREEN, PURPLE]
-        empirical_buckets = [x for x in buckets if x != SYNTHETIC_BUCKET]
-        idx = empirical_buckets.index(b) if b in empirical_buckets else 0
-        return empirical_palette[idx % len(empirical_palette)]
+            return HL
+        return ACTUAL
 
     colors = [_bucket_color(b) for b in buckets]
     series = [
@@ -1765,13 +1805,12 @@ def chart_c5():
     fig, ax = plt.subplots(figsize=(11, 6))
     bp = ax.boxplot(series, positions=positions, widths=0.5, showfliers=False, patch_artist=True)
     for patch, color in zip(bp["boxes"], colors):
-        patch.set_facecolor(color)
-        patch.set_alpha(0.35)
+        patch.set_facecolor(SURFACE)
+        patch.set_edgecolor(color)
     rng = np.random.default_rng(42)
     for pos, vals, color, bucket in zip(positions, series, colors, buckets):
         jitter = (rng.random(len(vals)) - 0.5) * 0.3
-        alpha = 0.6 if bucket == SYNTHETIC_BUCKET else 0.35
-        ax.scatter(np.full(len(vals), pos) + jitter, vals, s=6, color=color, alpha=alpha, zorder=3)
+        ax.scatter(np.full(len(vals), pos) + jitter, vals, s=6, color=color, zorder=3)
 
     ax.set_xticks(positions)
     ax.set_xticklabels(buckets, rotation=20, ha="right")
@@ -1780,14 +1819,13 @@ def chart_c5():
 
     # Legend distinguishing synthetic vs empirical
     empirical_patch = mpatches.Patch(
-        color=CHARCOAL, alpha=0.5, label="Empirical tracking scenarios (baseline, extreme_tracker)"
+        color=ACTUAL, label="Empirical tracking scenarios (baseline, extreme_tracker)"
     )
     synthetic_patch = mpatches.Patch(
-        color=GOLD,
-        alpha=0.8,
+        color=HL,
         label="compounded_herd: synthetic LogNormal prior (NOT tracking-sample)",
     )
-    ax.legend(handles=[empirical_patch, synthetic_patch], fontsize=8, loc="upper right")
+    ax.legend(handles=[empirical_patch, synthetic_patch], fontsize=FS_MIN, loc="upper right")
 
     ax.set_title(
         "C5 — Shock Scale by Scenario Bucket\n"
@@ -1799,8 +1837,8 @@ def chart_c5():
         xy=(0.5, -0.28),
         xycoords="axes fraction",
         ha="center",
-        fontsize=7.5,
-        color=GREY,
+        fontsize=FS_MIN,
+        color=MID,
     )
     ax.annotate(
         "B→C handshake note: alloc_mean_persuasion_contacts is scenario-invariant — "
@@ -1809,8 +1847,8 @@ def chart_c5():
         xy=(0.5, -0.40),
         xycoords="axes fraction",
         ha="center",
-        fontsize=7.5,
-        color=GREY,
+        fontsize=FS_MIN,
+        color=MID,
     )
     annotate_source(ax)
     fig.tight_layout()
@@ -1830,12 +1868,12 @@ def chart_c6():
     explicit dotted marker at each actual point mass instead.
     """
     buckets = mc_draws["scenario_bucket"].unique()
-    bucket_colors = dict(zip(buckets, [RED, BLUE, GREEN, ORANGE, PURPLE]))
+    bucket_colors = dict(zip(buckets, bk.palette("categorical", len(buckets))))
 
     fig, ax = plt.subplots(figsize=(10, 5))
     for bucket in buckets:
         data = mc_draws.loc[mc_draws["scenario_bucket"] == bucket, "shock_scale"].to_numpy()
-        color = bucket_colors.get(bucket, GREY)
+        color = bucket_colors.get(bucket, MID)
         ax.hist(data, bins=40, density=True, alpha=0.35, color=color, label=bucket)
         # Mark the discrete point mass(es) honestly instead of KDE-smoothing them.
         for value in np.unique(data)[:6]:
@@ -1853,8 +1891,8 @@ def chart_c6():
         xy=(0.5, -0.24),
         xycoords="axes fraction",
         ha="center",
-        fontsize=7.5,
-        color=GREY,
+        fontsize=FS_MIN,
+        color=MID,
     )
     annotate_source(ax)
     fig.tight_layout()
@@ -1884,7 +1922,7 @@ def chart_c5b():
     work = mc_draws.assign(_eff=metric)
     buckets = list(work["scenario_bucket"].unique())
     series = [work.loc[work["scenario_bucket"] == b, "_eff"].to_numpy() for b in buckets]
-    colors = [[RED, BLUE, GREEN, ORANGE, PURPLE][i % 5] for i in range(len(buckets))]
+    colors = bk.palette("categorical", len(buckets))
 
     fig, ax = plt.subplots(figsize=(11, 5))
     parts = ax.violinplot(series, showmeans=True, showextrema=True)
@@ -1907,8 +1945,8 @@ def chart_c5b():
         xy=(0.5, -0.30),
         xycoords="axes fraction",
         ha="center",
-        fontsize=7.0,
-        color=GREY,
+        fontsize=FS_MIN,
+        color=MID,
     )
     annotate_source(ax)
     fig.tight_layout()
@@ -1926,12 +1964,12 @@ def chart_c7():
     fig, ax = plt.subplots(figsize=(9, 4))
     y = range(len(exit_plot))
     ax.scatter(
-        exit_plot["posterior_mean"], list(y), s=80, color=RED, zorder=3, label="Posterior Mean"
+        exit_plot["posterior_mean"], list(y), s=80, color=INK, zorder=3, label="Posterior Mean"
     )
     for i, row in enumerate(exit_plot.itertuples()):
-        ax.hlines(i, row.hdi_low, row.hdi_high, color=BLUE, lw=3, alpha=0.6)
+        ax.hlines(i, row.hdi_low, row.hdi_high, color=MID, lw=3)
 
-    ax.axvline(0, color=CHARCOAL, lw=1.5, ls="--", label="Zero")
+    ax.axvline(0, color=INK, lw=1.5, ls="--", label="Zero")
     ax.set_yticks(list(y))
     ax.set_yticklabels(exit_plot["parameter"])
     ax.set_xlabel("Posterior Mean (pp)")
@@ -1959,13 +1997,15 @@ def chart_c9():
     )
 
     for _, row in he_merged.iterrows():
-        color = RED if abs(row["house_effect_posterior_mean"]) > 3 else BLUE
+        # High bias risk is a bad variance (var-neg, ▲ in the legend); the rest
+        # stay the actual grey.
+        color = VAR_NEG if abs(row["house_effect_posterior_mean"]) > 3 else ACTUAL
         ax.scatter(
             row["mean_phi_transparency"],
             abs(row["house_effect_posterior_mean"]),
             s=200,
             color=color,
-            edgecolors=CHARCOAL,
+            edgecolors=SURFACE,
             lw=0.8,
             zorder=3,
         )
@@ -1986,8 +2026,8 @@ def chart_c9():
     )
     ax.set_xlim(-0.05, 1.15)
 
-    red_p = mpatches.Patch(color=RED, label="|HE| > 3 pp (high bias risk)")
-    blue_p = mpatches.Patch(color=BLUE, label="|HE| <= 3 pp (moderate)")
+    red_p = mpatches.Patch(color=VAR_NEG, label="▲ |HE| > 3 pp (high bias risk)")
+    blue_p = mpatches.Patch(color=ACTUAL, label="|HE| <= 3 pp (moderate)")
     ax.legend(handles=[red_p, blue_p])
     ax.annotate(
         f"n = {n_pollsters} pollsters — far too few to infer a transparency-bias relationship; "
@@ -1995,8 +2035,8 @@ def chart_c9():
         xy=(0.5, -0.2),
         xycoords="axes fraction",
         ha="center",
-        fontsize=7.5,
-        color=GREY,
+        fontsize=FS_MIN,
+        color=MID,
     )
     annotate_source(ax)
     fig.tight_layout()
@@ -2019,7 +2059,7 @@ def chart_c10():
     ].median()
 
     buckets = mc_draws["scenario_bucket"].unique()
-    bucket_colors = dict(zip(buckets, [RED, BLUE, GREEN, ORANGE, PURPLE]))
+    bucket_colors = dict(zip(buckets, bk.palette("categorical", len(buckets))))
 
     fig, ax = plt.subplots(figsize=(10, 5))
     for bucket in buckets:
@@ -2029,15 +2069,15 @@ def chart_c10():
             bins=40,
             density=True,
             alpha=0.5,
-            color=bucket_colors.get(bucket, GREY),
+            color=bucket_colors.get(bucket, MID),
             label=f"{bucket} (n={len(sub):,})",
-            edgecolor=WHITE,
+            edgecolor=SURFACE,
             lw=0.3,
         )
 
     ax.axvline(
         baseline_median,
-        color=CHARCOAL,
+        color=INK,
         lw=2,
         ls="--",
         label=f"Baseline median: {baseline_median:.3f}",
@@ -2055,8 +2095,8 @@ def chart_c10():
         xy=(0.5, -0.22),
         xycoords="axes fraction",
         ha="center",
-        fontsize=7.5,
-        color=GREY,
+        fontsize=FS_MIN,
+        color=MID,
     )
     annotate_source(ax)
     fig.tight_layout()
@@ -2097,14 +2137,14 @@ def chart_s1():
     pivot_s1 = pivot_s1.reindex(row_order)
 
     fig, ax = plt.subplots(figsize=(16, 6))
-    cmap = LinearSegmentedColormap.from_list("wred", ["#ffffff", RED])
+    cmap = scale_cmap("seq", reverse=True)
     im = ax.imshow(pivot_s1.values, aspect="auto", cmap=cmap)
     plt.colorbar(im, ax=ax, label="Allocated Budget (USD, prorated by segment size)")
 
     ax.set_xticks(range(len(pivot_s1.columns)))
-    ax.set_xticklabels(pivot_s1.columns, rotation=45, ha="right", fontsize=8)
+    ax.set_xticklabels(pivot_s1.columns, rotation=45, ha="right", fontsize=FS_MIN)
     ax.set_yticks(range(len(pivot_s1.index)))
-    ax.set_yticklabels([s.replace("_", "\n") for s in pivot_s1.index], fontsize=9)
+    ax.set_yticklabels([s.replace("_", "\n") for s in pivot_s1.index], fontsize=FS_MIN)
 
     for i in range(pivot_s1.shape[0]):
         for j in range(pivot_s1.shape[1]):
@@ -2116,15 +2156,15 @@ def chart_s1():
                     f"${val:,.0f}",
                     ha="center",
                     va="center",
-                    fontsize=6.5,
-                    color=WHITE if val > pivot_s1.values.max() * 0.6 else CHARCOAL,
+                    fontsize=FS_MIN,
+                    color=SURFACE if val > pivot_s1.values.max() * 0.6 else INK,
                 )
 
     ax.set_title(
         "S1 — Segment × Department Budget Allocation Matrix\n"
         "Note: budget prorated by segment headcount within dept — reflects population distribution, not targeted allocation"
     )
-    fig.text(0.5, -0.02, SOURCE, ha="center", fontsize=7.5, color=GREY)
+    fig.text(0.5, -0.02, SOURCE, ha="center", fontsize=FS_MIN, color=MID)
     fig.tight_layout()
     save_fig(fig, "S1_segment_budget_heatmap.png")
 
@@ -2150,7 +2190,7 @@ def chart_s2():
 
     fig, ax = plt.subplots(figsize=(10, 7))
     for _, row in seg_agg.iterrows():
-        color = SEG_COLORS.get(row["segment_label"], GREY)
+        color = SEG_COLORS.get(row["segment_label"], MID)
         ax.scatter(
             row["mean_reach"],
             row["mean_propensity"],
@@ -2159,7 +2199,7 @@ def chart_s2():
             # Redundant non-color encoding (IMP-V01): marker shape carries
             # segment identity alongside the direct label.
             marker=SEGMENT_MARKERS.get(row["segment_label"], "o"),
-            edgecolors=CHARCOAL,
+            edgecolors=SURFACE,
             lw=0.7,
             alpha=0.85,
             zorder=3,
@@ -2169,13 +2209,13 @@ def chart_s2():
             (row["mean_reach"], row["mean_propensity"]),
             textcoords="offset points",
             xytext=(8, 4),
-            fontsize=9,
+            fontsize=FS_MIN,
             color=color,
             fontweight="bold",
         )
 
-    ax.axvline(med_reach, color=GREY, lw=1, ls="--")
-    ax.axhline(med_prop, color=GREY, lw=1, ls="--")
+    ax.axvline(med_reach, color=MID, lw=1, ls="--")
+    ax.axhline(med_prop, color=MID, lw=1, ls="--")
 
     # Quadrant labels derived from quadrant position (AUD-S2 / IMP-V05 /
     # issue #69): the text is computed from the same (reach, propensity)
@@ -2197,8 +2237,8 @@ def chart_s2():
                 transform=ax.transAxes,
                 ha="right" if reach_high else "left",
                 va="top" if prop_high else "bottom",
-                fontsize=8,
-                color=GREY,
+                fontsize=FS_MIN,
+                color=MID,
                 style="italic",
                 zorder=1,
             )
@@ -2216,8 +2256,8 @@ def chart_s2():
         xycoords="axes fraction",
         ha="center",
         va="bottom",
-        fontsize=7.5,
-        color=GREY,
+        fontsize=FS_MIN,
+        color=MID,
     )
     annotate_source(ax)
     fig.tight_layout()
@@ -2248,10 +2288,10 @@ def chart_s3():
     fig, ax = plt.subplots(figsize=(12, 6))
     x = np.arange(len(pivot_s3.index))
     w = 0.8 / max(len(pivot_s3.columns), 1)
-    region_colors = {"ORIENTAL": RED, "CHACO": BLUE, "METRO": GOLD}
+    region_colors = REGION_COLORS
 
     for i, reg in enumerate(pivot_s3.columns):
-        color = region_colors.get(reg, GREY)
+        color = region_colors.get(reg, MID)
         offset = (i - len(pivot_s3.columns) / 2 + 0.5) * w
         bars = ax.bar(
             x + offset,
@@ -2260,12 +2300,12 @@ def chart_s3():
             color=color,
             alpha=0.8,
             label=reg,
-            edgecolor=WHITE,
+            edgecolor=SURFACE,
             lw=0.3,
         )
 
     ax.set_xticks(x)
-    ax.set_xticklabels(pivot_s3.index, rotation=35, ha="right", fontsize=9)
+    ax.set_xticklabels(pivot_s3.index, rotation=35, ha="right", fontsize=FS_MIN)
     ax.set_ylabel("Persuasion Contacts per USD (ROI Proxy)")
     ax.set_title("S3 — Media Channel ROI Proxy by Region\n(Persuasion-Adjusted Contacts per USD)")
     ax.legend(title="Region")
@@ -2276,8 +2316,8 @@ def chart_s3():
         xy=(0.5, -0.20),
         xycoords="axes fraction",
         ha="center",
-        fontsize=7.5,
-        color=GREY,
+        fontsize=FS_MIN,
+        color=MID,
     )
     annotate_source(ax)
     fig.tight_layout()
@@ -2310,8 +2350,8 @@ def chart_s4():
         merged_s4["mean_propensity"],
         s=np.sqrt(merged_s4["budget_allocation_usd"].fillna(100)) * 3,
         c=merged_s4["priority_score"],
-        cmap=LinearSegmentedColormap.from_list("wred", ["#cccccc", RED]),
-        edgecolors=CHARCOAL,
+        cmap=scale_cmap("seq", reverse=True),
+        edgecolors=SURFACE,
         lw=0.6,
         alpha=0.9,
         zorder=3,
@@ -2323,7 +2363,7 @@ def chart_s4():
             (row["win_probability_a"], row["mean_propensity"]),
             textcoords="offset points",
             xytext=(5, 3),
-            fontsize=8,
+            fontsize=FS_MIN,
         )
 
     plt.colorbar(
@@ -2331,9 +2371,9 @@ def chart_s4():
         ax=ax,
         label="Priority Score (win_prob × propensity — budget removed to avoid circularity)",
     )
-    ax.axvline(0.5, color=GREY, lw=1.2, ls="--", label="50% win threshold")
+    ax.axvline(0.5, color=MID, lw=1.2, ls="--", label="50% win threshold")
     ax.axhline(
-        merged_s4["mean_propensity"].median(), color=GREY, lw=1, ls="--", label="Median propensity"
+        merged_s4["mean_propensity"].median(), color=MID, lw=1, ls="--", label="Median propensity"
     )
     ax.set_xlabel("P(Win — Candidate A)")
     ax.set_ylabel("Mean Participation Propensity")
@@ -2346,10 +2386,10 @@ def chart_s4():
         xy=(0.5, -0.22),
         xycoords="axes fraction",
         ha="center",
-        fontsize=7.5,
-        color=GREY,
+        fontsize=FS_MIN,
+        color=MID,
     )
-    ax.legend(fontsize=8, loc="lower right")
+    ax.legend(fontsize=FS_MIN, loc="lower right")
     annotate_source(ax)
     fig.tight_layout()
     save_fig(fig, "S4_department_priority_matrix.png")
@@ -2372,7 +2412,7 @@ def chart_s5():
     )
 
     dept_eff = dept_eff[dept_eff["total_budget"] > 0]
-    # Assign region color (ORIENTAL=RED, CHACO=BLUE) — size already encodes budget
+    # Assign region color (REGION_COLORS) — size already encodes budget
     dept_eff = dept_eff.copy()
     dept_eff["region_color"] = dept_eff["department"].map(_region_point_color)
 
@@ -2381,14 +2421,17 @@ def chart_s5():
     # 400 -> 900: the dominant Central bubble previously sprawled off the
     # top-left plot edge and behind the legend. Axis headroom is added below
     # so no bubble is clipped.
-    for _region, color, label in [("ORIENTAL", RED, "ORIENTAL"), ("CHACO", BLUE, "CHACO")]:
+    for _region, color, label in [
+        ("ORIENTAL", REGION_COLORS["ORIENTAL"], "ORIENTAL"),
+        ("CHACO", REGION_COLORS["CHACO"], "CHACO"),
+    ]:
         mask = dept_eff["region_color"] == color
         ax.scatter(
             dept_eff.loc[mask, "mean_reach_util"],
             dept_eff.loc[mask, "total_persuasion"],
             s=dept_eff.loc[mask, "total_budget"] / 900,
             color=color,
-            edgecolors=CHARCOAL,
+            edgecolors=SURFACE,
             lw=0.6,
             alpha=0.7,
         )
@@ -2401,7 +2444,7 @@ def chart_s5():
         "mean_reach_util",
         "total_persuasion",
         "department",
-        fontsize=8,
+        fontsize=FS_MIN,
     )
 
     # Descriptive OLS trend — NOT a Pareto / efficiency frontier (which would be
@@ -2411,7 +2454,7 @@ def chart_s5():
     ax.plot(
         xf,
         np.polyval(coeffs, xf),
-        color=CHARCOAL,
+        color=INK,
         lw=1.2,
         ls="--",
         alpha=0.6,
@@ -2432,9 +2475,7 @@ def chart_s5():
     # Fixed-size legend markers (a scatter with an array ``s`` otherwise sizes
     # the swatch from the giant Central bubble, which then sat behind the legend).
     s5_handles = _region_legend_handles() + [
-        plt.Line2D(
-            [0], [0], color=CHARCOAL, ls="--", lw=1.2, label="OLS linear trend (descriptive)"
-        ),
+        plt.Line2D([0], [0], color=INK, ls="--", lw=1.2, label="OLS linear trend (descriptive)"),
     ]
     ax.legend(handles=s5_handles, loc="upper left")
     _caption_zone(
@@ -2471,14 +2512,14 @@ def chart_c8_v2():
     ax_tbl = fig.add_subplot(gs[0, 1])
     ax_tbl.axis("off")
 
-    region_colors = {"ORIENTAL": BLUE, "CHACO": ORANGE}
+    region_colors = {k: REGION_COLORS[k] for k in ("ORIENTAL", "CHACO")}
     for region, grp in merged.groupby("region"):
         ax.scatter(
             grp["mean_propensity"],
             grp["win_probability_a"],
             s=90,
-            color=region_colors.get(region, GREY),
-            edgecolors=CHARCOAL,
+            color=region_colors.get(region, MID),
+            edgecolors=SURFACE,
             lw=0.6,
             alpha=0.9,
             label=region.title(),
@@ -2487,8 +2528,8 @@ def chart_c8_v2():
 
     _stagger_annotate(ax, merged, "mean_propensity", "win_probability_a", "department")
     mean_wp = merged["win_probability_a"].mean()
-    ax.axhline(0.5, color=CHARCOAL, lw=1.2, ls="--", label="50% threshold")
-    ax.axhline(mean_wp, color=GREY, lw=1.0, ls=":", label=f"Mean win prob ({mean_wp:.1%})")
+    ax.axhline(0.5, color=INK, lw=1.2, ls="--", label="50% threshold")
+    ax.axhline(mean_wp, color=MID, lw=1.0, ls=":", label=f"Mean win prob ({mean_wp:.1%})")
     wp = merged["win_probability_a"]
     # Full [0,1] axis: do not zoom into a sub-pp band that amplifies noise.
     ax.set_ylim(0, 1)
@@ -2498,7 +2539,7 @@ def chart_c8_v2():
         "C8v2 — Win Probability vs Participation Propensity by Department\n"
         f"({ILLUSTRATIVE_BATTLE_SUB})"
     )
-    ax.legend(fontsize=8, loc="lower right")
+    ax.legend(fontsize=FS_MIN, loc="lower right")
 
     tbl_rows = [
         [
@@ -2516,11 +2557,11 @@ def chart_c8_v2():
         cellLoc="left",
     )
     table.auto_set_font_size(False)
-    table.set_fontsize(8)
+    table.set_fontsize(FS_MIN)
     table.scale(1.0, 1.15)
     ax_tbl.set_title("Ranked by Propensity", fontsize=11, fontweight="bold", pad=12)
 
-    fig.text(0.5, 0.01, SOURCE, ha="center", fontsize=7.5, color=GREY)
+    fig.text(0.5, 0.01, SOURCE, ha="center", fontsize=FS_MIN, color=MID)
     fig.suptitle("Department-Level Electoral Intelligence", fontsize=14, fontweight="bold", y=0.98)
     fig.tight_layout(rect=(0, 0.03, 1, 0.94))
     save_fig(fig, "C8_v2.png")
@@ -2540,13 +2581,13 @@ def _overview_nbi_panel(ax10):
             sub["participation_propensity"],
             s=8,
             alpha=0.35,
-            color=SEG_COLORS.get(seg, GREY),
+            color=SEG_COLORS.get(seg, MID),
             label=seg.replace("_", " ")[:12],
         )
     ax10.set_title("NBI Stress vs Participation", fontsize=10)
     ax10.set_xlabel("NBI stress prior")
     ax10.set_ylabel("Propensity")
-    ax10.legend(fontsize=6, loc="upper right")
+    ax10.legend(fontsize=FS_MIN, loc="upper right")
 
 
 @safe_chart("OVERVIEW")
@@ -2563,20 +2604,20 @@ def chart_eda_overview():
     # 1 — segment sizes
     ax1 = fig.add_subplot(gs[0, 0])
     counts = pop["segment_label"].value_counts().reindex(SEG_ORDER, fill_value=0)
-    colors = [SEG_COLORS.get(s, GREY) for s in counts.index]
-    ax1.barh(counts.index, counts.values, color=colors, edgecolor=WHITE, lw=0.4)
+    colors = [SEG_COLORS.get(s, MID) for s in counts.index]
+    ax1.barh(counts.index, counts.values, color=colors, edgecolor=SURFACE, lw=0.4)
     ax1.set_title("Population Segments", fontsize=10)
     ax1.set_xlabel("# Records")
     ax1.invert_yaxis()
 
     # 2 — age by gender
     ax2 = fig.add_subplot(gs[0, 1])
-    for gender, color in [("F", RED), ("M", BLUE)]:
+    for gender, color in [("F", CAT[0]), ("M", CAT[1])]:
         ages = pop.loc[pop["gender"] == gender, "age_on_event_date"].dropna()
         ax2.hist(ages, bins=30, alpha=0.45, color=color, label=gender, density=True)
     ax2.set_title("Age Distribution by Gender", fontsize=10)
     ax2.set_xlabel("Age")
-    ax2.legend(fontsize=8)
+    ax2.legend(fontsize=FS_MIN)
 
     # 3 — propensity by segment
     ax3 = fig.add_subplot(gs[0, 2])
@@ -2587,7 +2628,7 @@ def chart_eda_overview():
         seg_props, vert=True, patch_artist=True, labels=[s.replace("_", "\n") for s in SEG_ORDER]
     )
     for patch, seg in zip(bp["boxes"], SEG_ORDER):
-        patch.set_facecolor(SEG_COLORS.get(seg, GREY))
+        patch.set_facecolor(SEG_COLORS.get(seg, MID))
         patch.set_alpha(0.65)
     ax3.set_title("Participation Propensity by Segment", fontsize=10)
     ax3.set_ylabel("Propensity")
@@ -2608,11 +2649,11 @@ def chart_eda_overview():
         )
     ax4.set_xticks(x)
     ax4.set_xticklabels(
-        [s.replace("_", "\n") for s in SEG_ORDER], rotation=0, ha="center", fontsize=6
+        [s.replace("_", " ") for s in SEG_ORDER], rotation=30, ha="right", fontsize=FS_MIN
     )
     ax4.set_title("Media Penetration by Segment", fontsize=10)
     ax4.set_ylabel("Mean rate")
-    ax4.legend(fontsize=7)
+    ax4.legend(fontsize=FS_MIN)
 
     # 5 — reachability tiers (bar, counts with shares)
     ax5 = fig.add_subplot(gs[1, 1])
@@ -2620,8 +2661,8 @@ def chart_eda_overview():
     ax5.barh(
         [f"{k} ({v/len(pop):.1%})" for k, v in tier_counts.items()],
         tier_counts.values,
-        color=[RED, BLUE, GREEN][: len(tier_counts)],
-        edgecolor=WHITE,
+        color=bk.palette("categorical", 3)[: len(tier_counts)],
+        edgecolor=SURFACE,
         lw=0.4,
     )
     ax5.set_title("Reachability Tiers", fontsize=10)
@@ -2637,11 +2678,11 @@ def chart_eda_overview():
         "Empirical population inputs plus the Module A participation-propensity output (panel 3). "
         "Model outputs: C1–C10 (forecast / win-probability / Monte-Carlo) are shown separately.",
         ha="center",
-        fontsize=9,
-        color=CHARCOAL,
+        fontsize=FS_MIN,
+        color=INK,
         fontstyle="italic",
     )
-    fig.text(0.5, 0.01, SOURCE, ha="center", fontsize=7.5, color=GREY)
+    fig.text(0.5, 0.01, SOURCE, ha="center", fontsize=FS_MIN, color=MID)
     fig.tight_layout(rect=(0, 0.05, 1, 0.96))
     save_fig(fig, "eda_overview.png")
 
