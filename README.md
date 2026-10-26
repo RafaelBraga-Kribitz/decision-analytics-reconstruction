@@ -143,14 +143,18 @@ allocation — not a causal counterfactual.
 |---|---|---|
 | TSJE 2018 final results | Margin **+3.70 pp**; national turnout **61.25%**; department roll counts | **VERIFIED** |
 | DGEEC 2012 census / 2018 estimates | Rural share, language, age structure | **VERIFIED** (aggregates) |
-| INE 2018 ICT household survey | Urban/rural internet and WhatsApp penetration | **VERIFIED** (aggregates) |
+| INE EPHC 2018 household survey | Urban/rural internet and WhatsApp penetration | **VERIFIED** (aggregates) |
+| geoBoundaries PRY ADM1 (CC BY 4.0) | Department boundaries for the battleground map | **VERIFIED** (geometry) |
 | Eight published 2018 tracking polls | Tracking likelihood; outlet/date/figures checkable | **VERIFIED** (those columns) |
 | Synthetic 50,000-row voter file | Individual records; no real person is represented | **SIMULATED** / **CALIBRATED** at anchored aggregates |
 | Module B allocation and routing | Solver output on the $6M envelope | **SIMULATED** |
 | Module C daily posterior and MC draws | Sparse-fixture tracking and shock scenarios | **ILLUSTRATIVE** |
+| BCP exchange rate, retail FX spread, channel unit costs, department population | Module B cost and reach inputs | **PRIOR, not yet verified** (hand-set placeholders) |
 
-BCP 2018Q1 FX corridor priors feed Module B's FX layer. Full artifact register:
-[`reports/epistemic_boundaries.md`](reports/epistemic_boundaries.md).
+Every source with its origin, licence, date and verification status, including the four
+PRIOR inputs above:
+[Data Source Register](reports/epistemic_boundaries.md#data-source-register). Where an origin
+URL or access date is not yet recorded, the register says so.
 
 ## Validation
 
