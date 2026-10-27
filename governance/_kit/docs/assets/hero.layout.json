@@ -1,74 +1,88 @@
 {
-  "output": "C:\\Users\\Benutzer1\\Dev\\portfolio-readme-work\\governance-bootstrap\\docs\\assets\\hero.png",
+  "output": "hero.png",
   "width": 1600,
   "height": 640,
   "mode": "light",
-  "fonts": "Söhne from C:\\Users\\Benutzer1\\Dev\\braga-design-system-template\\public\\fonts",
+  "fonts": "BKribitz (design-system checkout)",
+  "design_system": "braga 2.1.0 (D-051)",
+  "status_state": "complete",
   "title_size": 112,
-  "descriptor_size": 36,
+  "descriptor_size": 34,
   "attempts": 1,
   "blocks": {
-    "kind": {
+    "wordmark": {
       "bbox": [
         72,
         72,
-        344,
-        104
+        180,
+        107
       ],
       "lines": [
-        "BRAGA · FRAMEWORK"
+        "BRAGA"
       ],
-      "font": "SohneMono-Buch.otf"
+      "font": "BKribitz-800.woff2"
+    },
+    "kind": {
+      "bbox": [
+        194,
+        76,
+        372,
+        106
+      ],
+      "lines": [
+        "·  FRAMEWORK"
+      ],
+      "font": "BKribitzMono-400.woff2"
     },
     "status": {
       "bbox": [
-        1368,
-        72,
+        1380,
+        76,
         1528,
-        104
+        106
       ],
       "lines": [
         "MAINTAINED"
       ],
-      "font": "SohneMono-Buch.otf"
+      "font": "BKribitzMono-400.woff2"
     },
     "facts": {
       "bbox": [
         72,
-        542,
-        1032,
-        570
+        538,
+        1178,
+        568
       ],
       "lines": [
         "LICENSE  MIT  ·  REPO  github.com/RafaelBraga-Kribitz/governance-bootstrap"
       ],
-      "font": "SohneMono-Buch.otf"
+      "font": "BKribitzMono-400.woff2"
     },
     "title": {
       "bbox": [
         72,
         160,
-        1269,
-        274
+        1286,
+        277
       ],
       "lines": [
         "governance-bootstrap"
       ],
-      "font": "Sohne-Fett.otf"
+      "font": "BKribitz-700.woff2"
     },
     "descriptor": {
       "bbox": [
         72,
-        302,
-        1146,
-        446
+        309,
+        1024,
+        450
       ],
       "lines": [
-        "A vendorable governance kit: YAML findings that ratchet from open",
-        "gap to CI-enforced gate, synced bidirectionally to every consumer",
-        "project."
+        "A vendorable governance kit: YAML findings that ratchet from",
+        "open gap to CI-enforced gate, synced bidirectionally to",
+        "every consumer project."
       ],
-      "font": "Sohne-Buch.otf"
+      "font": "BKribitz-400.woff2"
     }
   },
   "guardrails": [
@@ -78,7 +92,8 @@
     "no-overlap",
     "glyph-coverage-per-char",
     "contrast>=4.5",
-    "pixel-scan"
+    "pixel-scan",
+    "no-accent"
   ],
   "validated": true
 }
