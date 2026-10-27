@@ -29,6 +29,24 @@ import plotly.express as px
 from plotly.subplots import make_subplots
 from IPython.display import display, HTML
 
+# Braga design system v2.1 (bk-viz, D-053): every chart below takes the bk plotly
+# template and colours only through roles; no hex literal in this report.
+import bk_theme as bk
+
+bk.apply("light")
+BK_TEMPLATE = bk.plotly_template(set_default=True)
+INK, INK2, MID = bk.c("ink"), bk.c("ink-2"), bk.c("mid")
+SURFACE, SURFACE2 = bk.c("surface"), bk.c("surface-2")
+HL, HL_TINT = bk.c("hl"), bk.c("hl-8")
+CAND_A, CAND_B = bk.c("cat-1"), bk.c("cat-2")
+# P(A wins) is two-sided around a real midpoint, the 50% tie: the full `two`
+# scale (ochre = B side, ultramarine = A side; neither side is good), as one
+# smooth gradient over all 13 stops, anchored at 0.5 (cmid) on a fixed [0, 1]
+# range, never normalised to the data's own min and max.
+_TWO = bk.palette("two", reverse=True)
+WINPROB_SCALE = [[i / (len(_TWO) - 1), col] for i, col in enumerate(_TWO)]
+TYPE_FLOOR_PX = 12
+
 # Data root: set MODULE_C_OUT_DIR at render time (CI injects repo-relative or absolute).
 # Quarto may execute with cwd beside this .qmd — anchor relative paths at repo root.
 def _find_repo_root() -> Path:
@@ -154,8 +172,8 @@ if daily is not None:
         x=pd.concat([daily["date"], daily["date"][::-1]]),
         y=pd.concat([daily["posterior_hdi_high_pp"], daily["posterior_hdi_low_pp"][::-1]]),
         fill="toself",
-        fillcolor="rgba(99,110,250,0.15)",
-        line=dict(color="rgba(255,255,255,0)"),
+        fillcolor=HL_TINT,
+        line=dict(width=0),
         name=HDI_LABEL,
         hoverinfo="skip",
     ))
@@ -165,7 +183,7 @@ if daily is not None:
         x=daily["date"],
         y=daily["posterior_mean_preference_margin_pp"],
         mode="lines",
-        line=dict(color="#636EFA", width=2),
+        line=dict(color=HL, width=2),
         name="Posterior mean (pp)",
     ))
 
@@ -173,7 +191,7 @@ if daily is not None:
     fig.add_hline(
         y=3.70,
         line_dash="dash",
-        line_color="#EF553B",
+        line_color=INK,
         annotation_text="Verified outcome margin +3.70 pp (TSJE, Series A)",
         annotation_position="bottom right",
     )
@@ -187,7 +205,7 @@ if daily is not None:
         y0=0,
         y1=1,
         yref="paper",
-        line=dict(dash="dot", color="#888"),
+        line=dict(dash="dot", color=MID),
     )
     fig.add_annotation(
         x=_outcome,
@@ -204,7 +222,7 @@ if daily is not None:
         yaxis_title="Margin (percentage points, A − B)",
         legend=dict(orientation="h", yanchor="bottom", y=1.02),
         hovermode="x unified",
-        template="plotly_white",
+        template=BK_TEMPLATE,
     )
     fig.show()
 else:
@@ -239,13 +257,13 @@ if houses is not None:
     fig = go.Figure(data=[go.Table(
         header=dict(
             values=list(tbl.columns),
-            fill_color="#636EFA",
-            font=dict(color="white", size=13),
+            fill_color=INK,
+            font=dict(color=SURFACE, size=13),
             align="left",
         ),
         cells=dict(
             values=[tbl[c] for c in tbl.columns],
-            fill_color=[["#f2f2f2", "white"] * (len(tbl) // 2 + 1)],
+            fill_color=[[SURFACE2, SURFACE] * (len(tbl) // 2 + 1)],
             align="left",
             font=dict(size=12),
         ),
@@ -267,23 +285,23 @@ if houses is not None:
             x=[row["house_effect_hdi_low"], row["house_effect_hdi_high"]],
             y=[row["pollster_id"], row["pollster_id"]],
             mode="lines",
-            line=dict(width=6, color="#636EFA"),
+            line=dict(width=6, color=MID),
             showlegend=False,
         ))
         fig.add_trace(go.Scatter(
             x=[row["house_effect_posterior_mean"]],
             y=[row["pollster_id"]],
             mode="markers",
-            marker=dict(size=12, color="#EF553B"),
+            marker=dict(size=12, color=INK),
             name=row["pollster_id"],
             showlegend=False,
         ))
-    fig.add_vline(x=0, line_dash="dash", line_color="#888", annotation_text="No bias")
+    fig.add_vline(x=0, line_dash="dash", line_color=MID, annotation_text="No bias")
     fig.update_layout(
         title=f"Survey measurement firm house effects (pp), {HDI_LABEL}",
         xaxis_title="House effect (pp); positive = over-reports preference proxy A",
         yaxis_title="Survey measurement firm",
-        template="plotly_white",
+        template=BK_TEMPLATE,
         height=220,
     )
     fig.show()
@@ -320,6 +338,7 @@ if mc is not None and "scenario_bucket" in mc.columns and "shock_scale" in mc.co
             y=metric_col,
             color="scenario_bucket",
             box=True,
+            color_discrete_sequence=bk.palette("categorical"),
             title=(
                 "Monte Carlo scenario distribution — effective persuasion contacts "
                 "(baseline mean × engagement shock; sample of 2 000 draws)"
@@ -328,7 +347,7 @@ if mc is not None and "scenario_bucket" in mc.columns and "shock_scale" in mc.co
                 "scenario_bucket": "Scenario bucket",
                 metric_col: "Effective persuasion contacts",
             },
-            template="plotly_white",
+            template=BK_TEMPLATE,
         )
         fig.show()
     else:
@@ -399,11 +418,11 @@ if battle is not None:
         orientation="h",
         marker=dict(
             color=b["win_probability_a"],
-            # Colorblind-safe Okabe-Ito diverging ramp (blue = B leads,
-            # vermillion = A leads), full [0,1] scale — no undisclosed
-            # truncation (IMP-V05/IMP-C05).
-            colorscale=[[0.0, "#0072B2"], [0.5, "#f7f7f7"], [1.0, "#D55E00"]],
+            # Design-system `two` scale anchored at the 50% tie (cmid), full
+            # [0,1] range — no undisclosed truncation (IMP-V05/IMP-C05, D-053).
+            colorscale=WINPROB_SCALE,
             cmin=0.0,
+            cmid=0.5,
             cmax=1.0,
             colorbar=dict(title="Win prob."),
         ),
@@ -412,7 +431,7 @@ if battle is not None:
             symmetric=False,
             array=(b["hdi_high"] - b["win_probability_a"]) if _has_hdi else None,
             arrayminus=(b["win_probability_a"] - b["hdi_low"]) if _has_hdi else None,
-            color="#25282b",
+            color=INK,
             thickness=1.4,
         ) if _has_hdi else None,
         text=[f"{v:.1%}" for v in b["win_probability_a"]],
@@ -428,27 +447,27 @@ if battle is not None:
             marker=dict(
                 symbol="diamond",
                 size=9,
-                color=["#D55E00" if "Abdo" in w else "#0072B2" for w in _tsje_labels],
-                line=dict(width=1, color="#25282b"),
+                color=[CAND_A if "Abdo" in w else CAND_B for w in _tsje_labels],
+                line=dict(width=1, color=SURFACE),
             ),
             text=[w.split()[0] for w in _tsje_labels],
             textposition="middle right",
-            textfont=dict(size=8),
+            textfont=dict(size=TYPE_FLOOR_PX, color=INK),
             hovertext=[f"TSJE 2018: {w}" for w in _tsje_labels],
             hoverinfo="text",
             name="TSJE 2018 winner",
         ))
-    fig.add_vline(x=0.5, line_dash="dash", line_color="#888", annotation_text="50%")
+    fig.add_vline(x=0.5, line_dash="dash", line_color=MID, annotation_text="50%")
     fig.update_layout(
         title="Poll-implied department win probability with HDI (Series A)",
         xaxis_title="Win probability — preference proxy A (whiskers: HDI)",
         xaxis=dict(range=[0, 1.12], tickformat=".0%"),
         yaxis_title="Department",
-        template="plotly_white",
+        template=BK_TEMPLATE,
         height=520,
         margin=dict(l=120, r=60),
         showlegend=True,
-        legend=dict(x=0.01, y=0.01, bgcolor="rgba(255,255,255,0.8)"),
+        legend=dict(x=0.01, y=0.01, bgcolor=SURFACE),
     )
     fig.show()
 else:
@@ -469,17 +488,13 @@ else:
 
 ```{python}
 #| label: fig-battleground-choropleth
-#| fig-cap: "Poll-implied win probability choropleth — geoBoundaries PRY ADM1 simplified boundaries (Series A). Blue = low P(Abdo); red = high. Exterior omitted (no ADM1 polygon). Bar chart above for exact values."
+#| fig-cap: "Poll-implied win probability choropleth — geoBoundaries PRY ADM1 simplified boundaries (Series A). Ochre = low P(Abdo); ultramarine = high; the scale is anchored at the 50% tie. Exterior omitted (no ADM1 polygon). Bar chart above for exact values."
 
 if battle_geo is not None and battle_geo_df is not None:
-    _MAP_BG = "rgba(0,0,0,0)"
-    _BATTLE_CSCALE = [
-        [0.0, "#313695"],
-        [0.25, "#4575b4"],
-        [0.5, "#ffffbf"],
-        [0.75, "#f39c4c"],
-        [1.0, "#a50026"],
-    ]
+    _MAP_BG = SURFACE
+    # Two-sided around the 50% tie: the full `two` scale, one smooth gradient,
+    # anchored at 0.5 (D-053 continuous fills; see WINPROB_SCALE in setup).
+    _BATTLE_CSCALE = WINPROB_SCALE
     # px.choropleth + fitbounds fills the geo viewport as a solid block with ADM1
     # MultiPolygons; choropleth_map renders department fills correctly.
     _choro_geo = {"type": "FeatureCollection", "features": battle_geo["features"]}
@@ -492,6 +507,7 @@ if battle_geo is not None and battle_geo_df is not None:
         color="posterior_win_prob",
         color_continuous_scale=_BATTLE_CSCALE,
         range_color=[0.0, 1.0],
+        color_continuous_midpoint=0.5,
         labels={"posterior_win_prob": "Win probability", "department": "Department"},
         title="Battleground win probability heatmap — Paraguay departments (Series A)",
         hover_data={
@@ -504,7 +520,7 @@ if battle_geo is not None and battle_geo_df is not None:
         zoom=4.55,
         height=560,
     )
-    fig.update_traces(marker_line_width=0.6, marker_line_color="#555555")
+    fig.update_traces(marker_line_width=0.6, marker_line_color=SURFACE)
     fig.update_layout(
         map_style="carto-positron-nolabels",
         paper_bgcolor=_MAP_BG,
@@ -514,22 +530,22 @@ if battle_geo is not None and battle_geo_df is not None:
             title="Win prob.",
             tickformat=".0%",
             tickvals=[0.0, 0.25, 0.5, 0.75, 1.0],
-            bgcolor="rgba(255,255,255,0.92)",
-            bordercolor="#333333",
+            bgcolor=SURFACE,
+            bordercolor=MID,
             borderwidth=1,
             len=0.55,
             y=0.88,
         ),
         annotations=[
             dict(text="BOLIVIA", x=0.08, y=0.92, xref="paper", yref="paper",
-                 showarrow=False, font=dict(color="#333333", size=14)),
+                 showarrow=False, font=dict(color=INK2, size=14)),
             dict(text="ARGENTINA", x=0.06, y=0.08, xref="paper", yref="paper",
-                 showarrow=False, font=dict(color="#333333", size=14)),
+                 showarrow=False, font=dict(color=INK2, size=14)),
             dict(text="BRAZIL", x=0.92, y=0.45, xref="paper", yref="paper",
-                 showarrow=False, font=dict(color="#333333", size=14)),
+                 showarrow=False, font=dict(color=INK2, size=14)),
             dict(text="Boundaries: geoBoundaries PRY ADM1 (simplified)",
                  x=0.01, y=-0.02, xref="paper", yref="paper",
-                 showarrow=False, font=dict(color="#666666", size=9)),
+                 showarrow=False, font=dict(color=INK2, size=TYPE_FLOOR_PX)),
         ],
     )
     fig.show()
@@ -545,7 +561,7 @@ else:
 #| label: tbl-diagnostics
 
 def _diag_row(name, value, criterion, ok, shade):
-    bg = " style='background:#f9f9f9'" if shade else ""
+    bg = f" style='background:{SURFACE2}'" if shade else ""
     cell = "style='padding:5px 12px'"
     mark = "✅" if ok else "⚠️"
     return (
@@ -584,13 +600,13 @@ else:
         )
     display(HTML(
         "<table style='font-size:13px;border-collapse:collapse;width:100%'><thead>"
-        "<tr style='background:#636EFA;color:white'>"
+        f"<tr style='background:{INK};color:{SURFACE}'>"
         "<th style='padding:6px 12px;text-align:left'>Diagnostic</th>"
         "<th style='padding:6px 12px'>Value</th><th style='padding:6px 12px'>Pass criterion</th>"
         "<th style='padding:6px 12px'>Status</th></tr></thead><tbody>"
         + "".join(_rows)
         + "</tbody></table>"
-        f"<p style='margin-top:12px;font-size:12px;color:#555'>Computed from "
+        f"<p style='margin-top:12px;font-size:12px;color:{INK2}'>Computed from "
         f"<code>{_diag_path.name}</code> (model <code>{diag['model_version']}</code>, "
         f"{diag['chains']} chains × {diag['draws']} draws, created {diag.get('created_at')}). "
         f"{_note}</p>"
@@ -605,7 +621,7 @@ Posterior predictive checks (PPC) compare re-simulated data from the fitted mode
 
 ```{python}
 #| label: fig-ppc
-#| fig-cap: "Posterior predictive check: observed polls (red) vs. posterior predictive distribution (blue bands). 50%/80%/95% PPC intervals shown."
+#| fig-cap: "Posterior predictive check: observed polls (grey dots) vs. posterior predictive distribution (ultramarine bands). 50%/80%/95% PPC intervals shown."
 
 _ppc_dir = _resolve_data_path("MODULE_C_PPC_DIR", "data/processed/module_c/ppc")
 _ppc_png = _ppc_dir / "ppc_plot.png"
@@ -627,16 +643,15 @@ import json as _json
 
 if _ppc_summary_path.exists():
     _s = _json.loads(_ppc_summary_path.read_text())
-    _verdict_color = {
-        "calibrated": "#2ca02c",
-        "slightly-over-confident": "#ff7f0e",
-        "prior-dominated": "#9467bd",
-        "over-confident": "#d62728",
-    }.get(str(_s.get("calibration_verdict", "")), "#888")
+    # Colour lives in marks, never in type (D-053): the verdict is a word in ink;
+    # a bad verdict carries the alert glyph instead of a hue.
+    _verdict = str(_s.get("calibration_verdict", ""))
+    _verdict_color = INK
+    _verdict_mark = "" if _verdict == "calibrated" else "▲ "
     display(HTML(f"""
     <table style='font-size:13px;border-collapse:collapse'>
     <thead>
-    <tr style='background:#636EFA;color:white'>
+    <tr style='background:{INK};color:{SURFACE}'>
       <th style='padding:6px 12px;text-align:left'>Metric</th>
       <th style='padding:6px 12px'>Value</th>
     </tr>
@@ -644,14 +659,14 @@ if _ppc_summary_path.exists():
     <tbody>
     <tr><td style='padding:5px 12px'>Tracking polls (n)</td>
         <td style='padding:5px 12px'>{_s.get("n_tracking_polls")}</td></tr>
-    <tr style='background:#f9f9f9'>
+    <tr style='background:{SURFACE2}'>
         <td style='padding:5px 12px'>80% PPC interval coverage</td>
         <td style='padding:5px 12px'>{_s.get("polls_in_80pct_hdi")}/{_s.get("n_tracking_polls")} = {float(_s.get("ppc_coverage_80pct", 0)):.0%}</td></tr>
     <tr><td style='padding:5px 12px'>95% PPC interval coverage</td>
         <td style='padding:5px 12px'>{_s.get("polls_in_95pct_hdi")}/{_s.get("n_tracking_polls")} = {float(_s.get("ppc_coverage_95pct", 0)):.0%}</td></tr>
-    <tr style='background:#f9f9f9'>
+    <tr style='background:{SURFACE2}'>
         <td style='padding:5px 12px'>Calibration verdict</td>
-        <td style='padding:5px 12px'><strong style='color:{_verdict_color}'>{_s.get("calibration_verdict")}</strong></td></tr>
+        <td style='padding:5px 12px'><strong style='color:{_verdict_color}'>{_verdict_mark}{_s.get("calibration_verdict")}</strong></td></tr>
     </tbody>
     </table>
     """))

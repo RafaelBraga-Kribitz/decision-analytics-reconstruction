@@ -583,11 +583,11 @@ files = [
 
 [[package]]
 name = "bk-viz"
-version = "1.0.0"
-description = "Braga-Kribitz Design System applied to charts (matplotlib, optional plotly)"
+version = "2.0.0"
+description = "The Braga design system v2.1 applied to charts (matplotlib, optional plotly)"
 optional = false
 python-versions = ">=3.10"
-groups = ["dev"]
+groups = ["main"]
 files = []
 develop = false
 
@@ -597,12 +597,13 @@ matplotlib = ">=3.7"
 
 [package.extras]
 plotly = ["plotly (>=5.18)"]
+test = ["pytest (>=7)"]
 
 [package.source]
 type = "git"
 url = "https://github.com/RafaelBraga-Kribitz/bk-viz.git"
-reference = "fca9d2c282d35c7288b38a8926c3070c3c1d15f1"
-resolved_reference = "fca9d2c282d35c7288b38a8926c3070c3c1d15f1"
+reference = "fe8125a3043f49a798ef24740b23f81c46863562"
+resolved_reference = "fe8125a3043f49a798ef24740b23f81c46863562"
 
 [[package]]
 name = "black"
@@ -9161,4 +9162,4 @@ tracking = ["dvc"]
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<3.13"
-content-hash = "57db05b708287bcfe50b504f3b07f8b2b9e289af568cfb31507ceffc7659a13d"
+content-hash = "89241b0eec3f6d73c91efdfde60c55992a41504fccf4ff4d7208bd60cd5aac45"

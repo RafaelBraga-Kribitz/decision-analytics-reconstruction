@@ -1,11 +1,18 @@
 # pyright: reportUnknownMemberType=false, reportUnknownVariableType=false, reportUnknownArgumentType=false
-"""Posterior predictive check plot for the tracking model."""
+"""Posterior predictive check plot for the tracking model.
+
+Drawn on the Braga design system v2.1 through bk-viz (``bk_theme``): the
+nested intervals are three lightness stops of the sequential ultramarine
+scale, observed polls are the actual (``sc-ac``), every label is ink / ink-2,
+no text below 12px, no hex literal (D-053).
+"""
 
 from __future__ import annotations
 
 from pathlib import Path
 
 import arviz as az
+import bk_theme as bk
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -41,6 +48,8 @@ def generate_ppc_plot(
     dates = pd.to_datetime(ordered["publication_date"]).dt.date.tolist()
     x = np.arange(len(ordered))
 
+    bk.apply("light")
+    seq = bk.palette("seq")  # 9 stops, index 0 darkest
     fig, ax = plt.subplots(figsize=(9, 5))
 
     ppc_ordered = ppc_samples[:, original_idx]
@@ -55,11 +64,12 @@ def generate_ppc_plot(
     # Nested intervals in distinct lightness steps of one hue (IMP-V05 /
     # issue #69): decodable in grayscale, where the old alpha-only stacking
     # of a single color was not. Each band also carries a direct right-edge
-    # label so no legend lookup is needed.
+    # label so no legend lookup is needed. Stops of the design system's
+    # sequential scale (bk-viz ``seq``), lightest for the widest interval.
     band_specs = (
-        (q025, q975, "#c6dbef", "95%"),
-        (q10, q90, "#6baed6", "80%"),
-        (q25, q75, "#2171b5", "50%"),
+        (q025, q975, seq[7], "95%"),
+        (q10, q90, seq[5], "80%"),
+        (q25, q75, seq[3], "50%"),
     )
     for lo, hi, color, level in band_specs:
         ax.fill_between(x, lo, hi, color=color, alpha=1.0, label=f"{level} PPC interval")
@@ -69,24 +79,32 @@ def generate_ppc_plot(
             xytext=(6, 0),
             textcoords="offset points",
             va="center",
-            fontsize=8,
-            color="#25282b",
+            color=bk.c("ink"),
+            fontproperties=bk.font("mono", "regular", "mono"),
         )
-    ax.plot(x, q50, color="#08306b", linewidth=1.5, linestyle="--", label="PPC median")
-    ax.scatter(x, obs, color="#EF553B", zorder=5, s=80, label="Observed polls (pp)")
+    ax.plot(x, q50, color=bk.c("ink"), linewidth=1.5, linestyle="--", label="PPC median")
+    ax.scatter(
+        x,
+        obs,
+        color=bk.c("sc-ac"),
+        edgecolors=bk.c("surface"),
+        zorder=5,
+        s=80,
+        label="Observed polls (pp)",
+    )
 
     ax.set_xticks(x)
-    ax.set_xticklabels([str(d) for d in dates], rotation=20, ha="right", fontsize=9)
-    ax.set_xlabel("Poll publication date", fontsize=11)
-    ax.set_ylabel("Margin (percentage points, A − B)", fontsize=11)
+    ax.set_xticklabels([str(d) for d in dates], rotation=20, ha="right")
+    ax.set_xlabel("Poll publication date")
+    ax.set_ylabel("Margin (percentage points, A − B)")
     ax.set_title(
         "Posterior Predictive Check — tracking model vs. observed polls\n"
         f"(Series A · Paraguay 2018 reconstruction · n={len(ordered)} waves)",
-        fontsize=12,
+        fontproperties=bk.font("display", "bold", "lead"),
     )
-    ax.axhline(0, color="#888", linewidth=0.8, linestyle=":")
-    ax.legend(loc="upper left", fontsize=9)
-    ax.grid(axis="y", linestyle=":", alpha=0.4)
+    ax.axhline(0, color=bk.c("mid"), linewidth=bk.HAIRLINE_PT, linestyle=":")
+    ax.legend(loc="upper left")
+    bk.strip_chrome(ax)
     fig.tight_layout()
 
     out_path.parent.mkdir(parents=True, exist_ok=True)
