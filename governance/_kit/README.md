@@ -1,15 +1,16 @@
 # governance-bootstrap
 
-![governance-bootstrap — A vendorable governance kit: YAML findings that ratchet from open gap to CI-enforced gate, synced bidirectionally to every consumer project.](docs/assets/hero.png)
+![governance-bootstrap: a vendorable governance kit: YAML findings that ratchet from open gap to CI-enforced gate, synced bidirectionally to every consumer project.](docs/assets/hero.png)
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Status: Maintained](https://img.shields.io/badge/status-Maintained-brightgreen)](#status)
+[![License: MIT](https://img.shields.io/badge/License-MIT-5A5C61?labelColor=26282C)](LICENSE)
+[![Status: Maintained](https://img.shields.io/badge/status-Maintained-5A5C61?labelColor=26282C)](#status)
 
 **Status:** Maintained
 
-LLM coding sessions invent a new audit, declare the work closed, and leave no machine-readable state. This kit turns each recurrence-prone problem into a YAML finding that ratchets from an open gap to a CI-enforced gate, then vendors that discipline into the projects that subscribe to it.
+Coding sessions with a large language model (LLM) agent invent a new audit, declare the work closed, and leave no machine-readable state. This kit turns each recurrence-prone problem into a YAML finding that ratchets from an open gap to a CI-enforced gate, then vendors that discipline into the projects that subscribe to it.
 
 ```mermaid
+%%{init: {"theme":"base","fontFamily":"BKribitz, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif","themeVariables":{"background":"#E4E6EA","primaryColor":"#DCDEE2","primaryTextColor":"#26282C","primaryBorderColor":"#26282C","secondaryColor":"#E4E6EA","secondaryTextColor":"#26282C","secondaryBorderColor":"#5A5C61","tertiaryColor":"#E4E6EA","tertiaryTextColor":"#26282C","tertiaryBorderColor":"#C2C4CA","lineColor":"#5A5C61","textColor":"#26282C","mainBkg":"#DCDEE2","nodeBorder":"#26282C","clusterBkg":"#E4E6EA","clusterBorder":"#C2C4CA","edgeLabelBackground":"#E4E6EA","titleColor":"#26282C","fontFamily":"BKribitz, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif","fontSize":"14px"},"flowchart":{"curve":"linear","htmlLabels":true,"padding":8}}}%%
 flowchart TD
     open["open: script reports GAP<br/>CI stays green"]
     closed["closed: same script is a hard gate"]
@@ -22,7 +23,7 @@ flowchart TD
 
 ## The idea
 
-Every recurrence-prone problem becomes a YAML file under `governance/findings/`. Each YAML names a `verification_script`. While the finding is `open` the script reports `[GAP]` and CI stays green; the moment status flips to `closed`, the same script becomes a hard CI gate — regressing it fails the PR and reopens the finding automatically.
+Every recurrence-prone problem becomes a YAML file under `governance/findings/`. Each YAML names a `verification_script`. While the finding is `open` the script reports `[GAP]` and CI stays green; the moment status flips to `closed`, the same script becomes a hard continuous-integration (CI) gate: regressing it fails the pull request (PR) and reopens the finding automatically.
 
 Three roles operate the queue: the **Steward** (read state, regenerate the session handout), the **Remediator** (one finding per PR), and the **Adversary** (re-verifies every closed finding on every PR). The methodology is documented in `templates/AUDIT_PROCEDURE.md` and the agent protocol in `templates/CLAUDE.md`.
 
@@ -40,7 +41,7 @@ What gets gated out of the box:
 | Cyclomatic complexity | `check_complexity.py` | `F-COMPLEXITY-VIOLATION` |
 | File + function line budgets | `check_module_sizes.py` | `F-MODULE-SIZE` |
 | Dependency layer rules | `check_dependency_structure.py` | `F-DEPENDENCY-VIOLATION` |
-| CRAP score (C²·(1−COV)³+C) | `check_crap_score.py` | `F-CRAP-SCORE` |
+| CRAP score, Change Risk Anti-Patterns (C²·(1−COV)³+C) | `check_crap_score.py` | `F-CRAP-SCORE` |
 
 Thresholds live in `templates/config/quality_gates.yaml` and are themselves registered in `templates/config/parameter_registry.yaml`. `make baseline` discovers the project's current values; `make audit` enforces them.
 
@@ -48,8 +49,8 @@ Thresholds live in `templates/config/quality_gates.yaml` and are themselves regi
 
 | Path | Start here |
 |---|---|
-| Fast path | [The idea](#the-idea) — the open → closed → CI-enforced ratchet |
-| Deep path | [Architecture](#architecture) + [`CONSUMER_SETUP.md`](CONSUMER_SETUP.md) — how the kit vendors and stays in sync |
+| Fast path | [The idea](#the-idea): the open → closed → CI-enforced ratchet |
+| Deep path | [Architecture](#architecture) + [`CONSUMER_SETUP.md`](CONSUMER_SETUP.md): how the kit vendors and stays in sync |
 
 ## Quick start
 
@@ -66,7 +67,7 @@ git subtree add --prefix=governance/_kit gov-upstream main --squash
 cp governance/_kit/templates/.github/workflows/sync-from-upstream.yml .github/workflows/
 cp governance/_kit/templates/.github/workflows/propose-upstream.yml   .github/workflows/
 
-# 3. Add a fine-grained PAT as GOV_SYNC_TOKEN secret in your repo settings
+# 3. Add a fine-grained personal access token (PAT) as GOV_SYNC_TOKEN secret in your repo settings
 #    (Contents: write, Pull requests: write on this repo + the hub repo)
 gh secret set GOV_SYNC_TOKEN < /path/to/pat.txt
 ```
@@ -97,6 +98,7 @@ project-a/                          Mode A — vendored (recommended)
 ```
 
 ```mermaid
+%%{init: {"theme":"base","fontFamily":"BKribitz, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif","themeVariables":{"background":"#E4E6EA","primaryColor":"#DCDEE2","primaryTextColor":"#26282C","primaryBorderColor":"#26282C","secondaryColor":"#E4E6EA","secondaryTextColor":"#26282C","secondaryBorderColor":"#5A5C61","tertiaryColor":"#E4E6EA","tertiaryTextColor":"#26282C","tertiaryBorderColor":"#C2C4CA","lineColor":"#5A5C61","textColor":"#26282C","mainBkg":"#DCDEE2","nodeBorder":"#26282C","clusterBkg":"#E4E6EA","clusterBorder":"#C2C4CA","edgeLabelBackground":"#E4E6EA","titleColor":"#26282C","fontFamily":"BKribitz, system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif","fontSize":"14px"},"flowchart":{"curve":"linear","htmlLabels":true,"padding":8}}}%%
 flowchart TB
     hub["governance-bootstrap<br/>templates/ · scripts/ · consumers.yaml"]
     fanout["fanout-update.yml<br/>on tag v*.*.*"]
@@ -115,6 +117,13 @@ flowchart TB
 **Upstream (any consumer → hub → other consumers).** A developer fixes a bug in `governance/_kit/scripts/check_x.py` while working in project A. After landing the fix locally, they run **Actions → Propose change to governance kit**, providing a PR title and motivation. `propose-upstream.yml` clones the hub, rsyncs the consumer's `_kit/` contents over the hub root, and opens a PR back here. Once reviewed and merged here → tag → fanout → projects B and C see a sync PR.
 
 Every change to `main` should be tagged `vX.Y.Z` to trigger fanout. Until the first real release, manual `workflow_dispatch` of `fanout-update.yml` with `ref: main` is the way to push updates.
+
+## Versioning
+
+There is no release tag yet, so the subtree commands above track `main`. The release
+model is in place: a tag `vX.Y.Z` on this repository triggers `fanout-update.yml`, and
+each consumer's sync pull request names the tag it pulls. Until the first tag, updates
+go out through a manual `workflow_dispatch` of `fanout-update.yml` with `ref: main`.
 
 ## Repository structure
 
@@ -137,6 +146,16 @@ Every change to `main` should be tagged `vX.Y.Z` to trigger fanout. Until the fi
     └── .github/workflows/       ← governance.yml + bidirectional sync
 ```
 
+## Stack
+
+| Technology | Role |
+|---|---|
+| Python 3.11 with PyYAML | Gate scripts in `templates/scripts/` and the finding YAML files |
+| radon, coverage.py, import-linter | Complexity, coverage, CRAP score and dependency-layer gates; each script prints `[SKIP]` when its tool is missing |
+| pytest | Ratchet tests under `templates/tests/governance/` |
+| GNU Make | `templates/Makefile.governance`: `audit`, `verify`, `baseline`, session targets |
+| GitHub Actions and `git subtree` | Consumer CI (`governance.yml`) and the two-way sync between this hub and its consumers |
+
 ## Limitations
 
 - This is a **vendored kit**, not a hosted service. Consumers must install the subtree, workflows, and `GOV_SYNC_TOKEN` themselves; nothing arrives by cloning this repo alone.
@@ -157,7 +176,7 @@ Repository last updated 2026-09-16 (date of the last commit).
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE).
+MIT. See [`LICENSE`](LICENSE).
 
 ## Author
 
