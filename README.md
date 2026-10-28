@@ -29,11 +29,12 @@ not a causal claim. At the pessimistic edge of the 94% interval the shift revers
 [case study, week-8 replay](reports/CASE_STUDY.md#a-worked-decision-week-8-replay). The script
 `scripts/generate_decision_kpi_panel.py` generates the panel from committed results only.*
 
-<p align="center"><img src="reports/eda/C1_forecast_timeline.png" alt="Poll tracking and scenarios, checked against the known result: posterior mean vote-preference margin with a 94% credible band across the 2018 campaign, converging on the verified TSJE outcome anchor of +3.70 pp" width="100%" /></p>
+<p align="center"><img src="reports/eda/C1_forecast_timeline.png" alt="Poll tracking and scenarios, fitted with the known result as an input: posterior mean vote-preference margin with a 94% credible band across the 2018 campaign, converging on the verified TSJE outcome anchor of +3.70 pp" width="100%" /></p>
 
-*Poll tracking and scenarios (Bayesian poll tracking). This is a **retrodiction, not a forecast**: the model is checked against the known result.
-It uses the verified TSJE outcome and reconciles the eight real 2018 poll waves inside
-a 94% credible band. Out-of-sample scoring is a separate, honest exercise. See Results.*
+*Poll tracking and scenarios (Bayesian poll tracking). This is a **retrodiction, not a forecast**. The fit takes the known TSJE result as an input.
+So the line must end near +3.70 pp, and this agreement is not an independent test.
+The model also reconciles the eight real 2018 poll waves inside a 94% credible band.
+Scoring without the known result is a separate exercise. See Results.*
 
 ## Decision summary
 
@@ -47,6 +48,8 @@ Public anchors are **VERIFIED** (TSJE returns, DGEEC/INE census aggregates, eigh
 published 2018 polls). Every individual voter record is **SIMULATED**. Calibration to those
 anchors is **CALIBRATED**. Tracking posteriors and Monte Carlo shocks are **ILLUSTRATIVE**. Full
 register: [`reports/epistemic_boundaries.md`](reports/epistemic_boundaries.md).
+
+In short: the system reads public polls and census data and builds synthetic voters. It solves the best spend under a fixed budget. It re-solves that spend when the tracked lead changes. The detailed method sits in [How it works](#how-it-works), below Known limits.
 
 The reconstruction does **not** claim that analytics caused the +3.70 pp margin. The public
 result is the ground-truth anchor. The point of the work is to show what the model can show, and what it cannot.
@@ -116,31 +119,6 @@ skill. Detail:
 On the **$6M USD** reconstruction envelope, the budget-allocation MILP beats a department-uniform
 naive allocation. It yields **~54.77%** more linearized persuasion-proxy contacts. This is a
 solver comparator on synthetic reach. It is not a verified historical effect of the 2018 campaign.
-
-## How it works
-
-The chain is: question, public evidence, tagged assumptions, three models, uncertainty, and a constrained
-allocation. It is not a causal counterfactual.
-
-1. **Question.** Given only 2018-visible public signals and a fixed budget, how should a
-   campaign track the race and spend, while it stays explicit about what is known?
-2. **Evidence.** TSJE 2018 returns, DGEEC/INE census and ICT aggregates, and eight published
-   tracking polls. Outlet, date, and figures are the checkable columns. Pollster labels are
-   house-effect identifiers, not always the verbatim firm names.
-3. **Assumptions.** Individual voters are synthetic. Department-level turnout, gender, rural
-   share, and language buckets are raked to verified anchors. Budget allocation maximises a linearized
-   persuasion-proxy under budget, reach-cap, FX, and an 80% coverage floor. The tracking
-   posterior in poll tracking and scenarios is prior-dominated on poll-free days.
-4. **Models.** Voter segments and turnout: K-Means (k=6) plus Platt-calibrated turnout propensity.
-   Campaign budget allocation: PuLP/CBC MILP on 2,772 rows (18 departments × 11 channels × 14 weeks).
-   Poll tracking and scenarios: a PyMC Gaussian random walk with house effects, then stratified Monte Carlo (10,000 draws
-   default).
-5. **Uncertainty.** The tracking path carries 94% credible bands. The eight-poll fixture gets
-   walk-forward and leave-one-wave-out checks. The week-8 allocation replay in the case study reports HDI (highest density interval) endpoints.
-6. **Decision rule.** Allocate the $6M envelope under the stated constraints. Do not treat
-   the verified +3.70 pp margin as an analytics lift.
-
-`make pipeline-full` runs the three parts in order, with an enforced allocation handoff.
 
 ## Data
 
@@ -263,7 +241,7 @@ file would change the work in these ways:
    caps.
 4. **Break circularity in propensity.** Hold out departments or drop the logit offset, so
    Brier/AUC measure generalization rather than rake recovery.
-5. **Close the loop from budget allocation to poll tracking.** Feed tracking posteriors back into the allocator automatically
+5. **Feed poll tracking back into budget allocation.** Pass tracking posteriors to the allocator automatically
    (the week-8 replay in the case study is a disclosed manual re-parameterization, not
    pipeline behaviour).
 6. **Run at roll scale.** The 4.26M design reference and the unused weeks of the 18-week
@@ -271,6 +249,31 @@ file would change the work in these ways:
 
 Until that swap-in exists, every individual-level chart remains a reconstruction, and
 every decision number must carry its epistemic tag.
+
+## How it works
+
+The chain is: question, public evidence, tagged assumptions, three models, uncertainty, and a constrained
+allocation. It is not a causal counterfactual.
+
+1. **Question.** Given only 2018-visible public signals and a fixed budget, how should a
+   campaign track the race and spend, while it stays explicit about what is known?
+2. **Evidence.** TSJE 2018 returns, DGEEC/INE census and ICT aggregates, and eight published
+   tracking polls. Outlet, date, and figures are the checkable columns. Pollster labels are
+   house-effect identifiers, not always the verbatim firm names.
+3. **Assumptions.** Individual voters are synthetic. Department-level turnout, gender, rural
+   share, and language buckets are raked to verified anchors. Budget allocation maximises a linearized
+   persuasion-proxy under budget, reach-cap, FX, and an 80% coverage floor. The tracking
+   posterior in poll tracking and scenarios is prior-dominated on poll-free days.
+4. **Models.** Voter segments and turnout: K-Means (k=6) plus Platt-calibrated turnout propensity.
+   Campaign budget allocation: PuLP/CBC MILP on 2,772 rows (18 departments × 11 channels × 14 weeks).
+   Poll tracking and scenarios: a PyMC Gaussian random walk with house effects, then stratified Monte Carlo (10,000 draws
+   default).
+5. **Uncertainty.** The tracking path carries 94% credible bands. The eight-poll fixture gets
+   walk-forward and leave-one-wave-out checks. The week-8 allocation replay in the case study reports HDI (highest density interval) endpoints.
+6. **Decision rule.** Allocate the $6M envelope under the stated constraints. Do not treat
+   the verified +3.70 pp margin as an analytics lift.
+
+`make pipeline-full` runs the three parts in order, with an enforced allocation handoff.
 
 ## Repository structure
 
@@ -297,7 +300,7 @@ Folders, files and findings keep their original codes. This table gives each one
 | Campaign budget allocation | Module B, `module_b_resource_allocation/` |
 | Poll tracking and scenarios | Module C, `module_c_forecasting_scenarios/` |
 | Live link check (demo links must stay live) | finding `F-021` |
-| Forecast-label fix (the "forecast" line was a retrodiction) | finding `F-069` |
+| Forecast-label fix (the "forecast" line was a retrodiction: it was fitted with the known result as an input) | finding `F-069` |
 | Walk-forward scoring fix (the right quantity is scored) | finding `F-034` |
 | Poll-tracking figure | `C1_forecast_timeline.png` ("C1" in chart file names) |
 
