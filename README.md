@@ -11,8 +11,8 @@
 **Status:** Complete
 
 > - **Who decides:** the campaign manager, with an analyst.
-> - **What they choose:** how to split a fixed budget across 18 departments, and when to re-plan it.
-> - **Answer:** at week 8 the tracked lead widened. Re-solving the plan moves **$766k** off six swing departments. That gives **+1.20%** more persuasion-weighted contacts than the old plan, on a **$6.03M** plan.
+> - **What they choose:** how to split a fixed budget across 18 departments, and whether to re-plan it when the tracked lead changes.
+> - **Answer:** at week 8 the tracked lead widened. A replay that re-solves the plan after a manual weight update moves **$766k** off six swing departments. That gives **+1.20%** more persuasion-weighted contacts than the old plan, on a **$6.03M** plan.
 > - **Main caveat:** this is an illustrative replay on synthetic voters, not a causal claim. At the low edge of the 94% interval, the shift reverses.
 > - **Chart:** the decision panel below. Detail: [case study, week-8 replay](reports/CASE_STUDY.md#a-worked-decision-week-8-replay).
 
@@ -21,7 +21,7 @@ A campaign in early 2018 could see only eight public polls, census aggregates, a
 <p align="center"><img src="reports/decision/decision_kpi_panel.png" alt="Decision panel: four KPIs ($766k moved off swing departments, +1.20% value of updating, $6.03M budget envelope, 3 of 6 held-out polls inside the 95% band) above a bar chart of the change in planned spend per department at week 8; the six swing departments lose between $54k and $255k each, while Central gains $323k and Asuncion $175k" width="100%" /></p>
 
 *The decision this system supports: the tracked lead widened from 8.6 pp to 17.7 pp at
-week 8. Re-solving the allocation on the same $6.03M envelope moves **$766k off the six swing
+week 8. A replay that re-solves the allocation after a manual weight update, on the same $6.03M envelope, moves **$766k off the six swing
 departments** into strongholds and opposition departments. This is worth +1.20% persuasion-weighted
 contacts over keeping the plan. A persuasion-weighted contact is a reachable contact scaled by a weight
 that reflects how contested the department is. The result is an ILLUSTRATIVE scenario replay with one disclosed solver lever,
@@ -49,7 +49,7 @@ published 2018 polls). Every individual voter record is **SIMULATED**. Calibrati
 anchors is **CALIBRATED**. Tracking posteriors and Monte Carlo shocks are **ILLUSTRATIVE**. Full
 register: [`reports/epistemic_boundaries.md`](reports/epistemic_boundaries.md).
 
-In short: the system reads public polls and census data and builds synthetic voters. It solves the best spend under a fixed budget. It re-solves that spend when the tracked lead changes. The detailed method sits in [How it works](#how-it-works), below Known limits.
+In short: the system reads public polls and census data and builds synthetic voters. It solves the best spend under a fixed budget. A separate illustrative replay shows the allocation re-solved after a manual weight update. The pipeline does not do this by itself: automatic feedback from poll tracking to budget allocation is future work. The detailed method sits in [How it works](#how-it-works), below Known limits.
 
 The reconstruction does **not** claim that analytics caused the +3.70 pp margin. The public
 result is the ground-truth anchor. The point of the work is to show what the model can show, and what it cannot.
