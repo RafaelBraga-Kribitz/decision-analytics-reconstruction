@@ -54,6 +54,10 @@ In short: the system reads public polls and census data and builds synthetic vot
 The reconstruction does **not** claim that analytics caused the +3.70 pp margin. The public
 result is the ground-truth anchor. The point of the work is to show what the model can show, and what it cannot.
 
+## Why this project exists
+
+A campaign splits a fixed budget across 18 departments and must decide when to re-plan as the polls move. This project tests whether voter segments, budget optimisation and Bayesian poll tracking can improve that split over a spreadsheet. The pre-build expectation was about €5.6k of value for one campaign of about $2M, against a total cost of about €9,850. It fails the financial hurdle (0.57× against 4×). Value in a real decision: Not yet measured; the build produced an illustrative week-8 replay. Detail: [economic evaluation](docs/economic-evaluation.md).
+
 ## See it running
 
 <p align="center">
