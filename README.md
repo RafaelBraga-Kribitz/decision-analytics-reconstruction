@@ -56,7 +56,7 @@ result is the ground-truth anchor. The point of the work is to show what the mod
 
 ## Why this project exists
 
-A campaign splits a fixed budget across 18 departments and must decide when to re-plan as the polls move. This project tests whether voter segments, budget optimisation and Bayesian poll tracking can improve that split over spreadsheets. The pre-build evaluation expected 1.3 % of the budget that can still move, against a central cost of about €17,280. The repository never sources that budget, so the financial hurdle result is insufficient evidence: it passes 4× only above about €5.3M. Observed result: Not yet measured. Detail: [economic evaluation](docs/economic-evaluation.md).
+A campaign splits a fixed budget across 18 departments and must decide when to re-plan as the polls move. This project tests whether voter segments, budget optimisation and Bayesian poll tracking can improve that split over spreadsheets. The pre-build evaluation expected 1.3 % of a 4 to 5.5 million budget, about €62k, against a central cost of €17,280. That is 3.6×, so it narrowly fails the 4× financial hurdle; a build capped at about 285 hours passes. Observed result: Not yet measured. Detail: [economic evaluation](docs/economic-evaluation.md).
 
 ## See it running
 
