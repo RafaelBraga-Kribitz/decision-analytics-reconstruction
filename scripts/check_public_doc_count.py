@@ -9,7 +9,14 @@ from pathlib import Path
 
 from _governance_check import REPO_ROOT, gate
 
-MAX_PUBLIC_MD = 20
+# Two files every portfolio project carries under the BRAGA value-evaluation standard
+# (braga-portfolio-docs, README standard v1.6, honesty.value_evaluation). They are counted,
+# on top of the project's own reading budget of 20, so that budget stays where it was.
+PORTFOLIO_STANDARD_FILES = (
+    "docs/economic-evaluation.md",
+    "docs/lessons-learned.md",
+)
+MAX_PUBLIC_MD = 20 + len(PORTFOLIO_STANDARD_FILES)
 
 OPERATOR_PREFIXES = (
     ".claude/",

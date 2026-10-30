@@ -188,6 +188,42 @@ documents:
   doc_id: DOC-DOCS-001
   path: docs/DEPLOYMENT.md
   last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: portfolio
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-DOCS-ECON-001
+  path: docs/economic-evaluation.md
+  last_reviewed: '2026-10-30'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: portfolio
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  doc_id: DOC-DOCS-LESSONS-001
+  path: docs/lessons-learned.md
+  last_reviewed: '2026-10-30'
 - doc_type: registry
   doc_role: registry
   visibility: public
