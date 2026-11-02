@@ -13,7 +13,8 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends make gcc g++ \
     && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir poetry==2.4.0
+# Match poetry.lock so installation cannot replace virtualenv during a parallel build.
+RUN pip install --no-cache-dir poetry==2.4.0 virtualenv==21.3.1
 
 COPY pyproject.toml poetry.lock* README.md .pre-commit-config.yaml /app/
 COPY .streamlit /app/.streamlit
