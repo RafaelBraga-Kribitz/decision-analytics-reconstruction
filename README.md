@@ -7,7 +7,7 @@
 [![CI](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/ci.yml/badge.svg)](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/ci.yml)
 [![Governance](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/governance.yml/badge.svg)](https://github.com/RafaelBraga-Kribitz/decision-analytics-reconstruction/actions/workflows/governance.yml)
 [![Python 3.11](https://img.shields.io/badge/python-3.11-5A5C61?labelColor=26282C)](.python-version)
-[![License: MIT](https://img.shields.io/badge/license-MIT-5A5C61?labelColor=26282C)](LICENSE)
+[![Licence: MIT](https://img.shields.io/badge/license-MIT-5A5C61?labelColor=26282C)](LICENSE)
 [![Status: Complete](https://img.shields.io/badge/status-Complete-5A5C61?labelColor=26282C)](#status)
 
 **Status:** Complete
@@ -20,7 +20,7 @@
 
 A campaign in early 2018 could see only eight public polls, census aggregates, and a fixed budget. **How should it track the race, split the money across the country, and stay honest about what it knows?** This project reconstructs the 2018 Paraguay presidential election as three connected decision-analytics parts. It answers that question end to end. The verified result: Candidate A (Abdo) won by **+3.70 pp** (46.43% vs 42.73%) on **61.25%** turnout (TSJE, the electoral court). One pp is one percentage point.
 
-<p align="center"><img src="reports/decision/decision_kpi_panel.png" alt="Decision panel: four KPIs ($766k moved off swing departments, +1.20% value of updating, $6.03M budget envelope, 3 of 6 held-out polls inside the 95% band) above a bar chart of the change in planned spend per department at week 8; the six swing departments lose between $54k and $255k each, while Central gains $323k and Asuncion $175k" width="100%" /></p>
+<p align="centre"><img src="reports/decision/decision_kpi_panel.png" alt="Decision panel: four KPIs ($766k moved off swing departments, +1.20% value of updating, $6.03M budget envelope, 3 of 6 held-out polls inside the 95% band) above a bar chart of the change in planned spend per department at week 8; the six swing departments lose between $54k and $255k each, while Central gains $323k and Asuncion $175k" width="100%" /></p>
 
 *The decision this system supports: the tracked lead widened from 8.6 pp to 17.7 pp at
 week 8. A replay that re-solves the allocation after a manual weight update, on the same $6.03M envelope, moves **$766k off the six swing
@@ -31,7 +31,7 @@ not a causal claim. At the pessimistic edge of the 94% interval the shift revers
 [case study, week-8 replay](reports/CASE_STUDY.md#a-worked-decision-week-8-replay). The script
 `scripts/generate_decision_kpi_panel.py` generates the panel from committed results only.*
 
-<p align="center"><img src="reports/eda/C1_forecast_timeline.png" alt="Poll tracking and scenarios, fitted with the known result as an input: posterior mean vote-preference margin with a 94% credible band across the 2018 campaign, converging on the verified TSJE outcome anchor of +3.70 pp" width="100%" /></p>
+<p align="centre"><img src="reports/eda/C1_forecast_timeline.png" alt="Poll tracking and scenarios, fitted with the known result as an input: posterior mean vote-preference margin with a 94% credible band across the 2018 campaign, converging on the verified TSJE outcome anchor of +3.70 pp" width="100%" /></p>
 
 *Poll tracking and scenarios (Bayesian poll tracking). This is a **retrodiction, not a forecast**. The fit takes the known TSJE result as an input.
 So the line must end near +3.70 pp, and this agreement is not an independent test.
@@ -62,7 +62,7 @@ A campaign splits a fixed budget across 18 departments and must decide when to r
 
 ## See it running
 
-<p align="center">
+<p align="centre">
   <img src="docs/assets/screenshot_module_a_dashboard.png"
        alt="Voter segments and turnout Streamlit dashboard — Segment Explorer tab showing the six voter segments of the canonical 50,000-record run with silhouette and bootstrap-ARI diagnostics"
        width="90%" />
@@ -70,7 +70,7 @@ A campaign splits a fixed budget across 18 departments and must decide when to r
 
 *Voter segments and turnout dashboard (Streamlit). The Segment Explorer shows the canonical 50,000-voter run. The app shows the run ID and diagnostics.*
 
-<p align="center">
+<p align="centre">
   <img src="docs/assets/screenshot_module_b_api_docs.png"
        alt="Campaign budget allocation FastAPI OpenAPI documentation listing allocation, counterfactual, FX, reach-cap, and routing endpoints"
        width="90%" />
@@ -338,7 +338,7 @@ make session-start   # → governance/SESSION_HANDOUT.md
 The script `scripts/check_live_deployment_urls.py` (the live link check) verifies the demo links. This README never claims a live URL that the script has not verified.
 Free-tier hosts sleep. A down demo means the live link check regressed and must be reopened.
 
-## License
+## Licence
 
 Code is released under the [MIT License](LICENSE). Calibration anchors derive
 from public sources (TSJE, DGEEC, INE, BCP) and are not separately licensed by
