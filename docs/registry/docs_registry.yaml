@@ -143,6 +143,27 @@ documents:
   canonical_source:
   - DOC-CHARTER-001
   derived_from:
+  - DOC-ROOT-001
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  last_reviewed: '2026-11-02'
+  doc_id: DOC-ROOT-DE-AT
+  path: README.de-AT.md
+- doc_type: narrative
+  doc_role: derived
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: derived
+  status: active
+  sensitivity: public
+  owner: portfolio
+  tier_shorthand: T1
+  canonical_source:
+  - DOC-CHARTER-001
+  derived_from:
   - DOC-CHARTER-001
   supersedes: []
   numeric_authority: []
@@ -150,6 +171,27 @@ documents:
   last_reviewed: '2026-06-08'
   doc_id: DOC-ROOT-001
   path: README.md
+- doc_type: narrative
+  doc_role: derived
+  visibility: public
+  audience:
+  - portfolio
+  - technical
+  authority: derived
+  status: active
+  sensitivity: public
+  owner: portfolio
+  tier_shorthand: T1
+  canonical_source:
+  - DOC-CHARTER-001
+  derived_from:
+  - DOC-ROOT-001
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  last_reviewed: '2026-11-02'
+  doc_id: DOC-ROOT-PT-BR
+  path: README.pt-BR.md
 - doc_type: narrative
   doc_role: reference
   visibility: internal
@@ -188,42 +230,6 @@ documents:
   doc_id: DOC-DOCS-001
   path: docs/DEPLOYMENT.md
   last_reviewed: '2026-05-20'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: portfolio
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-DOCS-ECON-001
-  path: docs/economic-evaluation.md
-  last_reviewed: '2026-10-30'
-- doc_type: narrative
-  doc_role: canonical
-  visibility: public
-  audience:
-  - portfolio
-  authority: canonical
-  status: active
-  sensitivity: public
-  owner: portfolio
-  tier_shorthand: T1
-  canonical_source: []
-  derived_from: []
-  supersedes: []
-  numeric_authority: []
-  frontmatter_required: false
-  doc_id: DOC-DOCS-LESSONS-001
-  path: docs/lessons-learned.md
-  last_reviewed: '2026-10-30'
 - doc_type: registry
   doc_role: registry
   visibility: public
@@ -282,6 +288,42 @@ documents:
   doc_id: DOC-DOCS-004
   path: docs/agents/GEMINI.md
   last_reviewed: '2026-05-20'
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: portfolio
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  last_reviewed: '2026-10-30'
+  doc_id: DOC-DOCS-ECON-001
+  path: docs/economic-evaluation.md
+- doc_type: narrative
+  doc_role: canonical
+  visibility: public
+  audience:
+  - portfolio
+  authority: canonical
+  status: active
+  sensitivity: public
+  owner: portfolio
+  tier_shorthand: T1
+  canonical_source: []
+  derived_from: []
+  supersedes: []
+  numeric_authority: []
+  frontmatter_required: false
+  last_reviewed: '2026-10-30'
+  doc_id: DOC-DOCS-LESSONS-001
+  path: docs/lessons-learned.md
 - doc_type: registry
   doc_role: registry
   visibility: public

@@ -1,0 +1,18 @@
+id: F-032-A
+title: Trilingual README variants were counted as new narratives and absent from the registry
+category: documentation_entropy
+kind: recurrence_invariant
+status: closed
+opened_at: 2026-11-02
+closed_at: 2026-11-02
+recurrence_count: 0
+evidence: |
+  F-032 counted 24 physical files against a 22-document reading budget after the
+  two README translations were added. F-076 and the registry smoke test also
+  rejected both files because the committed inventory had not been rebuilt.
+verification_script: tests/test_trilingual_doc_registry.py
+notes: |
+  Follow-up to F-032 and F-076. Count the exact supported README language
+  alternatives as one reading unit, preserve every physical registry row and
+  link each translation to the English README and its canonical sources.
+  Other public files must continue to consume the unchanged reading budget.

@@ -13,6 +13,7 @@ from __future__ import annotations
 import subprocess
 import sys
 from collections import defaultdict
+from copy import deepcopy
 from pathlib import Path
 from typing import Any
 
@@ -21,6 +22,7 @@ import yaml
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from scripts.doc_registry_schema import README_TRANSLATIONS
 from scripts.doc_registry_schema import VENDOR_PREFIXES as _VENDOR_PREFIXES
 
 REGISTRY_PATH = ROOT / "docs" / "registry" / "docs_registry.yaml"
@@ -105,6 +107,15 @@ OVERRIDE: dict[str, dict[str, Any]] = load_override_paths()
 
 def merged_entry(path: str, seq_counters: defaultdict[str, int]) -> dict[str, Any]:
     o = OVERRIDE.get(path, {}).copy()
+    if path in README_TRANSLATIONS:
+        english = deepcopy(OVERRIDE["README.md"])
+        o = {
+            **english,
+            **o,
+            "doc_id": f"DOC-ROOT-{README_TRANSLATIONS[path]}",
+            "derived_from": [english["doc_id"]],
+            "last_reviewed": "2026-11-02",
+        }
     for _meta in ("justification", "note"):
         o.pop(_meta, None)
 

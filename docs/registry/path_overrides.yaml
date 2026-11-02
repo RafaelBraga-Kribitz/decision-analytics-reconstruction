@@ -1,5 +1,5 @@
 override_guard:
-  max_paths: 57
+  max_paths: 59
 paths:
   schema_contracts/CONFORMANCE_MATRIX.md:
     doc_id: DOC-SCH-MATRIX-001
@@ -958,3 +958,13 @@ paths:
     supersedes: []
     numeric_authority: []
     frontmatter_required: false
+  docs/economic-evaluation.md:
+    doc_id: DOC-DOCS-ECON-001
+    audience: [portfolio]
+    owner: portfolio
+    last_reviewed: '2026-10-30'
+  docs/lessons-learned.md:
+    doc_id: DOC-DOCS-LESSONS-001
+    audience: [portfolio]
+    owner: portfolio
+    last_reviewed: '2026-10-30'

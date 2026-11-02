@@ -35,6 +35,8 @@ Run `poetry run python scripts/generate_doc_index.py --write` after registry cha
 - **DOC-DOCS-001** — `docs/DEPLOYMENT.md` — *narrative* / *canonical*
 - **DOC-DOCS-003** — `docs/agents/AGENTS.md` — *narrative* / *canonical*
 - **DOC-DOCS-004** — `docs/agents/GEMINI.md` — *narrative* / *canonical*
+- **DOC-DOCS-ECON-001** — `docs/economic-evaluation.md` — *narrative* / *canonical*
+- **DOC-DOCS-LESSONS-001** — `docs/lessons-learned.md` — *narrative* / *canonical*
 - **DOC-GOV-AUDIT-001** — `governance/AUDIT_PROCEDURE.md` — *policy* / *canonical*
 - **DOC-ROOT-002** — `governance/CHANGELOG.md` — *narrative* / *canonical*
 - **DOC-DOC-001** — `governance/Truth_and_rebuild_sprint.md` — *narrative* / *canonical*
@@ -83,7 +85,9 @@ Run `poetry run python scripts/generate_doc_index.py --write` after registry cha
 - **DOC-GOV-AGENTS-001** — `AGENTS.md` — canonical: DOC-GOV-AUDIT-001
 - **DOC-ARCH-001** — `ARCHITECTURE.md` — canonical: DOC-CHARTER-001
 - **DOC-GOV-GEMINI-001** — `GEMINI.md` — canonical: DOC-GOV-AUDIT-001
+- **DOC-ROOT-DE-AT** — `README.de-AT.md` — canonical: DOC-CHARTER-001
 - **DOC-ROOT-001** — `README.md` — canonical: DOC-CHARTER-001
+- **DOC-ROOT-PT-BR** — `README.pt-BR.md` — canonical: DOC-CHARTER-001
 - **DOC-MODB-README-001** — `module_b_resource_allocation/README.md` — canonical: DOC-MODB-001
 - **DOC-MODC-README-001** — `module_c_forecasting_scenarios/README.md` — canonical: DOC-MODC-001
 - **DOC-REP-VAL-001** — `reports/VALIDATION.md` — canonical: DOC-REP-SSOT-001
