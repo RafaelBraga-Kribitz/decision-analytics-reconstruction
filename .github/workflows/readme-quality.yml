@@ -5,10 +5,10 @@ name: README quality gate
 
 on:
   pull_request:
-    paths: ["README.md", "LICENSE*", "docs/assets/**", ".github/workflows/readme-quality.yml"]
+    paths: ["README*.md", "LICENSE*", "docs/assets/**", ".github/workflows/readme-quality.yml"]
   push:
     branches: [main, master]
-    paths: ["README.md", "LICENSE*", "docs/assets/**"]
+    paths: ["README*.md", "LICENSE*", "docs/assets/**"]
   workflow_dispatch:
 
 jobs:
@@ -19,6 +19,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           path: repo
+          fetch-depth: 0
       - uses: actions/checkout@v4
         with:
           repository: RafaelBraga-Kribitz/braga-portfolio-docs
@@ -35,7 +36,35 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install -q pyyaml pillow fonttools
+      - name: Require all locale READMEs in the same change set
+        id: locale_changes
+        if: github.event_name != 'workflow_dispatch'
+        working-directory: contract
+        shell: bash
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+        run: |
+          base="$PUSH_BEFORE"
+          if [ "$GITHUB_EVENT_NAME" = "pull_request" ]; then
+            base="$PR_BASE"
+          fi
+          if [ -z "$base" ] || [[ "$base" =~ ^0+$ ]]; then
+            echo "No prior commit to compare; the audit below checks the complete locale set."
+            exit 0
+          fi
+          mapfile -t changed_files < <(git -C "$GITHUB_WORKSPACE/repo" diff --name-only "$base" HEAD -- 'README*.md')          mapfile -t changed_paths < <(git -C "$GITHUB_WORKSPACE/repo" diff --name-only "$base" HEAD)
+          audit_required=false
+          for changed_path in "${changed_paths[@]}"; do
+            if [ "$changed_path" != ".github/workflows/readme-quality.yml" ]; then
+              audit_required=true
+              break
+            fi
+          done
+          echo "audit_required=$audit_required" >> "$GITHUB_OUTPUT"
+          python -m readme_quality trilingual --repo "$GITHUB_WORKSPACE/repo" --changed-files "${changed_files[@]}"
       - name: Audit README against the portfolio contract
+        if: steps.locale_changes.outputs.audit_required == 'true' || github.event_name == 'workflow_dispatch'
         working-directory: contract
         shell: bash {0}
         run: |
