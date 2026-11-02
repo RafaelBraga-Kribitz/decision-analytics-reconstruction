@@ -53,7 +53,8 @@ jobs:
             echo "No prior commit to compare; the audit below checks the complete locale set."
             exit 0
           fi
-          mapfile -t changed_files < <(git -C "$GITHUB_WORKSPACE/repo" diff --name-only "$base" HEAD -- 'README*.md')          mapfile -t changed_paths < <(git -C "$GITHUB_WORKSPACE/repo" diff --name-only "$base" HEAD)
+          mapfile -t changed_files < <(git -C "$GITHUB_WORKSPACE/repo" diff --name-only "$base" HEAD -- 'README*.md')
+          mapfile -t changed_paths < <(git -C "$GITHUB_WORKSPACE/repo" diff --name-only "$base" HEAD)
           audit_required=false
           for changed_path in "${changed_paths[@]}"; do
             if [ "$changed_path" != ".github/workflows/readme-quality.yml" ]; then
