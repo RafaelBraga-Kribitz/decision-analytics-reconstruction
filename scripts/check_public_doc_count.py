@@ -8,6 +8,7 @@ import sys
 from pathlib import Path
 
 from _governance_check import REPO_ROOT, gate
+from doc_registry_schema import README_TRANSLATIONS
 
 # Two files every portfolio project carries under the BRAGA value-evaluation standard
 # (braga-portfolio-docs, README standard v1.6, honesty.value_evaluation). They are counted,
@@ -91,7 +92,9 @@ def _is_public_markdown(path: str) -> bool:
 
 def main() -> int:
     public_docs = [path for path in _tracked_markdown() if _is_public_markdown(path)]
-    count = len(public_docs)
+    # Language versions are alternative readings of one document, while all
+    # physical files remain visible and registered with their own provenance.
+    count = len({"README.md" if path in README_TRANSLATIONS else path for path in public_docs})
     if count <= MAX_PUBLIC_MD:
         return gate(
             "F-032",

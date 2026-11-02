@@ -11,6 +11,7 @@ from pydantic import BaseModel, ConfigDict, Field
 # Single source for build_docs_registry.py and verify_doc_registry.py; the two
 # scripts drifted once (F-076) when .github/ was added to only one of them.
 VENDOR_PREFIXES = ("governance/_kit/", ".github/")
+README_TRANSLATIONS = {"README.pt-BR.md": "PT-BR", "README.de-AT.md": "DE-AT"}
 
 
 class RegistryDocument(BaseModel):
