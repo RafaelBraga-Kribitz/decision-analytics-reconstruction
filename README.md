@@ -1,3 +1,5 @@
+[🇧🇷 PT-BR](README.pt-BR.md) · [🇬🇧 EN-UK](README.md) · [🇦🇹 DE-AT](README.de-AT.md)
+
 # Decision Analytics Reconstruction — Paraguay 2018 Presidential Election
 
 ![Decision Analytics Reconstruction — Paraguay 2018 Presidential Election — Segmentation, MILP budget allocation, and Bayesian poll tracking reconstruct one election from public anchors and synthetic voters.](docs/assets/hero.png)
