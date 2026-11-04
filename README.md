@@ -20,7 +20,7 @@
 
 A campaign in early 2018 could see only eight public polls, census aggregates, and a fixed budget. **How should it track the race, split the money across the country, and stay honest about what it knows?** This project reconstructs the 2018 Paraguay presidential election as three connected decision-analytics parts. It answers that question end to end. The verified result: Candidate A (Abdo) won by **+3.70 pp** (46.43% vs 42.73%) on **61.25%** turnout (TSJE, the electoral court). One pp is one percentage point.
 
-<p align="centre"><img src="reports/decision/decision_kpi_panel.png" alt="Decision panel: four KPIs ($766k moved off swing departments, +1.20% value of updating, $6.03M budget envelope, 3 of 6 held-out polls inside the 95% band) above a bar chart of the change in planned spend per department at week 8; the six swing departments lose between $54k and $255k each, while Central gains $323k and Asuncion $175k" width="100%" /></p>
+<p align="centre"><img src="reports/decision/decision_kpi_panel.png" alt="Decision panel: four KPIs ($766k moved off swing departments, +1.20% value of updating, $6.03M budget envelope, 4 of 6 held-out polls inside the 95% band) above a bar chart of the change in planned spend per department at week 8; the six swing departments lose between $54k and $255k each, while Central gains $323k and Asuncion $175k" width="100%" /></p>
 
 *The decision this system supports: the tracked lead widened from 8.6 pp to 17.7 pp at
 week 8. A replay that re-solves the allocation after a manual weight update, on the same $6.03M envelope, moves **$766k off the six swing
@@ -108,13 +108,16 @@ Case narrative: [`reports/CASE_STUDY.md`](reports/CASE_STUDY.md). Numeric SSOT (
 | Production run scale | **50,000** voters (4.26M design reference) |
 | Reconstruction window | **14 weeks** (2018-W01..W14); 18-week campaign scope, 14 ISO weeks of operational data |
 
-### 3 of 6 held-out polls fell inside the 95% band
+### 4 of 6 held-out polls fell inside the 95% band
 
 The test leaves one wave out at a time on the eight real 2018 polls. Each time, the tracking
 model is refitted with the actual election result held out (provably excluded; see the forecast-label fix in the [Legend](#legend)).
-The 95% uncertainty band caught the held-out poll in **3 of 6** tested waves (95% interval coverage
-50%, exact binomial 95% CI [0.12, 0.88]; Brier 0.31 on the sign task; `MC_FAST=1` committed
-artifact). This is the project's
+The 95% uncertainty band caught the held-out poll in **4 of 6** tested waves (95% interval coverage
+67%, exact binomial 95% CI [0.22, 0.96]; 80% interval coverage 3 of 6 = 50%, CI [0.12, 0.88];
+Brier 0.3225 and log loss 1.1184 on the sign task; committed artifact from a full NUTS run,
+`MC_FAST` unset). The earlier committed artifact came from the `MC_FAST=1` fast path (3 of 6;
+Brier 0.3139; log loss 1.0363). Only one wave moved between the two runs. Six waves are too few
+to read that as an improvement: the two results are statistically indistinguishable. This is the project's
 *first true out-of-sample check*. The report does not flatter it. With only
 **eight polls** the intervals are wide. The sample is far too small to claim forecasting
 skill. Detail:

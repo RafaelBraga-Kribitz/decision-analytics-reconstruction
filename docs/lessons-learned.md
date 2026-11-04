@@ -8,7 +8,7 @@ Evaluation: [economic-evaluation.md](economic-evaluation.md).
 |---|---|---|---|
 | Effort | 320 h central (160 to 480 h), owner scope estimate | Unmeasured; no time log. Commits fall on 38 days from 2026-05-07 to 2026-10-29 (144 h by commit days × 4 h) | `git log origin/main`; cost basis v1.2 |
 | Total cost | €17,280 central | Unmeasured; no campaign loaded real data | same |
-| Technical performance | Re-plans that improve the split without chasing poll noise | Week-8 replay moves $766k and adds 1.20 % persuasion-weighted contacts on synthetic voters (ILLUSTRATIVE); 3 of 6 held-out polls inside the 95 % band | `reports/CASE_STUDY.md`, `README.md` |
+| Technical performance | Re-plans that improve the split without chasing poll noise | Week-8 replay moves $766k and adds 1.20 % persuasion-weighted contacts on synthetic voters (ILLUSTRATIVE); 4 of 6 held-out polls inside the 95 % band | `reports/CASE_STUDY.md`, `README.md` |
 | Adoption | Inside the scenario probabilities | No campaign use recorded | `README.md` (illustrative replay) |
 | Operational outcome | 1.3 % of the actionable budget, as delivery gained or waste avoided; budget 4 to 5.5 million (owner's judgement) | Unmeasured | none |
 | Attributable value | €62k expected at the midpoint (€52k to €72k) | Unmeasured; technical validation is not realised return | none |

@@ -7,8 +7,14 @@ Runs Module C walk-forward validation on the real poll fixture
 - ``reports/module_c/walk_forward_loo_metrics.json``
 - ``reports/module_c/walk_forward_loo_report.md``
 
-Uses ``MC_FAST=1`` when unset so regeneration stays CI-friendly; set
-``MC_FAST=0`` locally for a full MCMC run before publishing headline numbers.
+Default (``MC_FAST`` unset, no flag) keeps the CI-friendly fast path. Pass
+``--full`` for a publication-grade full-NUTS run: the flag removes ``MC_FAST``
+from the environment. Never set ``MC_FAST=0``: the sampler tests truthiness, so
+any non-empty value (including ``"0"``) selects the 50-draw fast path.
+
+Per-fold MCMC diagnostics (R-hat, ESS, divergences versus ``DIAGNOSTIC_GATES``)
+are recorded for every refit and written to
+``reports/module_c/walk_forward_loo_diagnostics.json``.
 """
 
 from __future__ import annotations
@@ -22,7 +28,9 @@ from pathlib import Path
 import yaml
 from module_c_forecasting_scenarios.data.cleaning_pipeline import clean_raw_polls
 from module_c_forecasting_scenarios.data.raw_loader import load_raw_polls_csv
+from module_c_forecasting_scenarios.models.tracking import hierarchical as _hier
 from module_c_forecasting_scenarios.paths import module_config_dir
+from module_c_forecasting_scenarios.validation import walk_forward as _wf
 from module_c_forecasting_scenarios.validation.walk_forward import (
     walk_forward_tracking_validation,
 )
@@ -32,15 +40,33 @@ FIXTURE = (
     REPO_ROOT / "module_c_forecasting_scenarios" / "tests" / "fixtures" / "polls_raw_fixture.csv"
 )
 METRICS_OUT = REPO_ROOT / "reports" / "module_c" / "walk_forward_loo_metrics.json"
+DIAG_OUT = REPO_ROOT / "reports" / "module_c" / "walk_forward_loo_diagnostics.json"
 REPORT_OUT = REPO_ROOT / "reports" / "module_c" / "walk_forward_loo_report.md"
 
 
-def _render_report(payload: dict[str, object], per_holdout_rows: list[dict[str, object]]) -> str:
+def _is_fast() -> bool:
+    """Mirror the sampler: any non-empty ``MC_FAST`` selects the fast path."""
+    return bool(os.environ.get("MC_FAST"))
+
+
+def _render_report(
+    payload: dict[str, object],
+    per_holdout_rows: list[dict[str, object]],
+    diagnostics: list[dict[str, object]],
+) -> str:
     m = payload
     n_waves = int(m["n_total_polls"])
     n_holdouts = int(m["n_holdouts"])
     min_train = int(m["min_train_size"])
-    mc_fast = "1" if os.environ.get("MC_FAST", "1") == "1" else "0"
+    fast = _is_fast()
+    sk = _hier._sampler_kwargs()  # pyright: ignore[reportPrivateUsage]
+    sampler_desc = (
+        f"{sk['chains']} chains x {sk['draws']} draws, {sk['tune']} tune, "
+        f"target_accept={sk['target_accept']}, seed={sk['random_seed']}"
+    )
+    if not fast:
+        sampler_desc += f", max_treedepth={sk['nuts_sampler_kwargs']['max_treedepth']}"
+    mode_desc = "the ``MC_FAST=1`` fast path" if fast else "full NUTS, ``MC_FAST`` unset"
 
     def _cov(level: str) -> str:
         k = int(m[f"coverage_{level}pct_k"])
@@ -72,8 +98,9 @@ def _render_report(payload: dict[str, object], per_holdout_rows: list[dict[str, 
             "distinguish a calibrated model from a badly miscalibrated one."
         ),
         (
-            "- **Regeneration mode:** this committed artifact was produced with "
-            f"``MC_FAST={mc_fast}``; re-run without ``MC_FAST`` for publication-grade MCMC."
+            f"- **Regeneration mode:** this committed artifact was produced with {mode_desc} "
+            f"({sampler_desc})."
+            + (" Re-run with ``--full`` for publication-grade MCMC." if fast else "")
         ),
         "",
         "## Aggregate metrics",
@@ -106,13 +133,41 @@ def _render_report(payload: dict[str, object], per_holdout_rows: list[dict[str, 
             f"[{row['hdi95_low_pp']:.1f}, {row['hdi95_high_pp']:.1f}] | "
             f"{'yes' if row['in_hdi95'] else 'no'} |"
         )
+    gates = _hier.DIAGNOSTIC_GATES
+    lines.extend(
+        [
+            "",
+            "## MCMC diagnostics per fold",
+            "",
+            (
+                f"Gates: R-hat <= {gates['rhat_max']}, ESS bulk >= {gates['ess_bulk_min']:.0f}, "
+                f"ESS tail >= {gates['ess_tail_min']:.0f}, divergences <= "
+                f"{gates['divergences']:.0f} (``DIAGNOSTIC_GATES`` in the tracking model)."
+            ),
+            "",
+            "| Fold (train size) | Holdout wave | R-hat max | ESS bulk min | ESS tail min "
+            "| Divergences | Treedepth hits | Gates |",
+            "|---:|---|---:|---:|---:|---:|---:|---|",
+        ]
+    )
+    for d in diagnostics:
+        v = d["values"]  # type: ignore[index]
+        ok = all(d["passed"].values())  # type: ignore[union-attr]
+        lines.append(
+            f"| {d['train_size']} | `{d['holdout_wave']}` | {v['rhat_max']:.3f} | "
+            f"{v['ess_bulk_min']:.0f} | {v['ess_tail_min']:.0f} | {v['divergences']} | "
+            f"{d['max_treedepth_hits']} | {'pass' if ok else 'FAIL'} |"
+        )
     lines.extend(
         [
             "",
             "## How to regenerate",
             "",
             "```bash",
-            "MC_FAST=1 poetry run python scripts/generate_walk_forward_loo_report.py",
+            "# Publication-grade full NUTS (do not set MC_FAST, not even to 0):",
+            "poetry run python scripts/generate_walk_forward_loo_report.py --full",
+            "# CI-friendly fast path:",
+            "poetry run python scripts/generate_walk_forward_loo_report.py",
             "```",
             "",
             f"*Generated on {date.today().isoformat()} from ``{fixture_rel}``.*",
@@ -122,7 +177,24 @@ def _render_report(payload: dict[str, object], per_holdout_rows: list[dict[str, 
 
 
 def main() -> int:
-    os.environ.setdefault("MC_FAST", "1")
+    if "--full" in sys.argv[1:]:
+        os.environ.pop("MC_FAST", None)
+    else:
+        os.environ.setdefault("MC_FAST", "1")
+
+    # Record diagnostics of every refit without touching the model: wrap the
+    # fit function that the walk-forward routine calls.
+    diagnostics: list[dict[str, object]] = []
+    orig_fit = _wf.fit_tracking_hierarchical
+
+    def _recording_fit(train, *args, **kwargs):  # type: ignore[no-untyped-def]
+        idata = orig_fit(train, *args, **kwargs)
+        d = _hier.diagnostics_summary(idata)
+        d["train_size"] = len(train)
+        diagnostics.append(d)
+        return idata
+
+    _wf.fit_tracking_hierarchical = _recording_fit  # type: ignore[assignment]
     if not FIXTURE.is_file():
         print(f"[FAIL] missing fixture: {FIXTURE}", file=sys.stderr)
         return 1
@@ -149,7 +221,8 @@ def main() -> int:
         "outcome_event_date": outcome.isoformat(),
         "min_train_size": min_train,
         "n_total_polls": len(tracking),
-        "mc_fast": os.environ.get("MC_FAST", "1") == "1",
+        "mc_fast": _is_fast(),
+        "sampler_path": "mc_fast" if _is_fast() else "full_nuts",
         **result.metrics,
     }
 
@@ -157,9 +230,13 @@ def main() -> int:
     METRICS_OUT.write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
 
     per_rows = result.per_holdout.to_dict(orient="records")
-    REPORT_OUT.write_text(_render_report(payload, per_rows), encoding="utf-8")
+    for d, row in zip(diagnostics, per_rows, strict=True):
+        d["holdout_wave"] = row["poll_wave_id"]
+    DIAG_OUT.write_text(json.dumps(diagnostics, indent=2, default=str) + "\n", encoding="utf-8")
+    REPORT_OUT.write_text(_render_report(payload, per_rows, diagnostics), encoding="utf-8")
 
     print(f"[PASS] wrote {METRICS_OUT.relative_to(REPO_ROOT)}")
+    print(f"[PASS] wrote {DIAG_OUT.relative_to(REPO_ROOT)}")
     print(f"[PASS] wrote {REPORT_OUT.relative_to(REPO_ROOT)}")
     return 0
 

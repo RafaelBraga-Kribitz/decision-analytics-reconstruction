@@ -1,0 +1,176 @@
+[
+  {
+    "model_version": "c_tracking_hierarchical_v0.4",
+    "created_at": "2026-11-04T04:50:13.613821+00:00",
+    "sampler_path": "full_nuts",
+    "chains": 4,
+    "draws": 1000,
+    "max_treedepth_hits": 0,
+    "hdi_prob": 0.94,
+    "values": {
+      "rhat_max": 1.0045454333628308,
+      "ess_bulk_min": 1809.485870296187,
+      "ess_tail_min": 613.487875011608,
+      "divergences": 0
+    },
+    "gates": {
+      "rhat_max": 1.01,
+      "ess_bulk_min": 400.0,
+      "ess_tail_min": 400.0,
+      "divergences": 0.0
+    },
+    "passed": {
+      "rhat_max": true,
+      "ess_bulk_min": true,
+      "ess_tail_min": true,
+      "divergences": true
+    },
+    "train_size": 2,
+    "holdout_wave": "wave_ati_20180315"
+  },
+  {
+    "model_version": "c_tracking_hierarchical_v0.4",
+    "created_at": "2026-11-04T04:51:00.291760+00:00",
+    "sampler_path": "full_nuts",
+    "chains": 4,
+    "draws": 1000,
+    "max_treedepth_hits": 0,
+    "hdi_prob": 0.94,
+    "values": {
+      "rhat_max": 1.0065393839038073,
+      "ess_bulk_min": 2258.8813925323175,
+      "ess_tail_min": 2007.498666021717,
+      "divergences": 0
+    },
+    "gates": {
+      "rhat_max": 1.01,
+      "ess_bulk_min": 400.0,
+      "ess_tail_min": 400.0,
+      "divergences": 0.0
+    },
+    "passed": {
+      "rhat_max": true,
+      "ess_bulk_min": true,
+      "ess_tail_min": true,
+      "divergences": true
+    },
+    "train_size": 3,
+    "holdout_wave": "wave_ica_20180318"
+  },
+  {
+    "model_version": "c_tracking_hierarchical_v0.4",
+    "created_at": "2026-11-04T04:51:38.107797+00:00",
+    "sampler_path": "full_nuts",
+    "chains": 4,
+    "draws": 1000,
+    "max_treedepth_hits": 0,
+    "hdi_prob": 0.94,
+    "values": {
+      "rhat_max": 1.0075176767864553,
+      "ess_bulk_min": 1983.0435062399695,
+      "ess_tail_min": 1529.7353115853232,
+      "divergences": 0
+    },
+    "gates": {
+      "rhat_max": 1.01,
+      "ess_bulk_min": 400.0,
+      "ess_tail_min": 400.0,
+      "divergences": 0.0
+    },
+    "passed": {
+      "rhat_max": true,
+      "ess_bulk_min": true,
+      "ess_tail_min": true,
+      "divergences": true
+    },
+    "train_size": 4,
+    "holdout_wave": "wave_ecodat_20180326"
+  },
+  {
+    "model_version": "c_tracking_hierarchical_v0.4",
+    "created_at": "2026-11-04T04:52:19.377482+00:00",
+    "sampler_path": "full_nuts",
+    "chains": 4,
+    "draws": 1000,
+    "max_treedepth_hits": 0,
+    "hdi_prob": 0.94,
+    "values": {
+      "rhat_max": 1.005462022318115,
+      "ess_bulk_min": 1390.584169662784,
+      "ess_tail_min": 1531.216694059048,
+      "divergences": 0
+    },
+    "gates": {
+      "rhat_max": 1.01,
+      "ess_bulk_min": 400.0,
+      "ess_tail_min": 400.0,
+      "divergences": 0.0
+    },
+    "passed": {
+      "rhat_max": true,
+      "ess_bulk_min": true,
+      "ess_tail_min": true,
+      "divergences": true
+    },
+    "train_size": 5,
+    "holdout_wave": "wave_capli_20180406"
+  },
+  {
+    "model_version": "c_tracking_hierarchical_v0.4",
+    "created_at": "2026-11-04T04:52:58.588694+00:00",
+    "sampler_path": "full_nuts",
+    "chains": 4,
+    "draws": 1000,
+    "max_treedepth_hits": 0,
+    "hdi_prob": 0.94,
+    "values": {
+      "rhat_max": 1.0039832662352102,
+      "ess_bulk_min": 1441.5269228195475,
+      "ess_tail_min": 1186.9014167022324,
+      "divergences": 0
+    },
+    "gates": {
+      "rhat_max": 1.01,
+      "ess_bulk_min": 400.0,
+      "ess_tail_min": 400.0,
+      "divergences": 0.0
+    },
+    "passed": {
+      "rhat_max": true,
+      "ess_bulk_min": true,
+      "ess_tail_min": true,
+      "divergences": true
+    },
+    "train_size": 6,
+    "holdout_wave": "wave_grau_20180410"
+  },
+  {
+    "model_version": "c_tracking_hierarchical_v0.4",
+    "created_at": "2026-11-04T04:53:43.187656+00:00",
+    "sampler_path": "full_nuts",
+    "chains": 4,
+    "draws": 1000,
+    "max_treedepth_hits": 0,
+    "hdi_prob": 0.94,
+    "values": {
+      "rhat_max": 1.0040127363474807,
+      "ess_bulk_min": 1099.444172043031,
+      "ess_tail_min": 1045.939757554975,
+      "divergences": 0
+    },
+    "gates": {
+      "rhat_max": 1.01,
+      "ess_bulk_min": 400.0,
+      "ess_tail_min": 400.0,
+      "divergences": 0.0
+    },
+    "passed": {
+      "rhat_max": true,
+      "ess_bulk_min": true,
+      "ess_tail_min": true,
+      "divergences": true
+    },
+    "train_size": 7,
+    "holdout_wave": "wave_ati_20180418"
+  }
+]
