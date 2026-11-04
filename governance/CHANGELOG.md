@@ -6,6 +6,16 @@ All notable changes to this project are documented here. This file follows [Keep
 
 ## [Unreleased]
 
+### Walk-forward report regenerated with full NUTS (2026-11-04)
+
+- `reports/module_c/walk_forward_loo_report.md` and `_metrics.json` regenerated without
+  `MC_FAST` (4 chains x 1000 draws, 1000 tune, target_accept 0.99, seed 42). 95% coverage
+  4/6 = 67% (exact binomial CI [0.22, 0.96]; was 3/6), 80% coverage 3/6 = 50% (CI [0.12, 0.88];
+  was 2/6), Brier 0.3225 (was 0.3139), log loss 1.1184 (was 1.0363). One wave moved; with six
+  holdouts this is not a meaningful improvement. Model, priors, sampler settings and data unchanged.
+- README (en, de-AT, pt-BR), `reports/VALIDATION.md`, `docs/lessons-learned.md` and the decision
+  KPI panel (`reports/decision/decision_kpi_panel.png`, re-rendered) now state the new result.
+
 ### Improvement-plan closure + status Complete (F-083..F-090, 2026-10-11)
 
 - **Eight findings filed and closed**, one PR each (#199–#206): slow MCMC lane
