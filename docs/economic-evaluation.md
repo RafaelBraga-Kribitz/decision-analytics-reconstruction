@@ -1,6 +1,6 @@
 # Economic evaluation: Decision Analytics Reconstruction — Paraguay 2018 Presidential Election
 
-Pre-build scenario exercise · evaluation date 2026-05-06 · method v2.0 · cost basis v1.2 ([COST_BASIS.md](https://github.com/RafaelBraga-Kribitz/braga-portfolio-docs/blob/main/docs/value-evaluation/COST_BASIS.md))
+Pre-build scenario exercise · evaluation date 2026-05-06 · method v2.0 · cost basis v1.2 (COST_BASIS.md, private)
 
 ## Decision
 

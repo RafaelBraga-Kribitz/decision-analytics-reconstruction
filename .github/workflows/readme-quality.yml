@@ -21,11 +21,17 @@ jobs:
           path: repo
           fetch-depth: 0
       - uses: actions/checkout@v4
+        id: contract
+        continue-on-error: true
         with:
           repository: RafaelBraga-Kribitz/braga-portfolio-docs
           path: contract
           fetch-depth: 0
+      - name: Skip when the contract repository is not readable
+        if: steps.contract.outcome != 'success'
+        run: 'echo "::notice::README gate skipped: the contract repository is private. Run the gate locally."'
       - name: Use the gate branch until it is merged into main
+        if: steps.contract.outcome == 'success'
         working-directory: contract
         run: |
           if [ ! -d readme_quality ] && git show-ref --verify --quiet refs/remotes/origin/readme-quality-gate; then
@@ -33,12 +39,14 @@ jobs:
           fi
           test -d readme_quality || { echo "::error::contract repo has no readme_quality package"; exit 1; }
       - uses: actions/setup-python@v5
+        if: steps.contract.outcome == 'success'
         with:
           python-version: "3.12"
       - run: pip install -q pyyaml pillow fonttools
+        if: steps.contract.outcome == 'success'
       - name: Require all locale READMEs in the same change set
         id: locale_changes
-        if: github.event_name != 'workflow_dispatch'
+        if: steps.contract.outcome == 'success' && (github.event_name != 'workflow_dispatch')
         working-directory: contract
         shell: bash
         env:
@@ -65,7 +73,7 @@ jobs:
           echo "audit_required=$audit_required" >> "$GITHUB_OUTPUT"
           python -m readme_quality trilingual --repo "$GITHUB_WORKSPACE/repo" --changed-files "${changed_files[@]}"
       - name: Audit README against the portfolio contract
-        if: steps.locale_changes.outputs.audit_required == 'true' || github.event_name == 'workflow_dispatch'
+        if: steps.contract.outcome == 'success' && (steps.locale_changes.outputs.audit_required == 'true' || github.event_name == 'workflow_dispatch')
         working-directory: contract
         shell: bash {0}
         run: |
